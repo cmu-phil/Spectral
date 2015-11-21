@@ -9,7 +9,7 @@ Constructions of groups
 import .basic hit.set_quotient types.sigma types.list types.sum
 
 open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function
-
+     equiv
 namespace group
 
   /- Subgroups -/
@@ -31,6 +31,7 @@ namespace group
   abbreviation is_normal_subgroup   [unfold 2] := @normal_subgroup_rel.is_normal
 
   variables {G G' : Group} (H : subgroup_rel G) (N : normal_subgroup_rel G) {g g' h h' k : G}
+            {A : CommGroup}
 
   theorem is_normal_subgroup' (h : G) (r : N g) : N (h⁻¹ * g * h) :=
   inv_inv h ▸ is_normal_subgroup N h⁻¹ r
@@ -264,18 +265,18 @@ namespace group
   variables (X : hset) {l l' : list (X ⊎ X)}
   namespace free_group
 
-  inductive free_group_carrier_rel : list (X ⊎ X) → list (X ⊎ X) → Type :=
-  | rrefl   : Πl, free_group_carrier_rel l l
-  | cancel1 : Πx, free_group_carrier_rel [inl x, inr x] []
-  | cancel2 : Πx, free_group_carrier_rel [inr x, inl x] []
-  | resp_append : Π{l₁ l₂ l₃ l₄}, free_group_carrier_rel l₁ l₂ → free_group_carrier_rel l₃ l₄ →
-                             free_group_carrier_rel (l₁ ++ l₃) (l₂ ++ l₄)
-  | rtrans : Π{l₁ l₂ l₃}, free_group_carrier_rel l₁ l₂ → free_group_carrier_rel l₂ l₃ →
-                             free_group_carrier_rel l₁ l₃
+  inductive free_group_rel : list (X ⊎ X) → list (X ⊎ X) → Type :=
+  | rrefl   : Πl, free_group_rel l l
+  | cancel1 : Πx, free_group_rel [inl x, inr x] []
+  | cancel2 : Πx, free_group_rel [inr x, inl x] []
+  | resp_append : Π{l₁ l₂ l₃ l₄}, free_group_rel l₁ l₂ → free_group_rel l₃ l₄ →
+                             free_group_rel (l₁ ++ l₃) (l₂ ++ l₄)
+  | rtrans : Π{l₁ l₂ l₃}, free_group_rel l₁ l₂ → free_group_rel l₂ l₃ →
+                             free_group_rel l₁ l₃
 
-  open free_group_carrier_rel
-  local abbreviation R [reducible] := free_group_carrier_rel
-  attribute free_group_carrier_rel.rrefl [refl]
+  open free_group_rel
+  local abbreviation R [reducible] := free_group_rel
+  attribute free_group_rel.rrefl [refl]
 
   definition free_group_carrier [reducible] : Type := set_quotient (λx y, ∥R X x y∥)
   local abbreviation FG := free_group_carrier
@@ -355,7 +356,7 @@ namespace group
 
   end
   end free_group open free_group
-
+  export [reduce_hints] free_group
   variables (X)
   definition group_free_group [constructor] : group (free_group_carrier X) :=
   group.mk free_group_mul _ free_group_mul_assoc free_group_one free_group_one_mul free_group_mul_one
@@ -364,23 +365,80 @@ namespace group
   definition free_group [constructor] : Group :=
   Group.mk _ (group_free_group X)
 
+  /- The universal property of the free group -/
+  variables {X G}
+  definition free_group_inclusion [constructor] (x : X) : free_group X :=
+  class_of [inl x]
+
+  definition fgh_helper [unfold 5] (f : X → G) (g : G) (x : X + X) : G :=
+  g * sum.rec (λx, f x) (λx, (f x)⁻¹) x
+
+  theorem fgh_helper_respect_rel (f : X → G) (r : free_group_rel X l l')
+    : Π(g : G), foldl (fgh_helper f) g l = foldl (fgh_helper f) g l' :=
+  begin
+    induction r with l x x l₁ l₂ l₃ l₄ r₁ r₂ IH₁ IH₂ l₁ l₂ l₃ r₁ r₂ IH₁ IH₂: intro g,
+    { reflexivity},
+    { unfold [foldl], apply mul_inv_cancel_right},
+    { unfold [foldl], apply inv_mul_cancel_right},
+    { rewrite [+foldl_append, IH₁, IH₂]},
+    { exact !IH₁ ⬝ !IH₂}
+  end
+
+  theorem fgh_helper_mul (f : X → G) (l)
+    : Π(g : G), foldl (fgh_helper f) g l = g * foldl (fgh_helper f) 1 l :=
+  begin
+    induction l with s l IH: intro g,
+    { unfold [foldl], exact !mul_one⁻¹},
+    { rewrite [+foldl_cons, IH], refine _ ⬝ (ap (λx, g * x) !IH⁻¹),
+      rewrite [-mul.assoc, ↑fgh_helper, one_mul]}
+  end
+
+  definition free_group_hom [constructor] (f : X → G) : free_group X →g G :=
+  begin
+    fapply homomorphism.mk,
+    { intro g, refine set_quotient.elim _ _ g,
+      { intro l, exact foldl (fgh_helper f) 1 l},
+      { intro l l' r, esimp at *, refine trunc.rec _ r, clear r, intro r,
+        exact fgh_helper_respect_rel f r 1}},
+    { refine set_quotient.rec_hprop _, intro l, refine set_quotient.rec_hprop _, intro l',
+      esimp, refine !foldl_append ⬝ _, esimp, apply fgh_helper_mul}
+  end
+
+  definition fn_of_free_group_hom [unfold_full] (φ : free_group X →g G) : X → G :=
+  φ ∘ free_group_inclusion
+
+  variables (X G)
+  definition free_group_hom_equiv_fn : (free_group X →g G) ≃ (X → G) :=
+  begin
+    fapply equiv.MK,
+    { exact fn_of_free_group_hom},
+    { exact free_group_hom},
+    { intro f, apply eq_of_homotopy, intro x, esimp, unfold [foldl], apply one_mul},
+    { intro φ, apply homomorphism_eq, refine set_quotient.rec_hprop _, intro l, esimp,
+      induction l with s l IH,
+      { esimp [foldl], exact !respect_one⁻¹},
+      { rewrite [foldl_cons, fgh_helper_mul],
+        refine _ ⬝ (respect_mul φ (class_of [s]) (class_of l))⁻¹,
+        rewrite [IH], induction s: rewrite [▸*, one_mul], rewrite [-respect_inv]}}
+  end
+
   /- Free Commutative Group of a set -/
   namespace free_comm_group
 
-  inductive fcg_carrier_rel : list (X ⊎ X) → list (X ⊎ X) → Type :=
-  | rrefl   : Πl, fcg_carrier_rel l l
-  | cancel1 : Πx, fcg_carrier_rel [inl x, inr x] []
-  | cancel2 : Πx, fcg_carrier_rel [inr x, inl x] []
-  | rflip   : Πx y, fcg_carrier_rel [x, y] [y, x]
-  | resp_append : Π{l₁ l₂ l₃ l₄}, fcg_carrier_rel l₁ l₂ → fcg_carrier_rel l₃ l₄ →
-                             fcg_carrier_rel (l₁ ++ l₃) (l₂ ++ l₄)
-  | rtrans : Π{l₁ l₂ l₃}, fcg_carrier_rel l₁ l₂ → fcg_carrier_rel l₂ l₃ →
-                             fcg_carrier_rel l₁ l₃
+  inductive fcg_rel : list (X ⊎ X) → list (X ⊎ X) → Type :=
+  | rrefl   : Πl, fcg_rel l l
+  | cancel1 : Πx, fcg_rel [inl x, inr x] []
+  | cancel2 : Πx, fcg_rel [inr x, inl x] []
+  | rflip   : Πx y, fcg_rel [x, y] [y, x]
+  | resp_append : Π{l₁ l₂ l₃ l₄}, fcg_rel l₁ l₂ → fcg_rel l₃ l₄ →
+                             fcg_rel (l₁ ++ l₃) (l₂ ++ l₄)
+  | rtrans : Π{l₁ l₂ l₃}, fcg_rel l₁ l₂ → fcg_rel l₂ l₃ →
+                             fcg_rel l₁ l₃
 
-  open fcg_carrier_rel
-  local abbreviation R [reducible] := fcg_carrier_rel
-  attribute fcg_carrier_rel.rrefl [refl]
-  attribute fcg_carrier_rel.rtrans [trans]
+  open fcg_rel
+  local abbreviation R [reducible] := fcg_rel
+  attribute fcg_rel.rrefl [refl]
+  attribute fcg_rel.rtrans [trans]
 
   definition fcg_carrier [reducible] : Type := set_quotient (λx y, ∥R X x y∥)
   local abbreviation FG := fcg_carrier
@@ -490,5 +548,53 @@ namespace group
 
   definition free_comm_group [constructor] : CommGroup :=
   CommGroup.mk _ (group_free_comm_group X)
+
+  /- The universal property of the free commutative group -/
+  variables {X A}
+  definition free_comm_group_inclusion [constructor] (x : X) : free_comm_group X :=
+  class_of [inl x]
+
+  theorem fgh_helper_respect_comm_rel (f : X → A) (r : fcg_rel X l l')
+    : Π(g : A), foldl (fgh_helper f) g l = foldl (fgh_helper f) g l' :=
+  begin
+    induction r with l x x x y l₁ l₂ l₃ l₄ r₁ r₂ IH₁ IH₂ l₁ l₂ l₃ r₁ r₂ IH₁ IH₂: intro g,
+    { reflexivity},
+    { unfold [foldl], apply mul_inv_cancel_right},
+    { unfold [foldl], apply inv_mul_cancel_right},
+    { unfold [foldl, fgh_helper], apply mul.right_comm},
+    { rewrite [+foldl_append, IH₁, IH₂]},
+    { exact !IH₁ ⬝ !IH₂}
+  end
+
+  definition free_comm_group_hom [constructor] (f : X → A) : free_comm_group X →g A :=
+  begin
+    fapply homomorphism.mk,
+    { intro g, refine set_quotient.elim _ _ g,
+      { intro l, exact foldl (fgh_helper f) 1 l},
+      { intro l l' r, esimp at *, refine trunc.rec _ r, clear r, intro r,
+        exact fgh_helper_respect_comm_rel f r 1}},
+    { refine set_quotient.rec_hprop _, intro l, refine set_quotient.rec_hprop _, intro l',
+      esimp, refine !foldl_append ⬝ _, esimp, apply fgh_helper_mul}
+  end
+
+  definition fn_of_free_comm_group_hom [unfold_full] (φ : free_comm_group X →g A) : X → A :=
+  φ ∘ free_comm_group_inclusion
+
+  variables (X A)
+  definition free_comm_group_hom_equiv_fn : (free_comm_group X →g A) ≃ (X → A) :=
+  begin
+    fapply equiv.MK,
+    { exact fn_of_free_comm_group_hom},
+    { exact free_comm_group_hom},
+    { intro f, apply eq_of_homotopy, intro x, esimp, unfold [foldl], apply one_mul},
+    { intro φ, apply homomorphism_eq, refine set_quotient.rec_hprop _, intro l, esimp,
+      induction l with s l IH,
+      { esimp [foldl], exact !respect_one⁻¹},
+      { rewrite [foldl_cons, fgh_helper_mul],
+        refine _ ⬝ (respect_mul φ (class_of [s]) (class_of l))⁻¹,
+        rewrite [▸*,IH], induction s: rewrite [▸*, one_mul], apply ap (λx, x * _),
+        exact !respect_inv⁻¹}}
+  end
+
 
 end group

@@ -49,11 +49,14 @@ namespace group
             ... = φ 1 : ap φ !one_mul
             ... = 1 * φ 1 : one_mul)
 
+  theorem respect_inv (φ : G₁ →g G₂) (g : G₁) : φ g⁻¹ = (φ g)⁻¹ :=
+  eq_inv_of_mul_eq_one (!respect_mul⁻¹ ⬝ ap φ !mul.left_inv ⬝ !respect_one)
+
   local attribute Pointed_of_Group [coercion]
   definition pmap_of_homomorphism [constructor] (φ : G₁ →g G₂) : G₁ →* G₂ :=
   pmap.mk φ !respect_one
 
-  definition homomorphism_eq (p : group_fun φ = group_fun φ') : φ = φ' :=
+  definition homomorphism_eq (p : group_fun φ ~ group_fun φ') : φ = φ' :=
   begin
     induction φ with φ q, induction φ' with φ' q', esimp at p, induction p,
     exact ap (homomorphism.mk φ) !is_hprop.elim
