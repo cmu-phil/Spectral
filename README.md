@@ -2,7 +2,7 @@
 
 Formalization project of the CMU HoTT group towards formalizing the Serre spectral sequence. 
 
-Currently in the project: Jeremy Avigad, Steve Awodey, Ulrik Buchholtz, Floris van Doorn, Egbert Rijke, Mike Shulman.
+Currently in the project: Jeremy Avigad, Steve Awodey, Ulrik Buchholtz, Floris van Doorn, Clive Newstead, Egbert Rijke, Mike Shulman.
 
 ## Resources
 - [Mike's blog post](http://homotopytypetheory.org/2013/08/08/spectral-sequences/) at the HoTT blog.
