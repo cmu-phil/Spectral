@@ -1,8 +1,10 @@
-# Spectral
+# Spectral Sequences
 
-Formalization project of the CMU HoTT group towards formalizing the Serre spectral sequence.
+Formalization project of the CMU HoTT group towards formalizing the Serre spectral sequence. 
 
-## Things to do for Lean SS project
+Currently in the project: Jeremy Avigad, Steve Awodey, Ulrik Buchholtz, Floris van Doorn, Egbert Rijke, Mike Shulman.
+
+## Things to do for Lean spectral sequences project
 
 Lang's algebra (revised 3rd edition) contains a chapter on general homology theory, with a section on spectral sequences. Thus, we can use this book at least as an outline for the algebraic part of the project.
 
@@ -10,6 +12,7 @@ Lang's algebra (revised 3rd edition) contains a chapter on general homology theo
 - R-modules, vector spaces,
 - some basic theory: product, tensor, hom, projective,
 - categories of algebras, abelian categories,
+- snake lemma (Jeremy) 
 
 ###Already Done:
 - definition of algebraic structures such as groups, rings, fields, 
