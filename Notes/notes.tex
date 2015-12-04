@@ -1,0 +1,640 @@
+\documentclass{article}
+
+\input{preamble-articles}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% We define a command \@ifnextcharamong accepting an arbitrary number of
+%%%% arguments. The first is what it should do if a match is found, the second
+%%%% contains what it should do when no match is found; all the other arguments
+%%%% are the things it tries to find as the next character.
+%%%%
+%%%% For example \@ifnextcharamong{#1}{#2}{*}{\bgroup} expands #1 if the next
+%%%% character is a * or a \bgroup and it expands #2 otherwise.
+
+\makeatletter
+\newcommand{\@ifnextcharamong}[2]
+  {\@ifnextchar\bgroup{\@@ifnextchar{#1}{\@@ifnextcharamong{#1}{#2}}}{#2}}
+\newcommand{\@@ifnextchar}[3]{\@ifnextchar{#3}{#1}{#2}}
+\newcommand{\@@ifnextcharamong}[3]{\@ifnextcharamong{#1}{#2}}
+\makeatother
+
+\newcommand{\ucomp}[1]{\hat{#1}}
+\newcommand{\finset}[1]{{[#1]}}
+
+\makeatletter
+\newcommand{\higherequifibsf}{\mathcal}
+\newcommand{\higherequifib}[2]{\higherequifibsf{#1}(#2)}
+\newcommand{\underlyinggraph}[1]{U(#1)}
+\newcommand{\theequifib}[1]{{\def\higherequifibsf{}#1}}
+\makeatother
+
+\newcommand{\loopspace}[2][]{\typefont{\Omega}^{#1}(#2)}
+\newcommand{\join}[2]{{#1}*{#2}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Notes on algebraic topology}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\part{Spectral sequences}
+\section{Background}
+\begin{defn}
+A graded $R$-module $M$ is an $R$-module which decomposes as a direct
+sum
+\begin{equation*}
+\bigoplus_{p\in\Z} F_p M
+\end{equation*}
+of $R$-modules. A graded $R$-homomorphism $h:M\to N$ is an $R$-homomorphism which
+decomposes into $h_p:F_pM\to F_pN$. 
+\end{defn}
+
+\begin{lem}
+Suppose $M$ and $N$ are graded $R$-modules. Then $M\otimes N$ is a graded
+$R$-module by
+\begin{equation*}
+(M\otimes_R N)_i\defeq \bigoplus_{p+q=i} F_pM\otimes_R F_qN.
+\end{equation*}
+\end{lem}
+
+\begin{defn}
+A graded algebra is a graded $R$-module $M$ for which there are linear mappings
+$\varphi_{p,q}:F_pM\otimes_R F_qM\to F_{p+q}M$, i.e.~a graded $R$-homomorphism
+$\varphi:M\otimes M\to M$, which is associative in the sense
+that the diagram
+\begin{equation*}
+\begin{tikzcd}
+M\otimes M\otimes M \arrow[r,"\varphi\otimes 1"] \arrow[d,swap,"1\otimes\varphi"] &
+M\otimes M \arrow[d,"\varphi"] \\ M\otimes M \arrow[r,swap,"\varphi"] & M
+\end{tikzcd}
+\end{equation*}
+commutes.
+\end{defn}
+
+\begin{eg}
+Polynomials with coefficients in $R$ forms a graded algebra. Moreover, in the
+polynomial ring $R[X]$, we find that $G_pR[X]\defeq F_pR[X]/F_{p-1}R[X]\cong R$.
+Since those are free modules, we have that $R[X]\cong \bigoplus_p G_pR[X]$. 
+\end{eg}
+
+\section{Spectral sequences}
+
+\subsection{Motivation from the long exact sequence of a pair}
+
+Recall that a pair of spaces $(X,A)$ induces a long exact sequence of homology
+groups
+\begin{equation*}
+\begin{tikzcd}
+\cdots \arrow[r,"\partial_{n+1}"]
+& H_n(A) \arrow[r,"i_n"]
+& H_n(X) \arrow[r,"j_n"]
+& H_n(X,A) \arrow[r,"\partial_n"]
+& H_{n-1}(A) \arrow[r,"i_{n-1}"]
+& \cdots
+\end{tikzcd}
+\end{equation*}
+from the short exact sequence
+\begin{equation*}
+\begin{tikzcd}
+0 \arrow[r] & C_\ast(A) \arrow[r] & C_\ast(X) \arrow[r] & C_\ast(X,A) \arrow[r] & 0
+\end{tikzcd}
+\end{equation*}
+of chain complexes, by means of the snake lemma. This long exact sequence helps
+us to compute $H_n(X)$ in terms of $H_n(A)$ and $H_n(X,A)$, which may be easier
+to determine. For instance, from the long exact sequence we obtain the short
+exact sequence
+\begin{equation*}
+\begin{tikzcd}
+0 \arrow[r] & \mathrm{coker}(\partial_{n+1}) \arrow[r] & H_n(X) \arrow[r] & \mathrm{ker}(\partial_n) \arrow[r] & 0
+\end{tikzcd}
+\end{equation*}
+and hence we have determined that $H_n(X)$ can be obtained as some element of the
+group $\mathrm{Ext}(\mathrm{coker}(\partial_{n+1}),\mathrm{ker}(\partial_n))$.
+In other words, $H_n(X)$ is a particular solution to an extension problem.
+
+Note also that the long exact sequence of relative homology groups can be
+presented as an exact triangle of graded $R$-homomorphisms:
+\begin{equation*}
+\begin{tikzcd}[column sep=0em]
+\bigoplus_n H_n(C_\ast(A)) 
+\arrow[rr,"i"] & & \bigoplus_n H_n(C_\ast(X)) \arrow[dl,"j"] \\
+& \bigoplus_n H_n(C_\ast(X,A)) \arrow[ul,"\partial"]
+\end{tikzcd}
+\end{equation*}
+
+The first idea of spectral sequences is to generalize the long exact sequence
+of homology obtained from a pair of spaces, to an algebraic gadget obtained from
+a filtration on a space, and mimic the derivation of determining the homology
+group as a solution to an extension problem.
+
+\begin{defn}
+A filtration of a space X consists of a sequence 
+\begin{equation*}
+\cdots\subseteq X_p\subseteq X_{p+1}\subseteq\cdots
+\end{equation*}
+such that $X=\bigcup_p X_p$ and $\bigcap_p X_p=\varnothing$. A filtration of $X$ is said to be bounded, if
+$X_p=\varnothing$ for $p$ sufficiently small, and $X_p=X$ for $X$ sufficiently
+large.
+\end{defn}
+
+An important class of filtered spaces is that of CW-complexes, where the filtration
+$X_p$ of $X$ is given by the $p$-skeleton of $X$. Another case is where
+$X_p\defeq\varnothing$ for $p<0$, $X_0\defeq A$ and $X_p\defeq X$ for $p>0$; here
+we recover the old theory of the topological pair.
+
+\begin{defn}
+Given a space $X$ with a filtration, we can form the staircase diagram
+\begin{footnotesize}
+\begin{equation*}
+\begin{tikzcd}
+& \vdots \arrow[d] & & \vdots \arrow[d] \\ 
+\cdots \arrow[r]
+& H_{n+1}(X_p) \arrow[r] \arrow[d]
+& H_{n+1}(X_p,X_{p-1}) \arrow[r]
+& H_n(X_{p-1}) \arrow[r] \arrow[d]
+& H_n(X_{p-1},X_{p-2}) \arrow[r]
+& \cdots \\
+\cdots \arrow[r]
+& H_{n+1}(X_{p+1}) \arrow[r] \arrow[d]
+& H_{n+1}(X_{p+1},X_{p}) \arrow[r]
+& H_n(X_{p}) \arrow[r] \arrow[d]
+& H_n(X_{p},X_{p-1}) \arrow[r]
+& \cdots \\
+& \vdots & & \vdots
+\end{tikzcd}
+\end{equation*}%
+\end{footnotesize}%
+in which the familiar long exact sequence of the pairs $(X_p,X_{p-1})$ run
+down like a staircase.
+\end{defn}
+
+\begin{defn}
+Let $X$ be a space with a filtration. Then we obtain the exact couple
+\begin{equation*}
+\begin{tikzcd}
+A \arrow[rr,"i"] & & A \arrow[dl,"j"] \\
+& E \arrow[ul,"\partial"]
+\end{tikzcd}
+\end{equation*}
+in which $A\defeq\bigoplus_{p,n} H_n(X_p)$, and $E\defeq\bigoplus_{p,n}H_n(X_p,X_{p-1})$. 
+\end{defn}
+
+We can come to such an exact couple from any filtered chain complex, which is
+what we turn our attention to before continuing.
+
+\subsection{The spectral sequence of a filtered complex}
+
+\begin{defn}
+A filtration of an $R$-module $M$ consists of a sequence
+\begin{equation*}
+\cdots\subseteq F_pM\subseteq F_{p+1}M\subseteq\cdots
+\end{equation*}
+of $R$-submodules of $M$, such that $M=\bigcup_p F_pM$ and $\bigcap_p F_pM=0$. 
+A filtration of $R$ is said to be bounded if $F_pM=0$ for $p$ sufficiently
+small and $F_pM=M$ for $p$ sufficiently large.
+\end{defn}
+
+\begin{defn}
+Let $\{M,F_pM\}$ be a graded $R$-module. The associated graded module is defined
+by $G_p M\defeq F_pM/F_{p-1}M$. We obtain a short exact sequence
+\begin{equation*}
+\begin{tikzcd}
+0 \arrow[r] & F_{p-1}M \arrow[r] & F_pM \arrow[r] & G_pM \arrow[r] & 0.
+\end{tikzcd}
+\end{equation*}
+\end{defn}
+
+\begin{rmk}
+It would be nice if $F_pM\cong F_{p-1}M\oplus G_pM$, so that we can write
+$M\cong\bigoplus_p G_pM$. Under what condition does this hold? This holds if
+each $G_pM$ is a projective $R$-module, so under what conditions is this true?
+\end{rmk}
+
+\begin{defn}
+A filtered chain complex is a chain complex $(C_\ast,\partial)$ together with a
+filtration $\{F_pC_i\}$ of each $C_i$, such that the differential preserves the
+filtration, i.e.~$\partial(F_pC_i)\subseteq F_p C_{i-1}$. 
+
+A filtration of a chain complex is said to be bounded if it is bounded in each
+dimension.
+\end{defn}
+
+Let $(F_pC_\ast,\partial)$ be a filtered chain complex. We have again our
+short exact sequence
+\begin{equation*}
+\begin{tikzcd}
+0 \arrow[r] & F_{p-1} C_\ast \arrow[r] & F_p C_\ast \arrow[r] & G_p C_\ast \arrow[r] & 0
+\end{tikzcd}
+\end{equation*}
+of chain complexes. This also gives us the long exact sequence on homology,
+which we may express conveniently as the exact couple
+\begin{equation*}
+\begin{tikzcd}[column sep=0em]
+\bigoplus_{p,q} H_{p+q}(F_pC_\ast) \arrow[rr,"i"] & & \bigoplus_{p,q} H_{p+q}(F_pC_\ast) \arrow[dl,"j"] \\
+& \bigoplus_{p,q} H_{p+q}(G_p C_\ast) \arrow[ul,"k"]
+\end{tikzcd}
+\end{equation*}
+consisting of graded $R$-homomorphisms (of which $k$ shifts in degree).
+
+\begin{defn}
+Consider an exact couple, i.e.~a commutative triangle
+\begin{equation*}
+\begin{tikzcd}
+A \arrow[rr,"i"] & & A \arrow[dl,"j"] \\ & E \arrow[ul,"k"]
+\end{tikzcd}
+\end{equation*}
+of $R$-modules, which is exact at every vertex. Taking $\partial^0\defeq j\circ k$,
+we see that $(\partial^0)^2=0$ by exactness. We may now form the derived exact couple
+\begin{equation*}
+\begin{tikzcd}[column sep=0]
+\mathrm{im}(i) \arrow[rr,"i'"] & & \mathrm{im}(i) \arrow[dl,"j'"] \\
+& \frac{\mathrm{ker}(\partial)}{\mathrm{im}(\partial)} \arrow[ul,"k'"]
+\end{tikzcd}
+\end{equation*}
+where
+\begin{align*}
+i'(i(a)) & \defeq i(i(a)) \\
+j'(i(a)) & \defeq [j(a)] \\
+k'([e]) & \defeq k(e)
+\end{align*}
+\end{defn}
+
+\begin{rmk}
+Since quotients commute with direct sums (both are colimits), it follows that
+\begin{equation*}
+E'\defeq \frac{\mathrm{ker}(\partial)}{\mathrm{im}(\partial)}
+  \cong
+\bigoplus_{p,q} \frac{\mathrm{ker}(\partial^0_{p,q})}{\mathrm{im}(\partial^0_{p,q+1})}
+\end{equation*}
+is a graded $R$-module. In other words, $E'$ is a direct sum of the homology
+groups of the $p$-indexed family of chain complexes
+\begin{equation*}
+\begin{tikzcd}
+\cdots \arrow[r] & E_{p,q}^0 \arrow[r,"{\partial^0_{p,q}}"] & E_{p,q-1}^0 \arrow[r] & \cdots
+\end{tikzcd}
+\end{equation*}
+It follows that $i'$, $j'$ and $k'$ are graded
+whenever $i$, $j$ and $k$ are, where $k'$ shifts down in dimension the same way 
+$k$ does.
+\end{rmk}
+
+\begin{comment}
+\begin{defn}
+We define
+\begin{equation*}
+E_{p,q}^0\defeq G_pC_{p+q}\defeq F_pC_{p+1}/F_{p-1}C_{p+q},
+\end{equation*}
+
+Since the differential preserves the filtration, we obtain from the differentials
+well-defined $R$-homomorphisms functioning as the boundary maps in the chain complex
+
+\end{defn}
+
+\begin{defn}
+The homology groups 
+\begin{equation*}
+E^1_{p,q}\defeq \mathrm{ker}(\partial^0_{p,q})/\mathrm{im}(\partial^0_{p,q+1})
+\end{equation*}
+form again a chain complex, with boundary maps $\partial^1_{p,q}:E^1_{p,q}\to
+E^1_{p,q-1}$. Thus, this process may be repeated indefinitely.
+\end{defn}
+\end{comment}
+
+\begin{comment}
+\begin{lem}
+Let $(C_\ast,\partial)$ be a filtered chain complex. Then there is a filtration
+on the homology of $C_\ast$, given by
+\begin{equation*}
+F_pH_i(C_\ast)\defeq\{\alpha\in H_i(C_\ast)\mid \exists_{(x\in F_p C_i)}\,\alpha=[x]\}.
+\end{equation*}
+\end{lem}
+\end{comment}
+
+\subsection{Convergent spectral sequences}
+
+\begin{defn}
+A spectral sequence consists of
+\begin{enumerate}
+\item An $R$-module $E^r_{p,q}$ for each $p,q\in\Z$ and each $r\geq 0$.
+\item Differentials $\partial_r:E^r_{p,q}\to E^r_{p-r,q+r-1}$ such that
+$\partial_r^2=0$ and $E^{r+1}$ is the homology of $(E^r,\partial_r)$ 
+\end{enumerate}
+\end{defn}
+
+\begin{defn}
+A spectral sequence $\{E^r,\partial_r\}$ of $R$-modules is said to converge 
+if for every $p,q\in\Z$, one has $\partial_r=0:E^r_{p,q}\to E^r_{p-r,q+r-1}$
+for $r$ sufficiently large.
+\end{defn}
+
+\begin{rmk}
+If a spectral sequence $\{E^r,\partial_r\}$ converges, then the $R$-module
+$E^r_{p,q}$ is independent of $r$ for sufficiently large $r$. 
+\end{rmk}
+
+\begin{thm}
+Let $(F_pC_\ast,\partial)$ be a filtered complex. Then we obtain a spectral
+sequence $(E^r_{p,q},\partial^r)$ defined for $r\geq 0$, with
+\begin{equation*}
+E^1_{p,q}\defeq H_{p+q}(G_pC_\ast).
+\end{equation*}
+This is the spectral sequence of filtered complexes.
+\end{thm}
+
+\begin{thm}
+If $(F_pC_\ast,\partial)$ is a bounded filtered complex, then the spectral
+sequence converges to
+\begin{equation*}
+E^\infty_{p,q}\defeq G_pH_{p+q}(C_\ast).
+\end{equation*}
+\end{thm}
+
+Let $X$ be a filtered space, and let our goal be to compute the $n$-th (co)homology
+group $H_n(X)$. In general, this might be a complicated task. However, it might
+be easier to compute the homologies of the subcomplex $C_\ast(X_p)$, and the quotient
+complex $C_\ast(X)/C_\ast(X_p)$. From this, we obtain a short exact sequence
+\begin{equation*}
+\begin{tikzcd}
+0 \arrow[r]
+& \mathrm{coker}(\delta) \arrow[r]
+& H_\ast(X) \arrow[r]
+& \mathrm{ker}(\delta) \arrow[r]
+& 0
+\end{tikzcd}
+\end{equation*}
+
+\subsection{The Serre spectral sequence}
+
+The Serre spectral sequence relates the homology of a Serre fibration to the
+homology of the fibers and the base. Thus, in some cases one can compute the
+homology of the fibration in terms of the homology of the fibers and the base.
+
+Let $\pi : X\to B$ be a fibration, with $B$ a path-connected CW-complex, and we
+filter $X$ by the subspaces $X_p\defeq \pi^{-1}(B_p)$, in which $B_p$ is the
+$p$-skeleton of $B$. 
+
+\begin{lem}
+The spectral sequence for homology with coefficients in $G$ associated to this
+filtration of $X$ converges to $H_\ast(X;G)$.
+\end{lem}
+
+\begin{thm}
+Let $F\to X\to B$ be a fibration with $B$ path-connected. If $\pi_1(B)$ acts
+trivially on $H_\ast(F;G)$, then there is a spectral sequence $\{E^r_{p,q},\partial_r\}$
+with:
+\begin{enumerate}
+%\item $\partial_r : E^r_{p,q}\to E^r_{p-r,q+r-1}$ and $E^{r+1}_{p,q}=\mathrm{ker}\,d_r/\mathrm{im}\,dr$. 
+\item the stable terms $E^\infty_{p,n-p}$ are isomorphic to $F^p_n/F^{p-1}_n$ in
+a filtration $0\subseteq F^0_n\subseteq\cdots\subseteq F^n_n=H_n(X;G)$ of ...
+\item $E^2_{p,q}\cong H_p(B;H_q(F;G))$. 
+\end{enumerate}
+\end{thm}
+
+\part{K-theory}
+
+\section{Vector bundles}
+
+\subsection{Basic spaces}
+\begin{defn}
+The \define{$n$-sphere} $\Sn^n$ is the subspace of $\R^{n+1}$ consisting of unit vectors.
+The \define{real projective $n$-space} $\R P^n$  is the space of lines in
+$\R^{n+1}$ through the origin. Equivalently, we may regard $\R P^n$ as the quotient
+space of $\Sn^n$ in which the antipodal pairs of points are identified. Notice
+that $\R P^1\approx \Sn^1$. 
+\end{defn}
+
+\begin{defn}
+For each $n$, we may include the $n$-sphere $\Sn^n$ into $\Sn^{n+1}$ by mapping
+it into the equator. These inclusions induce inclusions $\R P^n\to \R P^{n+1}$.
+We define $\R P^\infty$ to be the sequential colimit of $\R P^n$. 
+\end{defn}
+
+\subsection{Definition and basic properties}
+\begin{defn}
+An \define{$n$-dimensional vector bundle} is a map $p:E\to B$ together with a
+real vector space structure on $p^{-1}(b)$ for each $b\in B$, satisfying the
+\define{local triviality condition}, which says that there is an open cover 
+$\mathcal{C}$ of $B$, with homeomorphisms $h_U:p^{-1}(U)\to U\times\mathbb{R}^n$
+for each $U\in\mathcal{C}$, which maps $p^{-1}(b)$ to $\{b\}\times\mathbb{R}^n$
+for each $b\in U$. 
+
+The functions $h_U$ are also called \define{local trivializations}. Given a
+vector bundle $p:E\to B$, the space $B$ is called the \define{base space}, the
+space $E$ is called the \define{total space}, and the spaces $p^{-1}(b)$ are
+called the \define{fibers}. A $1$-dimensional
+vector bundle is also called a \define{line bundle}.
+\end{defn}
+
+\begin{defn}
+An \define{isomorphism of vector bundles} from $p:E\to B$ to $p':E'\to B$
+consists of a map $h:E\to E'$ satisfying $p'\circ h=p$, 
+which induces a linear isomorphism
+$p^{-1}(b)\to p'^{-1}(b)$ between each of the fibers.
+\end{defn}
+
+\begin{lem}
+If $h:E\to E'$ is an isomorphism of vector bundles, then the underlying map
+of type $E\to E'$ is a homeomorphism. 
+\end{lem}
+
+\begin{proof}
+Suppose $h:E\to E'$ induces isomorphisms $p^{-1}(b)\to p'^{-1}(b)$ for each
+$b\in B$. Then, for each $x\in E'$ we have an isomorphism from
+$p^{-1}(p'(x))$ to $p'^{-1}(p'(x))$. Since $x\in p'^{-1}(p'(x))$, we find
+an element $y\in p^{-1}(p'(x))\subseteq E$. Thus, $h$ is surjective. Now suppose
+that $x,x'\in E$ are two elements for which $h(x)=h(x')$. Since $p'\circ h=p$,
+it follows that $x'\in p^{-1}(x)$. Now, the fact that $h$ induces an isomorphism
+between fibers implies that $x=x'$. 
+
+Thus, $h$ has an inverse function $k:E'\to E$, and we need to show that this
+function is continuous. It suffices to show that $k|_U$ is continuous for each
+$U$ on which $p'$ is trivial. Let $x\in B$, and compose the map
+$h_U:p^{-1}(U)\to p'^{-1}(U)$ with its local trivializations. Thus, we obtain
+a map $g_U:U\times\R^n\to U\times \R^n$, mapping $(x,y)$ to $(x,A(y))$, where
+$A$ is a linear isomorphism. 
+\end{proof}
+
+In the following definition, we give a vector bundle by a gluing construction.
+
+\begin{defn}
+Consider a space $B$, and an open cover $\mathcal{C}$ which is closed under
+finite intersections. Then $\mathcal{C}$ may be considered a poset ordered by
+inclusion.
+
+A \define{collection of gluing functions} consists of a continuous choice of linear 
+isomorphisms $g_{U,V}:U\cap V\to GL_n(\R)$ satisfying the \define{cocycle
+condition} 
+\begin{equation*}
+g_{V,W}\circ g_{U,V}=g_{U,W}
+\end{equation*}
+on $U\cap V\cap W$, for every 
+$U,V,W\in\mathcal{C}$. Such a collection of gluing functions determines a functor
+$\mathcal{C}\to\mathbf{Top}$, which is given on points by $U\mapsto U\times\R^n$,
+and on morphisms by $(x,v)\mapsto(x,A(v))$, for each $U\subseteq V$ determining
+a linear isomorphism $A$. 
+
+The colimit of this functor is the total space of a vector bundle.
+\end{defn}
+
+\begin{eg}
+There are lots of examples of vector bundles:
+\begin{enumerate}
+\item The \define{$n$-dimensional trivial bundle} over $B$ is defined to be 
+$\proj1:B\times\mathbb{R}^n\to B$. So the trivial bundle is the one which is
+\emph{globally} trivial. We will write the $n$-dimensional trivial bundle over
+$B$ as $\epsilon^n\to B$. 
+\item The circle may be regarded as the quotient of $[0,1]$ modulo the end points.
+The \define{Mobius bundle} is the line bundle over $\Sn^1$ to have total space
+$E\defeq [0,1]\times\R$, with the identifications $(0,t)\sim(1,-t)$. 
+\item The \define{tangent bundle} of the unit sphere $\Sn^n$, viewed as a subspace of
+$\R^{n+1}$, is defined to be the subspace $E\defeq\{(x,v)\in\Sn^n\times\R^{n+1}
+\mid x\perp v\}$ of $\R^{2n+2}$, which projects onto $\Sn^n$. 
+
+The $n$-sphere is covered by $2n+2$ open hemispheres, centering at $\pm e_i$,
+where $e_i\in\R^{n+1}$ is a basis vector. 
+\item The \define{normal bundle} of the unit sphere $\Sn^n$ is the line bundle
+with $E$ consisting of pairs $(x,v)\in\Sn^n\times\R^{n+1}$ such that $v=tx$ for
+some $t\in\R$. \emph{The normal bundle on $\Sn^n$ is isomorphic to the trivial line 
+bundle $\Sn^n\times\R\to\Sn^n$.}
+\item The \define{canonical line bundle} $p:E\to \R P^n$ has as its total space
+the subspace $E\subseteq \R P^{n+1}\times\R ^{n+1}$ consisting of pairs
+$(l,v)$ with $v\in l$. \emph{The M\"obius line bundle is isomorphic to the
+canonical line bundle on $\Sn^1$.}
+\item The inclusions $\R P^n\subseteq \R P^{n+1}$ induce inclusions of the
+canonical line bundles. The sequential colimit of the canonical line bundles
+produces the canonical line bundle on $\R P^\infty$. 
+\end{enumerate}
+\end{eg}
+
+\begin{defn}
+Given two vector bundles $p:E\to B$ and $p':E'\to B$ over the same base space
+$B$, we obtain a vector bundle $p\oplus p': E\oplus E'\to B$, fitting in the
+pullback square
+\begin{equation*}
+\begin{tikzcd}
+E\oplus E' \arrow[r] \arrow[d] \arrow[dr,"{p\oplus p'}" description ] & E' \arrow[d,"{p'}"] \\
+E \arrow[r,swap,"p"] & B
+\end{tikzcd}
+\end{equation*}
+\end{defn}
+
+\begin{eg}
+\begin{enumerate}
+\item The direct sum of the tangent and normal bundles on $\Sn^n$ is the trivial
+bundle $\Sn^n\times\R^{n+1}$. 
+\end{enumerate}
+\end{eg}
+
+\begin{defn}
+Let $p:E\to B$ and $p':E'\to B$ be two vector bundles over the same space $B$,
+and choose an open cover $\mathcal{C}$ such that both $E$ and $E'$ are locally
+trivial with respect to $\mathcal{C}$. We define $E\otimes E'$ by gluing. 
+
+Then we can define, for each $U,V\in\mathcal{C}$ satisfying $U\subseteq V$, we
+have linear isomorphisms $g_{U,V}(x):\R^n\to\R^n$ and $g'_{U,V}(x):\R^m\to\R^m$,
+induced by the local trivializations of $E$ and $E'$ respectively. These give
+gluing functions $g_{U,V}(x)\otimes g'_{U,V}(x):\R^n\otimes\R^m\to\R^n\otimes\R^m$
+for each $x\in U$, and these gluing functions satisfy the cocycle condition.
+
+Thus, we obtain a vector bundle $E\otimes E'$ from these gluing functions.
+\end{defn}
+
+\begin{lem}
+The tensor product of vector bundles over a fixed base space is commutative,
+associative, it has an identity element (the trivial bundle), and it is
+distributive with respect to direct sum.
+\end{lem}
+
+Change of base $f:B'\to B$ turns a vector bundle $E$ over $B$ to a vector
+bundle $f^\ast(E)$ over $B'$.
+
+\begin{lem}
+For any two vector bundles $E$ and $E'$ over $B$, and any $f:B'\to B$, we have
+natural isomorphisms $f^\ast(E\oplus E')\approx f^\ast(E)\oplus f^\ast(E')$, and
+$f^\ast(E\otimes E')\approx f^\ast(E)\otimes f^\ast(E')$. Moreover, if $f$
+is homotopic to $g$, then $f^\ast=g^\ast$. 
+\end{lem}
+
+\subsection{K-theory}
+
+\begin{defn}
+Two vector bundles $E\to B$ and $E'\to B$ are callec \define{stably isomorphic},
+if there is an $n$ for which $E\oplus\epsilon^n\approx E'\oplus\epsilon^n$, and
+we write $E\approx_s E'$ if $E$ and $E'$ are stably isomorphic. Also,
+we will define the relation $E\sim E'$ if there are $m$ and $n$ such that
+$E\oplus\epsilon^m\approx E'\oplus^n$. 
+\end{defn}
+
+\begin{lem}
+The direct sum preserves both $\approx_s$ and $\sim$. Moreover, if $B$ is compact,
+then the set of ${\sim}$-equivalence classes of vector bundles forms an abelian
+group, called $\tilde{K}(B)$. If $B$ is pointed, then the tensor product turns 
+$\tilde{K}(B)$ into a ring.
+\end{lem}
+
+\begin{lem}
+The direct sum satisfies the cancellation property with respect to $\approx_s$,
+i.e.~we have that $E\oplus E'\approx_s E\oplus E''$ implies $E'\oplus E''$. 
+Thus, if we define two pairs $(E,F)$ and $(E',F')$ to be equivalent to each
+other whenever $E\oplus F'=E'\oplus F$, we obtain an abelian group $K(B)$ for
+any compact space $B$. The tensor product turns $K(B)$ into a ring.
+\end{lem}
+
+\begin{lem}
+We have a ring isomorphism
+\begin{equation*}
+K(B)\approx \tilde{K}(B)\oplus\Z.
+\end{equation*}
+\end{lem}
+
+Both $K$ and $\tilde{K}$ are contravariant functors.
+
+\begin{lem}
+If $X$ is compact Hausdorff and $A\subseteq X$ is a closed subspace, then the
+inclusion and quotient maps $A\stackrel{i}{\to}X\stackrel{q}{\to}X/A$ induces
+an sequence
+\begin{equation*}
+\begin{tikzcd}
+\tilde{K}(X/A) \arrow[r,"q^\ast"] & \tilde{K}(X) \arrow[r,"i^\ast"] & \tilde{K}(A)
+\end{tikzcd}
+\end{equation*}
+which is exact at $\tilde{K}(X)$.
+\end{lem}
+
+\begin{lem}
+If $A$ is contractible, the quotient map $q:X\to X/A$ induces a bijection
+$q^\ast:\mathrm{Vect}^n(X/A)\to\mathrm{Vect}^n(X)$.
+\end{lem}
+
+Apparently, this gives a long exact sequence of $\tilde{K}$-groups:
+\begin{equation*}
+\begin{tikzcd}[column sep=small]
+\cdots\arrow[r] & \tilde{K}(\Sn(X)) \arrow[r] & \tilde{K}(\Sn(A)) \arrow[r]
+& \tilde{K}(X/A) \arrow[r] & \tilde{K}(X) \arrow[r] & \tilde{K}(A).
+\end{tikzcd}
+\end{equation*}
+Still considering pointed spaces, we may consider the long exact sequence of the pair $(X\times Y,
+X\vee Y)$. Recall that $(X\times Y)/(X\vee Y)$ is the smash product
+$X\wedge Y$, i.e.~the smash product is the pushout of $\unit\leftarrow
+X\vee Y\rightarrow X\times Y$. The long exact sequence of the pair
+$(X\times Y,X\vee Y)$ looks as follows:
+\begin{equation*}
+\begin{tikzcd}[column sep=.8em]
+\cdots\arrow[r] & \tilde{K}(\Sn(X\times Y)) \arrow[r] & \tilde{K}(\Sn(X\vee Y)) \arrow[r]
+& \tilde{K}(X\wedge Y) \arrow[r] & \tilde{K}(X\times Y) \arrow[r] & \tilde{K}(X\vee Y).
+\end{tikzcd}
+\end{equation*}  
+
+\subsection{Bott periodicity}
+
+\begin{defn}
+We define an \define{external product} $\mu:K(X)\otimes K(Y)\to K(X\times Y)$,
+by $\mu(a\otimes b)\defeq \proj1^\ast(a)\cdot\proj2^\ast(b)$. 
+\end{defn}
+
+
+\end{document}
