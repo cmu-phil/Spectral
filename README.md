@@ -11,12 +11,30 @@ Currently in the project: Jeremy Avigad, Steve Awodey, Ulrik Buchholtz, Floris v
 
 ## Things to do for Lean spectral sequences project
 
-###To Do:
+### Algebra To Do:
 - R-modules, vector spaces,
 - some basic theory: product, tensor, hom, projective,
 - categories of algebras, abelian categories,
+- exact sequences, short and long
 - snake lemma (Jeremy) 
+- 5-lemma
+- chain complexes and homology
+- exact couples, probably just of Z-graded objects
+- derived exact couples
+- spectral sequence of an exact couple
+- convergence of spectral sequences
 
-###Already Done:
+### Topology To Do:
+- pointed types, fiber and cofiber sequences (is this in the library already?)
+- prespectra and spectra, suspension
+- spectrification
+- parametrized smash and hom between types and spectra
+- fiber and cofiber sequences of spectra, stability
+- long exact sequences from (co)fiber sequences of spectra
+- Eilenberg-MacLane spaces and spectra
+- Postnikov towers of spectra
+- exact couple of a tower of spectra
+
+### Already Done:
 - definition of algebraic structures such as groups, rings, fields, 
 - some algebra: quotient, product, free.
