@@ -28,7 +28,7 @@ Jeremy Avigad, Steve Awodey, Ulrik Buchholtz, Floris van Doorn, Clive Newstead, 
 
 ### Topology To Do:
 - fiber and cofiber sequences (is this in the library already?)
-- [prespectra](http://ncatlab.org/nlab/show/spectrum+object) and spectra, suspension
+- [prespectra](http://ncatlab.org/nlab/show/spectrum+object) and [spectra](http://ncatlab.org/nlab/show/spectrum), suspension
 - [spectrification](http://ncatlab.org/nlab/show/higher+inductive+type#spectrification)
 - [parametrized spectra](http://ncatlab.org/nlab/show/parametrized+spectrum), parametrized smash and hom between types and spectra
 - fiber and cofiber sequences of spectra, stability
