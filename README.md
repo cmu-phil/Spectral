@@ -9,6 +9,7 @@ Jeremy Avigad, Steve Awodey, Ulrik Buchholtz, Floris van Doorn, Clive Newstead, 
 - [Mike's blog post](http://homotopytypetheory.org/2013/08/08/spectral-sequences/) at the HoTT blog.
 - [Mike's blog post](https://golem.ph.utexas.edu/category/2013/08/what_is_a_spectral_sequence.html) at the n-category café.
 - The [Licata-Finster article](http://dlicata.web.wesleyan.edu/pubs/lf14em/lf14em.pdf) about Eilenberg-Mac Lane spaces.
+- There is an [entry about spectrification](http://ncatlab.org/nlab/show/higher+inductive+type#spectrification) on the nlab.
 - We learned about the Serre spectral sequence from [Hatcher's chapter about spectral sequences](https://www.math.cornell.edu/~hatcher/SSAT/SSATpage.html).
 - Lang's algebra (revised 3rd edition) contains a chapter on general homology theory, with a section on spectral sequences. Thus, we can use this book at least as an outline for the algebraic part of the project.
 
