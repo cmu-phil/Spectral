@@ -10,6 +10,7 @@ import .basic hit.set_quotient types.sigma types.list types.sum
 
 open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function
      equiv
+set_option class.force_new true
 namespace group
 
   /- Subgroups -/
