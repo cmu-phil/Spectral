@@ -10,12 +10,13 @@ Basic group theory
 /-
   Groups are defined in the HoTT library in algebra/group, as part of the algebraic hierarchy.
   However, there is currently no group theory.
+  The only relevant defintions are the trivial group (in types/unit) and some files in algebra/
 -/
 
-import types.pointed types.pi algebra.bundled
+import algebra.group types.pointed types.pi
 
 open eq algebra pointed function is_trunc pi
-set_option class.force_new true
+
 namespace group
 
   definition pointed_Group [instance] (G : Group) : pointed G := pointed.mk one
