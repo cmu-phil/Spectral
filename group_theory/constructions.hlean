@@ -631,5 +631,24 @@ namespace group
     Rinv := kernel_inv φ
   ⦄
 
+  definition kernel_subgroup_isnormal (φ : G₁ →g G₂) (g : G₁) (h : G₁) : kernel φ g → kernel φ (h * g * h⁻¹) :=
+  begin
+    esimp at *,
+    intro p,
+    exact calc
+      φ (h * g * h⁻¹) = (φ (h * g)) * φ (h⁻¹)   : respect_mul
+                  ... = (φ h) * (φ g) * (φ h⁻¹) : respect_mul
+                  ... = (φ h) * 1 * (φ h⁻¹)     : p
+                  ... = (φ h) * (φ h⁻¹)         : mul_one
+                  ... = (φ h) * (φ h)⁻¹         : respect_inv
+                  ... = 1                       : mul.right_inv
+  end
+
+  definition kernel_normal_subgroup (φ : G₁ →g G₂) : normal_subgroup_rel G₁ :=
+  ⦃ normal_subgroup_rel,
+    kernel_subgroup φ,
+    is_normal := kernel_subgroup_isnormal φ
+  ⦄
+
   end kernels
 end group
