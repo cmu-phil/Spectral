@@ -21,6 +21,9 @@ namespace group
   definition pointed_Group [instance] (G : Group) : pointed G := pointed.mk one
   definition Pointed_of_Group (G : Group) : Type* := pointed.mk' G
 
+ -- print Type*
+ -- print Pointed
+
   definition Group_of_CommGroup [coercion] [constructor] (G : CommGroup) : Group :=
   Group.mk G _
 
@@ -68,6 +71,8 @@ namespace group
 
   definition homomorphism_id [constructor] (G : Group) : G → G :=
   homomorphism.mk id (λg h, idp)
+
+
 
   -- TODO: maybe define this in more generality for pointed types?
   definition kernel [constructor] (φ : G₁ →g G₂) (g : G₁) : hprop := trunctype.mk (φ g = 1) _
