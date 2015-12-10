@@ -8,7 +8,7 @@ Constructions of groups
 
 import .basic hit.set_quotient types.sigma types.list types.sum
 
-open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function
+open eq algebra is_trunc pi pointed set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function
      equiv
 set_option class.force_new true
 namespace group
@@ -597,5 +597,39 @@ namespace group
         exact !respect_inv⁻¹}}
   end
 
+  section kernels
 
+  variables {G₁ G₂ : Group}
+
+  -- TODO: maybe define this in more generality for pointed types?
+  definition kernel [constructor] (φ : G₁ →g G₂) (g : G₁) : hprop := trunctype.mk (φ g = 1) _
+
+  definition kernel_mul (φ : G₁ →g G₂) (g h : G₁) (H₁ : kernel φ g) (H₂ : kernel φ h) : kernel φ (g *[G₁] h) :=
+  begin
+    esimp at *,
+    exact calc
+      φ (g * h) = (φ g) * (φ h) : respect_mul
+            ... = 1 * (φ h)     : H₁
+            ... = 1 * 1         : H₂
+            ... = 1             : one_mul
+  end
+
+  definition kernel_inv (φ : G₁ →g G₂) (g : G₁) (H : kernel φ g) : kernel φ (g⁻¹) :=
+  begin
+    esimp at *,
+    exact calc
+      φ g⁻¹ = (φ g)⁻¹ : respect_inv
+        ... = 1⁻¹     : H
+        ... = 1       : one_inv
+  end
+
+  definition kernel_subgroup (φ : G₁ →g G₂) : subgroup_rel G₁ :=
+  ⦃ subgroup_rel,
+    R := kernel φ,
+    Rone := respect_one φ,
+    Rmul := kernel_mul φ,
+    Rinv := kernel_inv φ
+  ⦄
+
+  end kernels
 end group

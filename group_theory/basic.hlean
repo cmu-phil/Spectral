@@ -54,9 +54,9 @@ namespace group
   theorem respect_inv (φ : G₁ →g G₂) (g : G₁) : φ g⁻¹ = (φ g)⁻¹ :=
   eq_inv_of_mul_eq_one (!respect_mul⁻¹ ⬝ ap φ !mul.left_inv ⬝ !respect_one)
 
-  local attribute Pointed_of_Group [coercion]
-  definition pmap_of_homomorphism [constructor] (φ : G₁ →g G₂) : G₁ →* G₂ :=
-  pmap.mk φ !respect_one
+  --local attribute Pointed_of_Group [coercion]
+  --definition pmap_of_homomorphism [constructor] (φ : G₁ →g G₂) : G₁ →* G₂ :=
+  --pmap.mk φ !respect_one
 
   definition homomorphism_eq (p : group_fun φ ~ group_fun φ') : φ = φ' :=
   begin
@@ -71,11 +71,5 @@ namespace group
 
   definition homomorphism_id [constructor] (G : Group) : G → G :=
   homomorphism.mk id (λg h, idp)
-
-
-
-  -- TODO: maybe define this in more generality for pointed types?
-  definition kernel [constructor] (φ : G₁ →g G₂) (g : G₁) : hprop := trunctype.mk (φ g = 1) _
-
 
 end group
