@@ -8,7 +8,7 @@ Constructions of groups
 
 import .basic hit.set_quotient types.sigma types.list types.sum
 
-open eq algebra is_trunc pi pointed set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function
+open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function
      equiv
 set_option class.force_new true
 namespace group
@@ -32,7 +32,7 @@ namespace group
   abbreviation is_normal_subgroup   [unfold 2] := @normal_subgroup_rel.is_normal
 
   variables {G G' : Group} (H : subgroup_rel G) (N : normal_subgroup_rel G) {g g' h h' k : G}
-            {A : CommGroup}
+            {A B : CommGroup}
 
   theorem is_normal_subgroup' (h : G) (r : N g) : N (h⁻¹ * g * h) :=
   inv_inv h ▸ is_normal_subgroup N h⁻¹ r
@@ -596,6 +596,130 @@ namespace group
         rewrite [▸*,IH], induction s: rewrite [▸*, one_mul], apply ap (λx, x * _),
         exact !respect_inv⁻¹}}
   end
+
+  /- Free Commutative Group of a set -/
+  namespace tensor_group
+
+  local abbreviation ι := @free_comm_group_inclusion
+
+  inductive tensor_rel : free_comm_group (hset_of_Group A ×t hset_of_Group B) → Type :=
+  | mul_left  : Π(a₁ a₂ : A) (b : B), tensor_rel (ι (a₁, b)  * ι (a₂, b)  * (ι (a₁ * a₂, b))⁻¹)
+  | mul_right : Π(a : A) (b₁ b₂ : B), tensor_rel (ι (a, b₁)  * ι (a, b₂)  * (ι (a, b₁ * b₂))⁻¹)
+
+exit
+  open tensor_rel
+  local abbreviation R [reducible] := tensor_rel
+  attribute tensor_rel.rrefl [refl]
+  attribute tensor_rel.rtrans [trans]
+
+  definition tensor_carrier [reducible] : Type := set_quotient (λx y, ∥R X x y∥)
+  local abbreviation FG := tensor_carrier
+
+  definition is_reflexive_R : is_reflexive (λx y, ∥R X x y∥) :=
+  begin constructor, intro s, apply tr, unfold R end
+  local attribute is_reflexive_R [instance]
+
+  variable {X}
+  theorem rel_respect_flip (r : R X l l') : R X (map sum.flip l) (map sum.flip l') :=
+  begin
+    induction r with l x x x y l₁ l₂ l₃ l₄ r₁ r₂ IH₁ IH₂ l₁ l₂ l₃ r₁ r₂ IH₁ IH₂,
+    { reflexivity},
+    { repeat esimp [map], exact cancel2 x},
+    { repeat esimp [map], exact cancel1 x},
+    { repeat esimp [map], apply rflip},
+    { rewrite [+map_append], exact resp_append IH₁ IH₂},
+    { exact rtrans IH₁ IH₂}
+  end
+
+  theorem rel_respect_reverse (r : R X l l') : R X (reverse l) (reverse l') :=
+  begin
+    induction r with l x x x y l₁ l₂ l₃ l₄ r₁ r₂ IH₁ IH₂ l₁ l₂ l₃ r₁ r₂ IH₁ IH₂,
+    { reflexivity},
+    { repeat esimp [map], exact cancel2 x},
+    { repeat esimp [map], exact cancel1 x},
+    { repeat esimp [map], apply rflip},
+    { rewrite [+reverse_append], exact resp_append IH₂ IH₁},
+    { exact rtrans IH₁ IH₂}
+  end
+
+  theorem rel_cons_concat (l s) : R X (s :: l) (concat s l) :=
+  begin
+    induction l with t l IH,
+    { reflexivity},
+    { rewrite [concat_cons], transitivity (t :: s :: l),
+      { exact resp_append !rflip !rrefl},
+      { exact resp_append (rrefl [t]) IH}}
+  end
+
+  definition tensor_one [constructor] : FG X := class_of []
+  definition tensor_inv [unfold 3] : FG X → FG X :=
+  quotient_unary_map (reverse ∘ map sum.flip)
+                     (λl l', trunc_functor -1 (rel_respect_reverse ∘ rel_respect_flip))
+  definition tensor_mul [unfold 3 4] : FG X → FG X → FG X :=
+  quotient_binary_map append (λl l', trunc.elim (λr m m', trunc.elim (λs, tr (resp_append r s))))
+
+  section
+  local notation 1 := tensor_one
+  local postfix ⁻¹ := tensor_inv
+  local infix * := tensor_mul
+
+  theorem tensor_mul_assoc (g₁ g₂ g₃ : FG X) : g₁ * g₂ * g₃ = g₁ * (g₂ * g₃) :=
+  begin
+    refine set_quotient.rec_hprop _ g₁,
+    refine set_quotient.rec_hprop _ g₂,
+    refine set_quotient.rec_hprop _ g₃,
+    clear g₁ g₂ g₃, intro g₁ g₂ g₃,
+    exact ap class_of !append.assoc
+  end
+
+  theorem tensor_one_mul (g : FG X) : 1 * g = g :=
+  begin
+    refine set_quotient.rec_hprop _ g, clear g, intro g,
+    exact ap class_of !append_nil_left
+  end
+
+  theorem tensor_mul_one (g : FG X) : g * 1 = g :=
+  begin
+    refine set_quotient.rec_hprop _ g, clear g, intro g,
+    exact ap class_of !append_nil_right
+  end
+
+  theorem tensor_mul_left_inv (g : FG X) : g⁻¹ * g = 1 :=
+  begin
+    refine set_quotient.rec_hprop _ g, clear g, intro g,
+    apply eq_of_rel, apply tr,
+    induction g with s l IH,
+    { reflexivity},
+    { rewrite [▸*, map_cons, reverse_cons, concat_append],
+      refine rtrans _ IH,
+      apply resp_append, reflexivity,
+      change R X ([flip s, s] ++ l) ([] ++ l),
+      apply resp_append,
+        induction s, apply cancel2, apply cancel1,
+        reflexivity}
+  end
+
+  theorem tensor_mul_comm (g h : FG X) : g * h = h * g :=
+  begin
+    refine set_quotient.rec_hprop _ g, clear g, intro g,
+    refine set_quotient.rec_hprop _ h, clear h, intro h,
+    apply eq_of_rel, apply tr,
+    revert h, induction g with s l IH: intro h,
+    { rewrite [append_nil_left, append_nil_right]},
+    { rewrite [append_cons,-concat_append],
+      transitivity concat s (l ++ h), apply rel_cons_concat,
+      rewrite [-append_concat], apply IH}
+  end
+  end
+  end tensor_group open tensor_group
+
+  variables (X)
+  definition group_tensor_group [constructor] : comm_group (tensor_carrier X) :=
+  comm_group.mk tensor_mul _ tensor_mul_assoc tensor_one tensor_one_mul tensor_mul_one
+           tensor_inv tensor_mul_left_inv tensor_mul_comm
+
+  definition tensor_group [constructor] : CommGroup :=
+  CommGroup.mk _ (group_tensor_group X)
 
   section kernels
 
