@@ -66,9 +66,9 @@ namespace group
     apply is_trunc_equiv_closed_rev, exact H
   end
 
-  --local attribute Pointed_of_Group [coercion]
-  --definition pmap_of_homomorphism [constructor] (φ : G₁ →g G₂) : G₁ →* G₂ :=
-  --pmap.mk φ !respect_one
+  definition pmap_of_homomorphism [constructor] (φ : G₁ →g G₂)
+    : Pointed_of_Group G₁ →* Pointed_of_Group G₂ :=
+  pmap.mk φ !respect_one
 
   definition homomorphism_eq (p : group_fun φ ~ group_fun φ') : φ = φ' :=
   begin
@@ -84,8 +84,6 @@ namespace group
   definition homomorphism_id [constructor] (G : Group) : G →g G :=
   homomorphism.mk id (λg h, idp)
 
-
-
   infixr ` ∘g `:75 := homomorphism_compose
   notation 1       := homomorphism_id _
 
@@ -97,8 +95,8 @@ namespace group
   attribute isomorphism.to_hom [coercion]
   attribute isomorphism.is_equiv_to_hom [instance]
 
-  -- definition equiv_of_isomorphism [constructor] (φ : G₁ ≃g G₂) : G₁ ≃ G₂ :=
-  -- equiv.mk φ sorry
+  definition equiv_of_isomorphism [constructor] (φ : G₁ ≃g G₂) : G₁ ≃ G₂ :=
+  equiv.mk φ _
 
   definition to_ginv [constructor] (φ : G₁ ≃g G₂) : G₂ →g G₁ :=
   homomorphism.mk φ⁻¹
@@ -120,6 +118,7 @@ namespace group
   postfix `⁻¹ᵍ`:(max + 1) := isomorphism.symm
   infixl ` ⬝g `:75 := isomorphism.trans
 
+  -- TODO
   -- definition Group_univalence (G₁ G₂ : Group) : (G₁ ≃g G₂) ≃ (G₁ = G₂) :=
   -- begin
   --   fapply equiv.MK,
@@ -139,6 +138,7 @@ namespace group
                  (λG₁ G₂ φ, homomorphism_eq (λg, idp))
                  (λG₁ G₂ φ, homomorphism_eq (λg, idp))
 
+  -- TODO
   -- definition category_group : category Group :=
   -- category.mk precategory_group
   -- begin

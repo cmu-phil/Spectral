@@ -598,128 +598,28 @@ namespace group
   end
 
   /- Free Commutative Group of a set -/
-  namespace tensor_group
 
+/-  namespace tensor_group
+  variables {A B}
   local abbreviation ι := @free_comm_group_inclusion
 
-  inductive tensor_rel : free_comm_group (hset_of_Group A ×t hset_of_Group B) → Type :=
-  | mul_left  : Π(a₁ a₂ : A) (b : B), tensor_rel (ι (a₁, b)  * ι (a₂, b)  * (ι (a₁ * a₂, b))⁻¹)
-  | mul_right : Π(a : A) (b₁ b₂ : B), tensor_rel (ι (a, b₁)  * ι (a, b₂)  * (ι (a, b₁ * b₂))⁻¹)
+  inductive tensor_rel_type : free_comm_group (hset_of_Group A ×t hset_of_Group B) → Type :=
+  | mul_left  : Π(a₁ a₂ : A) (b : B), tensor_rel_type (ι (a₁, b)  * ι (a₂, b)  * (ι (a₁ * a₂, b))⁻¹)
+  | mul_right : Π(a : A) (b₁ b₂ : B), tensor_rel_type (ι (a, b₁)  * ι (a, b₂)  * (ι (a, b₁ * b₂))⁻¹)
 
-exit
-  open tensor_rel
-  local abbreviation R [reducible] := tensor_rel
-  attribute tensor_rel.rrefl [refl]
-  attribute tensor_rel.rtrans [trans]
+  open tensor_rel_type
 
-  definition tensor_carrier [reducible] : Type := set_quotient (λx y, ∥R X x y∥)
-  local abbreviation FG := tensor_carrier
+  definition tensor_rel' (x : free_comm_group (hset_of_Group A ×t hset_of_Group B)) : hprop :=
+  ∥ tensor_rel_type x ∥
 
-  definition is_reflexive_R : is_reflexive (λx y, ∥R X x y∥) :=
-  begin constructor, intro s, apply tr, unfold R end
-  local attribute is_reflexive_R [instance]
-
-  variable {X}
-  theorem rel_respect_flip (r : R X l l') : R X (map sum.flip l) (map sum.flip l') :=
-  begin
-    induction r with l x x x y l₁ l₂ l₃ l₄ r₁ r₂ IH₁ IH₂ l₁ l₂ l₃ r₁ r₂ IH₁ IH₂,
-    { reflexivity},
-    { repeat esimp [map], exact cancel2 x},
-    { repeat esimp [map], exact cancel1 x},
-    { repeat esimp [map], apply rflip},
-    { rewrite [+map_append], exact resp_append IH₁ IH₂},
-    { exact rtrans IH₁ IH₂}
-  end
-
-  theorem rel_respect_reverse (r : R X l l') : R X (reverse l) (reverse l') :=
-  begin
-    induction r with l x x x y l₁ l₂ l₃ l₄ r₁ r₂ IH₁ IH₂ l₁ l₂ l₃ r₁ r₂ IH₁ IH₂,
-    { reflexivity},
-    { repeat esimp [map], exact cancel2 x},
-    { repeat esimp [map], exact cancel1 x},
-    { repeat esimp [map], apply rflip},
-    { rewrite [+reverse_append], exact resp_append IH₂ IH₁},
-    { exact rtrans IH₁ IH₂}
-  end
-
-  theorem rel_cons_concat (l s) : R X (s :: l) (concat s l) :=
-  begin
-    induction l with t l IH,
-    { reflexivity},
-    { rewrite [concat_cons], transitivity (t :: s :: l),
-      { exact resp_append !rflip !rrefl},
-      { exact resp_append (rrefl [t]) IH}}
-  end
-
-  definition tensor_one [constructor] : FG X := class_of []
-  definition tensor_inv [unfold 3] : FG X → FG X :=
-  quotient_unary_map (reverse ∘ map sum.flip)
-                     (λl l', trunc_functor -1 (rel_respect_reverse ∘ rel_respect_flip))
-  definition tensor_mul [unfold 3 4] : FG X → FG X → FG X :=
-  quotient_binary_map append (λl l', trunc.elim (λr m m', trunc.elim (λs, tr (resp_append r s))))
-
-  section
-  local notation 1 := tensor_one
-  local postfix ⁻¹ := tensor_inv
-  local infix * := tensor_mul
-
-  theorem tensor_mul_assoc (g₁ g₂ g₃ : FG X) : g₁ * g₂ * g₃ = g₁ * (g₂ * g₃) :=
-  begin
-    refine set_quotient.rec_hprop _ g₁,
-    refine set_quotient.rec_hprop _ g₂,
-    refine set_quotient.rec_hprop _ g₃,
-    clear g₁ g₂ g₃, intro g₁ g₂ g₃,
-    exact ap class_of !append.assoc
-  end
-
-  theorem tensor_one_mul (g : FG X) : 1 * g = g :=
-  begin
-    refine set_quotient.rec_hprop _ g, clear g, intro g,
-    exact ap class_of !append_nil_left
-  end
-
-  theorem tensor_mul_one (g : FG X) : g * 1 = g :=
-  begin
-    refine set_quotient.rec_hprop _ g, clear g, intro g,
-    exact ap class_of !append_nil_right
-  end
-
-  theorem tensor_mul_left_inv (g : FG X) : g⁻¹ * g = 1 :=
-  begin
-    refine set_quotient.rec_hprop _ g, clear g, intro g,
-    apply eq_of_rel, apply tr,
-    induction g with s l IH,
-    { reflexivity},
-    { rewrite [▸*, map_cons, reverse_cons, concat_append],
-      refine rtrans _ IH,
-      apply resp_append, reflexivity,
-      change R X ([flip s, s] ++ l) ([] ++ l),
-      apply resp_append,
-        induction s, apply cancel2, apply cancel1,
-        reflexivity}
-  end
-
-  theorem tensor_mul_comm (g h : FG X) : g * h = h * g :=
-  begin
-    refine set_quotient.rec_hprop _ g, clear g, intro g,
-    refine set_quotient.rec_hprop _ h, clear h, intro h,
-    apply eq_of_rel, apply tr,
-    revert h, induction g with s l IH: intro h,
-    { rewrite [append_nil_left, append_nil_right]},
-    { rewrite [append_cons,-concat_append],
-      transitivity concat s (l ++ h), apply rel_cons_concat,
-      rewrite [-append_concat], apply IH}
-  end
-  end
-  end tensor_group open tensor_group
-
-  variables (X)
-  definition group_tensor_group [constructor] : comm_group (tensor_carrier X) :=
-  comm_group.mk tensor_mul _ tensor_mul_assoc tensor_one tensor_one_mul tensor_mul_one
-           tensor_inv tensor_mul_left_inv tensor_mul_comm
+  definition tensor_group_rel (A B : CommGroup)
+    : normal_subgroup_rel (free_comm_group (hset_of_Group A ×t hset_of_Group B)) :=
+  sorry /- relation generated by tensor_rel'-/
 
   definition tensor_group [constructor] : CommGroup :=
-  CommGroup.mk _ (group_tensor_group X)
+  quotient_comm_group (tensor_group_rel A B)
+
+  end tensor_group-/
 
   section kernels
 
@@ -728,7 +628,7 @@ exit
   -- TODO: maybe define this in more generality for pointed types?
   definition kernel [constructor] (φ : G₁ →g G₂) (g : G₁) : hprop := trunctype.mk (φ g = 1) _
 
-  definition kernel_mul (φ : G₁ →g G₂) (g h : G₁) (H₁ : kernel φ g) (H₂ : kernel φ h) : kernel φ (g *[G₁] h) :=
+  theorem kernel_mul (φ : G₁ →g G₂) (g h : G₁) (H₁ : kernel φ g) (H₂ : kernel φ h) : kernel φ (g *[G₁] h) :=
   begin
     esimp at *,
     exact calc
@@ -738,7 +638,7 @@ exit
             ... = 1             : one_mul
   end
 
-  definition kernel_inv (φ : G₁ →g G₂) (g : G₁) (H : kernel φ g) : kernel φ (g⁻¹) :=
+  theorem kernel_inv (φ : G₁ →g G₂) (g : G₁) (H : kernel φ g) : kernel φ (g⁻¹) :=
   begin
     esimp at *,
     exact calc
@@ -747,7 +647,7 @@ exit
         ... = 1       : one_inv
   end
 
-  definition kernel_subgroup (φ : G₁ →g G₂) : subgroup_rel G₁ :=
+  definition kernel_subgroup [constructor] (φ : G₁ →g G₂) : subgroup_rel G₁ :=
   ⦃ subgroup_rel,
     R := kernel φ,
     Rone := respect_one φ,
@@ -755,7 +655,8 @@ exit
     Rinv := kernel_inv φ
   ⦄
 
-  definition kernel_subgroup_isnormal (φ : G₁ →g G₂) (g : G₁) (h : G₁) : kernel φ g → kernel φ (h * g * h⁻¹) :=
+  theorem kernel_subgroup_isnormal (φ : G₁ →g G₂) (g : G₁) (h : G₁)
+    : kernel φ g → kernel φ (h * g * h⁻¹) :=
   begin
     esimp at *,
     intro p,
@@ -768,11 +669,12 @@ exit
                   ... = 1                       : mul.right_inv
   end
 
-  definition kernel_normal_subgroup (φ : G₁ →g G₂) : normal_subgroup_rel G₁ :=
+  definition kernel_normal_subgroup [constructor] (φ : G₁ →g G₂) : normal_subgroup_rel G₁ :=
   ⦃ normal_subgroup_rel,
     kernel_subgroup φ,
     is_normal := kernel_subgroup_isnormal φ
   ⦄
 
   end kernels
+
 end group
