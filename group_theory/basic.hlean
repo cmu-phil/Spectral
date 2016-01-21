@@ -13,14 +13,22 @@ Basic group theory
   The only relevant defintions are the trivial group (in types/unit) and some files in algebra/
 -/
 
+<<<<<<< HEAD
 import algebra.group types.pointed types.pi
 
 open eq algebra pointed function is_trunc pi
 
+=======
+import types.pointed types.pi algebra.bundled algebra.category.category
+
+open eq algebra pointed function is_trunc pi category equiv is_equiv
+set_option class.force_new true
+>>>>>>> origin/master
 namespace group
 
   definition pointed_Group [instance] (G : Group) : pointed G := pointed.mk one
   definition Pointed_of_Group (G : Group) : Type* := pointed.mk' G
+  definition hset_of_Group (G : Group) : hset := trunctype.mk G _
 
  -- print Type*
  -- print Pointed
@@ -43,7 +51,7 @@ namespace group
   abbreviation respect_mul := @homomorphism.p
   infix ` →g `:55 := homomorphism
 
-  variables {G₁ G₂ G₃ : Group} {g h : G₁} {ψ : G₂ →g G₃} {φ φ' : G₁ →g G₂}
+  variables {G G₁ G₂ G₃ : Group} {g h : G₁} {ψ : G₂ →g G₃} {φ φ' : G₁ →g G₂}
 
   theorem respect_one (φ : G₁ →g G₂) : φ 1 = 1 :=
   mul.right_cancel
@@ -55,8 +63,19 @@ namespace group
   theorem respect_inv (φ : G₁ →g G₂) (g : G₁) : φ g⁻¹ = (φ g)⁻¹ :=
   eq_inv_of_mul_eq_one (!respect_mul⁻¹ ⬝ ap φ !mul.left_inv ⬝ !respect_one)
 
-  local attribute Pointed_of_Group [coercion]
-  definition pmap_of_homomorphism [constructor] (φ : G₁ →g G₂) : G₁ →* G₂ :=
+  definition is_hset_homomorphism [instance] (G₁ G₂ : Group) : is_hset (homomorphism G₁ G₂) :=
+  begin
+    assert H : G₁ →g G₂ ≃ Σ(f : G₁ → G₂), Π(g₁ g₂ : G₁), f (g₁ * g₂) = f g₁ * f g₂,
+    { fapply equiv.MK,
+      { intro φ, induction φ, constructor, assumption},
+      { intro v, induction v, constructor, assumption},
+      { intro v, induction v, reflexivity},
+      { intro φ, induction φ, reflexivity}},
+    apply is_trunc_equiv_closed_rev, exact H
+  end
+
+  definition pmap_of_homomorphism [constructor] (φ : G₁ →g G₂)
+    : Pointed_of_Group G₁ →* Pointed_of_Group G₂ :=
   pmap.mk φ !respect_one
 
   definition homomorphism_eq (p : group_fun φ ~ group_fun φ') : φ = φ' :=
@@ -67,16 +86,75 @@ namespace group
 
   /- categorical structure of groups + homomorphisms -/
 
-  definition homomorphism_compose [constructor] (ψ : G₂ →g G₃) (φ : G₁ →g G₂) : G₁ → G₃ :=
+  definition homomorphism_compose [constructor] (ψ : G₂ →g G₃) (φ : G₁ →g G₂) : G₁ →g G₃ :=
   homomorphism.mk (ψ ∘ φ) (λg h, ap ψ !respect_mul ⬝ !respect_mul)
 
-  definition homomorphism_id [constructor] (G : Group) : G → G :=
+  definition homomorphism_id [constructor] (G : Group) : G →g G :=
   homomorphism.mk id (λg h, idp)
 
+  infixr ` ∘g `:75 := homomorphism_compose
+  notation 1       := homomorphism_id _
 
+  structure isomorphism (A B : Group) :=
+    (to_hom : A →g B)
+    (is_equiv_to_hom : is_equiv to_hom)
 
-  -- TODO: maybe define this in more generality for pointed types?
-  definition kernel [constructor] (φ : G₁ →g G₂) (g : G₁) : hprop := trunctype.mk (φ g = 1) _
+  infix ` ≃g `:25 := isomorphism
+  attribute isomorphism.to_hom [coercion]
+  attribute isomorphism.is_equiv_to_hom [instance]
 
+  definition equiv_of_isomorphism [constructor] (φ : G₁ ≃g G₂) : G₁ ≃ G₂ :=
+  equiv.mk φ _
+
+  definition to_ginv [constructor] (φ : G₁ ≃g G₂) : G₂ →g G₁ :=
+  homomorphism.mk φ⁻¹
+    abstract begin
+    intro g₁ g₂, apply eq_of_fn_eq_fn' φ,
+    rewrite [respect_mul, +right_inv φ]
+    end end
+
+  definition isomorphism.refl [refl] [constructor] (G : Group) : G ≃g G :=
+  isomorphism.mk 1 !is_equiv_id
+
+  definition isomorphism.symm [symm] [constructor] (φ : G₁ ≃g G₂) : G₂ ≃g G₁ :=
+  isomorphism.mk (to_ginv φ) !is_equiv_inv
+
+  definition isomorphism.trans [trans] [constructor] (φ : G₁ ≃g G₂) (ψ : G₂ ≃g G₃)
+    : G₁ ≃g G₃ :=
+  isomorphism.mk (ψ ∘g φ) !is_equiv_compose
+
+  postfix `⁻¹ᵍ`:(max + 1) := isomorphism.symm
+  infixl ` ⬝g `:75 := isomorphism.trans
+
+  -- TODO
+  -- definition Group_univalence (G₁ G₂ : Group) : (G₁ ≃g G₂) ≃ (G₁ = G₂) :=
+  -- begin
+  --   fapply equiv.MK,
+  --   { intro φ, fapply Group_eq, apply equiv_of_isomorphism φ, apply respect_mul},
+  --   { intro p, apply transport _ p, reflexivity},
+  --   { intro p, induction p, esimp, },
+  --   { }
+  -- end
+
+  /- category of groups -/
+
+  definition precategory_group [constructor] : precategory Group :=
+  precategory.mk homomorphism
+                 @homomorphism_compose
+                 @homomorphism_id
+                 (λG₁ G₂ G₃ G₄ φ₃ φ₂ φ₁, homomorphism_eq (λg, idp))
+                 (λG₁ G₂ φ, homomorphism_eq (λg, idp))
+                 (λG₁ G₂ φ, homomorphism_eq (λg, idp))
+
+  -- TODO
+  -- definition category_group : category Group :=
+  -- category.mk precategory_group
+  -- begin
+  --   intro G₁ G₂,
+  --   fapply adjointify,
+  --   { intro φ, fapply Group_eq, },
+  --   { },
+  --   { }
+  -- end
 
 end group

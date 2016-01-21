@@ -28,6 +28,7 @@ Jeremy Avigad, Steve Awodey, Ulrik Buchholtz, Floris van Doorn, Clive Newstead, 
 - [convergence of spectral sequences](http://ncatlab.org/nlab/show/spectral+sequence#ConvergenceOfSpectralSequences)
 
 ### Topology To Do:
+- HoTT Book chapter 8
 - fiber and cofiber sequences (is this in the library already?)
 - [prespectra](http://ncatlab.org/nlab/show/spectrum+object) and [spectra](http://ncatlab.org/nlab/show/spectrum), suspension
 - [spectrification](http://ncatlab.org/nlab/show/higher+inductive+type#spectrification)
