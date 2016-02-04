@@ -3,7 +3,7 @@ Copyright (c) 2015 Ulrik Buchholtz. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ulrik Buchholtz
 -/
-import types.trunc types.arrow_2 types.fiber .susp
+import types.trunc types.arrow_2 types.fiber homotopy.susp
 
 open eq is_trunc is_equiv nat equiv trunc function fiber
 
@@ -153,7 +153,7 @@ namespace homotopy
   -- Corollary 7.5.5
   definition is_conn_homotopy (n : trunc_index) {A B : Type} {f g : A → B}
     (p : f ~ g) (H : is_conn_map n f) : is_conn_map n g :=
-  @retract_of_conn_is_conn _ _ (arrow.arrow_hom_of_homotopy p) (arrow.is_retraction_arrow_hom_of_homotopy p) n H 
+  @retract_of_conn_is_conn _ _ (arrow.arrow_hom_of_homotopy p) (arrow.is_retraction_arrow_hom_of_homotopy p) n H
 
   -- all types are -2-connected
   definition minus_two_conn [instance] (A : Type) : is_conn -2 A :=

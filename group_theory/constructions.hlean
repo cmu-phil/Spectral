@@ -356,7 +356,7 @@ namespace group
 
   end
   end free_group open free_group
-  export [reduce_hints] free_group
+--  export [reduce_hints] free_group
   variables (X)
   definition group_free_group [constructor] : group (free_group_carrier X) :=
   group.mk free_group_mul _ free_group_mul_assoc free_group_one free_group_one_mul free_group_mul_one

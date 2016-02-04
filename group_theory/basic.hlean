@@ -13,17 +13,11 @@ Basic group theory
   The only relevant defintions are the trivial group (in types/unit) and some files in algebra/
 -/
 
-<<<<<<< HEAD
-import algebra.group types.pointed types.pi
-
-open eq algebra pointed function is_trunc pi
-
-=======
 import types.pointed types.pi algebra.bundled algebra.category.category
 
 open eq algebra pointed function is_trunc pi category equiv is_equiv
 set_option class.force_new true
->>>>>>> origin/master
+
 namespace group
 
   definition pointed_Group [instance] (G : Group) : pointed G := pointed.mk one
