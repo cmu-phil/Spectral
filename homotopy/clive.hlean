@@ -4,6 +4,6 @@ open eq is_trunc is_equiv nat equiv trunc function fiber circle
 
 namespace clive
 
-check 
+
 
 end clive
