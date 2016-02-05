@@ -1,6 +1,10 @@
 import types.pointed types.int types.fiber
 
-open algebra nat int pointed unit sigma fiber sigma.ops eq
+open algebra nat int pointed unit sigma fiber sigma.ops eq equiv prod is_trunc
+
+namespace tactic
+definition replace (old : expr) (new : with_expr) (loc : location) : tactic := builtin
+end tactic
 
 namespace LES
 
@@ -27,7 +31,7 @@ namespace LES
   /-
     this construction is currently wrong. We need to add one element between the sequence
   -/
-  definition LES_of_LLES (X : LLES) : LES :=
+/-  definition LES_of_LLES (X : LLES) : LES :=
   LES.mk (int.rec (car X) (λn, Unit))
     begin
       intro n, fconstructor,
@@ -47,26 +51,92 @@ namespace LES
       intro n, induction n with n n,
       { exact is_exact X},
       { esimp, intro x p, exact sorry}
-    end
+    end-/
+
+  definition pfiber {X Y : Type*} (f : X →* Y) : Type* :=
+  pointed.MK (fiber f pt) (fiber.mk pt !respect_pt)
 
   definition fiber_sequence_helper (v : Σ(X Y : Type*), X →* Y) : Σ(Z X : Type*), Z →* X :=
-  ⟨pointed_fiber v.2.2 pt, v.1, pmap.mk point rfl⟩
-  -- match v with
-  -- | ⟨X, Y, f⟩ := ⟨pointed_fiber f pt, X, pmap.mk point rfl⟩
-  -- end
+  ⟨pfiber v.2.2, v.1, pmap.mk point rfl⟩
 
-exit
+  definition fiber_sequence_carrier {X Y : Type*} (f : X →* Y) (n : ℕ) : Type* :=
+  nat.cases_on n Y (λk, (iterate fiber_sequence_helper k ⟨X, Y, f⟩).1)
+
+  definition fiber_sequence_arrow {X Y : Type*} (f : X →* Y) (n : ℕ)
+    : fiber_sequence_carrier f (n + 1) →* fiber_sequence_carrier f n :=
+  nat.cases_on n f proof (λk, pmap.mk point rfl) qed
+
+  /- Definition 8.4.3 -/
   definition fiber_sequence.{u} {X Y : Pointed.{u}} (f : X →* Y) : LLES.{u} :=
   begin
     fconstructor,
-    { intro n, cases n with n,
-      { exact Y},
-      { exact (iterate fiber_sequence_helper n ⟨X, Y, f⟩).1}},
-    { intro n, cases n with n,
-      { exact f},
-      { exact pmap.mk point rfl}},
-    { intro n x, exact sorry},
-    { exact sorry}
+    { exact fiber_sequence_carrier f},
+    { exact fiber_sequence_arrow f},
+    { intro n x, cases n with n,
+      { exact point_eq x},
+      { exact point_eq x}},
+    { intro n x p, cases n with n,
+      { exact ⟨fiber.mk x p, rfl⟩},
+      { exact ⟨fiber.mk x p, rfl⟩}}
   end
+
+  -- move to types.sigma
+  definition sigma_assoc_comm_equiv {A : Type} (B C : A → Type)
+    : (Σ(v : Σa, B a), C v.1) ≃ (Σ(u : Σa, C a), B u.1) :=
+  calc    (Σ(v : Σa, B a), C v.1)
+        ≃ (Σa (b : B a), C a)     : sigma_assoc_equiv
+    ... ≃ (Σa, B a × C a)         : sigma_equiv_sigma_id (λa, !equiv_prod)
+    ... ≃ (Σa, C a × B a)         : sigma_equiv_sigma_id (λa, !prod_comm_equiv)
+    ... ≃ (Σa (c : C a), B a)     : sigma_equiv_sigma_id (λa, !equiv_prod)
+    ... ≃ (Σ(u : Σa, C a), B u.1) : sigma_assoc_equiv
+
+  /- Lemma 8.4.4(i) -/
+  definition fiber_sequence_carrier_equiv0.{u} {X Y : Pointed.{u}} (f : X →* Y)
+    : fiber_sequence_carrier f 3 ≃ Ω Y :=
+  calc
+    fiber_sequence_carrier f 3 ≃ fiber (fiber_sequence_arrow f 1) pt          : erfl
+    ... ≃ Σ(x : fiber_sequence_carrier f 2), fiber_sequence_arrow f 1 x = pt  : fiber.sigma_char
+    ... ≃ Σ(v : fiber f pt), fiber_sequence_arrow f 1 v = pt                  : erfl
+    ... ≃ Σ(v : Σ(x : X), f x = pt), fiber_sequence_arrow f 1 (fiber.mk v.1 v.2) = pt
+                                               : sigma_equiv_sigma_left !fiber.sigma_char
+    ... ≃ Σ(v : Σ(x : X), f x = pt), v.1 = pt  : erfl
+    ... ≃ Σ(v : Σ(x : X), x = pt), f v.1 = pt  : sigma_assoc_comm_equiv
+    ... ≃ f !center.1 = pt                     : sigma_equiv_of_is_contr_left _
+    ... ≃ f pt = pt                            : erfl
+    ... ≃ pt = pt                              : by exact !equiv_eq_closed_left !respect_pt
+    ... ≃ Ω Y                                  : erfl
+
+  /- (generalization of) Lemma 8.4.4(ii) -/
+  definition fiber_sequence_carrier_equiv1.{u} {X Y : Pointed.{u}} (f : X →* Y) (n : ℕ)
+    : fiber_sequence_carrier f (n+4) ≃ Ω(fiber_sequence_carrier f (n+1)) :=
+  calc
+    fiber_sequence_carrier f (n+4) ≃ fiber (fiber_sequence_arrow f (n+2)) pt : erfl
+    ... ≃ Σ(x : fiber_sequence_carrier f _), fiber_sequence_arrow f (n+2) x = pt
+      : fiber.sigma_char
+    ... ≃ Σ(x : fiber (fiber_sequence_arrow f (n+1)) pt), fiber_sequence_arrow f _ x = pt
+      : erfl
+    ... ≃ Σ(v : Σ(x : fiber_sequence_carrier f _), fiber_sequence_arrow f _ x = pt),
+            fiber_sequence_arrow f _ (fiber.mk v.1 v.2) = pt
+      : by exact sigma_equiv_sigma !fiber.sigma_char (λa, erfl)
+    ... ≃ Σ(v : Σ(x : fiber_sequence_carrier f _), fiber_sequence_arrow f _ x = pt),
+            v.1 = pt
+      : erfl
+    ... ≃ Σ(v : Σ(x : fiber_sequence_carrier f _), x = pt),
+            fiber_sequence_arrow f _ v.1 = pt
+      : sigma_assoc_comm_equiv
+    ... ≃ fiber_sequence_arrow f _ !center.1 = pt
+      : @(sigma_equiv_of_is_contr_left _) !is_contr_sigma_eq'
+    ... ≃ fiber_sequence_arrow f _ pt = pt
+      : erfl
+    ... ≃ pt = pt
+      : by exact !equiv_eq_closed_left !respect_pt
+   ... ≃ Ω(fiber_sequence_carrier f (n+1)) : erfl
+
+  /- Lemma 8.4.4 (i)(ii), combined -/
+  attribute bit0 bit1 add nat.add [reducible]
+  definition fiber_sequence_carrier_equiv {X Y : Type*} (f : X →* Y) (n : ℕ)
+    : fiber_sequence_carrier f (n+3) ≃ Ω(fiber_sequence_carrier f n) :=
+  nat.cases_on n (fiber_sequence_carrier_equiv0 f) (fiber_sequence_carrier_equiv1 f)
+
 
 end LES
