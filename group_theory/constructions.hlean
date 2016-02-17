@@ -416,10 +416,10 @@ namespace group
     { intro f, apply eq_of_homotopy, intro x, esimp, unfold [foldl], apply one_mul},
     { intro φ, apply homomorphism_eq, refine set_quotient.rec_prop _, intro l, esimp,
       induction l with s l IH,
-      { esimp [foldl], exact !respect_one⁻¹},
+      { esimp [foldl], exact (respect_one φ)⁻¹},
       { rewrite [foldl_cons, fgh_helper_mul],
         refine _ ⬝ (respect_mul φ (class_of [s]) (class_of l))⁻¹,
-        rewrite [IH], induction s: rewrite [▸*, one_mul], rewrite [-respect_inv]}}
+        rewrite [IH], induction s: rewrite [▸*, one_mul], rewrite [-respect_inv φ]}}
   end
 
   /- Free Commutative Group of a set -/
@@ -589,11 +589,11 @@ namespace group
     { intro f, apply eq_of_homotopy, intro x, esimp, unfold [foldl], apply one_mul},
     { intro φ, apply homomorphism_eq, refine set_quotient.rec_prop _, intro l, esimp,
       induction l with s l IH,
-      { esimp [foldl], exact !respect_one⁻¹},
+      { esimp [foldl], symmetry, exact to_respect_one φ},
       { rewrite [foldl_cons, fgh_helper_mul],
-        refine _ ⬝ (respect_mul φ (class_of [s]) (class_of l))⁻¹,
+        refine _ ⬝ (to_respect_mul φ (class_of [s]) (class_of l))⁻¹,
         rewrite [▸*,IH], induction s: rewrite [▸*, one_mul], apply ap (λx, x * _),
-        exact !respect_inv⁻¹}}
+        exact !to_respect_inv⁻¹}}
   end
 
   /- Free Commutative Group of a set -/
@@ -631,7 +631,7 @@ namespace group
   begin
     esimp at *,
     exact calc
-      φ (g * h) = (φ g) * (φ h) : respect_mul
+      φ (g * h) = (φ g) * (φ h) : to_respect_mul
             ... = 1 * (φ h)     : H₁
             ... = 1 * 1         : H₂
             ... = 1             : one_mul
@@ -641,12 +641,12 @@ namespace group
   begin
     esimp at *,
     exact calc
-      φ g⁻¹ = (φ g)⁻¹ : respect_inv
+      φ g⁻¹ = (φ g)⁻¹ : to_respect_inv
         ... = 1⁻¹     : H
         ... = 1       : one_inv
   end
 
-  definition kernel_subgroup [constructor] (φ : G₁ →g G₂) : subgroup_rel G₁ :=
+  definition subgroup_kernel [constructor] (φ : G₁ →g G₂) : subgroup_rel G₁ :=
   ⦃ subgroup_rel,
     R := kernel φ,
     Rone := respect_one φ,
@@ -654,24 +654,24 @@ namespace group
     Rinv := kernel_inv φ
   ⦄
 
-  theorem kernel_subgroup_isnormal (φ : G₁ →g G₂) (g : G₁) (h : G₁)
+  theorem is_normal_subgroup_kernel (φ : G₁ →g G₂) (g : G₁) (h : G₁)
     : kernel φ g → kernel φ (h * g * h⁻¹) :=
   begin
     esimp at *,
     intro p,
     exact calc
-      φ (h * g * h⁻¹) = (φ (h * g)) * φ (h⁻¹)   : respect_mul
-                  ... = (φ h) * (φ g) * (φ h⁻¹) : respect_mul
+      φ (h * g * h⁻¹) = (φ (h * g)) * φ (h⁻¹)   : to_respect_mul
+                  ... = (φ h) * (φ g) * (φ h⁻¹) : to_respect_mul
                   ... = (φ h) * 1 * (φ h⁻¹)     : p
                   ... = (φ h) * (φ h⁻¹)         : mul_one
-                  ... = (φ h) * (φ h)⁻¹         : respect_inv
+                  ... = (φ h) * (φ h)⁻¹         : to_respect_inv
                   ... = 1                       : mul.right_inv
   end
 
-  definition kernel_normal_subgroup [constructor] (φ : G₁ →g G₂) : normal_subgroup_rel G₁ :=
+  definition normal_subgroup_kernel [constructor] (φ : G₁ →g G₂) : normal_subgroup_rel G₁ :=
   ⦃ normal_subgroup_rel,
-    kernel_subgroup φ,
-    is_normal := kernel_subgroup_isnormal φ
+    subgroup_kernel φ,
+    is_normal := is_normal_subgroup_kernel φ
   ⦄
 
   end kernels
