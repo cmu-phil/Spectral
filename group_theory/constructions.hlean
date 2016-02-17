@@ -15,7 +15,7 @@ namespace group
   /- Subgroups -/
 
   structure subgroup_rel (G : Group) :=
-    (R : G → hprop)
+    (R : G → Prop)
     (Rone : R one)
     (Rmul : Π{g h}, R g → R h → R (g * h))
     (Rinv : Π{g}, R g → R (g⁻¹))
@@ -55,7 +55,7 @@ namespace group
                         ... = g * (k * h)               : by rewrite [mul_inv_cancel_left],
   show N (g * (k * h)), from H2 ▸ H1
 
-  -- this is just (Σ(g : G), H g), but only defined if (H g) is an hprop
+  -- this is just (Σ(g : G), H g), but only defined if (H g) is a prop
   definition sg : Type := {g : G | H g}
   local attribute sg [reducible]
   variable {H}
@@ -106,7 +106,7 @@ namespace group
 
   /- Quotient Group -/
 
-  definition quotient_rel (g h : G) : hprop := N (g * h⁻¹)
+  definition quotient_rel (g h : G) : Prop := N (g * h⁻¹)
 
   variable {N}
   theorem quotient_rel_refl (g : G) : quotient_rel N g g :=
@@ -165,36 +165,36 @@ namespace group
 
   theorem quotient_mul_assoc (g₁ g₂ g₃ : qg N) : g₁ * g₂ * g₃ = g₁ * (g₂ * g₃) :=
   begin
-    refine set_quotient.rec_hprop _ g₁,
-    refine set_quotient.rec_hprop _ g₂,
-    refine set_quotient.rec_hprop _ g₃,
+    refine set_quotient.rec_prop _ g₁,
+    refine set_quotient.rec_prop _ g₂,
+    refine set_quotient.rec_prop _ g₃,
     clear g₁ g₂ g₃, intro g₁ g₂ g₃,
     exact ap class_of !mul.assoc
   end
 
   theorem quotient_one_mul (g : qg N) : 1 * g = g :=
   begin
-    refine set_quotient.rec_hprop _ g, clear g, intro g,
+    refine set_quotient.rec_prop _ g, clear g, intro g,
     exact ap class_of !one_mul
   end
 
   theorem quotient_mul_one (g : qg N) : g * 1 = g :=
   begin
-    refine set_quotient.rec_hprop _ g, clear g, intro g,
+    refine set_quotient.rec_prop _ g, clear g, intro g,
     exact ap class_of !mul_one
   end
 
   theorem quotient_mul_left_inv (g : qg N) : g⁻¹ * g = 1 :=
   begin
-    refine set_quotient.rec_hprop _ g, clear g, intro g,
+    refine set_quotient.rec_prop _ g, clear g, intro g,
     exact ap class_of !mul.left_inv
   end
 
   theorem quotient_mul_comm {G : CommGroup} {N : normal_subgroup_rel G} (g h : qg N)
     : g * h = h * g :=
   begin
-    refine set_quotient.rec_hprop _ g, clear g, intro g,
-    refine set_quotient.rec_hprop _ h, clear h, intro h,
+    refine set_quotient.rec_prop _ g, clear g, intro g,
+    refine set_quotient.rec_prop _ h, clear h, intro h,
     apply ap class_of, esimp, apply mul.comm
   end
 
@@ -262,7 +262,7 @@ namespace group
   infix ` ×g `:30 := group.product
 
   /- Free Group of a set -/
-  variables (X : hset) {l l' : list (X ⊎ X)}
+  variables (X : Set) {l l' : list (X ⊎ X)}
   namespace free_group
 
   inductive free_group_rel : list (X ⊎ X) → list (X ⊎ X) → Type :=
@@ -320,28 +320,28 @@ namespace group
 
   theorem free_group_mul_assoc (g₁ g₂ g₃ : FG X) : g₁ * g₂ * g₃ = g₁ * (g₂ * g₃) :=
   begin
-    refine set_quotient.rec_hprop _ g₁,
-    refine set_quotient.rec_hprop _ g₂,
-    refine set_quotient.rec_hprop _ g₃,
+    refine set_quotient.rec_prop _ g₁,
+    refine set_quotient.rec_prop _ g₂,
+    refine set_quotient.rec_prop _ g₃,
     clear g₁ g₂ g₃, intro g₁ g₂ g₃,
     exact ap class_of !append.assoc
   end
 
   theorem free_group_one_mul (g : FG X) : 1 * g = g :=
   begin
-    refine set_quotient.rec_hprop _ g, clear g, intro g,
+    refine set_quotient.rec_prop _ g, clear g, intro g,
     exact ap class_of !append_nil_left
   end
 
   theorem free_group_mul_one (g : FG X) : g * 1 = g :=
   begin
-    refine set_quotient.rec_hprop _ g, clear g, intro g,
+    refine set_quotient.rec_prop _ g, clear g, intro g,
     exact ap class_of !append_nil_right
   end
 
   theorem free_group_mul_left_inv (g : FG X) : g⁻¹ * g = 1 :=
   begin
-    refine set_quotient.rec_hprop _ g, clear g, intro g,
+    refine set_quotient.rec_prop _ g, clear g, intro g,
     apply eq_of_rel, apply tr,
     induction g with s l IH,
     { reflexivity},
@@ -400,7 +400,7 @@ namespace group
       { intro l, exact foldl (fgh_helper f) 1 l},
       { intro l l' r, esimp at *, refine trunc.rec _ r, clear r, intro r,
         exact fgh_helper_respect_rel f r 1}},
-    { refine set_quotient.rec_hprop _, intro l, refine set_quotient.rec_hprop _, intro l',
+    { refine set_quotient.rec_prop _, intro l, refine set_quotient.rec_prop _, intro l',
       esimp, refine !foldl_append ⬝ _, esimp, apply fgh_helper_mul}
   end
 
@@ -414,7 +414,7 @@ namespace group
     { exact fn_of_free_group_hom},
     { exact free_group_hom},
     { intro f, apply eq_of_homotopy, intro x, esimp, unfold [foldl], apply one_mul},
-    { intro φ, apply homomorphism_eq, refine set_quotient.rec_hprop _, intro l, esimp,
+    { intro φ, apply homomorphism_eq, refine set_quotient.rec_prop _, intro l, esimp,
       induction l with s l IH,
       { esimp [foldl], exact !respect_one⁻¹},
       { rewrite [foldl_cons, fgh_helper_mul],
@@ -493,28 +493,28 @@ namespace group
 
   theorem fcg_mul_assoc (g₁ g₂ g₃ : FG X) : g₁ * g₂ * g₃ = g₁ * (g₂ * g₃) :=
   begin
-    refine set_quotient.rec_hprop _ g₁,
-    refine set_quotient.rec_hprop _ g₂,
-    refine set_quotient.rec_hprop _ g₃,
+    refine set_quotient.rec_prop _ g₁,
+    refine set_quotient.rec_prop _ g₂,
+    refine set_quotient.rec_prop _ g₃,
     clear g₁ g₂ g₃, intro g₁ g₂ g₃,
     exact ap class_of !append.assoc
   end
 
   theorem fcg_one_mul (g : FG X) : 1 * g = g :=
   begin
-    refine set_quotient.rec_hprop _ g, clear g, intro g,
+    refine set_quotient.rec_prop _ g, clear g, intro g,
     exact ap class_of !append_nil_left
   end
 
   theorem fcg_mul_one (g : FG X) : g * 1 = g :=
   begin
-    refine set_quotient.rec_hprop _ g, clear g, intro g,
+    refine set_quotient.rec_prop _ g, clear g, intro g,
     exact ap class_of !append_nil_right
   end
 
   theorem fcg_mul_left_inv (g : FG X) : g⁻¹ * g = 1 :=
   begin
-    refine set_quotient.rec_hprop _ g, clear g, intro g,
+    refine set_quotient.rec_prop _ g, clear g, intro g,
     apply eq_of_rel, apply tr,
     induction g with s l IH,
     { reflexivity},
@@ -529,8 +529,8 @@ namespace group
 
   theorem fcg_mul_comm (g h : FG X) : g * h = h * g :=
   begin
-    refine set_quotient.rec_hprop _ g, clear g, intro g,
-    refine set_quotient.rec_hprop _ h, clear h, intro h,
+    refine set_quotient.rec_prop _ g, clear g, intro g,
+    refine set_quotient.rec_prop _ h, clear h, intro h,
     apply eq_of_rel, apply tr,
     revert h, induction g with s l IH: intro h,
     { rewrite [append_nil_left, append_nil_right]},
@@ -573,7 +573,7 @@ namespace group
       { intro l, exact foldl (fgh_helper f) 1 l},
       { intro l l' r, esimp at *, refine trunc.rec _ r, clear r, intro r,
         exact fgh_helper_respect_comm_rel f r 1}},
-    { refine set_quotient.rec_hprop _, intro l, refine set_quotient.rec_hprop _, intro l',
+    { refine set_quotient.rec_prop _, intro l, refine set_quotient.rec_prop _, intro l',
       esimp, refine !foldl_append ⬝ _, esimp, apply fgh_helper_mul}
   end
 
@@ -587,7 +587,7 @@ namespace group
     { exact fn_of_free_comm_group_hom},
     { exact free_comm_group_hom},
     { intro f, apply eq_of_homotopy, intro x, esimp, unfold [foldl], apply one_mul},
-    { intro φ, apply homomorphism_eq, refine set_quotient.rec_hprop _, intro l, esimp,
+    { intro φ, apply homomorphism_eq, refine set_quotient.rec_prop _, intro l, esimp,
       induction l with s l IH,
       { esimp [foldl], exact !respect_one⁻¹},
       { rewrite [foldl_cons, fgh_helper_mul],
@@ -602,17 +602,17 @@ namespace group
   variables {A B}
   local abbreviation ι := @free_comm_group_inclusion
 
-  inductive tensor_rel_type : free_comm_group (hset_of_Group A ×t hset_of_Group B) → Type :=
+  inductive tensor_rel_type : free_comm_group (Set_of_Group A ×t Set_of_Group B) → Type :=
   | mul_left  : Π(a₁ a₂ : A) (b : B), tensor_rel_type (ι (a₁, b)  * ι (a₂, b)  * (ι (a₁ * a₂, b))⁻¹)
   | mul_right : Π(a : A) (b₁ b₂ : B), tensor_rel_type (ι (a, b₁)  * ι (a, b₂)  * (ι (a, b₁ * b₂))⁻¹)
 
   open tensor_rel_type
 
-  definition tensor_rel' (x : free_comm_group (hset_of_Group A ×t hset_of_Group B)) : hprop :=
+  definition tensor_rel' (x : free_comm_group (Set_of_Group A ×t Set_of_Group B)) : Prop :=
   ∥ tensor_rel_type x ∥
 
   definition tensor_group_rel (A B : CommGroup)
-    : normal_subgroup_rel (free_comm_group (hset_of_Group A ×t hset_of_Group B)) :=
+    : normal_subgroup_rel (free_comm_group (Set_of_Group A ×t Set_of_Group B)) :=
   sorry /- relation generated by tensor_rel'-/
 
   definition tensor_group [constructor] : CommGroup :=
@@ -625,7 +625,7 @@ namespace group
   variables {G₁ G₂ : Group}
 
   -- TODO: maybe define this in more generality for pointed types?
-  definition kernel [constructor] (φ : G₁ →g G₂) (g : G₁) : hprop := trunctype.mk (φ g = 1) _
+  definition kernel [constructor] (φ : G₁ →g G₂) (g : G₁) : Prop := trunctype.mk (φ g = 1) _
 
   theorem kernel_mul (φ : G₁ →g G₂) (g h : G₁) (H₁ : kernel φ g) (H₂ : kernel φ h) : kernel φ (g *[G₁] h) :=
   begin

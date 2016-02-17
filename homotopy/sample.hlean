@@ -71,7 +71,7 @@ namespace homotopy
     begin
       intro b,
       apply is_contr.mk (@is_retraction.sect _ _ _ s (λa, tr (fiber.mk a idp)) b),
-      apply trunc.rec, apply fiber.rec, intros a p,
+      esimp, apply trunc.rec, apply fiber.rec, intros a p,
       apply transport
                (λz : (Σy, h a = y), @sect _ _ _ s (λa, tr (mk a idp)) (sigma.pr1 z) =
                                     tr (fiber.mk a (sigma.pr2 z)))
@@ -118,7 +118,7 @@ namespace homotopy
     : is_surjective f → is_conn_map -1 f :=
   begin
     intro H, intro b,
-    exact @is_contr_of_inhabited_hprop (∥fiber f b∥) (is_trunc_trunc -1 (fiber f b)) (H b),
+    exact @is_contr_of_inhabited_prop (∥fiber f b∥) (is_trunc_trunc -1 (fiber f b)) (H b),
   end
 
   definition is_surjection_of_minus_one_conn {A B : Type} (f : A → B)
@@ -132,7 +132,7 @@ namespace homotopy
   λH, @center (∥A∥) H
 
   definition minus_one_conn_of_merely {A : Type} : ∥A∥ → is_conn -1 A :=
-  @is_contr_of_inhabited_hprop (∥A∥) (is_trunc_trunc -1 A)
+  @is_contr_of_inhabited_prop (∥A∥) (is_trunc_trunc -1 A)
 
   section
     open arrow
@@ -177,7 +177,7 @@ namespace homotopy
       apply pathover_of_tr_eq,
       rewrite [transport_eq_Fr,idp_con],
       revert H, induction n with [n, IH],
-      { intro H, apply is_hprop.elim },
+      { intro H, apply is_prop.elim },
       { intros H,
         change ap (@tr n .+2 (susp A)) (merid a) = ap tr (merid a'),
         generalize a',

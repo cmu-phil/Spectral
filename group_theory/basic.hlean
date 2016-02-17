@@ -21,11 +21,11 @@ set_option class.force_new true
 namespace group
 
   definition pointed_Group [instance] (G : Group) : pointed G := pointed.mk one
-  definition Pointed_of_Group (G : Group) : Type* := pointed.mk' G
-  definition hset_of_Group (G : Group) : hset := trunctype.mk G _
+  definition pType_of_Group (G : Group) : Type* := pointed.mk' G
+  definition Set_of_Group (G : Group) : Set := trunctype.mk G _
 
  -- print Type*
- -- print Pointed
+ -- print pType
 
   definition Group_of_CommGroup [coercion] [constructor] (G : CommGroup) : Group :=
   Group.mk G _
@@ -57,7 +57,7 @@ namespace group
   theorem respect_inv (φ : G₁ →g G₂) (g : G₁) : φ g⁻¹ = (φ g)⁻¹ :=
   eq_inv_of_mul_eq_one (!respect_mul⁻¹ ⬝ ap φ !mul.left_inv ⬝ !respect_one)
 
-  definition is_hset_homomorphism [instance] (G₁ G₂ : Group) : is_hset (homomorphism G₁ G₂) :=
+  definition is_set_homomorphism [instance] (G₁ G₂ : Group) : is_set (homomorphism G₁ G₂) :=
   begin
     assert H : G₁ →g G₂ ≃ Σ(f : G₁ → G₂), Π(g₁ g₂ : G₁), f (g₁ * g₂) = f g₁ * f g₂,
     { fapply equiv.MK,
@@ -69,13 +69,13 @@ namespace group
   end
 
   definition pmap_of_homomorphism [constructor] (φ : G₁ →g G₂)
-    : Pointed_of_Group G₁ →* Pointed_of_Group G₂ :=
+    : pType_of_Group G₁ →* pType_of_Group G₂ :=
   pmap.mk φ !respect_one
 
   definition homomorphism_eq (p : group_fun φ ~ group_fun φ') : φ = φ' :=
   begin
     induction φ with φ q, induction φ' with φ' q', esimp at p, induction p,
-    exact ap (homomorphism.mk φ) !is_hprop.elim
+    exact ap (homomorphism.mk φ) !is_prop.elim
   end
 
   /- categorical structure of groups + homomorphisms -/
