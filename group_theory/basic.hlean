@@ -105,12 +105,14 @@ namespace group
 
   definition is_set_homomorphism [instance] (G₁ G₂ : Group) : is_set (G₁ →g G₂) :=
   begin
-    assert H : G₁ →g G₂ ≃ Σ(f : G₁ → G₂), Π(g₁ g₂ : G₁), f (g₁ * g₂) = f g₁ * f g₂,
-    { fapply equiv.MK,
+    have H : G₁ →g G₂ ≃ Σ(f : G₁ → G₂), Π(g₁ g₂ : G₁), f (g₁ * g₂) = f g₁ * f g₂,
+    begin
+      fapply equiv.MK,
       { intro φ, induction φ, constructor, assumption},
       { intro v, induction v, constructor, assumption},
       { intro v, induction v, reflexivity},
-      { intro φ, induction φ, reflexivity}},
+      { intro φ, induction φ, reflexivity}
+    end,
     apply is_trunc_equiv_closed_rev, exact H
   end
 

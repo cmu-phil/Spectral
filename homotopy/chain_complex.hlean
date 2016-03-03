@@ -206,10 +206,12 @@ namespace chain_complex
     : is_exact_at_t (transfer_type_chain_complex2 X f c @g @e @p) m :=
   begin
     intro y q, esimp at *,
-    assert H2 : tcc_to_fn X (f m) ((equiv_of_eq (ap (λx, X x) (c m)))⁻¹ᵉ (e⁻¹ y)) = pt,
-    { refine _ ⬝ ap e⁻¹ᵉ* q ⬝ (respect_pt (e⁻¹ᵉ*)), apply eq_inv_of_eq, clear q, revert y,
+    have H2 : tcc_to_fn X (f m) ((equiv_of_eq (ap (λx, X x) (c m)))⁻¹ᵉ (e⁻¹ y)) = pt,
+    begin
+      refine _ ⬝ ap e⁻¹ᵉ* q ⬝ (respect_pt (e⁻¹ᵉ*)), apply eq_inv_of_eq, clear q, revert y,
       refine inv_homotopy_of_homotopy (pequiv.to_equiv e) _,
-      apply inv_homotopy_of_homotopy, apply p},
+      apply inv_homotopy_of_homotopy, apply p
+    end,
     induction (H _ H2) with x r,
     refine fiber.mk (e (cast (ap (λx, X x) (c (S m))) (cast (ap (λx, X (S x)) (c m)) x))) _,
     refine (p _)⁻¹ ⬝ _,
@@ -293,10 +295,12 @@ namespace chain_complex
     {n : N} (H : is_exact_at X n) : is_exact_at (transfer_chain_complex X @g @e @p) n :=
   begin
     intro y q, esimp at *,
-    assert H2 : cc_to_fn X n (e⁻¹ᵉ* y) = pt,
-    { refine (inv_commute (λn, equiv_of_pequiv e) _ _ @p _)⁻¹ᵖ ⬝ _,
+    have H2 : cc_to_fn X n (e⁻¹ᵉ* y) = pt,
+    begin
+      refine (inv_commute (λn, equiv_of_pequiv e) _ _ @p _)⁻¹ᵖ ⬝ _,
       refine ap _ q ⬝ _,
-      exact respect_pt e⁻¹ᵉ*},
+      exact respect_pt e⁻¹ᵉ*
+    end,
     induction (H _ H2) with x,
     induction x with x r,
     refine image.mk (e x) _,
@@ -336,12 +340,14 @@ namespace chain_complex
   chain_complex.mk Y @g
     begin
       refine equiv_rect f _ _, intro n,
-      assert H : Π (x : Y (f (S (S n)))), g (c n ▸ g (c (S n) ▸ x)) = pt,
-      { apply equiv_rect (equiv_of_pequiv e), intro x,
+      have H : Π (x : Y (f (S (S n)))), g (c n ▸ g (c (S n) ▸ x)) = pt,
+      begin
+        apply equiv_rect (equiv_of_pequiv e), intro x,
         refine ap (λx, g (c n ▸ x)) (@p (S n) x)⁻¹ᵖ ⬝ _,
         refine (p _)⁻¹ ⬝ _,
         refine ap e (cc_is_chain_complex X n _) ⬝ _,
-        apply respect_pt},
+        apply respect_pt
+      end,
       refine pi.pi_functor _ _ H,
       { intro x, exact (c (S n))⁻¹ ▸ (c n)⁻¹ ▸ x}, -- with implicit arguments, this is:
       -- transport (λx, Y x) (c (S n))⁻¹ (transport (λx, Y (S x)) (c n)⁻¹ x)
@@ -355,10 +361,12 @@ namespace chain_complex
     {n : N} (H : is_exact_at X n) : is_exact_at (transfer_chain_complex2' X f c @g @e @p) (f n) :=
   begin
     intro y q, esimp at *,
-    assert H2 : cc_to_fn X n (e⁻¹ᵉ* ((c n)⁻¹ ▸ y)) = pt,
-    { refine (inv_commute (λn, equiv_of_pequiv e) _ _ @p _)⁻¹ᵖ ⬝ _,
+    have H2 : cc_to_fn X n (e⁻¹ᵉ* ((c n)⁻¹ ▸ y)) = pt,
+    begin
+      refine (inv_commute (λn, equiv_of_pequiv e) _ _ @p _)⁻¹ᵖ ⬝ _,
       rewrite [tr_inv_tr, q],
-      exact respect_pt e⁻¹ᵉ*},
+      exact respect_pt e⁻¹ᵉ*
+    end,
     induction (H _ H2) with x,
     induction x with x r,
     refine image.mk (c n ▸ c (S n) ▸ e x) _,
@@ -448,10 +456,12 @@ namespace chain_complex
   --   (H : is_exact_at_lg X n) : is_exact_at_lg (transfer_left_group_chain_complex X @g @e @p) n :=
   -- begin
   --   intro y q, esimp at *,
-  --   assert H2 : lgcc_to_fn X n (e⁻¹ᵉ* y) = pt,
-  --   { refine (inv_commute (λn, equiv_of_pequiv e) _ _ @p _)⁻¹ᵖ ⬝ _,
+  --   have H2 : lgcc_to_fn X n (e⁻¹ᵉ* y) = pt,
+  --   begin
+  --     refine (inv_commute (λn, equiv_of_pequiv e) _ _ @p _)⁻¹ᵖ ⬝ _,
   --     refine ap _ q ⬝ _,
-  --     exact respect_pt e⁻¹ᵉ*},
+  --     exact respect_pt e⁻¹ᵉ*
+  --   end,
   --   cases (H _ H2) with x r,
   --   refine image.mk (e x) _,
   --   refine (p x)⁻¹ ⬝ _,
