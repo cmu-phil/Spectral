@@ -495,7 +495,6 @@ namespace chain_complex
             pt_mul := one_mul,
             mul_pt := mul_one,
             mul_left_inv_pt := mul.left_inv⦄
-
   end
 
   -- the following theorems would also be true of the replace "is_contr" by "is_prop"
