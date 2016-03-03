@@ -912,7 +912,7 @@ namespace chain_complex
     pcast (ap (ptrunc 0) (loop_space_succ_eq_in Y (2*n+1))) :=
   by reflexivity
 
-  definition group_LES_of_homotopy_groups3_4 :
+  definition group_LES_of_homotopy_groups3_0 :
     Π(k : ℕ) (H : k + 3 < succ 5), group (LES_of_homotopy_groups3 f (0, fin.mk (k+3) H))
   | 0     H := begin rexact group_homotopy_group 0 Y end
   | 1     H := begin rexact group_homotopy_group 0 X end

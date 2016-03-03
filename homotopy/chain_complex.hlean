@@ -145,10 +145,12 @@ namespace chain_complex
     (H : is_exact_at_t X n) : is_exact_at_t (transfer_type_chain_complex X @g @e @p) n :=
   begin
     intro y q, esimp at *,
-    assert H2 : tcc_to_fn X n (e⁻¹ᵉ* y) = pt,
-    { refine (inv_commute (λn, equiv_of_pequiv e) _ _ @p _)⁻¹ᵖ ⬝ _,
+    have H2 : tcc_to_fn X n (e⁻¹ᵉ* y) = pt,
+    begin
+      refine (inv_commute (λn, equiv_of_pequiv e) _ _ @p _)⁻¹ᵖ ⬝ _,
       refine ap _ q ⬝ _,
-      exact respect_pt e⁻¹ᵉ*},
+      exact respect_pt e⁻¹ᵉ*
+    end,
     cases (H _ H2) with x r,
     refine fiber.mk (e x) _,
     refine (p x)⁻¹ ⬝ _,
@@ -486,8 +488,9 @@ namespace chain_complex
 
   end
 
+  -- the following theorems would also be true of the replace "is_contr" by "is_prop"
   definition is_embedding_of_trivial (X : chain_complex N) {n : N}
-    (H : is_exact_at X n) [HX : is_prop (X (S (S n)))]
+    (H : is_exact_at X n) [HX : is_contr (X (S (S n)))]
     [pgroup (X n)] [pgroup (X (S n))] [is_homomorphism (cc_to_fn X n)]
       : is_embedding (cc_to_fn X n) :=
   begin
@@ -495,23 +498,23 @@ namespace chain_complex
     intro g p,
     induction H g p with v,
     induction v with x q,
-    assert r : pt = x, exact @is_prop.elim _ HX _ _,
+    have r : pt = x, from !is_prop.elim,
     induction r,
     refine q⁻¹ ⬝ _,
     apply respect_pt
   end
 
   definition is_surjective_of_trivial (X : chain_complex N) {n : N}
-    (H : is_exact_at X n) [HX : is_prop (X n)] : is_surjective (cc_to_fn X (S n)) :=
+    (H : is_exact_at X n) [HX : is_contr (X n)] : is_surjective (cc_to_fn X (S n)) :=
   begin
     intro g,
-    refine trunc.elim _ (H g (@is_prop.elim _ HX _ _)),
+    refine trunc.elim _ (H g !is_prop.elim),
     apply tr
   end
 
   definition is_equiv_of_trivial (X : chain_complex N) {n : N}
     (H1 : is_exact_at X n) (H2 : is_exact_at X (S n))
-    [HX1 : is_prop (X n)] [HX2 : is_prop (X (S (S (S n))))]
+    [HX1 : is_contr (X n)] [HX2 : is_contr (X (S (S (S n))))]
     [pgroup (X (S n))] [pgroup (X (S (S n)))] [is_homomorphism (cc_to_fn X (S n))]
     : is_equiv (cc_to_fn X (S n)) :=
   begin
