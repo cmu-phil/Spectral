@@ -1,6 +1,6 @@
-import .LES_of_homotopy_groups homotopy.connectedness homotopy.homotopy_group
+import .LES_of_homotopy_groups homotopy.connectedness homotopy.homotopy_group homotopy.join
 open eq is_trunc pointed homotopy is_equiv fiber equiv trunc nat chain_complex prod fin algebra
-     group trunc_index function
+     group trunc_index function join pushout
 namespace nat
   open sigma sum
   definition eq_even_or_eq_odd (n : ℕ) : (Σk, 2 * k = n) ⊎ (Σk, 2 * k + 1 = n) :=
@@ -66,8 +66,16 @@ namespace is_conn
   theorem is_equiv_trunc_functor_of_is_conn_map {A B : Type} (n : ℕ₋₂) (f : A → B)
     [H : is_conn_map n f] : is_equiv (trunc_functor n f) :=
   begin
-    exact sorry
+    fapply adjointify,
+    { intro b, induction b with b, exact trunc_functor n point (center (trunc n (fiber f b)))},
+    { intro b, induction b with b, esimp, generalize center (trunc n (fiber f b)), intro v,
+      induction v with v, induction v with a p, esimp, exact ap tr p},
+    { intro a, induction a with a, esimp, rewrite [center_eq (tr (fiber.mk a idp))]}
   end
+
+  theorem trunc_equiv_trunc_of_is_conn_map {A B : Type} (n : ℕ₋₂) (f : A → B)
+    [H : is_conn_map n f] : trunc n A ≃ trunc n B :=
+  equiv.mk (trunc_functor n f) (is_equiv_trunc_functor_of_is_conn_map n f)
 
   definition is_equiv_tinverse [constructor] (A : Type*) : is_equiv (@tinverse A) :=
   by apply @is_equiv_trunc_functor; apply is_equiv_eq_inverse
@@ -128,6 +136,88 @@ namespace is_conn
         (LES_of_homotopy_groups3 f) _
         (is_exact_LES_of_homotopy_groups3 f (k, 5))
         (@is_contr_HG_fiber_of_is_connected A B (2 * k + 1) (2 * k + 1) f H !le.refl)}
+  end
+
+  definition join_empty_right [constructor] (A : Type) : join A empty ≃ A :=
+  begin
+    fapply equiv.MK,
+    { intro x, induction x with a o v,
+      { exact a},
+      { exact empty.elim o},
+      { exact empty.elim (pr2 v)}},
+    { exact pushout.inl},
+    { intro a, reflexivity},
+    { intro x, induction x with a o v,
+      { reflexivity},
+      { exact empty.elim o},
+      { exact empty.elim (pr2 v)}}
+  end
+
+  /- joins -/
+
+  definition join_functor [unfold 7] {A A' B B' : Type} (f : A → A') (g : B → B') :
+    join A B → join A' B' :=
+  begin
+    intro x, induction x with a b v,
+    { exact inl (f a)},
+    { exact inr (g b)},
+    { exact glue (f (pr1 v), g (pr2 v))}
+  end
+
+  theorem join_functor_glue {A A' B B' : Type} (f : A → A') (g : B → B')
+    (v : A × B) : ap (join_functor f g) (glue v) = glue (f (pr1 v), g (pr2 v)) :=
+  !elim_glue
+
+  definition natural_square2 {A B X : Type} {f : A → X} {g : B → X} (h : Πa b, f a = g b)
+    {a a' : A} {b b' : B} (p : a = a') (q : b = b')
+    : square (ap f p) (ap g q) (h a b) (h a' b') :=
+  by induction p; induction q; exact hrfl
+
+  definition join_equiv_join {A A' B B' : Type} (f : A ≃ A') (g : B ≃ B') :
+    join A B ≃ join A' B' :=
+  begin
+    fapply equiv.MK,
+    { apply join_functor f g},
+    { apply join_functor f⁻¹ g⁻¹},
+    { intro x', induction x' with a' b' v',
+      { esimp, exact ap inl (right_inv f a')},
+      { esimp, exact ap inr (right_inv g b')},
+      { cases v' with a' b', apply eq_pathover,
+        rewrite [▸*, ap_id, ap_compose' (join_functor _ _), ▸*],
+        xrewrite [+join_functor_glue, ▸*],
+        exact natural_square2 jglue (right_inv f a') (right_inv g b')}},
+    { intro x, induction x with a b v,
+      { esimp, exact ap inl (left_inv f a)},
+      { esimp, exact ap inr (left_inv g b)},
+      { cases v with a b, apply eq_pathover,
+        rewrite [▸*, ap_id, ap_compose' (join_functor _ _), ▸*],
+        xrewrite [+join_functor_glue, ▸*],
+        exact natural_square2 jglue (left_inv f a) (left_inv g b)}}
+  end
+
+  section
+    open sphere sphere_index
+
+    definition add_plus_one_minus_one (n : ℕ₋₁) : n +1+ -1 = n := idp
+    definition add_plus_one_succ (n m : ℕ₋₁) : n +1+ (m.+1) = (n +1+ m).+1 := idp
+    definition minus_one_add_plus_one (n : ℕ₋₁) : -1 +1+ n = n :=
+    begin induction n with n IH, reflexivity, exact ap succ IH end
+    definition succ_add_plus_one (n m : ℕ₋₁) : (n.+1) +1+ m = (n +1+ m).+1 :=
+    begin induction m with m IH, reflexivity, exact ap succ IH end
+
+    definition sphere_join_sphere (n m : ℕ₋₁) : join (sphere n) (sphere m) ≃ sphere (n +1+ m) :=
+    begin
+      revert n, induction m with m IH: intro n,
+      { apply join_empty_right},
+      { rewrite [sphere_succ m],
+        refine join_equiv_join erfl !join.bool⁻¹ᵉ ⬝e _,
+        refine !join.assoc⁻¹ᵉ ⬝e _,
+        refine join_equiv_join !join.symm erfl ⬝e _,
+        refine join_equiv_join !join.bool erfl ⬝e _,
+        rewrite [-sphere_succ n],
+        refine !IH ⬝e _,
+        rewrite [add_plus_one_succ, succ_add_plus_one]}
+    end
   end
 
 end is_conn
