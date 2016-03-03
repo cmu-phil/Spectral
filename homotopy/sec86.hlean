@@ -2,7 +2,7 @@
 
 import  homotopy.wedge types.pi
 
-open eq homotopy is_trunc pointed susp nat pi equiv equiv.ops is_equiv trunc
+open eq homotopy is_trunc pointed susp nat pi equiv is_equiv trunc
 
 section freudenthal
 

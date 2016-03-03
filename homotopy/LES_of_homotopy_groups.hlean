@@ -39,7 +39,7 @@ sequence. Now we get the fiber sequence by taking the set-truncation of this seq
 
 import .chain_complex algebra.homotopy_group
 
-open eq pointed sigma fiber equiv is_equiv sigma.ops is_trunc equiv.ops nat trunc algebra function
+open eq pointed sigma fiber equiv is_equiv sigma.ops is_trunc nat trunc algebra function
 
 /--------------
     PART 1

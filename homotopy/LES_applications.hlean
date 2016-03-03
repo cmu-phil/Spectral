@@ -1,6 +1,6 @@
 import .LES_of_homotopy_groups homotopy.connectedness homotopy.homotopy_group
 open eq is_trunc pointed homotopy is_equiv fiber equiv trunc nat chain_complex prod fin algebra
-     group equiv.ops trunc_index function
+     group trunc_index function
 namespace nat
   open sigma sum
   definition eq_even_or_eq_odd (n : ℕ) : (Σk, 2 * k = n) ⊎ (Σk, 2 * k + 1 = n) :=

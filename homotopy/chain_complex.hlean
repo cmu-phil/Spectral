@@ -7,7 +7,7 @@ Authors: Floris van Doorn
 
 import types.int types.pointed2 types.trunc algebra.hott ..group_theory.basic .fin
 
-open eq pointed int unit is_equiv equiv is_trunc trunc equiv.ops function algebra group sigma.ops
+open eq pointed int unit is_equiv equiv is_trunc trunc function algebra group sigma.ops
      sum prod nat bool fin
 namespace eq
   definition transport_eq_Fl_idp_left {A B : Type} {a : A} {b : B} (f : A → B) (q : f a = b)

@@ -9,7 +9,7 @@ Authors: Floris van Doorn
 
 import group_theory.basic algebra.homotopy_group
 
-open eq algebra pointed group trunc is_trunc nat algebra equiv equiv.ops is_equiv
+open eq algebra pointed group trunc is_trunc nat algebra equiv is_equiv
 
 namespace my
 
