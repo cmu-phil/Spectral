@@ -30,12 +30,12 @@ namespace is_conn
   local attribute is_equiv_tinverse [instance]
 
   theorem is_equiv_π_of_is_connected.{u} {A B : pType.{u}} (n k : ℕ) (f : A →* B)
-    [H : is_conn_map n f] (H2 : k ≤ n) : is_equiv (π→[k] f) :=
+    [H : is_conn_fun n f] (H2 : k ≤ n) : is_equiv (π→[k] f) :=
   begin
     induction k using rec_on_even_odd with k: cases k with k,
     { /- k = 0 -/
-      change (is_equiv (trunc_functor 0 f)), apply is_equiv_trunc_functor_of_is_conn_map,
-      refine is_conn_map_of_le f (zero_le_of_nat n)},
+      change (is_equiv (trunc_functor 0 f)), apply is_equiv_trunc_functor_of_is_conn_fun,
+      refine is_conn_fun_of_le f (zero_le_of_nat n)},
     { /- k > 0 even -/
       have H2' : 2 * k + 1 ≤ n, from le.trans !self_le_succ H2,
       exact
@@ -67,7 +67,7 @@ namespace is_conn
   end
 
   theorem is_surjective_π_of_is_connected.{u} {A B : pType.{u}} (n : ℕ) (f : A →* B)
-    [H : is_conn_map n f] : is_surjective (π→[n + 1] f) :=
+    [H : is_conn_fun n f] : is_surjective (π→[n + 1] f) :=
   begin
     induction n using rec_on_even_odd with n,
     { have H3 : is_surjective (π→*[2*n + 1] f ∘* tinverse), from

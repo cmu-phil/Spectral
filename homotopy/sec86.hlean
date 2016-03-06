@@ -4,15 +4,33 @@ import  homotopy.wedge types.pi .LES_applications --TODO: remove
 
 open eq homotopy is_trunc pointed susp nat pi equiv is_equiv trunc fiber trunc_index
 
+  -- definition iterated_loop_ptrunc_pequiv_con' (n : ℕ₋₂) (k : ℕ) (A : Type*)
+  --   (p q : Ω[k](ptrunc (n+k) (Ω A))) :
+  --   iterated_loop_ptrunc_pequiv n k (Ω A) (loop_mul trunc_concat p q) =
+  --   trunc_functor2 (loop_mul concat) (iterated_loop_ptrunc_pequiv n k (Ω A) p)
+  --                                    (iterated_loop_ptrunc_pequiv n k (Ω A) q) :=
+  -- begin
+  --   revert n p q, induction k with k IH: intro n p q,
+  --   { reflexivity},
+  --   { exact sorry}
+  -- end
+
+  -- example : ((@add.{0} trunc_index has_add_trunc_index n
+  --               (trunc_index.of_nat
+  --                  (@add.{0} nat nat._trans_of_decidable_linear_ordered_semiring_17 nat.zero
+  --                     (@one.{0} nat nat._trans_of_decidable_linear_ordered_semiring_21))))) = (0 : ℕ₋₂) := proof idp qed
+
   definition iterated_loop_ptrunc_pequiv_con (n : ℕ₋₂) (k : ℕ) (A : Type*)
-    (p q : Ω[k](ptrunc (n+k) (Ω A))) :
-    iterated_loop_ptrunc_pequiv n k (Ω A) (loop_mul trunc_concat p q) =
-    trunc_functor2 (loop_mul concat) (iterated_loop_ptrunc_pequiv n k (Ω A) p)
-                                     (iterated_loop_ptrunc_pequiv n k (Ω A) q) :=
+    (p q : Ω[k + 1](ptrunc (n+k+1) A)) :
+    iterated_loop_ptrunc_pequiv n (k+1) A (p ⬝ q) =
+    trunc_concat (iterated_loop_ptrunc_pequiv n (k+1) A p)
+                 (iterated_loop_ptrunc_pequiv n (k+1) A q) :=
   begin
-    revert n p q, induction k with k IH: intro n p q,
-    { reflexivity},
-    { exact sorry}
+    exact sorry
+    -- induction k with k IH,
+    -- { replace (nat.zero + 1) with (nat.succ nat.zero), esimp [iterated_loop_ptrunc_pequiv],
+    --   exact sorry},
+    -- { exact sorry}
   end
 
   theorem elim_type_merid_inv {A : Type} (PN : Type) (PS : Type) (Pm : A → PN ≃ PS)
@@ -62,8 +80,9 @@ namespace freudenthal section
 
   definition is_equiv_code_merid (a : A) : is_equiv (code_merid a) :=
   begin
-    refine @is_conn.elim (n.-1) _ _ _ _ a,
-    { intro a, apply is_trunc_of_le, apply minus_one_le_succ},
+    have Πa, is_trunc n.-2.+1 (is_equiv (code_merid a)),
+      from λa, is_trunc_of_le _ !minus_one_le_succ,
+    refine is_conn.elim (n.-1) _ _ a,
     { esimp, exact homotopy_closed id (homotopy.symm (code_merid_β_right))}
   end
 
@@ -121,8 +140,7 @@ namespace freudenthal section
   begin
     refine _ ⬝op ap decode_south (code_merid_β_left a)⁻¹,
     apply trunc_pathover,
-    apply eq_pathover,
-    refine !ap_constant ⬝ph _ ⬝hp !ap_id⁻¹,
+    apply eq_pathover_constant_left_id_right,
     apply square_of_eq,
     exact whisker_right !con.right_inv (merid a)
   end
@@ -131,12 +149,11 @@ namespace freudenthal section
   begin
     refine _ ⬝op ap decode_south (code_merid_β_right (tr a'))⁻¹,
     apply trunc_pathover,
-    apply eq_pathover,
-    refine !ap_constant ⬝ph _ ⬝hp !ap_id⁻¹,
+    apply eq_pathover_constant_left_id_right,
     apply square_of_eq, refine !inv_con_cancel_right ⬝ !idp_con⁻¹
   end
 
-  definition decode_coh_equality {A : Type} {a a' : A} (p : a = a')
+  definition decode_coh_lem {A : Type} {a a' : A} (p : a = a')
     : whisker_right (con.right_inv p) p = inv_con_cancel_right p p ⬝ (idp_con p)⁻¹ :=
   by induction p; reflexivity
 
@@ -146,12 +163,11 @@ namespace freudenthal section
     induction c with a',
     rewrite [↑code, elim_type_merid, ▸*],
     refine wedge_extension.ext n n _ _ _ _ a a',
-    { exact _},
     { exact decode_coh_f},
     { exact decode_coh_g},
     { clear a a', unfold [decode_coh_f, decode_coh_g], refine ap011 concato_eq _ _,
-      { apply ap (λp, trunc_pathover (eq_pathover (_ ⬝ph square_of_eq p ⬝hp _))),
-        apply decode_coh_equality},
+      { refine ap (λp, trunc_pathover (eq_pathover_constant_left_id_right (square_of_eq p))) _,
+        apply decode_coh_lem},
       { apply ap (λp, ap decode_south p⁻¹), apply code_merid_coh}}
   end
 
@@ -176,7 +192,7 @@ namespace freudenthal section
   pequiv_of_equiv equiv' decode_north_pt
 
   -- can we get this?
-  -- definition freudenthal_suspension  : is_conn_map (n+n) (loop_susp_unit A) :=
+  -- definition freudenthal_suspension  : is_conn_fun (n+n) (loop_susp_unit A) :=
   -- begin
   --   intro p, esimp at *, fapply is_contr.mk,
   --   { note c := encode (tr p), esimp at *, induction c with a, },
@@ -236,11 +252,12 @@ namespace sphere
     refine loopn_pequiv_loopn k (freudenthal_pequiv _ H')⁻¹ᵉ* ⬝e* _,
     exact !phomotopy_group_pequiv_loop_ptrunc⁻¹ᵉ*,
   end
+
 print phomotopy_group_pequiv_loop_ptrunc
 print iterated_loop_ptrunc_pequiv
-  definition to_fun_stability_pequiv (k n : ℕ) (H : k + 2 ≤ 2 * n) --(p : π*[k + 1] (S. (n+1)))
-    : stability_pequiv k n H = _ ∘ _ ∘ cast (ap (ptrunc 0) (loop_space_succ_eq_in (S. (n+1)) k)) :=
-  sorry
+  -- definition to_fun_stability_pequiv (k n : ℕ) (H : k + 3 ≤ 2 * n) --(p : π*[k + 1] (S. (n+1)))
+  --   : stability_pequiv (k+1) n H = _ ∘ _ ∘ cast (ap (ptrunc 0) (loop_space_succ_eq_in (S. (n+1)) (k+1))) :=
+  -- sorry
 
   -- definition stability (k n : ℕ) (H : k + 3 ≤ 2 * n) : πg[k+1 +1] (S. (n+1)) = πg[k+1] (S. n) :=
   -- begin

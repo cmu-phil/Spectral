@@ -21,13 +21,13 @@ namespace homotopy
     assumption
   end
 
-  definition is_conn_map (n : trunc_index) {A B : Type} (f : A → B) : Type :=
+  definition is_conn_fun (n : trunc_index) {A B : Type} (f : A → B) : Type :=
   Πb : B, is_conn n (fiber f b)
 
-  namespace is_conn_map
+  namespace is_conn_fun
   section
     parameters {n : trunc_index} {A B : Type} {h : A → B}
-               (H : is_conn_map n h) (P : B → n -Type)
+               (H : is_conn_fun n h) (P : B → n -Type)
 
     private definition helper : (Πa : A, P (h a)) → Πb : B, trunc n (fiber h b) → P b :=
     λt b, trunc.rec (λx, point_eq x ▸ t (point x))
@@ -67,7 +67,7 @@ namespace homotopy
     include sec
 
     -- the other half of Lemma 7.5.7
-    definition intro : is_conn_map n h :=
+    definition intro : is_conn_fun n h :=
     begin
       intro b,
       apply is_contr.mk (@is_retraction.sect _ _ _ s (λa, tr (fiber.mk a idp)) b),
@@ -79,22 +79,22 @@ namespace homotopy
       exact apd10 (@right_inverse _ _ _ s (λa, tr (fiber.mk a idp))) a
     end
   end
-  end is_conn_map
+  end is_conn_fun
 
   -- Connectedness is related to maps to and from the unit type, first to
   section
     parameters (n : trunc_index) (A : Type)
 
     definition is_conn_of_map_to_unit
-      : is_conn_map n (λx : A, unit.star) → is_conn n A :=
+      : is_conn_fun n (λx : A, unit.star) → is_conn n A :=
     begin
-      intro H, unfold is_conn_map at H,
+      intro H, unfold is_conn_fun at H,
       rewrite [-(ua (fiber.fiber_star_equiv A))],
       exact (H unit.star)
     end
 
     -- now maps from unit
-    definition is_conn_of_map_from_unit (a₀ : A) (H : is_conn_map n (const unit a₀))
+    definition is_conn_of_map_from_unit (a₀ : A) (H : is_conn_fun n (const unit a₀))
       : is_conn n .+1 A :=
     is_contr.mk (tr a₀)
     begin
@@ -103,8 +103,8 @@ namespace homotopy
                             (@center _ (H a))
     end
 
-    definition is_conn_map_from_unit (a₀ : A) [H : is_conn n .+1 A]
-      : is_conn_map n (const unit a₀) :=
+    definition is_conn_fun_from_unit (a₀ : A) [H : is_conn n .+1 A]
+      : is_conn_fun n (const unit a₀) :=
     begin
       intro a,
       apply is_conn_equiv_closed n (equiv.symm (fiber_const_equiv A a₀ a)),
@@ -115,14 +115,14 @@ namespace homotopy
 
   -- Lemma 7.5.2
   definition minus_one_conn_of_surjective {A B : Type} (f : A → B)
-    : is_surjective f → is_conn_map -1 f :=
+    : is_surjective f → is_conn_fun -1 f :=
   begin
     intro H, intro b,
     exact @is_contr_of_inhabited_prop (∥fiber f b∥) (is_trunc_trunc -1 (fiber f b)) (H b),
   end
 
   definition is_surjection_of_minus_one_conn {A B : Type} (f : A → B)
-    : is_conn_map -1 f → is_surjective f :=
+    : is_conn_fun -1 f → is_surjective f :=
   begin
     intro H, intro b,
     exact @center (∥fiber f b∥) (H b),
@@ -141,7 +141,7 @@ namespace homotopy
 
     -- Lemma 7.5.4
     definition retract_of_conn_is_conn [instance] (r : arrow_hom f g) [H : is_retraction r]
-      (n : trunc_index) [K : is_conn_map n f] : is_conn_map n g :=
+      (n : trunc_index) [K : is_conn_fun n f] : is_conn_fun n g :=
     begin
       intro b, unfold is_conn,
       apply is_contr_retract (trunc_functor n (retraction_on_fiber r b)),
@@ -152,7 +152,7 @@ namespace homotopy
 
   -- Corollary 7.5.5
   definition is_conn_homotopy (n : trunc_index) {A B : Type} {f g : A → B}
-    (p : f ~ g) (H : is_conn_map n f) : is_conn_map n g :=
+    (p : f ~ g) (H : is_conn_fun n f) : is_conn_fun n g :=
   @retract_of_conn_is_conn _ _ (arrow.arrow_hom_of_homotopy p) (arrow.is_retraction_arrow_hom_of_homotopy p) n H
 
   -- all types are -2-connected
@@ -181,8 +181,8 @@ namespace homotopy
       { intros H,
         change ap (@tr n .+2 (susp A)) (merid a) = ap tr (merid a'),
         generalize a',
-        apply is_conn_map.elim
-              (is_conn_map_from_unit n A a)
+        apply is_conn_fun.elim
+              (is_conn_fun_from_unit n A a)
               (λx : A, trunctype.mk' n (ap (@tr n .+2 (susp A)) (merid a) = ap tr (merid x))),
         intros,
         change ap (@tr n .+2 (susp A)) (merid a) = ap tr (merid a),
