@@ -14,6 +14,28 @@ namespace spherical_fibrations
 
   definition pBG [constructor] (n : ℕ) : Type* := pointed.mk' (BG n)
 
+  definition G (n : ℕ) : Type₁ :=
+  pt = pt :> BG n
+
+  definition G_char (n : ℕ) : G n ≃ (S n..-1 ≃ S n..-1) :=
+  sorry
+
+  definition mirror (n : ℕ) : S n..-1 → G n :=
+  begin
+    intro v, apply to_inv (G_char n),
+    exact sorry
+  end
+
+/-
+  Can we give a fibration P : S n → Type, P base = F n = Ω(BF n) = (S. n ≃* S. n)
+  and total space sigma P ≃ G (n+1) = Ω(BG (n+1)) = (S n.+1 ≃ S .n+1)
+
+  Yes, let eval : BG (n+1) → S n be the evaluation map
+-/
+
+  definition S_of_BG (n : ℕ) : Ω(pBG (n+1)) → S n :=
+  λ f, f..1 ▸ base
+
   definition BG_succ (n : ℕ) : BG n → BG (n+1) :=
   begin
     intro X, cases X with X p,
@@ -96,15 +118,41 @@ namespace spherical_fibrations
   - define BG∞ and BF∞ as colimits of BG n and BF n
   - Ω(BF n) = ΩⁿSⁿ₁ + ΩⁿSⁿ₋₁ (self-maps of degree ±1)
   - succ_BF n is (n - 2) connected (from Freudenthal)
-  - pfiber (BG_of_BF n) ≃ S. n
+  - pfiber (BG_of_BF n) ≃* S. n
   - π₁(BF n)=π₁(BG n)=ℤ/2ℤ
   - double covers BSG and BSF
   - O : BF n → BG 1 = Σ(A : Type), ∥ A = bool ∥
   - BSG n = sigma O
   - π₁(BSG n)=π₁(BSF n)=O
-  - BSO(n), BSTop(n)
+  - BSO(n),
   - find BF' n : Type₀ with BF' n ≃ BF n etc.
   - canonical bundle γₙ : ℝP(n) → ℝP∞=BO(1) → Type₀
      prove T(γₙ) = ℝP(n+1)
+  - BG∞ = BF∞ (in fact = BGL₁(S), the group of units of the sphere spectrum)
+  - clutching construction:
+     any f : S n → SG(n)  gives S n.+1 → BSG(n)  (mut.mut. for O(n),SO(n),etc.)
+  - all bundles on S 3 are trivial, incl. tangent bundle
+  - Adams' result on vector fields on spheres:
+     there are maximally ρ(n)-1 indep.sections of the tangent bundle of S (n-1)
+     where ρ(n) is the n'th Radon-Hurwitz number.→ 
 -/
+
+-- tangent bundle on S 2:
+
+  namespace two_sphere
+
+    definition tau : S 2 → BG 2 :=
+    begin
+      intro v, induction v with x, do 2 exact pt,
+      fapply sigma_eq,
+      { apply ua, fapply equiv.MK,
+        { },
+        { },
+        { },
+        { }  },
+      { }
+    end
+
+  end two_sphere
+
 end spherical_fibrations
