@@ -88,6 +88,15 @@ namespace pointed
   definition equiv_ppcompose_left {A B C : Type*} (g : B ≃* C) : ppmap A B ≃* ppmap A C :=
     pequiv_of_pmap (ppcompose_left g) _
 
+  definition pcompose_pconst {A B C : Type*} (f : B →* C) : f ∘* pconst A B ~* pconst A C :=
+    phomotopy.mk (λa, respect_pt f) (idp_con _)⁻¹
+
+  definition pconst_pcompose {A B C : Type*} (f : A →* B) : pconst B C ∘* f ~* pconst A C :=
+    phomotopy.mk (λa, rfl) (ap_constant _ _)⁻¹
+
+  definition ap1_pconst (A B : Type*) : Ω→(pconst A B) ~* pconst (Ω A) (Ω B) :=
+    phomotopy.mk (λp, idp_con _ ⬝ ap_constant p pt) rfl
+
   definition pfiber_loop_space {A B : Type*} (f : A →* B) : pfiber (Ω→ f) ≃* Ω (pfiber f) :=
     pequiv_of_equiv
     (calc pfiber (Ω→ f) ≃ Σ(p : Point A = Point A), ap1 f p = rfl                                : (fiber.sigma_char (ap1 f) (Point Ω B))
@@ -232,7 +241,11 @@ namespace spectrum
   protected definition Mk (deloop : ℕ → Type*) (glue : Π(n:ℕ), (deloop n) ≃* (Ω (deloop (nat.succ n)))) : spectrum :=
     spectrum.of_nat_indexed (spectrum.MK deloop glue)
 
-  -- (Pre)spectrum maps.  These make sense for any succ_str.
+  ------------------------------
+  -- Maps and homotopies of (pre)spectra
+  ------------------------------
+
+  -- These make sense for any succ_str.
   structure smap {N : succ_str} (E F : gen_prespectrum N) :=
     (to_fun : Π(n:N), E n →* F n)
     (glue_square : Π(n:N), glue F n ∘* to_fun n ~* Ω→ (to_fun (S n)) ∘* glue E n)
@@ -245,8 +258,14 @@ namespace spectrum
   -- A version of 'glue_square' in the spectrum case that uses 'equiv_glue'
   definition sglue_square {N : succ_str} {E F : gen_spectrum N} (f : E →ₛ F) (n : N)
     : equiv_glue F n ∘* f n ~* Ω→ (f (S n)) ∘* equiv_glue E n
-    -- I guess this is necessary because structures lack definitional eta?
+    -- I guess this manual eta-expansion is necessary because structures lack definitional eta?
     := phomotopy.mk (glue_square f n) (to_homotopy_pt (glue_square f n))
+
+  definition sid {N : succ_str} (E : gen_spectrum N) : E →ₛ E :=
+    smap.mk (λn, pid (E n))
+    (λn, calc glue E n ∘* pid (E n) ~* glue E n                   : comp_pid
+                              ...   ~* pid Ω(E (S n)) ∘* glue E n : pid_comp
+                              ...   ~* Ω→(pid (E (S n))) ∘* glue E n : pwhisker_right (glue E n) ap1_id⁻¹*)
 
   definition scompose {N : succ_str} {X Y Z : gen_prespectrum N} (g : Y →ₛ Z) (f : X →ₛ Y) : X →ₛ Z :=
     smap.mk (λn, g n ∘* f n)
@@ -260,7 +279,23 @@ namespace spectrum
 
   infixr ` ∘ₛ `:60 := scompose
 
-  /- Suspension prespectra -/
+  definition szero {N : succ_str} (E F : gen_prespectrum N) : E →ₛ F :=
+    smap.mk (λn, pconst (E n) (F n))
+      (λn, calc glue F n ∘* pconst (E n) (F n) ~* pconst (E n) (Ω(F (S n)))                    : pcompose_pconst
+                                         ...   ~* pconst (Ω(E (S n))) (Ω(F (S n))) ∘* glue E n : pconst_pcompose
+                                         ...   ~* Ω→(pconst (E (S n)) (F (S n))) ∘* glue E n   : pwhisker_right (glue E n) (ap1_pconst _ _))
+
+  structure shomotopy {N : succ_str} {E F : gen_prespectrum N} (f g : E →ₛ F) :=
+    (to_phomotopy : Πn, f n ~* g n)
+    (glue_homotopy : Πn, pwhisker_left (glue F n) (to_phomotopy n) ⬝* glue_square g n
+                         =      -- Ideally this should be a "phomotopy2"
+                         glue_square f n ⬝* pwhisker_right (glue E n) (ap1_phomotopy (to_phomotopy (S n))))
+
+  infix ` ~ₛ `:50 := shomotopy
+
+  ------------------------------
+  -- Suspension prespectra
+  ------------------------------
 
   -- This should probably go in 'susp'
   definition psuspn : ℕ → Type* → Type*
@@ -310,6 +345,20 @@ namespace spectrum
   definition sfiber {N : succ_str} (E F : gen_spectrum N) (f : E →ₛ F) : gen_spectrum N :=
     spectrum.MK (λn, pfiber (f n))
       (λn, pfiber_loop_space (f (S n)) ∘*ᵉ pfiber_equiv_of_square (sglue_square f n))
+
+  structure sp_chain_complex (N : succ_str) : Type :=
+    (car : N → spectrum)
+    (fn : Π(n : N), car (S n) →ₛ car n)
+    (is_chain_complex : Πn, fn n ∘ₛ fn (S n) ~ₛ szero _ _)
+
+  section
+    variables {N : succ_str} (X : sp_chain_complex N) (n : N)
+
+    definition scc_to_car [unfold 2] [coercion] := @sp_chain_complex.car
+    definition scc_to_fn [unfold 2] : X (S n) →ₛ X n := sp_chain_complex.fn X n
+    definition scc_is_chain_complex [unfold 2] : scc_to_fn X n ∘ₛ scc_to_fn X (S n) ~ₛ szero _ _
+      := sp_chain_complex.is_chain_complex X n
+  end
 
   /- Mapping spectra -/
 
