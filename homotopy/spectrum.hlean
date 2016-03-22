@@ -5,7 +5,7 @@ Authors: Michael Shulman
 
 -/
 
-import types.int types.pointed2 types.trunc homotopy.susp algebra.homotopy_group
+import types.int types.pointed2 types.trunc homotopy.susp algebra.homotopy_group .chain_complex
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index
 
 /-----------------------------------------
@@ -136,99 +136,160 @@ open pointed
   Basic definitions
   ---------------------/
 
-structure prespectrum :=
-  (deloop : ℕ → Type*)
-  (glue : Πn, (deloop n) →* (Ω (deloop (succ n))))
+open succ_str
 
-attribute prespectrum.deloop [coercion]
+/- The basic definitions of spectra and prespectra make sense for any successor-structure. -/
 
-structure is_spectrum [class] (E : prespectrum) :=
-  (is_equiv_glue : Πn, is_equiv (prespectrum.glue E n))
+structure gen_prespectrum (N : succ_str) :=
+  (deloop : N → Type*)
+  (glue : Π(n:N), (deloop n) →* (Ω (deloop (S n))))
+
+attribute gen_prespectrum.deloop [coercion]
+
+structure is_spectrum [class] {N : succ_str} (E : gen_prespectrum N) :=
+  (is_equiv_glue : Πn, is_equiv (gen_prespectrum.glue E n))
 
 attribute is_spectrum.is_equiv_glue [instance]
 
-definition equiv_glue (E : prespectrum) [H : is_spectrum E] (n:ℕ) : (E n) ≃* (Ω (E (succ n))) := 
-  pequiv_of_pmap (prespectrum.glue E n) _
-
-structure spectrum :=
-  (to_prespectrum : prespectrum)
+structure gen_spectrum (N : succ_str) :=
+  (to_prespectrum : gen_prespectrum N)
   (to_is_spectrum : is_spectrum to_prespectrum)
 
-attribute spectrum.to_prespectrum [coercion]
-attribute spectrum.to_is_spectrum [instance]
+attribute gen_spectrum.to_prespectrum [coercion]
+attribute gen_spectrum.to_is_spectrum [instance]
+
+-- Classically, spectra and prespectra use the successor structure +ℕ.
+-- But we will use +ℤ instead, to reduce case analysis later on.
+
+abbreviation spectrum := gen_spectrum +ℤ
+abbreviation spectrum.mk := @gen_spectrum.mk +ℤ
 
 namespace spectrum
 
-  abbreviation glue := prespectrum.glue
+  definition glue {{N : succ_str}} := @gen_prespectrum.glue N
+  --definition glue := (@gen_prespectrum.glue +ℤ)
+  definition equiv_glue {N : succ_str} (E : gen_prespectrum N) [H : is_spectrum E] (n:N) : (E n) ≃* (Ω (E (S n))) := 
+    pequiv_of_pmap (glue E n) (is_spectrum.is_equiv_glue E n)
 
-  -- An easy way to define a spectrum.
-  definition MK (deloop : ℕ → Type*) (glue : Πn, (deloop n) ≃* (Ω (deloop (succ n)))) : spectrum :=
-    spectrum.mk (prespectrum.mk deloop (λn, glue n)) (is_spectrum.mk (λn, _))
+  -- Sometimes an ℕ-indexed version does arise naturally, however, so
+  -- we give a standard way to extend an ℕ-indexed (pre)spectrum to a
+  -- ℤ-indexed one.
 
-  /- Spectrum maps -/
-  structure smap (E F : prespectrum) :=
-    (to_fun : Πn, E n →* F n)
-    (glue_square : Πn, glue F n ∘* to_fun n ~* Ω→ (to_fun (succ n)) ∘* glue E n)
+  definition psp_of_nat_indexed [constructor] (E : gen_prespectrum +ℕ) : gen_prespectrum +ℤ :=
+    gen_prespectrum.mk
+    (λ(n:ℤ), match n with
+             | of_nat k          := E k
+             | neg_succ_of_nat k := Ω[succ k] (E 0)
+             end)
+    begin
+      intros n, cases n with n n: esimp,
+      { exact (gen_prespectrum.glue E n) },
+      cases n with n,
+      { exact (pid _) },
+      { exact (pid _) }
+    end
+
+  definition is_spectrum_of_nat_indexed [instance] (E : gen_prespectrum +ℕ) [H : is_spectrum E] : is_spectrum (psp_of_nat_indexed E) :=
+  begin
+    apply is_spectrum.mk, intros n, cases n with n n: esimp,
+    { apply is_spectrum.is_equiv_glue },
+    cases n with n: apply is_equiv_id
+  end
+
+  protected definition of_nat_indexed (E : gen_prespectrum +ℕ) [H : is_spectrum E] : spectrum
+  := spectrum.mk (psp_of_nat_indexed E) (is_spectrum_of_nat_indexed E)
+
+  -- In fact, a (pre)spectrum indexed on any pointed successor structure
+  -- gives rise to one indexed on +ℕ, so in this sense +ℤ is a
+  -- "universal" successor structure for indexing spectra.
+
+  definition succ_str.of_nat {N : succ_str} (z : N) : ℕ → N
+  | succ_str.of_nat zero   := z
+  | succ_str.of_nat (succ k) := S (succ_str.of_nat k)
+
+  definition psp_of_gen_indexed [constructor] {N : succ_str} (z : N) (E : gen_prespectrum N) : gen_prespectrum +ℤ :=
+    psp_of_nat_indexed (gen_prespectrum.mk (λn, E (succ_str.of_nat z n)) (λn, gen_prespectrum.glue E (succ_str.of_nat z n)))
+
+  definition is_spectrum_of_gen_indexed [instance] {N : succ_str} (z : N) (E : gen_prespectrum N) [H : is_spectrum E]
+  : is_spectrum (psp_of_gen_indexed z E) :=
+  begin
+    apply is_spectrum_of_nat_indexed, apply is_spectrum.mk, intros n, esimp, apply is_spectrum.is_equiv_glue
+  end
+
+  protected definition of_gen_indexed [constructor] {N : succ_str} (z : N) (E : gen_spectrum N) : spectrum :=
+    spectrum.mk (psp_of_gen_indexed z E) (is_spectrum_of_gen_indexed z E)
+
+  -- Generally it's easiest to define a spectrum by giving 'equiv's
+  -- directly.  This works for any indexing succ_str.
+  protected definition MK {N : succ_str} (deloop : N → Type*) (glue : Π(n:N), (deloop n) ≃* (Ω (deloop (S n)))) : gen_spectrum N :=
+    gen_spectrum.mk (gen_prespectrum.mk deloop (λ(n:N), glue n))
+    (begin
+      apply is_spectrum.mk, intros n, esimp,
+      apply pequiv.to_is_equiv  -- Why doesn't typeclass inference find this?
+    end)
+
+  -- Finally, we combine them and give a way to produce a (ℤ-)spectrum from a ℕ-indexed family of 'equiv's.
+  protected definition Mk (deloop : ℕ → Type*) (glue : Π(n:ℕ), (deloop n) ≃* (Ω (deloop (nat.succ n)))) : spectrum :=
+    spectrum.of_nat_indexed (spectrum.MK deloop glue)
+
+  -- (Pre)spectrum maps.  These make sense for any succ_str.
+  structure smap {N : succ_str} (E F : gen_prespectrum N) :=
+    (to_fun : Π(n:N), E n →* F n)
+    (glue_square : Π(n:N), glue F n ∘* to_fun n ~* Ω→ (to_fun (S n)) ∘* glue E n)
 
   open smap
   infix ` →ₛ `:30 := smap
 
   attribute smap.to_fun [coercion]
 
-  definition sglue_square {E F : spectrum} (f : E →ₛ F) (n : ℕ)
-    : equiv_glue F n ∘* f n ~* Ω→ (f (succ n)) ∘* equiv_glue E n
-    := glue_square f n
+  -- A version of 'glue_square' in the spectrum case that uses 'equiv_glue'
+  definition sglue_square {N : succ_str} {E F : gen_spectrum N} (f : E →ₛ F) (n : N)
+    : equiv_glue F n ∘* f n ~* Ω→ (f (S n)) ∘* equiv_glue E n
+    -- I guess this is necessary because structures lack definitional eta?
+    := phomotopy.mk (glue_square f n) (to_homotopy_pt (glue_square f n))
 
-  definition scompose {X Y Z : prespectrum} (g : Y →ₛ Z) (f : X →ₛ Y) : X →ₛ Z :=
+  definition scompose {N : succ_str} {X Y Z : gen_prespectrum N} (g : Y →ₛ Z) (f : X →ₛ Y) : X →ₛ Z :=
     smap.mk (λn, g n ∘* f n)
       (λn, calc glue Z n ∘* to_fun g n ∘* to_fun f n
              ~* (glue Z n ∘* to_fun g n) ∘* to_fun f n                 : passoc
-         ... ~* (Ω→(to_fun g (succ n)) ∘* glue Y n) ∘* to_fun f n      : pwhisker_right (to_fun f n) (glue_square g n)
-         ... ~* Ω→(to_fun g (succ n)) ∘* (glue Y n ∘* to_fun f n)      : passoc
-         ... ~* Ω→(to_fun g (succ n)) ∘* (Ω→ (f (succ n)) ∘* glue X n) : pwhisker_left Ω→(to_fun g (succ n)) (glue_square f n)
-         ... ~* (Ω→(to_fun g (succ n)) ∘* Ω→(f (succ n))) ∘* glue X n  : passoc
-         ... ~* Ω→(to_fun g (succ n) ∘* to_fun f (succ n)) ∘* glue X n : pwhisker_right (glue X n) (ap1_compose _ _))
+         ... ~* (Ω→(to_fun g (S n)) ∘* glue Y n) ∘* to_fun f n      : pwhisker_right (to_fun f n) (glue_square g n)
+         ... ~* Ω→(to_fun g (S n)) ∘* (glue Y n ∘* to_fun f n)      : passoc
+         ... ~* Ω→(to_fun g (S n)) ∘* (Ω→ (f (S n)) ∘* glue X n) : pwhisker_left Ω→(to_fun g (S n)) (glue_square f n)
+         ... ~* (Ω→(to_fun g (S n)) ∘* Ω→(f (S n))) ∘* glue X n  : passoc
+         ... ~* Ω→(to_fun g (S n) ∘* to_fun f (S n)) ∘* glue X n : pwhisker_right (glue X n) (ap1_compose _ _))
 
   infixr ` ∘ₛ `:60 := scompose
 
   /- Suspension prespectra -/
 
-  definition psp_suspn : ℕ →  Type* → Type*
-  | psp_suspn 0 X        := X
-  | psp_suspn (succ n) X := psusp (psp_suspn n X)
+  -- This should probably go in 'susp'
+  definition psuspn : ℕ → Type* → Type*
+  | psuspn 0 X          := X
+  | psuspn (succ n) X   := psusp (psuspn n X)
 
-  definition psp_susp_oo (X : Type*) :=
-    prespectrum.mk (λn, psp_suspn n X) (λn, loop_susp_unit (psp_suspn n X))
+  -- Suspension prespectra are one that's naturally indexed on the natural numbers
+  definition psp_susp (X : Type*) : gen_prespectrum +ℕ :=
+    gen_prespectrum.mk (λn, psuspn n X) (λn, loop_susp_unit (psuspn n X))
 
   /- Truncations -/
 
+  -- We could truncate prespectra too, but since the operation
+  -- preserves spectra and isn't "correct" acting on prespectra
+  -- without spectrifying them first anyway, why bother?
   definition strunc (k : ℕ₋₂) (E : spectrum) : spectrum :=
-    spectrum.MK (λ(n:ℕ), ptrunc (k + n) (E n))
-      (λ(n:ℕ), (loop_ptrunc_pequiv (k + n) (E (succ n)))⁻¹ᵉ* ∘*ᵉ (ptrunc_pequiv_ptrunc (k + n) (equiv_glue E n)))
+    spectrum.Mk (λ(n:ℕ), ptrunc (k + n) (E n))
+      (λ(n:ℕ), (loop_ptrunc_pequiv (k + n) (E (succ n)))⁻¹ᵉ*
+               ∘*ᵉ (ptrunc_pequiv_ptrunc (k + n) (equiv_glue E (int.of_nat n))))
 
   /---------------------
     Homotopy groups
    ---------------------/
 
-  /- A spectrum has homotopy groups indexed by all integers.  The naive
-  definition would be
-
-  match n with
-  | neg_succ_of_nat k := π[0] (E (1+k))
-  | of_nat k          := π[k] (E 0)
-  end
-
-  but in order to ensure easily that they are all abelian groups, we
-  start shifting out earlier.  Since homotopy groups commute
-  appropriately with loop spaces, this is equivalent.
-  -/
-  definition shomotopy_group [constructor] (n : ℤ) (E : spectrum) : CommGroup :=
-  match n with
-  | neg_succ_of_nat k      := πag[0+2] (E (3 + k))
-  | of_nat 0               := πag[0+2] (E 2)
-  | of_nat 1               := πag[0+2] (E 1)
-  | of_nat (succ (succ k)) := πag[k+2] (E 0)
-  end
+  -- Here we start to reap the rewards of using ℤ-indexing: we can
+  -- read off the homotopy groups without any tedious case-analysis of
+  -- n.  We increment by 2 in order to ensure that they are all
+  -- automatically abelian groups.
+  definition shomotopy_group [constructor] (n : ℤ) (E : spectrum) : CommGroup := πag[0+2] (E (2 + n))
 
   notation `πₛ[`:95  n:0    `] `:0 E:95 := shomotopy_group n E
 
@@ -236,17 +297,19 @@ namespace spectrum
     Cotensor of spectra by types
   -------------------------------/
 
-  definition sp_cotensor (A : Type*) (B : spectrum) : spectrum :=
+  -- Makes sense for any indexing succ_str.  Could be done for
+  -- prespectra too, but as with truncation, why bother?
+  definition sp_cotensor {N : succ_str} (A : Type*) (B : gen_spectrum N) : gen_spectrum N :=
     spectrum.MK (λn, ppmap A (B n))
-      (λn, (loop_pmap_commute A (B (succ n)))⁻¹ᵉ* ∘*ᵉ (equiv_ppcompose_left (equiv_glue B n)))
+      (λn, (loop_pmap_commute A (B (S n)))⁻¹ᵉ* ∘*ᵉ (equiv_ppcompose_left (equiv_glue B n)))
 
   /-----------------------------------------
     Fibers and long exact sequences
   -----------------------------------------/
 
-  definition sfiber (E F : spectrum) (f : E →ₛ F) : spectrum :=
+  definition sfiber {N : succ_str} (E F : gen_spectrum N) (f : E →ₛ F) : gen_spectrum N :=
     spectrum.MK (λn, pfiber (f n))
-      (λn, pfiber_loop_space (f (succ n)) ∘*ᵉ pfiber_equiv_of_square (sglue_square f n))
+      (λn, pfiber_loop_space (f (S n)) ∘*ᵉ pfiber_equiv_of_square (sglue_square f n))
 
   /- Mapping spectra -/
 
