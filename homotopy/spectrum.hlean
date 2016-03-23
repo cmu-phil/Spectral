@@ -88,6 +88,47 @@ namespace pointed
   definition equiv_ppcompose_left {A B C : Type*} (g : B ≃* C) : ppmap A B ≃* ppmap A C :=
     pequiv_of_pmap (ppcompose_left g) _
 
+  definition pfiber_loop_space {A B : Type*} (f : A →* B) : pfiber (Ω→ f) ≃* Ω (pfiber f) :=
+    pequiv_of_equiv
+    (calc pfiber (Ω→ f) ≃ Σ(p : Point A = Point A), ap1 f p = rfl                                : (fiber.sigma_char (ap1 f) (Point Ω B))
+                    ... ≃ Σ(p : Point A = Point A), (respect_pt f) = ap f p ⬝ (respect_pt f)      : (sigma_equiv_sigma_right (λp,
+                              calc (ap1 f p = rfl) ≃ !respect_pt⁻¹ ⬝ (ap f p ⬝ !respect_pt) = rfl : equiv_eq_closed_left _ (con.assoc _ _ _)
+                                               ... ≃ ap f p ⬝ (respect_pt f) = (respect_pt f)     : eq_equiv_inv_con_eq_idp
+                                               ... ≃ (respect_pt f) = ap f p ⬝ (respect_pt f)     : eq_equiv_eq_symm))
+                    ... ≃ fiber.mk (Point A) (respect_pt f) = fiber.mk pt (respect_pt f)          : fiber_eq_equiv
+                    ... ≃ Ω (pfiber f)                                                            : erfl)
+    (begin cases f with f p, cases A with A a, cases B with B b, esimp at p, esimp at f, induction p, reflexivity end)
+
+  definition pfiber_equiv_of_phomotopy {A B : Type*} {f g : A →* B} (h : f ~* g) : pfiber f ≃* pfiber g :=
+  begin
+    fapply pequiv_of_equiv,
+    { refine (fiber.sigma_char f pt ⬝e _ ⬝e (fiber.sigma_char g pt)⁻¹ᵉ),
+      apply sigma_equiv_sigma_right, intros a,
+      apply equiv_eq_closed_left, apply (to_homotopy h) },
+    { refine (fiber_eq rfl _),
+      change (h pt)⁻¹ ⬝ respect_pt f = idp ⬝ respect_pt g,
+      rewrite idp_con, apply inv_con_eq_of_eq_con, symmetry, exact (to_homotopy_pt h) }
+  end
+
+  definition transport_fiber_equiv {A B : Type} (f : A → B) {b1 b2 : B} (p : b1 = b2) : fiber f b1 ≃ fiber f b2 :=
+    calc fiber f b1 ≃ Σa, f a = b1 : fiber.sigma_char
+               ...  ≃ Σa, f a = b2 : sigma_equiv_sigma_right (λa, equiv_eq_closed_right (f a) p)
+               ...  ≃ fiber f b2   : fiber.sigma_char
+
+  definition pequiv_postcompose {A B B' : Type*} (f : A →* B) (g : B ≃* B') : pfiber (g ∘* f) ≃* pfiber f :=
+  begin
+    fapply pequiv_of_equiv, esimp, 
+    refine ((transport_fiber_equiv (g ∘* f) (respect_pt g)⁻¹) ⬝e (@fiber.equiv_postcompose A B f (Point B) B' g _)),
+    -- change (eq_equiv_fn_eq g _ _)⁻¹ ((ap g (respect_pt f) ⬝ respect_pt g) ⬝ (respect_pt g)⁻¹) = respect_pt f,
+    exact sorry
+  end
+    
+  definition pfiber_equiv_of_square {A B C D : Type*} {f : A →* B} {g : C →* D} {h : A ≃* C} {k : B ≃* D} (s : k ∘* f ~* g ∘* h)
+    : pfiber f ≃* pfiber g :=
+    calc pfiber f ≃* pfiber (k ∘* f) : /- fiber.equiv_postcompose; need a pointed version (WIP above) -/ sorry
+              ... ≃* pfiber (g ∘* h) : pfiber_equiv_of_phomotopy s
+              ... ≃* pfiber g : /- fiber.equiv_precompose -/ sorry
+
 end pointed
 open pointed
 
@@ -133,6 +174,10 @@ namespace spectrum
   infix ` →ₛ `:30 := smap
 
   attribute smap.to_fun [coercion]
+
+  definition sglue_square {E F : spectrum} (f : E →ₛ F) (n : ℕ)
+    : equiv_glue F n ∘* f n ~* Ω→ (f (succ n)) ∘* equiv_glue E n
+    := glue_square f n
 
   definition scompose {X Y Z : prespectrum} (g : Y →ₛ Z) (f : X →ₛ Y) : X →ₛ Z :=
     smap.mk (λn, g n ∘* f n)
@@ -195,9 +240,15 @@ namespace spectrum
     spectrum.MK (λn, ppmap A (B n))
       (λn, (loop_pmap_commute A (B (succ n)))⁻¹ᵉ* ∘*ᵉ (equiv_ppcompose_left (equiv_glue B n)))
 
-  /- Mapping spectra -/
+  /-----------------------------------------
+    Fibers and long exact sequences
+  -----------------------------------------/
 
-  /- Fibers and long exact sequences -/
+  definition sfiber (E F : spectrum) (f : E →ₛ F) : spectrum :=
+    spectrum.MK (λn, pfiber (f n))
+      (λn, pfiber_loop_space (f (succ n)) ∘*ᵉ pfiber_equiv_of_square (sglue_square f n))
+
+  /- Mapping spectra -/
 
   /- Spectrification -/
 
