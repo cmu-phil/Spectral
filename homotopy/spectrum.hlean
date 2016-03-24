@@ -5,12 +5,15 @@ Authors: Michael Shulman
 
 -/
 
-import types.int types.pointed2 types.trunc homotopy.susp algebra.homotopy_group .chain_complex
+import types.int types.pointed2 types.trunc homotopy.susp algebra.homotopy_group .chain_complex cubical
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index
 
 /-----------------------------------------
   Stuff that should go in other files
 -----------------------------------------/
+
+attribute equiv.symm equiv.trans is_equiv.is_equiv_ap fiber.equiv_postcompose fiber.equiv_precompose pequiv.to_pmap pequiv._trans_of_to_pmap [constructor]
+attribute is_equiv.eq_of_fn_eq_fn' [unfold 3]
 
 namespace sigma
 
@@ -19,6 +22,13 @@ namespace sigma
 
 end sigma
 open sigma
+
+namespace eq
+
+  definition pathover_eq_Fl' {A B : Type} {f : A → B} {a₁ a₂ : A} {b : B} (p : a₁ = a₂) (q : f a₂ = b) : (ap f p) ⬝ q =[p] q :=
+  by induction p; induction q; exact idpo
+
+end eq open eq
 
 namespace pointed
 
@@ -119,7 +129,7 @@ namespace pointed
       rewrite idp_con, apply inv_con_eq_of_eq_con, symmetry, exact (to_homotopy_pt h) }
   end
 
-  definition transport_fiber_equiv {A B : Type} (f : A → B) {b1 b2 : B} (p : b1 = b2) : fiber f b1 ≃ fiber f b2 :=
+  definition transport_fiber_equiv [constructor] {A B : Type} (f : A → B) {b1 b2 : B} (p : b1 = b2) : fiber f b1 ≃ fiber f b2 :=
     calc fiber f b1 ≃ Σa, f a = b1 : fiber.sigma_char
                ...  ≃ Σa, f a = b2 : sigma_equiv_sigma_right (λa, equiv_eq_closed_right (f a) p)
                ...  ≃ fiber f b2   : fiber.sigma_char
@@ -128,15 +138,24 @@ namespace pointed
   begin
     fapply pequiv_of_equiv, esimp, 
     refine ((transport_fiber_equiv (g ∘* f) (respect_pt g)⁻¹) ⬝e (@fiber.equiv_postcompose A B f (Point B) B' g _)),
-    -- change (eq_equiv_fn_eq g _ _)⁻¹ ((ap g (respect_pt f) ⬝ respect_pt g) ⬝ (respect_pt g)⁻¹) = respect_pt f,
-    exact sorry
+    esimp, apply (ap (fiber.mk (Point A))), rewrite con.assoc, apply inv_con_eq_of_eq_con,
+    rewrite [con.assoc, con.right_inv, con_idp, -ap_compose'], apply ap_con_eq_con
   end
-    
+
+  definition pequiv_precompose {A A' B : Type*} (f : A →* B) (g : A' ≃* A) : pfiber (f ∘* g) ≃* pfiber f :=
+  begin
+    fapply pequiv_of_equiv, esimp, 
+    refine (@fiber.equiv_precompose A B f (Point B) A' g _),
+    esimp, apply (eq_of_fn_eq_fn (fiber.sigma_char _ _)), fapply sigma_eq: esimp,
+    { apply respect_pt g },
+    { apply pathover_eq_Fl' }
+  end
+
   definition pfiber_equiv_of_square {A B C D : Type*} {f : A →* B} {g : C →* D} {h : A ≃* C} {k : B ≃* D} (s : k ∘* f ~* g ∘* h)
     : pfiber f ≃* pfiber g :=
-    calc pfiber f ≃* pfiber (k ∘* f) : /- fiber.equiv_postcompose; need a pointed version (WIP above) -/ sorry
+    calc pfiber f ≃* pfiber (k ∘* f) : pequiv_postcompose
               ... ≃* pfiber (g ∘* h) : pfiber_equiv_of_phomotopy s
-              ... ≃* pfiber g : /- fiber.equiv_precompose -/ sorry
+              ... ≃* pfiber g : pequiv_precompose
 
 end pointed
 open pointed
