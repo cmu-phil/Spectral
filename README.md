@@ -1,8 +1,8 @@
 # Spectral Sequences
 
-Formalization project of the CMU HoTT group towards formalizing the Serre spectral sequence. 
+Formalization project of the CMU HoTT group towards formalizing the Serre spectral sequence.
 
-#### Participants 
+#### Participants
 Jeremy Avigad, Steve Awodey, Ulrik Buchholtz, Floris van Doorn, Clive Newstead, Egbert Rijke, Mike Shulman.
 
 ## Resources
@@ -20,7 +20,7 @@ Jeremy Avigad, Steve Awodey, Ulrik Buchholtz, Floris van Doorn, Clive Newstead, 
 - some basic theory: product, tensor, hom, projective,
 - categories of algebras, [abelian categories](http://ncatlab.org/nlab/show/abelian+category),
 - exact sequences, short and long
-- [snake lemma](http://ncatlab.org/nlab/show/snake+lemma) 
+- [snake lemma](http://ncatlab.org/nlab/show/snake+lemma)
 - [5-lemma](http://ncatlab.org/nlab/show/five+lemma)
 - [chain complexes](http://ncatlab.org/nlab/show/chain+complex) and [homology](http://ncatlab.org/nlab/show/homology)
 - [exact couples](http://ncatlab.org/nlab/show/exact+couple), probably just of Z-graded objects, and derived exact couples
@@ -28,18 +28,36 @@ Jeremy Avigad, Steve Awodey, Ulrik Buchholtz, Floris van Doorn, Clive Newstead, 
 - [convergence of spectral sequences](http://ncatlab.org/nlab/show/spectral+sequence#ConvergenceOfSpectralSequences)
 
 ### Topology To Do:
-- HoTT Book chapter 8
-- fiber and cofiber sequences (is this in the library already?)
+- HoTT Book sections 8.7, 8.8.
+- fiber sequence
+  + already have the LES
+  + need shift isomorphism
+  + Hom'ing into a fiber sequence gives another fiber sequence.
+- cofiber sequences
+  + Hom'ing out gives a fiber sequence: if `A → B → coker f` cofiber
+    sequences, then `X^A → X^B → X^(coker f)` is a fiber sequence.
 - [prespectra](http://ncatlab.org/nlab/show/spectrum+object) and [spectra](http://ncatlab.org/nlab/show/spectrum), suspension
+  + try indexing on arbitrary successor structure
+  + think about equivariant spectra indexed by representations of `G`
 - [spectrification](http://ncatlab.org/nlab/show/higher+inductive+type#spectrification)
+  + adjoint to forgetful
+  + as sequential colimit, prove induction principle (if useful)
+  + connective spectrum: `is_conn n.-2 Eₙ`
 - [parametrized spectra](http://ncatlab.org/nlab/show/parametrized+spectrum), parametrized smash and hom between types and spectra
 - fiber and cofiber sequences of spectra, stability
+  + limits are levelwise
+  + colimits need to be spectrified
 - long exact sequences from (co)fiber sequences of spectra
+  + indexed on ℤ, need to splice together LES's
 - [Eilenberg-MacLane spaces](http://ncatlab.org/nlab/show/Eilenberg-Mac+Lane+space) and spectra
 - Postnikov towers of spectra
+  + basic definition already there
+  + fibers of Postnikov sequence unstably and stably
 - exact couple of a tower of spectra
+  + need to splice together LES's
 
 ### Already Done:
-- pointed types
-- definition of algebraic structures such as groups, rings, fields, 
-- some algebra: quotient, product, free.
+- Most things in the HoTT Book up to Section 8.6 (see [this file](https://github.com/leanprover/lean/blob/master/hott/book.md))
+- pointed types, maps, homotopies and equivalences
+- definition of algebraic structures such as groups, rings, fields
+- some algebra: quotient, product, free groups.

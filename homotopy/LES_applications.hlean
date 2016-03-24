@@ -1,6 +1,7 @@
-import .LES_of_homotopy_groups homotopy.connectedness homotopy.homotopy_group
-open eq is_trunc pointed homotopy is_equiv fiber equiv trunc nat chain_complex prod fin algebra
-     group trunc_index function
+import .LES_of_homotopy_groups homotopy.connectedness homotopy.homotopy_group homotopy.join
+open eq is_trunc pointed is_conn is_equiv fiber equiv trunc nat chain_complex prod fin algebra
+     group trunc_index function join pushout
+
 namespace nat
   open sigma sum
   definition eq_even_or_eq_odd (n : ℕ) : (Σk, 2 * k = n) ⊎ (Σk, 2 * k + 1 = n) :=
@@ -25,63 +26,16 @@ open nat
 
 namespace is_conn
 
-  theorem is_contr_HG_fiber_of_is_connected {A B : Type*} (k n : ℕ) (f : A →* B)
-    [H : is_conn_map n f] (H2 : k ≤ n) : is_contr (π[k] (pfiber f)) :=
-  @(trivial_homotopy_group_of_is_conn (pfiber f) H2) (H pt)
-
-  -- TODO: use this for trivial_homotopy_group_of_is_conn (in homotopy.homotopy_group)
-  theorem is_conn_of_le (A : Type) {n k : ℕ₋₂} (H : n ≤ k) [is_conn k A] : is_conn n A :=
-  begin
-    apply is_contr_equiv_closed,
-    apply trunc_trunc_equiv_left _ n k H
-  end
-
-  definition zero_le_of_nat (n : ℕ) : 0 ≤[ℕ₋₂] n :=
-  of_nat_le_of_nat (zero_le n)
-
-  local attribute is_conn_map [reducible] --TODO
-  theorem is_conn_map_of_le {A B : Type} (f : A → B) {n k : ℕ₋₂} (H : n ≤ k)
-    [is_conn_map k f] : is_conn_map n f :=
-  λb, is_conn_of_le _ H
-
-  definition is_surjective_trunc_functor {A B : Type} (n : ℕ₋₂) (f : A → B) [H : is_surjective f]
-    : is_surjective (trunc_functor n f) :=
-  begin
-    cases n with n: intro b,
-    { exact tr (fiber.mk !center !is_prop.elim)},
-    { refine @trunc.rec _ _ _ _ _ b, {intro x, exact is_trunc_of_le _ !minus_one_le_succ},
-      clear b, intro b, induction H b with v, induction v with a p,
-      exact tr (fiber.mk (tr a) (ap tr p))}
-  end
-
-  definition is_surjective_cancel_right {A B C : Type} (g : B → C) (f : A → B)
-    [H : is_surjective (g ∘ f)] : is_surjective g :=
-  begin
-    intro c,
-    induction H c with v, induction v with a p,
-    exact tr (fiber.mk (f a) p)
-  end
-
-  -- Lemma 7.5.14
-  theorem is_equiv_trunc_functor_of_is_conn_map {A B : Type} (n : ℕ₋₂) (f : A → B)
-    [H : is_conn_map n f] : is_equiv (trunc_functor n f) :=
-  begin
-    exact sorry
-  end
-
-  definition is_equiv_tinverse [constructor] (A : Type*) : is_equiv (@tinverse A) :=
-  by apply @is_equiv_trunc_functor; apply is_equiv_eq_inverse
-
   local attribute comm_group.to_group [coercion]
   local attribute is_equiv_tinverse [instance]
 
   theorem is_equiv_π_of_is_connected.{u} {A B : pType.{u}} (n k : ℕ) (f : A →* B)
-    [H : is_conn_map n f] (H2 : k ≤ n) : is_equiv (π→[k] f) :=
+    [H : is_conn_fun n f] (H2 : k ≤ n) : is_equiv (π→[k] f) :=
   begin
     induction k using rec_on_even_odd with k: cases k with k,
     { /- k = 0 -/
-      change (is_equiv (trunc_functor 0 f)), apply is_equiv_trunc_functor_of_is_conn_map,
-      refine is_conn_map_of_le f (zero_le_of_nat n)},
+      change (is_equiv (trunc_functor 0 f)), apply is_equiv_trunc_functor_of_is_conn_fun,
+      refine is_conn_fun_of_le f (zero_le_of_nat n)},
     { /- k > 0 even -/
       have H2' : 2 * k + 1 ≤ n, from le.trans !self_le_succ H2,
       exact
@@ -113,21 +67,53 @@ namespace is_conn
   end
 
   theorem is_surjective_π_of_is_connected.{u} {A B : pType.{u}} (n : ℕ) (f : A →* B)
-    [H : is_conn_map n f] : is_surjective (π→[n + 1] f) :=
+    [H : is_conn_fun n f] : is_surjective (π→[n + 1] f) :=
   begin
     induction n using rec_on_even_odd with n,
-    { cases n with n,
-      { exact sorry},
-      { have H3 : is_surjective (π→*[2*(succ n) + 1] f ∘* tinverse), from
-        @is_surjective_of_trivial _
-          (LES_of_homotopy_groups3 f) _
-          (is_exact_LES_of_homotopy_groups3 f (succ n, 2))
-          (@is_contr_HG_fiber_of_is_connected A B (2 * succ n) (2 * succ n) f H !le.refl),
-        exact @(is_surjective_cancel_right (pmap.to_fun (π→*[2*(succ n) + 1] f)) tinverse) H3}},
+    { have H3 : is_surjective (π→*[2*n + 1] f ∘* tinverse), from
+      @is_surjective_of_trivial _
+        (LES_of_homotopy_groups3 f) _
+        (is_exact_LES_of_homotopy_groups3 f (n, 2))
+        (@is_contr_HG_fiber_of_is_connected A B (2 * n) (2 * n) f H !le.refl),
+      exact @(is_surjective_cancel_right (pmap.to_fun (π→*[2*n + 1] f)) tinverse) H3},
     { exact @is_surjective_of_trivial _
         (LES_of_homotopy_groups3 f) _
         (is_exact_LES_of_homotopy_groups3 f (k, 5))
         (@is_contr_HG_fiber_of_is_connected A B (2 * k + 1) (2 * k + 1) f H !le.refl)}
+  end
+
+  /- joins -/
+
+  definition join_empty_right [constructor] (A : Type) : join A empty ≃ A :=
+  begin
+    fapply equiv.MK,
+    { intro x, induction x with a o a o,
+      { exact a },
+      { exact empty.elim o },
+      { exact empty.elim o } },
+    { exact pushout.inl },
+    { intro a, reflexivity},
+    { intro x, induction x with a o a o,
+      { reflexivity },
+      { exact empty.elim o },
+      { exact empty.elim o } }
+  end
+
+  definition natural_square2 {A B X : Type} {f : A → X} {g : B → X} (h : Πa b, f a = g b)
+    {a a' : A} {b b' : B} (p : a = a') (q : b = b')
+    : square (ap f p) (ap g q) (h a b) (h a' b') :=
+  by induction p; induction q; exact hrfl
+
+  section
+    open sphere sphere_index
+
+    definition add_plus_one_minus_one (n : ℕ₋₁) : n +1+ -1 = n := idp
+    definition add_plus_one_succ (n m : ℕ₋₁) : n +1+ (m.+1) = (n +1+ m).+1 := idp
+    definition minus_one_add_plus_one (n : ℕ₋₁) : -1 +1+ n = n :=
+    begin induction n with n IH, reflexivity, exact ap succ IH end
+    definition succ_add_plus_one (n m : ℕ₋₁) : (n.+1) +1+ m = (n +1+ m).+1 :=
+    begin induction m with m IH, reflexivity, exact ap succ IH end
+
   end
 
 end is_conn

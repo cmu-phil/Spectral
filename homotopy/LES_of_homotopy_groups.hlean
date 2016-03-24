@@ -208,9 +208,10 @@ namespace chain_complex
   theorem fiber_sequence_fun_eq : Π(x : fiber_sequence_carrier f (n + 4)),
     fiber_sequence_carrier_pequiv f n (fiber_sequence_fun f (n + 3) x) =
       ap1 (fiber_sequence_fun f n) (fiber_sequence_carrier_pequiv f (n + 1) x)⁻¹ :=
-  homotopy_of_inv_homotopy
-    (pequiv.to_equiv (fiber_sequence_carrier_pequiv f (n + 1)))
-    (fiber_sequence_fun_eq_helper f n)
+  begin
+    apply homotopy_of_inv_homotopy_pre (fiber_sequence_carrier_pequiv f (n + 1)),
+    apply fiber_sequence_fun_eq_helper f n
+  end
 
   theorem fiber_sequence_fun_phomotopy :
     fiber_sequence_carrier_pequiv f n ∘*
