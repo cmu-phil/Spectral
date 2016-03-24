@@ -1,5 +1,5 @@
 import .LES_of_homotopy_groups homotopy.connectedness homotopy.homotopy_group homotopy.join
-open eq is_trunc pointed homotopy is_equiv fiber equiv trunc nat chain_complex prod fin algebra
+open eq is_trunc pointed is_conn is_equiv fiber equiv trunc nat chain_complex prod fin algebra
      group trunc_index function join pushout
 
 namespace nat
@@ -87,57 +87,22 @@ namespace is_conn
   definition join_empty_right [constructor] (A : Type) : join A empty ≃ A :=
   begin
     fapply equiv.MK,
-    { intro x, induction x with a o v,
-      { exact a},
-      { exact empty.elim o},
-      { exact empty.elim (pr2 v)}},
-    { exact pushout.inl},
+    { intro x, induction x with a o a o,
+      { exact a },
+      { exact empty.elim o },
+      { exact empty.elim o } },
+    { exact pushout.inl },
     { intro a, reflexivity},
-    { intro x, induction x with a o v,
-      { reflexivity},
-      { exact empty.elim o},
-      { exact empty.elim (pr2 v)}}
+    { intro x, induction x with a o a o,
+      { reflexivity },
+      { exact empty.elim o },
+      { exact empty.elim o } }
   end
-
-  definition join_functor [unfold 7] {A A' B B' : Type} (f : A → A') (g : B → B') :
-    join A B → join A' B' :=
-  begin
-    intro x, induction x with a b v,
-    { exact inl (f a)},
-    { exact inr (g b)},
-    { exact glue (f (pr1 v), g (pr2 v))}
-  end
-
-  theorem join_functor_glue {A A' B B' : Type} (f : A → A') (g : B → B')
-    (v : A × B) : ap (join_functor f g) (glue v) = glue (f (pr1 v), g (pr2 v)) :=
-  !elim_glue
 
   definition natural_square2 {A B X : Type} {f : A → X} {g : B → X} (h : Πa b, f a = g b)
     {a a' : A} {b b' : B} (p : a = a') (q : b = b')
     : square (ap f p) (ap g q) (h a b) (h a' b') :=
   by induction p; induction q; exact hrfl
-
-  definition join_equiv_join {A A' B B' : Type} (f : A ≃ A') (g : B ≃ B') :
-    join A B ≃ join A' B' :=
-  begin
-    fapply equiv.MK,
-    { apply join_functor f g},
-    { apply join_functor f⁻¹ g⁻¹},
-    { intro x', induction x' with a' b' v',
-      { esimp, exact ap inl (right_inv f a')},
-      { esimp, exact ap inr (right_inv g b')},
-      { cases v' with a' b', apply eq_pathover,
-        rewrite [▸*, ap_id, ap_compose' (join_functor _ _), ▸*],
-        xrewrite [+join_functor_glue, ▸*],
-        exact natural_square2 jglue (right_inv f a') (right_inv g b')}},
-    { intro x, induction x with a b v,
-      { esimp, exact ap inl (left_inv f a)},
-      { esimp, exact ap inr (left_inv g b)},
-      { cases v with a b, apply eq_pathover,
-        rewrite [▸*, ap_id, ap_compose' (join_functor _ _), ▸*],
-        xrewrite [+join_functor_glue, ▸*],
-        exact natural_square2 jglue (left_inv f a) (left_inv g b)}}
-  end
 
   section
     open sphere sphere_index
@@ -149,19 +114,6 @@ namespace is_conn
     definition succ_add_plus_one (n m : ℕ₋₁) : (n.+1) +1+ m = (n +1+ m).+1 :=
     begin induction m with m IH, reflexivity, exact ap succ IH end
 
-    definition sphere_join_sphere (n m : ℕ₋₁) : join (sphere n) (sphere m) ≃ sphere (n +1+ m) :=
-    begin
-      revert n, induction m with m IH: intro n,
-      { apply join_empty_right},
-      { rewrite [sphere_succ m],
-        refine join_equiv_join erfl !join.bool⁻¹ᵉ ⬝e _,
-        refine !join.assoc⁻¹ᵉ ⬝e _,
-        refine join_equiv_join !join.symm erfl ⬝e _,
-        refine join_equiv_join !join.bool erfl ⬝e _,
-        rewrite [-sphere_succ n],
-        refine !IH ⬝e _,
-        rewrite [add_plus_one_succ, succ_add_plus_one]}
-    end
   end
 
 end is_conn

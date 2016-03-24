@@ -209,8 +209,8 @@ namespace chain_complex
     have H2 : tcc_to_fn X (f m) ((equiv_of_eq (ap (λx, X x) (c m)))⁻¹ᵉ (e⁻¹ y)) = pt,
     begin
       refine _ ⬝ ap e⁻¹ᵉ* q ⬝ (respect_pt (e⁻¹ᵉ*)), apply eq_inv_of_eq, clear q, revert y,
-      refine inv_homotopy_of_homotopy (pequiv.to_equiv e) _,
-      apply inv_homotopy_of_homotopy, apply p
+      apply inv_homotopy_of_homotopy_pre e,
+      apply inv_homotopy_of_homotopy_pre, apply p
     end,
     induction (H _ H2) with x r,
     refine fiber.mk (e (cast (ap (λx, X x) (c (S m))) (cast (ap (λx, X (S x)) (c m)) x))) _,

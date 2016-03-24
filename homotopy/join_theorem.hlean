@@ -2,7 +2,7 @@
 
 import homotopy.connectedness homotopy.join
 
-open eq sigma pi function join homotopy is_trunc equiv is_equiv
+open eq sigma pi function join is_conn is_trunc equiv is_equiv
 
 namespace retraction
   variables {A B C : Type} (r2 : B → C) (r1 : A → B)

@@ -144,13 +144,7 @@ namespace spherical_fibrations
     definition tau : S 2 → BG 2 :=
     begin
       intro v, induction v with x, do 2 exact pt,
-      fapply sigma_eq,
-      { apply ua, fapply equiv.MK,
-        { },
-        { },
-        { },
-        { }  },
-      { }
+      exact sorry
     end
 
   end two_sphere

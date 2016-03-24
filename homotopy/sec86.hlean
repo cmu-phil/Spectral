@@ -2,7 +2,7 @@
 
 import  homotopy.wedge types.pi .LES_applications --TODO: remove
 
-open eq homotopy is_trunc pointed susp nat pi equiv is_equiv trunc fiber trunc_index
+open eq is_conn is_trunc pointed susp nat pi equiv is_equiv trunc fiber trunc_index
 
   -- definition iterated_loop_ptrunc_pequiv_con' (n : ℕ₋₂) (k : ℕ) (A : Type*)
   --   (p q : Ω[k](ptrunc (n+k) (Ω A))) :
@@ -253,8 +253,8 @@ namespace sphere
     exact !phomotopy_group_pequiv_loop_ptrunc⁻¹ᵉ*,
   end
 
-print phomotopy_group_pequiv_loop_ptrunc
-print iterated_loop_ptrunc_pequiv
+--print phomotopy_group_pequiv_loop_ptrunc
+--print iterated_loop_ptrunc_pequiv
   -- definition to_fun_stability_pequiv (k n : ℕ) (H : k + 3 ≤ 2 * n) --(p : π*[k + 1] (S. (n+1)))
   --   : stability_pequiv (k+1) n H = _ ∘ _ ∘ cast (ap (ptrunc 0) (loop_space_succ_eq_in (S. (n+1)) (k+1))) :=
   -- sorry
