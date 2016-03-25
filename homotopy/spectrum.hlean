@@ -6,7 +6,7 @@ Authors: Michael Shulman
 -/
 
 import types.int types.pointed2 types.trunc homotopy.susp algebra.homotopy_group .chain_complex cubical
-open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index
+open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi
 
 /-----------------------------------------
   Stuff that should go in other files
@@ -156,6 +156,16 @@ namespace pointed
     calc pfiber f ≃* pfiber (k ∘* f) : pequiv_postcompose
               ... ≃* pfiber (g ∘* h) : pfiber_equiv_of_phomotopy s
               ... ≃* pfiber g : pequiv_precompose
+
+  definition ppi {A : Type} (P : A → Type*) : Type* :=
+    pointed.mk' (Πa, P a)
+
+  definition loop_ppi_commute {A : Type} (B : A → Type*) : Ω(ppi B) ≃* (ppi (λa, Ω (B a))) :=
+    pequiv_of_equiv eq_equiv_homotopy rfl
+
+  definition equiv_ppi_right {A : Type} {P Q : A → Type*} (g : Πa, P a ≃* Q a) : ppi P ≃* ppi Q :=
+    pequiv_of_equiv (pi_equiv_pi_right g)
+      begin esimp, apply eq_of_homotopy, intros a, esimp, exact (respect_pt (g a)) end
 
 end pointed
 open pointed
@@ -356,6 +366,14 @@ namespace spectrum
   definition sp_cotensor {N : succ_str} (A : Type*) (B : gen_spectrum N) : gen_spectrum N :=
     spectrum.MK (λn, ppmap A (B n))
       (λn, (loop_pmap_commute A (B (S n)))⁻¹ᵉ* ∘*ᵉ (equiv_ppcompose_left (equiv_glue B n)))
+
+  ----------------------------------------
+  -- Sections of parametrized spectra
+  ----------------------------------------
+
+  definition spi {N : succ_str} (A : Type) (E : A -> gen_spectrum N) : gen_spectrum N :=
+    spectrum.MK (λn, ppi (λa, E a n))
+      (λn, (loop_ppi_commute (λa, E a (S n)))⁻¹ᵉ* ∘*ᵉ equiv_ppi_right (λa, equiv_glue (E a) n))
 
   /-----------------------------------------
     Fibers and long exact sequences
