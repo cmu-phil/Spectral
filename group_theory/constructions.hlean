@@ -36,6 +36,12 @@ namespace group
   theorem is_normal_subgroup' (h : G) (r : N g) : N (h⁻¹ * g * h) :=
   inv_inv h ▸ is_normal_subgroup N h⁻¹ r
 
+  definition normal_subgroup_rel_comm.{u} (R : subgroup_rel.{_ u} A) : normal_subgroup_rel.{_ u} A :=
+  ⦃normal_subgroup_rel, R,
+    is_normal := abstract begin
+      intros g h r, xrewrite [mul.comm h g, mul_inv_cancel_right], exact r
+      end end⦄
+
   theorem is_normal_subgroup_rev (h : G) (r : N (h * g * h⁻¹)) : N g :=
   have H : h⁻¹ * (h * g * h⁻¹) * h = g, from calc
     h⁻¹ * (h * g * h⁻¹) * h = h⁻¹ * (h * g) * h⁻¹ * h : by rewrite [-mul.assoc h⁻¹]
@@ -212,9 +218,9 @@ namespace group
     : comm_group (qg N) :=
   ⦃comm_group, group_qg N, mul_comm := quotient_mul_comm⦄
 
-  definition quotient_comm_group [constructor] {G : CommGroup} (N : normal_subgroup_rel G)
+  definition quotient_comm_group [constructor] {G : CommGroup} (N : subgroup_rel G)
     : CommGroup :=
-  CommGroup.mk _ (comm_group_qg N)
+  CommGroup.mk _ (comm_group_qg (normal_subgroup_rel_comm N))
 
   /- Binary products (direct sums) of Groups -/
   definition product_one [constructor] : G × G' := (one, one)
@@ -596,7 +602,51 @@ namespace group
         exact !to_respect_inv⁻¹}}
   end
 
-  /- Free Commutative Group of a set -/
+  /- set generating normal subgroup -/
+
+  section
+
+    parameters {GG : CommGroup} (S : GG → Prop)
+
+    inductive generating_relation' : GG → Type :=
+    | rincl : Π{g}, S g → generating_relation' g
+    | rmul  : Π{g h}, generating_relation' g → generating_relation' h → generating_relation' (g * h)
+    | rinv  : Π{g}, generating_relation' g → generating_relation' g⁻¹
+    | rone  : generating_relation' 1
+    open generating_relation'
+    definition generating_relation (g : GG) : Prop := ∥ generating_relation' g ∥
+    local abbreviation R := generating_relation
+    definition gr_one : R 1 := tr (rone S)
+    definition gr_inv (g : GG) : R g → R g⁻¹ :=
+    trunc_functor -1 rinv
+    definition gr_mul (g h : GG) : R g → R h → R (g * h) :=
+    trunc_functor2 rmul
+
+    definition normal_generating_relation : subgroup_rel GG :=
+    ⦃ subgroup_rel,
+      R := generating_relation,
+      Rone := gr_one,
+      Rinv := gr_inv,
+      Rmul := gr_mul⦄
+
+    parameter (GG)
+    definition quotient_comm_group_gen : CommGroup := quotient_comm_group normal_generating_relation
+
+  end
+
+  section
+
+    parameters {I : Set} (Y : I → CommGroup)
+
+    definition dirsum_carrier : CommGroup := free_comm_group (trunctype.mk (Σi, Y i) _)
+    local abbreviation ι := @free_comm_group_inclusion
+    inductive dirsum_rel : dirsum_carrier → Type :=
+    | rmk : Πi y₁ y₂, dirsum_rel (ι ⟨i, y₁⟩ * ι ⟨i, y₂⟩ * (ι ⟨i, y₁ * y₂⟩)⁻¹)
+
+    definition direct_sum : CommGroup := quotient_comm_group_gen dirsum_carrier (λg, ∥dirsum_rel g∥)
+  end
+
+  /- Tensor group (WIP) -/
 
 /-  namespace tensor_group
   variables {A B}
