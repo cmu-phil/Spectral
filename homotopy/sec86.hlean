@@ -1,6 +1,6 @@
 -- TODO: in wedge connectivity and is_conn.elim, unbundle P
 
-import  homotopy.wedge types.pi .LES_applications --TODO: remove
+import homotopy.wedge algebra.homotopy_group homotopy.sphere types.nat
 
 open eq is_conn is_trunc pointed susp nat pi equiv is_equiv trunc fiber trunc_index
 

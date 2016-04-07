@@ -38,57 +38,33 @@ namespace is_conn
   theorem is_equiv_π_of_is_connected.{u} {A B : pType.{u}} (n k : ℕ) (f : A →* B)
     [H : is_conn_fun n f] (H2 : k ≤ n) : is_equiv (π→[k] f) :=
   begin
-    induction k using rec_on_even_odd with k: cases k with k,
+    cases k with k,
     { /- k = 0 -/
       change (is_equiv (trunc_functor 0 f)), apply is_equiv_trunc_functor_of_is_conn_fun,
       refine is_conn_fun_of_le f (zero_le_of_nat n)},
     { /- k > 0 even -/
-      have H2' : 2 * k + 1 ≤ n, from le.trans !self_le_succ H2,
+     have H2' : k ≤ n, from le.trans !self_le_succ H2,
       exact
       @is_equiv_of_trivial _
-        (LES_of_homotopy_groups3 f) _
-        (is_exact_LES_of_homotopy_groups3 f (k, 5))
-        (is_exact_LES_of_homotopy_groups3 f (succ k, 0))
-        (@is_contr_HG_fiber_of_is_connected A B (2 * k + 1) n f H H2')
-        (@is_contr_HG_fiber_of_is_connected A B (2 * succ k) n f H H2)
-        (@pgroup_of_group _ (comm_group_LES_of_homotopy_groups3 f k 0) idp)
-        (@pgroup_of_group _ (comm_group_LES_of_homotopy_groups3 f k 1) idp)
-        (homomorphism.struct (homomorphism_LES_of_homotopy_groups_fun3 f (k, 0)))},
-    { /- k = 1 -/
-      exact sorry}, -- need some more facts about anti-homomorphisms
-    { /- k > 1 odd -/
-      have H2' : 2 * succ k ≤ n, from le.trans !self_le_succ H2,
-      have H3 : is_equiv (π→*[2*(succ k) + 1] f ∘* tinverse), from
-      @is_equiv_of_trivial _
-        (LES_of_homotopy_groups3 f) _
-        (is_exact_LES_of_homotopy_groups3 f (succ k, 2))
-        (is_exact_LES_of_homotopy_groups3 f (succ k, 3))
-        (@is_contr_HG_fiber_of_is_connected A B (2 * succ k) n f H H2')
-        (@is_contr_HG_fiber_of_is_connected A B (2 * succ k + 1) n f H H2)
-        (@pgroup_of_group _ (comm_group_LES_of_homotopy_groups3 f k 3) idp)
-        (@pgroup_of_group _ (comm_group_LES_of_homotopy_groups3 f k 4) idp)
-        (homomorphism.struct (homomorphism_LES_of_homotopy_groups_fun3 f (k, 3))),
-      exact @(is_equiv.cancel_right tinverse) !is_equiv_tinverse
-                  (pmap.to_fun (π→*[2*(succ k) + 1] f)) H3}
+        (LES_of_homotopy_groups f) _
+        (is_exact_LES_of_homotopy_groups f (k, 2))
+        (is_exact_LES_of_homotopy_groups f (succ k, 0))
+        (@is_contr_HG_fiber_of_is_connected A B k n f H H2')
+        (@is_contr_HG_fiber_of_is_connected A B (succ k) n f H H2)
+        (@pgroup_of_group _ (group_LES_of_homotopy_groups f k 0) idp)
+        (@pgroup_of_group _ (group_LES_of_homotopy_groups f k 1) idp)
+        (homomorphism.struct (homomorphism_LES_of_homotopy_groups_fun f (k, 0)))},
   end
 
   theorem is_surjective_π_of_is_connected.{u} {A B : pType.{u}} (n : ℕ) (f : A →* B)
     [H : is_conn_fun n f] : is_surjective (π→[n + 1] f) :=
-  begin
-    induction n using rec_on_even_odd with n,
-    { have H3 : is_surjective (π→*[2*n + 1] f ∘* tinverse), from
-      @is_surjective_of_trivial _
-        (LES_of_homotopy_groups3 f) _
-        (is_exact_LES_of_homotopy_groups3 f (n, 2))
-        (@is_contr_HG_fiber_of_is_connected A B (2 * n) (2 * n) f H !le.refl),
-      exact @(is_surjective_cancel_right (pmap.to_fun (π→*[2*n + 1] f)) tinverse) H3},
-    { exact @is_surjective_of_trivial _
-        (LES_of_homotopy_groups3 f) _
-        (is_exact_LES_of_homotopy_groups3 f (k, 5))
-        (@is_contr_HG_fiber_of_is_connected A B (2 * k + 1) (2 * k + 1) f H !le.refl)}
-  end
+  @is_surjective_of_trivial _
+    (LES_of_homotopy_groups f) _
+    (is_exact_LES_of_homotopy_groups f (n, 2))
+    (@is_contr_HG_fiber_of_is_connected A B n n f H !le.refl)
 
-  /- joins -/
+
+  -- TODO: move or remove
 
   definition join_empty_right [constructor] (A : Type) : join A empty ≃ A :=
   begin
