@@ -267,10 +267,3 @@ namespace sphere
   -- end
 
 end sphere
-
-/-
-  changes in book:
-  proof 8.6.15: also mention that we ignore multiplication
-  proof 8.4.4: respects points
-  proof 8.4.8: do k=0 separately
--/

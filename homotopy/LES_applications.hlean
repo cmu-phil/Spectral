@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2016 Floris van Doorn. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Floris van Doorn
+-/
+
 import .LES_of_homotopy_groups homotopy.connectedness homotopy.homotopy_group homotopy.join
 open eq is_trunc pointed is_conn is_equiv fiber equiv trunc nat chain_complex prod fin algebra
      group trunc_index function join pushout
@@ -49,7 +55,7 @@ namespace is_conn
         (@pgroup_of_group _ (comm_group_LES_of_homotopy_groups3 f k 1) idp)
         (homomorphism.struct (homomorphism_LES_of_homotopy_groups_fun3 f (k, 0)))},
     { /- k = 1 -/
-      exact sorry},
+      exact sorry}, -- need some more facts about anti-homomorphisms
     { /- k > 1 odd -/
       have H2' : 2 * succ k ≤ n, from le.trans !self_le_succ H2,
       have H3 : is_equiv (π→*[2*(succ k) + 1] f ∘* tinverse), from

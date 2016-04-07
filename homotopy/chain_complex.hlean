@@ -5,7 +5,7 @@ Authors: Floris van Doorn
 
 -/
 
-import types.int types.pointed2 types.trunc algebra.hott ..group_theory.basic .fin
+import types.int types.pointed types.trunc algebra.hott ..group_theory.basic .fin
 
 open eq pointed int unit is_equiv equiv is_trunc trunc function algebra group sigma.ops
      sum prod nat bool fin
@@ -127,7 +127,7 @@ namespace chain_complex
   --   : is_exact_at_t (type_chain_complex_from_left X) n :=
   -- H
 
-  definition transfer_type_chain_complex [constructor]
+  definition transfer_type_chain_complex [constructor] /- X -/
     {Y : N → Type*} (g : Π{n : N}, Y (S n) →* Y n) (e : Π{n}, X n ≃* Y n)
     (p : Π{n} (x : X (S n)), e (tcc_to_fn X n x) = g (e x)) : type_chain_complex N :=
   type_chain_complex.mk Y @g
@@ -158,6 +158,41 @@ namespace chain_complex
     apply right_inv
   end
 
+  -- cancel automorphisms inside a long exact sequence
+  definition type_chain_complex_cancel_aut [constructor] /- X -/
+    (g : Π{n : N}, X (S n) →* X n) (e : Π{n}, X n ≃* X n)
+    (r : Π{n}, X n →* X n)
+    (p : Π{n : N} (x : X (S n)), g (e x) = tcc_to_fn X n x)
+    (pr : Π{n : N} (x : X (S n)), g x = r (g (e x))) : type_chain_complex N :=
+  type_chain_complex.mk X @g
+    abstract begin
+      have p' : Π{n : N} (x : X (S n)), g x = tcc_to_fn X n (e⁻¹ x),
+      from λn, homotopy_inv_of_homotopy_pre e _ _ p,
+      intro n x,
+      refine ap g !p' ⬝ !pr ⬝ _,
+      refine ap r !p ⬝ _,
+      refine ap r (tcc_is_chain_complex X n _) ⬝ _,
+      apply respect_pt
+    end end
+
+  theorem is_exact_at_t_cancel_aut {X : type_chain_complex N}
+    {g : Π{n : N}, X (S n) →* X n} {e : Π{n}, X n ≃* X n}
+    {r : Π{n}, X n →* X n} (l : Π{n}, X n →* X n)
+    (p : Π{n : N} (x : X (S n)), g (e x) = tcc_to_fn X n x)
+    (pr : Π{n : N} (x : X (S n)), g x = r (g (e x)))
+    (pl : Π{n : N} (x : X (S n)), g (l x) = e (g x))
+    (H : is_exact_at_t X n) : is_exact_at_t (type_chain_complex_cancel_aut X @g @e @r @p @pr) n :=
+  begin
+    intro y q, esimp at *,
+    have H2 : tcc_to_fn X n (e⁻¹ y) = pt,
+    from (homotopy_inv_of_homotopy_pre e _ _ p _)⁻¹ ⬝ q,
+    cases (H _ H2) with x s,
+    refine fiber.mk (l (e x)) _,
+    refine !pl ⬝ _,
+    refine ap e (!p ⬝ s) ⬝ _,
+    apply right_inv
+  end
+
   -- move to init.equiv. This is inv_commute for A ≡ unit
   definition inv_commute1' {B C : Type} (f : B → C) [is_equiv f] (h : B → B) (h' : C → C)
     (p : Π(b : B), f (h b) = h' (f b)) (c : C) : f⁻¹ (h' c) = h (f⁻¹ c) :=
@@ -167,6 +202,7 @@ namespace chain_complex
     (p : Π(b : B), f (h b) =   h' (f b)) (c : C) : f⁻¹ (h' c) = h (f⁻¹ c) :=
   inv_commute1' (to_fun f) h h' p c
 
+  -- move
   definition fn_cast_eq_cast_fn {A : Type} {P Q : A → Type} {x y : A} (p : x = y)
     (f : Πx, P x → Q x) (z : P x) : f y (cast (ap P p) z) = cast (ap Q p) (f x z) :=
   by induction p; reflexivity

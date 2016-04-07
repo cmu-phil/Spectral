@@ -5,7 +5,7 @@ Authors: Michael Shulman
 
 -/
 
-import types.int types.pointed2 types.trunc homotopy.susp algebra.homotopy_group .chain_complex cubical
+import types.int types.pointed types.trunc homotopy.susp algebra.homotopy_group .chain_complex cubical
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi
 
 /-----------------------------------------
@@ -136,7 +136,7 @@ namespace pointed
 
   definition pequiv_postcompose {A B B' : Type*} (f : A →* B) (g : B ≃* B') : pfiber (g ∘* f) ≃* pfiber f :=
   begin
-    fapply pequiv_of_equiv, esimp, 
+    fapply pequiv_of_equiv, esimp,
     refine ((transport_fiber_equiv (g ∘* f) (respect_pt g)⁻¹) ⬝e (@fiber.equiv_postcompose A B f (Point B) B' g _)),
     esimp, apply (ap (fiber.mk (Point A))), rewrite con.assoc, apply inv_con_eq_of_eq_con,
     rewrite [con.assoc, con.right_inv, con_idp, -ap_compose'], apply ap_con_eq_con
@@ -144,7 +144,7 @@ namespace pointed
 
   definition pequiv_precompose {A A' B : Type*} (f : A →* B) (g : A' ≃* A) : pfiber (f ∘* g) ≃* pfiber f :=
   begin
-    fapply pequiv_of_equiv, esimp, 
+    fapply pequiv_of_equiv, esimp,
     refine (@fiber.equiv_precompose A B f (Point B) A' g _),
     esimp, apply (eq_of_fn_eq_fn (fiber.sigma_char _ _)), fapply sigma_eq: esimp,
     { apply respect_pt g },
@@ -157,13 +157,11 @@ namespace pointed
               ... ≃* pfiber (g ∘* h) : pfiber_equiv_of_phomotopy s
               ... ≃* pfiber g : pequiv_precompose
 
-  definition ppi {A : Type} (P : A → Type*) : Type* :=
-    pointed.mk' (Πa, P a)
-
-  definition loop_ppi_commute {A : Type} (B : A → Type*) : Ω(ppi B) ≃* (ppi (λa, Ω (B a))) :=
+  definition loop_ppi_commute {A : Type} (B : A → Type*) : Ω(ppi B) ≃* Π*a, Ω (B a) :=
     pequiv_of_equiv eq_equiv_homotopy rfl
 
-  definition equiv_ppi_right {A : Type} {P Q : A → Type*} (g : Πa, P a ≃* Q a) : ppi P ≃* ppi Q :=
+  definition equiv_ppi_right {A : Type} {P Q : A → Type*} (g : Πa, P a ≃* Q a)
+    : (Π*a, P a) ≃* (Π*a, Q a) :=
     pequiv_of_equiv (pi_equiv_pi_right g)
       begin esimp, apply eq_of_homotopy, intros a, esimp, exact (respect_pt (g a)) end
 
@@ -206,7 +204,7 @@ namespace spectrum
 
   definition glue {{N : succ_str}} := @gen_prespectrum.glue N
   --definition glue := (@gen_prespectrum.glue +ℤ)
-  definition equiv_glue {N : succ_str} (E : gen_prespectrum N) [H : is_spectrum E] (n:N) : (E n) ≃* (Ω (E (S n))) := 
+  definition equiv_glue {N : succ_str} (E : gen_prespectrum N) [H : is_spectrum E] (n:N) : (E n) ≃* (Ω (E (S n))) :=
     pequiv_of_pmap (glue E n) (is_spectrum.is_equiv_glue E n)
 
   -- Sometimes an ℕ-indexed version does arise naturally, however, so
