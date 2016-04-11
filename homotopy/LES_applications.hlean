@@ -63,29 +63,13 @@ namespace is_conn
     (is_exact_LES_of_homotopy_groups f (n, 2))
     (@is_contr_HG_fiber_of_is_connected A B n n f H !le.refl)
 
-
-  -- TODO: move or remove
-
-  definition join_empty_right [constructor] (A : Type) : join A empty ≃ A :=
-  begin
-    fapply equiv.MK,
-    { intro x, induction x with a o a o,
-      { exact a },
-      { exact empty.elim o },
-      { exact empty.elim o } },
-    { exact pushout.inl },
-    { intro a, reflexivity},
-    { intro x, induction x with a o a o,
-      { reflexivity },
-      { exact empty.elim o },
-      { exact empty.elim o } }
-  end
-
+  -- TODO: move and rename?
   definition natural_square2 {A B X : Type} {f : A → X} {g : B → X} (h : Πa b, f a = g b)
     {a a' : A} {b b' : B} (p : a = a') (q : b = b')
     : square (ap f p) (ap g q) (h a b) (h a' b') :=
   by induction p; induction q; exact hrfl
 
+  -- TODO: move
   section
     open sphere sphere_index
 

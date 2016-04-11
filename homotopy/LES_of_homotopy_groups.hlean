@@ -615,6 +615,7 @@ namespace chain_complex
   | (n, x) := loop_spaces2_pequiv' n x
 
   local attribute loop_pequiv_loop [reducible]
+
   /- all cases where n>0 are basically the same -/
   definition loop_spaces_fun2_phomotopy (x : +3ℕ) :
     loop_spaces2_pequiv x ∘* loop_spaces_fun (nat_of_str x) ~*
@@ -622,7 +623,8 @@ namespace chain_complex
     ∘* pcast (ap (loop_spaces) (nat_of_str_3S x)) :=
   begin
     cases x with n x, cases x with k H,
-    cases k with k, rotate 1, cases k with k, rotate 1, cases k with k, rotate 2,
+    do 3 (cases k with k; rotate 1),
+    { /-k≥3-/ exfalso, apply lt_le_antisymm H, apply le_add_left},
     { /-k=0-/
       induction n with n IH,
       { refine !pid_comp ⬝* _ ⬝* !comp_pid⁻¹* ⬝* !comp_pid⁻¹*,
@@ -649,7 +651,6 @@ namespace chain_complex
         refine _ ⬝* pwhisker_right _ !loop_spaces_fun2_add1_2⁻¹*,
         refine !ap1_compose⁻¹* ⬝* _ ⬝* !ap1_compose, apply ap1_phomotopy,
         exact IH ⬝* !comp_pid}},
-    { /-k=k'+3-/ exfalso, apply lt_le_antisymm H, apply le_add_left}
   end
 
   definition LES_of_loop_spaces2 [constructor] : type_chain_complex +3ℕ :=

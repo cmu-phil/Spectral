@@ -1,4 +1,8 @@
--- TODO: in wedge connectivity and is_conn.elim, unbundle P
+/-
+Copyright (c) 2016 Floris van Doorn. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Floris van Doorn
+-/
 
 import homotopy.wedge algebra.homotopy_group homotopy.sphere types.nat
 
@@ -14,24 +18,6 @@ open eq is_conn is_trunc pointed susp nat pi equiv is_equiv trunc fiber trunc_in
   --   { reflexivity},
   --   { exact sorry}
   -- end
-
-  -- example : ((@add.{0} trunc_index has_add_trunc_index n
-  --               (trunc_index.of_nat
-  --                  (@add.{0} nat nat._trans_of_decidable_linear_ordered_semiring_17 nat.zero
-  --                     (@one.{0} nat nat._trans_of_decidable_linear_ordered_semiring_21))))) = (0 : ℕ₋₂) := proof idp qed
-
-  definition iterated_loop_ptrunc_pequiv_con (n : ℕ₋₂) (k : ℕ) (A : Type*)
-    (p q : Ω[k + 1](ptrunc (n+k+1) A)) :
-    iterated_loop_ptrunc_pequiv n (k+1) A (p ⬝ q) =
-    trunc_concat (iterated_loop_ptrunc_pequiv n (k+1) A p)
-                 (iterated_loop_ptrunc_pequiv n (k+1) A q) :=
-  begin
-    exact sorry
-    -- induction k with k IH,
-    -- { replace (nat.zero + 1) with (nat.succ nat.zero), esimp [iterated_loop_ptrunc_pequiv],
-    --   exact sorry},
-    -- { exact sorry}
-  end
 
   theorem elim_type_merid_inv {A : Type} (PN : Type) (PS : Type) (Pm : A → PN ≃ PS)
     (a : A) : transport (susp.elim_type PN PS Pm) (merid a)⁻¹ = to_inv (Pm a) :=
@@ -49,14 +35,18 @@ open eq is_conn is_trunc pointed susp nat pi equiv is_equiv trunc fiber trunc_in
 
 namespace freudenthal section
 
+  /- The Freudenthal Suspension Theorem -/
   parameters {A : Type*} {n : ℕ} [is_conn n A]
 
-  --porting from Agda
-  -- definition Q (x : susp A) : Type :=
-  -- trunc (k) (north = x)
+  /-
+    This proof is ported from Agda
+    This is the 95% version of the Freudenthal Suspension Theorem, which means that we don't
+    prove that loop_susp_unit : A →* Ω(psusp A) is 2n-connected (if A is n-connected),
+    but instead we only prove that it induces an equivalence on the first 2n homotopy groups.
+  -/
 
-  definition up (a : A) : north = north :> susp A := -- up a = loop_susp_unit A a
-  merid a ⬝ (merid pt)⁻¹
+  definition up (a : A) : north = north :> susp A :=
+  loop_susp_unit A a
 
   definition code_merid : A → ptrunc (n + n) A → ptrunc (n + n) A :=
   begin
@@ -191,31 +181,8 @@ namespace freudenthal section
   definition pequiv' : ptrunc (n + n) A ≃* ptrunc (n + n) (Ω (psusp A)) :=
   pequiv_of_equiv equiv' decode_north_pt
 
-  -- can we get this?
-  -- definition freudenthal_suspension  : is_conn_fun (n+n) (loop_susp_unit A) :=
-  -- begin
-  --   intro p, esimp at *, fapply is_contr.mk,
-  --   { note c := encode (tr p), esimp at *, induction c with a, },
-  --   { exact sorry}
-  -- end
-
--- {- Used to prove stability in iterated suspensions -}
--- module FreudenthalIso
---   {i} (n : ℕ₋₂) (k : ℕ) (t : k ≠ O) (kle : ⟨ k ⟩ ≤T S (n +2+ S n))
---   (X : Ptd i) (cX : is-connected (S (S n)) (fst X)) where
-
---   open FreudenthalEquiv n (⟨ k ⟩) kle (fst X) (snd X) cX public
-
---   hom : Ω^-Group k t (⊙Trunc ⟨ k ⟩ X) Trunc-level
---      →ᴳ Ω^-Group k t (⊙Trunc ⟨ k ⟩ (⊙Ω (⊙Susp X))) Trunc-level
---   hom = record {
---     f = fst F;
---     pres-comp = ap^-conc^ k t (decodeN , decodeN-pt) }
---     where F = ap^ k (decodeN , decodeN-pt)
-
---   iso : Ω^-Group k t (⊙Trunc ⟨ k ⟩ X) Trunc-level
---      ≃ᴳ Ω^-Group k t (⊙Trunc ⟨ k ⟩ (⊙Ω (⊙Susp X))) Trunc-level
---   iso = (hom , is-equiv-ap^ k (decodeN , decodeN-pt) (snd eq))
+  -- We don't prove this:
+  -- theorem freudenthal_suspension : is_conn_fun (n+n) (loop_susp_unit A) :=
 
 end end freudenthal
 
@@ -233,7 +200,12 @@ freudenthal_pequiv A H
 namespace sphere
   open ops algebra pointed function
 
-  definition stability_pequiv (k n : ℕ) (H : k + 2 ≤ 2 * n) : π*[k + 1] (S. (n+1)) ≃* π*[k] (S. n) :=
+  -- replace with definition in algebra.homotopy_group
+  definition phomotopy_group_succ_in2 (A : Type*) (n : ℕ) : π*[n + 1] A = π*[n] Ω A :> Type* :=
+  ap (ptrunc 0) (loop_space_succ_eq_in A n)
+
+  definition stability_pequiv_helper (k n : ℕ) (H : k + 2 ≤ 2 * n)
+    : ptrunc k (Ω(psusp (S. n))) ≃* ptrunc k (S. n) :=
   begin
     have H' : k ≤ 2 * pred n,
     begin
@@ -246,24 +218,100 @@ namespace sphere
       { exfalso, exact not_succ_le_zero _ H},
       { esimp, apply is_conn_psphere}
     end,
-    refine pequiv_of_eq (ap (ptrunc 0) (loop_space_succ_eq_in (S. (n+1)) k)) ⬝e* _,
+    symmetry, exact freudenthal_pequiv (S. n) H'
+  end
+
+  definition stability_pequiv (k n : ℕ) (H : k + 2 ≤ 2 * n) : π*[k + 1] (S. (n+1)) ≃* π*[k] (S. n) :=
+  begin
+    refine pequiv_of_eq (phomotopy_group_succ_in2 (S. (n+1)) k) ⬝e* _,
     rewrite psphere_succ,
     refine !phomotopy_group_pequiv_loop_ptrunc ⬝e* _,
-    refine loopn_pequiv_loopn k (freudenthal_pequiv _ H')⁻¹ᵉ* ⬝e* _,
+    refine loopn_pequiv_loopn k (stability_pequiv_helper k n H) ⬝e* _,
     exact !phomotopy_group_pequiv_loop_ptrunc⁻¹ᵉ*,
   end
 
---print phomotopy_group_pequiv_loop_ptrunc
---print iterated_loop_ptrunc_pequiv
-  -- definition to_fun_stability_pequiv (k n : ℕ) (H : k + 3 ≤ 2 * n) --(p : π*[k + 1] (S. (n+1)))
-  --   : stability_pequiv (k+1) n H = _ ∘ _ ∘ cast (ap (ptrunc 0) (loop_space_succ_eq_in (S. (n+1)) (k+1))) :=
-  -- sorry
+  -- change some "+1"'s intro succ's to avoid this definition (or vice versa)
+  definition group_homotopy_group2 [instance] (k : ℕ) (A : Type*) :
+    group (carrier (ptrunctype.to_pType (π*[k + 1] A))) :=
+  group_homotopy_group k A
 
-  -- definition stability (k n : ℕ) (H : k + 3 ≤ 2 * n) : πg[k+1 +1] (S. (n+1)) = πg[k+1] (S. n) :=
-  -- begin
-  --   fapply Group_eq,
-  --   { refine equiv_of_pequiv (stability_pequiv _ _ _), rewrite succ_add, exact H},
-  --   { intro g h, esimp, }
-  -- end
+  definition loop_pequiv_loop_con {A B : Type*} (f : A ≃* B) (p q : Ω A)
+    : loop_pequiv_loop f (p ⬝ q) = loop_pequiv_loop f p ⬝ loop_pequiv_loop f q :=
+  loopn_pequiv_loopn_con 0 f p q
+
+  definition iterated_loop_ptrunc_pequiv_con {n : ℕ₋₂} {k : ℕ} {A : Type*}
+    (p q : Ω[succ k] (ptrunc (n+succ k) A)) :
+    iterated_loop_ptrunc_pequiv n (succ k) A (p ⬝ q) =
+    trunc_concat (iterated_loop_ptrunc_pequiv n (succ k) A p)
+                 (iterated_loop_ptrunc_pequiv n (succ k) A q)  :=
+  begin
+    refine _ ⬝ loop_ptrunc_pequiv_con _ _,
+    exact ap !loop_ptrunc_pequiv !loop_pequiv_loop_con
+  end
+
+  theorem inv_respect_binary_operation {A B : Type} (f : A ≃ B) (mA : A → A → A) (mB : B → B → B)
+    (p : Πa₁ a₂, f (mA a₁ a₂) = mB (f a₁) (f a₂)) (b₁ b₂ : B) :
+    f⁻¹ (mB b₁ b₂) = mA (f⁻¹ b₁) (f⁻¹ b₂) :=
+  begin
+    refine is_equiv_rect' f⁻¹ _ _ b₁, refine is_equiv_rect' f⁻¹ _ _ b₂,
+    intros a₂ a₁, apply inv_eq_of_eq, symmetry, exact p a₁ a₂
+  end
+
+  definition iterated_loop_ptrunc_pequiv_inv_con {n : ℕ₋₂} {k : ℕ} {A : Type*}
+    (p q : ptrunc n (Ω[succ k] A)) :
+    (iterated_loop_ptrunc_pequiv n (succ k) A)⁻¹ᵉ* (trunc_concat p q) =
+    (iterated_loop_ptrunc_pequiv n (succ k) A)⁻¹ᵉ* p ⬝
+    (iterated_loop_ptrunc_pequiv n (succ k) A)⁻¹ᵉ* q :=
+  inv_respect_binary_operation (iterated_loop_ptrunc_pequiv n (succ k) A) concat trunc_concat
+    (@iterated_loop_ptrunc_pequiv_con n k A) p q
+
+  definition phomotopy_group_pequiv_loop_ptrunc_con {k : ℕ} {A : Type*} (p q : πg[k +1] A) :
+    phomotopy_group_pequiv_loop_ptrunc (succ k) A (p * q) =
+    phomotopy_group_pequiv_loop_ptrunc (succ k) A p ⬝
+    phomotopy_group_pequiv_loop_ptrunc (succ k) A q :=
+  begin
+    refine _ ⬝ !loopn_pequiv_loopn_con,
+    exact ap (loopn_pequiv_loopn _ _) !iterated_loop_ptrunc_pequiv_inv_con
+  end
+
+  definition phomotopy_group_pequiv_loop_ptrunc_inv_con {k : ℕ} {A : Type*}
+    (p q : Ω[succ k] (ptrunc (succ k) A)) :
+    (phomotopy_group_pequiv_loop_ptrunc (succ k) A)⁻¹ᵉ* (p ⬝ q) =
+    (phomotopy_group_pequiv_loop_ptrunc (succ k) A)⁻¹ᵉ* p *
+    (phomotopy_group_pequiv_loop_ptrunc (succ k) A)⁻¹ᵉ* q :=
+  inv_respect_binary_operation (phomotopy_group_pequiv_loop_ptrunc (succ k) A) mul concat
+    (@phomotopy_group_pequiv_loop_ptrunc_con k A) p q
+
+  definition tcast [constructor] {n : ℕ₋₂} {A B : n-Type*} (p : A = B) : A →* B :=
+  pcast (ap ptrunctype.to_pType p)
+
+  definition tr_mul_tr {n : ℕ} {A : Type*} (p q : Ω[succ n] A)
+    : tr p *[π[n + 1] A] tr q = tr (p ⬝ q) :=
+  idp
+
+  -- use this in proof for ghomotopy_group_succ_in
+  definition phomotopy_group_succ_in2_con {A : Type*} {n : ℕ} (g h : πg[succ n +1] A) :
+    pcast (phomotopy_group_succ_in2 A (succ n)) (g * h) =
+    pcast (phomotopy_group_succ_in2 A (succ n)) g * pcast (phomotopy_group_succ_in2 A (succ n)) h :=
+  begin
+    induction g with p, induction h with q, esimp,
+    rewrite [-+tr_eq_cast_ap, ↑phomotopy_group_succ_in2, -+tr_compose],
+    refine ap (transport _ _) !tr_mul_tr ⬝ _,
+    rewrite [+trunc_transport],
+    apply ap tr, apply loop_space_succ_eq_in_concat,
+  end
+
+  definition stability_eq (k n : ℕ) (H : k + 3 ≤ 2 * n) : πg[k+1 +1] (S. (n+1)) = πg[k+1] (S. n) :=
+  begin
+    fapply Group_eq,
+    { exact equiv_of_pequiv (stability_pequiv (succ k) n H)},
+    { intro g h,
+      refine _ ⬝ !phomotopy_group_pequiv_loop_ptrunc_inv_con,
+      apply ap !phomotopy_group_pequiv_loop_ptrunc⁻¹ᵉ*,
+      refine ap (loopn_pequiv_loopn _ _) _ ⬝ !loopn_pequiv_loopn_con,
+      refine ap !phomotopy_group_pequiv_loop_ptrunc _ ⬝ !phomotopy_group_pequiv_loop_ptrunc_con,
+      apply phomotopy_group_succ_in2_con
+      }
+  end
 
 end sphere
