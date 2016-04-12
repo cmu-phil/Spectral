@@ -43,21 +43,12 @@ notation `-ℤ` := sint'
 
 definition stratified_type [reducible] (N : succ_str) (n : ℕ) : Type₀ := N × fin (succ n)
 
--- definition stratified_succ' {N : succ_str}  : Π{n : ℕ}, N → ifin n → stratified_type N n
--- | (succ k) n (fz k) := (S n, ifin.max k)
--- | (succ k) n (fs x) := (n, ifin.incl x)
-
--- definition stratified_succ {N : succ_str} {n : ℕ} (x : stratified_type N n) : stratified_type N n :=
--- stratified_succ' (pr1 x) (pr2 x)
-
 definition stratified_succ {N : succ_str} {n : ℕ} (x : stratified_type N n)
   : stratified_type N n :=
 (if val (pr2 x) = n then S (pr1 x) else pr1 x, my_succ (pr2 x))
 
 definition stratified [reducible] [constructor] (N : succ_str) (n : ℕ) : succ_str :=
 succ_str.mk (stratified_type N n) stratified_succ
-
---example (n : ℕ) : flatten (n, (2 : ifin (nat.succ (nat.succ 4)))) = 6*n+2 := proof rfl qed
 
 notation `+3ℕ` := stratified +ℕ 2
 notation `-3ℕ` := stratified -ℕ 2
@@ -67,20 +58,6 @@ notation `+6ℕ` := stratified +ℕ 5
 notation `-6ℕ` := stratified -ℕ 5
 notation `+6ℤ` := stratified +ℤ 5
 notation `-6ℤ` := stratified -ℤ 5
-
--- definition triple_type (N : succ_str) : Type₀ := N ⊎ N ⊎ N
--- definition triple_succ {N : succ_str} : triple_type N → triple_type N
--- | (inl n)       := inr (inl n)
--- | (inr (inl n)) := inr (inr n)
--- | (inr (inr n)) := inl (S n)
-
--- definition triple [reducible] [constructor] (N : succ_str) : succ_str :=
--- succ_str.mk (triple_type N) triple_succ
-
--- notation `+3ℕ` := triple +ℕ
--- notation `-3ℕ` := triple -ℕ
--- notation `+3ℤ` := triple +ℤ
--- notation `-3ℤ` := triple -ℤ
 
 namespace chain_complex
 
@@ -510,7 +487,12 @@ namespace chain_complex
     : is_trunc n (ptrunctype.to_pType X) :=
   trunctype.struct X
 
-  /- a group where the point in the pointed corresponds with 1 in the group -/
+  /-
+    A group where the point in the pointed type corresponds with 1 in the group.
+    We need this structure because a chain complex is a sequence of pointed types, and we need
+    to assume for some of the theorems below that some of these pointed types are groups, where the
+    unit for multiplication is the point.
+  -/
   structure pgroup [class] (X : Type*) extends semigroup X, has_inv X :=
     (pt_mul : Πa, mul pt a = a)
     (mul_pt : Πa, mul a pt = a)
@@ -533,7 +515,13 @@ namespace chain_complex
             mul_left_inv_pt := mul.left_inv⦄
   end
 
-  -- the following theorems would also be true of the replace "is_contr" by "is_prop"
+  /-
+    The following theorems state that in a chain complex, if certain types are contractible, and
+    the chain complex is exact at the right spots, a map in the chain complex is an
+    embedding/surjection/equivalence. For the first and third we also need to assume that
+    the map is a group homomorphism (and hence that the two types around it are groups).
+  -/
+
   definition is_embedding_of_trivial (X : chain_complex N) {n : N}
     (H : is_exact_at X n) [HX : is_contr (X (S (S n)))]
     [pgroup (X n)] [pgroup (X (S n))] [is_homomorphism (cc_to_fn X n)]

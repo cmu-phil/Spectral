@@ -43,7 +43,7 @@ namespace is_conn
     { /- k = 0 -/
       change (is_equiv (trunc_functor 0 f)), apply is_equiv_trunc_functor_of_is_conn_fun,
       refine is_conn_fun_of_le f (zero_le_of_nat n)},
-    { /- k > 0 even -/
+    { /- k > 0 -/
      have H2' : k ≤ n, from le.trans !self_le_succ H2,
       exact
       @is_equiv_of_trivial _
@@ -84,12 +84,6 @@ namespace hopf
 
   open sphere.ops susp circle sphere_index
 
-  -- definition complex_phopf : S. 3 →* S. 2 :=
-  -- proof pmap.mk complex_hopf idp qed
-
-  -- variable (A : Type)
-  -- variables [h_space A] [is_conn 0 A]
-
   attribute hopf [unfold 4]
   -- definition phopf (x : psusp A) : Type* :=
   -- pointed.MK (hopf A x)
@@ -120,13 +114,16 @@ namespace hopf
   -- definition pjoin_pspheres (n m : ℕ) : join (S. n) (S. m) ≃ (S. (n + m + 1)) :=
   -- join.spheres n m ⬝e begin esimp, apply equiv_of_eq, apply ap S, apply add_plus_one_of_nat end
 
---  set_option pp.all true
-  -- definition pjoin_spheres_inv_base (n m : ℕ)
-  --   : (join.spheres 1 1)⁻¹ (cast proof idp qed (@sphere.base 3)) = inl base :=
-  -- begin
-  --   exact sorry
-  -- end
+  definition part_of_complex_hopf : S (of_nat 3) → sigma (hopf S¹) :=
+  begin
+    intro x, apply inv (hopf.total S¹), apply inv (join.spheres 1 1), exact x
+  end
 
+  definition part_of_complex_hopf_base2
+    : (part_of_complex_hopf (@sphere.base 3)).2 = circle.base :=
+  begin
+    exact sorry
+  end
 
   definition pfiber_complex_phopf : pfiber complex_phopf ≃* S. 1 :=
   begin
@@ -136,7 +133,7 @@ namespace hopf
                (join.spheres 1 1)⁻¹ᵉ _ ⬝e _,
       refine fiber.equiv_precompose (hopf.total S¹)⁻¹ᵉ ⬝e _,
       apply fiber_pr1},
-    { exact sorry}
+    { esimp, refine _ ⬝ part_of_complex_hopf_base2, apply fiber_pr1_fun}
   end
 
   open int
