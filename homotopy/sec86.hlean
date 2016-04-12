@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Floris van Doorn
 -/
 
-import homotopy.wedge algebra.homotopy_group homotopy.sphere types.nat
+import homotopy.wedge homotopy.homotopy_group homotopy.circle .LES_applications
 
 open eq is_conn is_trunc pointed susp nat pi equiv is_equiv trunc fiber trunc_index
 
@@ -295,9 +295,9 @@ namespace sphere
     pcast (phomotopy_group_succ_in2 A (succ n)) g * pcast (phomotopy_group_succ_in2 A (succ n)) h :=
   begin
     induction g with p, induction h with q, esimp,
-    rewrite [-+tr_eq_cast_ap, ↑phomotopy_group_succ_in2, -+tr_compose],
+    rewrite [-+ tr_eq_cast_ap, ↑phomotopy_group_succ_in2, -+ tr_compose],
     refine ap (transport _ _) !tr_mul_tr ⬝ _,
-    rewrite [+trunc_transport],
+    rewrite [+ trunc_transport],
     apply ap tr, apply loop_space_succ_eq_in_concat,
   end
 
@@ -313,5 +313,113 @@ namespace sphere
       apply phomotopy_group_succ_in2_con
       }
   end
+
+  theorem mul_two {A : Type} [semiring A] (a : A) : a * 2 = a + a :=
+  by rewrite [-one_add_one_eq_two, left_distrib, +mul_one]
+
+  theorem two_mul {A : Type} [semiring A] (a : A) : 2 * a = a + a :=
+  by rewrite [-one_add_one_eq_two, right_distrib, +one_mul]
+
+  definition two_le_succ_succ (n : ℕ) : 2 ≤ succ (succ n) :=
+  nat.succ_le_succ (nat.succ_le_succ !zero_le)
+
+  open int circle hopf
+  definition πnSn (n : ℕ) : πg[n+1] (S. (succ n)) = gℤ :=
+  begin
+    cases n with n IH,
+    { exact fundamental_group_of_circle},
+    { induction n with n IH,
+      { exact π2S2},
+      { refine _ ⬝ IH, apply stability_eq,
+        calc
+          succ n + 3 = succ (succ n) + 2 : !succ_add⁻¹
+                 ... ≤ succ (succ n) + (succ (succ n)) : add_le_add_left !two_le_succ_succ
+                 ... = 2 * (succ (succ n)) : !two_mul⁻¹ }}
+  end
+
+
+  attribute group_integers [constructor]
+  theorem not_is_trunc_sphere (n : ℕ) : ¬is_trunc n (S. (succ n)) :=
+  begin
+    intro H,
+    note H2 := trivial_homotopy_group_of_is_trunc (S. (succ n)) n n !le.refl,
+    rewrite [πnSn at H2, ▸* at H2],
+    have H3 : (0 : ℤ) ≠ (1 : ℤ), from dec_star,
+    apply H3,
+    apply is_prop.elim,
+  end
+
+  definition transport11 {A B : Type} (P : A → B → Type) {a a' : A} {b b' : B}
+    (p : a = a') (q : b = b') (z : P a b) : P a' b' :=
+  transport (P a') q (p ▸ z)
+
+  section
+    open sphere_index
+
+    definition add_plus_one_minus_one (n : ℕ₋₁) : n +1+ -1 = n := idp
+    definition add_plus_one_succ (n m : ℕ₋₁) : n +1+ (m.+1) = (n +1+ m).+1 := idp
+    definition minus_one_add_plus_one (n : ℕ₋₁) : -1 +1+ n = n :=
+    begin induction n with n IH, reflexivity, exact ap succ IH end
+    definition succ_add_plus_one (n m : ℕ₋₁) : (n.+1) +1+ m = (n +1+ m).+1 :=
+    begin induction m with m IH, reflexivity, exact ap succ IH end
+
+    definition nat_of_sphere_index : ℕ₋₁ → ℕ :=
+    sphere_index.rec 0 (λx, succ)
+
+    definition trunc_index_of_nat_of_sphere_index (n : ℕ₋₁)
+      : trunc_index.of_nat (nat_of_sphere_index n) = (of_sphere_index n).+1 :=
+    begin
+      induction n with n IH,
+      { reflexivity},
+      { exact ap succ IH}
+    end
+
+    definition sphere_index_of_nat_of_sphere_index (n : ℕ₋₁)
+      : sphere_index.of_nat (nat_of_sphere_index n) = n.+1 :=
+    begin
+      induction n with n IH,
+      { reflexivity},
+      { exact ap succ IH}
+    end
+
+    definition of_sphere_index_succ (n : ℕ₋₁)
+      : of_sphere_index (n.+1) = (of_sphere_index n).+1 :=
+    begin
+      induction n with n IH,
+      { reflexivity},
+      { exact ap succ IH}
+    end
+
+    definition sphere_index.of_nat_succ (n : ℕ)
+      : sphere_index.of_nat (succ n) = (sphere_index.of_nat n).+1 :=
+    begin
+      induction n with n IH,
+      { reflexivity},
+      { exact ap succ IH}
+    end
+
+    definition nat_of_sphere_index_succ (n : ℕ₋₁)
+      : nat_of_sphere_index (n.+1) = succ (nat_of_sphere_index n) :=
+    begin
+      induction n with n IH,
+      { reflexivity},
+      { exact ap succ IH}
+    end
+
+    definition not_is_trunc_sphere' (n : ℕ₋₁) : ¬is_trunc n (S (n.+1)) :=
+    begin
+      cases n with n,
+      { esimp [sphere.ops.S, sphere], intro H,
+        have H2 : is_prop bool, from @(is_trunc_equiv_closed -1 sphere_equiv_bool) H,
+        have H3 : bool.tt ≠ bool.ff, from dec_star, apply H3, apply is_prop.elim},
+      { intro H, apply not_is_trunc_sphere (nat_of_sphere_index n),
+        rewrite [▸*, trunc_index_of_nat_of_sphere_index, -nat_of_sphere_index_succ,
+                 sphere_index_of_nat_of_sphere_index],
+        exact H}
+    end
+  end
+
+  definition π3S2 : πg[2+1] (S. 2) = gℤ :=
+  (πnS3_eq_πnS2 0)⁻¹ ⬝ πnSn 2
 
 end sphere

@@ -5,8 +5,9 @@ Authors: Floris van Doorn
 -/
 
 import .LES_of_homotopy_groups homotopy.connectedness homotopy.homotopy_group homotopy.join
-open eq is_trunc pointed is_conn is_equiv fiber equiv trunc nat chain_complex prod fin algebra
-     group trunc_index function join pushout
+       homotopy.complex_hopf
+open eq is_trunc pointed is_conn is_equiv fiber equiv trunc nat chain_complex fin algebra
+     group trunc_index function join pushout prod sigma sigma.ops
 
 namespace nat
   open sigma sum
@@ -69,17 +70,132 @@ namespace is_conn
     : square (ap f p) (ap g q) (h a b) (h a' b') :=
   by induction p; induction q; exact hrfl
 
-  -- TODO: move
-  section
-    open sphere sphere_index
+end is_conn
 
-    definition add_plus_one_minus_one (n : ℕ₋₁) : n +1+ -1 = n := idp
-    definition add_plus_one_succ (n m : ℕ₋₁) : n +1+ (m.+1) = (n +1+ m).+1 := idp
-    definition minus_one_add_plus_one (n : ℕ₋₁) : -1 +1+ n = n :=
-    begin induction n with n IH, reflexivity, exact ap succ IH end
-    definition succ_add_plus_one (n m : ℕ₋₁) : (n.+1) +1+ m = (n +1+ m).+1 :=
-    begin induction m with m IH, reflexivity, exact ap succ IH end
+namespace sigma
+  definition ppr1 {A : Type*} {B : A → Type*} : (Σ*(x : A), B x) →* A :=
+  pmap.mk pr1 idp
 
+  definition ppr2 {A : Type*} (B : A → Type*) (v : (Σ*(x : A), B x)) : B (ppr1 v) :=
+  pr2 v
+end sigma
+
+namespace hopf
+
+  open sphere.ops susp circle sphere_index
+
+  -- definition complex_phopf : S. 3 →* S. 2 :=
+  -- proof pmap.mk complex_hopf idp qed
+
+  -- variable (A : Type)
+  -- variables [h_space A] [is_conn 0 A]
+
+  attribute hopf [unfold 4]
+  -- definition phopf (x : psusp A) : Type* :=
+  -- pointed.MK (hopf A x)
+  -- begin
+  --   induction x with a: esimp,
+  --   do 2 exact 1,
+  --   apply pathover_of_tr_eq, rewrite [↑hopf, elim_type_merid, ▸*, mul_one],
+  -- end
+
+  -- maybe define this as a composition of pointed maps?
+  definition complex_phopf [constructor] : S. 3 →* S. 2 :=
+  proof pmap.mk complex_hopf idp qed
+
+  definition fiber_pr1_fun {A : Type} {B : A → Type} {a : A} (b : B a)
+    : fiber_pr1 B a (fiber.mk ⟨a, b⟩ idp) = b :=
+  idp
+
+  --TODO: in fiber.equiv_precompose, make f explicit
+  open sphere sphere.ops
+
+  definition add_plus_one_of_nat (n m : ℕ) : (n +1+ m) = sphere_index.of_nat (n + m + 1) :=
+  begin
+    induction m with m IH,
+    { reflexivity },
+    { exact ap succ IH}
   end
 
-end is_conn
+  -- definition pjoin_pspheres (n m : ℕ) : join (S. n) (S. m) ≃ (S. (n + m + 1)) :=
+  -- join.spheres n m ⬝e begin esimp, apply equiv_of_eq, apply ap S, apply add_plus_one_of_nat end
+
+--  set_option pp.all true
+  -- definition pjoin_spheres_inv_base (n m : ℕ)
+  --   : (join.spheres 1 1)⁻¹ (cast proof idp qed (@sphere.base 3)) = inl base :=
+  -- begin
+  --   exact sorry
+  -- end
+
+
+  definition pfiber_complex_phopf : pfiber complex_phopf ≃* S. 1 :=
+  begin
+    fapply pequiv_of_equiv,
+    { esimp, unfold [complex_hopf],
+      refine @fiber.equiv_precompose _ _ (sigma.pr1 ∘ (hopf.total S¹)⁻¹ᵉ) _ _
+               (join.spheres 1 1)⁻¹ᵉ _ ⬝e _,
+      refine fiber.equiv_precompose (hopf.total S¹)⁻¹ᵉ ⬝e _,
+      apply fiber_pr1},
+    { exact sorry}
+  end
+
+  open int
+
+  definition one_le_succ (n : ℕ) : 1 ≤ succ n :=
+  nat.succ_le_succ !zero_le
+
+  definition π2S2 : πg[1+1] (S. 2) = gℤ :=
+  begin
+    refine _ ⬝ fundamental_group_of_circle,
+    refine _ ⬝ ap (λx, π₁ x) (eq_of_pequiv pfiber_complex_phopf),
+    fapply Group_eq,
+    { fapply equiv.mk,
+      { exact cc_to_fn (LES_of_homotopy_groups complex_phopf) (1, 2)},
+      { refine @is_equiv_of_trivial _
+        _ _
+        (is_exact_LES_of_homotopy_groups _ (1, 1))
+        (is_exact_LES_of_homotopy_groups _ (1, 2))
+        _
+        _
+        (@pgroup_of_group _ (group_LES_of_homotopy_groups complex_phopf _ _) idp)
+        (@pgroup_of_group _ (group_LES_of_homotopy_groups complex_phopf _ _) idp)
+        _,
+        { rewrite [LES_of_homotopy_groups_1, ▸*],
+          have H : 1 ≤[ℕ] 2, from !one_le_succ,
+          apply trivial_homotopy_group_of_is_conn, exact H, rexact is_conn_psphere 3},
+        { refine tr_rev (λx, is_contr (ptrunctype._trans_of_to_pType x))
+                        (LES_of_homotopy_groups_1 complex_phopf 2) _,
+          apply trivial_homotopy_group_of_is_conn, apply le.refl, rexact is_conn_psphere 3},
+        { exact homomorphism.struct (homomorphism_LES_of_homotopy_groups_fun _ (0, 2))}}},
+    { exact homomorphism.struct (homomorphism_LES_of_homotopy_groups_fun _ (0, 2))}
+  end
+
+  open circle
+  definition πnS3_eq_πnS2 (n : ℕ) : πg[n+2 +1] (S. 3) = πg[n+2 +1] (S. 2) :=
+  begin
+    fapply Group_eq,
+    { fapply equiv.mk,
+      { exact cc_to_fn (LES_of_homotopy_groups complex_phopf) (n+3, 0)},
+      { have H : is_trunc 1 (pfiber complex_phopf),
+        from @(is_trunc_equiv_closed_rev _ pfiber_complex_phopf) is_trunc_circle,
+        refine @is_equiv_of_trivial _
+        _ _
+        (is_exact_LES_of_homotopy_groups _ (n+2, 2))
+        (is_exact_LES_of_homotopy_groups _ (n+3, 0))
+        _
+        _
+        (@pgroup_of_group _ (group_LES_of_homotopy_groups complex_phopf _ _) idp)
+        (@pgroup_of_group _ (group_LES_of_homotopy_groups complex_phopf _ _) idp)
+        _,
+        { rewrite [▸*, LES_of_homotopy_groups_2 _ (n +[ℕ] 2)],
+          have H : 1 ≤[ℕ] n + 1, from !one_le_succ,
+          apply trivial_homotopy_group_of_is_trunc _ _ _ H},
+        { refine tr_rev (λx, is_contr (ptrunctype._trans_of_to_pType x))
+                        (LES_of_homotopy_groups_2 complex_phopf _) _,
+          have H : 1 ≤[ℕ] n + 2, from !one_le_succ,
+          apply trivial_homotopy_group_of_is_trunc _ _ _ H},
+        { exact homomorphism.struct (homomorphism_LES_of_homotopy_groups_fun _ (n+2, 0))}}},
+    { exact homomorphism.struct (homomorphism_LES_of_homotopy_groups_fun _ (n+2, 0))}
+  end
+
+end hopf
