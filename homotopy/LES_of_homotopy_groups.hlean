@@ -521,7 +521,7 @@ namespace chain_complex
   | (n, fin.mk 1 H) := Ω[n] X
   | (n, fin.mk k H) := Ω[n] (pfiber f)
 
-  definition loop_spaces2_add1 (n : ℕ) : Π(x : fin (nat.succ 2)),
+  definition loop_spaces2_add1 (n : ℕ) : Π(x : fin 3),
     loop_spaces2 (n+1, x) = Ω (loop_spaces2 (n, x))
   | (fin.mk 0 H) := by reflexivity
   | (fin.mk 1 H) := by reflexivity
@@ -670,7 +670,7 @@ namespace chain_complex
   definition is_exact_LES_of_loop_spaces2 : is_exact_t LES_of_loop_spaces2 :=
   begin
     intro n,
-    apply is_exact_at_transfer2,
+    apply is_exact_at_t_transfer2,
     apply is_exact_LES_of_loop_spaces
   end
 

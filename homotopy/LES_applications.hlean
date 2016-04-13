@@ -31,6 +31,76 @@ namespace nat
 end nat
 open nat
 
+namespace pointed
+
+  definition apn_phomotopy {A B : Type*} {f g : A →* B} (n : ℕ) (p : f ~* g)
+    : apn n f ~* apn n g :=
+  begin
+    induction n with n IH,
+    { exact p},
+    { exact ap1_phomotopy IH}
+  end
+
+end pointed open pointed
+
+namespace chain_complex
+  section
+  universe variable u
+  parameters {F X Y : pType.{u}} (f : X →* Y) (g : F →* X) (e : pfiber f ≃* F)
+             (p : ppoint f ~* g ∘* e)
+  include f p
+  open succ_str
+  definition fibration_sequence_car [reducible] : +3ℕ → Type*
+  | (n, fin.mk 0 H) := Ω[n] Y
+  | (n, fin.mk 1 H) := Ω[n] X
+  | (n, fin.mk k H) := Ω[n] F
+
+  definition fibration_sequence_fun
+    : Π(n : +3ℕ), fibration_sequence_car (S n) →* fibration_sequence_car n
+  | (n, fin.mk 0 H) := proof Ω→[n] f qed
+  | (n, fin.mk 1 H) := proof Ω→[n] g qed
+  | (n, fin.mk 2 H) := proof Ω→[n] (e ∘* boundary_map f) ∘* pcast (loop_space_succ_eq_in Y n) qed
+  | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
+
+  definition fibration_sequence_pequiv : Π(x : +3ℕ),
+     loop_spaces2 f x ≃* fibration_sequence_car x
+  | (n, fin.mk 0 H) := by reflexivity
+  | (n, fin.mk 1 H) := by reflexivity
+  | (n, fin.mk 2 H) := loopn_pequiv_loopn n e
+  | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
+
+  /- all cases where n>0 are basically the same -/
+  definition fibration_sequence_fun_phomotopy : Π(x : +3ℕ),
+    fibration_sequence_pequiv x ∘* loop_spaces_fun2 f x ~*
+      (fibration_sequence_fun x ∘* fibration_sequence_pequiv (S x))
+  | (n, fin.mk 0 H) := by reflexivity
+  | (n, fin.mk 1 H) :=
+    begin refine !pid_comp ⬝* _, refine apn_phomotopy n p ⬝* _,
+      refine !apn_compose ⬝* _, reflexivity end
+  | (n, fin.mk 2 H) := begin refine !passoc⁻¹* ⬝* _ ⬝* !comp_pid⁻¹*, apply pwhisker_right,
+      refine _ ⬝* !apn_compose⁻¹*, reflexivity end
+  | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
+
+  definition type_fibration_sequence [constructor] : type_chain_complex +3ℕ :=
+  transfer_type_chain_complex
+    (LES_of_loop_spaces2 f)
+    fibration_sequence_fun
+    fibration_sequence_pequiv
+    fibration_sequence_fun_phomotopy
+
+  definition is_exact_type_fibration_sequence : is_exact_t type_fibration_sequence :=
+  begin
+    intro n,
+    apply is_exact_at_t_transfer,
+    apply is_exact_LES_of_loop_spaces2
+  end
+
+  definition fibration_sequence [constructor] : chain_complex +3ℕ :=
+  trunc_chain_complex type_fibration_sequence
+
+  end
+end chain_complex
+
 namespace is_conn
 
   local attribute comm_group.to_group [coercion]

@@ -211,7 +211,7 @@ namespace chain_complex
       apply respect_pt
     end
 
-  definition is_exact_at_transfer2 {X : type_chain_complex N} {M : succ_str} {Y : M → Type*}
+  definition is_exact_at_t_transfer2 {X : type_chain_complex N} {M : succ_str} {Y : M → Type*}
     (f : M ≃ N) (c : Π(m : M), S (f m) = f (S m))
     (g : Π{m : M}, Y (S m) →* Y m) (e : Π{m}, X (f m) ≃* Y m)
     (p : Π{m} (x : X (S (f m))), e (tcc_to_fn X (f m) x) = g (e (cast (ap (λx, X x) (c m)) x)))
