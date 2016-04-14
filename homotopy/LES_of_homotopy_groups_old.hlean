@@ -547,7 +547,7 @@ namespace chain_complex namespace old
   definition is_exact_type_LES_of_homotopy_groups2 : is_exact_t (type_LES_of_homotopy_groups2) :=
   begin
     intro n,
-    apply is_exact_at_transfer2,
+    apply is_exact_at_t_transfer2,
     apply is_exact_type_LES_of_homotopy_groups
   end
 

@@ -5,7 +5,7 @@ Authors: Floris van Doorn
 -/
 
 import .LES_of_homotopy_groups homotopy.connectedness homotopy.homotopy_group homotopy.join
-       homotopy.complex_hopf
+       homotopy.complex_hopf types.lift
 open eq is_trunc pointed is_conn is_equiv fiber equiv trunc nat chain_complex fin algebra
      group trunc_index function join pushout prod sigma sigma.ops
 
@@ -69,7 +69,6 @@ namespace chain_complex
   | (n, fin.mk 2 H) := loopn_pequiv_loopn n e
   | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
 
-  /- all cases where n>0 are basically the same -/
   definition fibration_sequence_fun_phomotopy : Π(x : +3ℕ),
     fibration_sequence_pequiv x ∘* loop_spaces_fun2 f x ~*
       (fibration_sequence_fun x ∘* fibration_sequence_pequiv (S x))
@@ -101,13 +100,40 @@ namespace chain_complex
   end
 end chain_complex
 
+namespace lift
+
+  definition pup [constructor] {A : Type*} : A →* plift A :=
+  pmap.mk up idp
+
+  definition pdown [constructor] {A : Type*} : plift A →* A :=
+  pmap.mk down idp
+
+  definition plift_functor_phomotopy [constructor] {A B : Type*} (f : A →* B)
+    : pdown ∘* plift_functor f ∘* pup ~* f :=
+  begin
+    fapply phomotopy.mk,
+    { reflexivity},
+    { esimp, refine !idp_con ⬝ _, refine _ ⬝ ap02 down !idp_con⁻¹,
+      refine _ ⬝ !ap_compose, exact !ap_id⁻¹}
+  end
+
+  definition equiv_lift [constructor] (A : Type) : A ≃ lift A :=
+  equiv.MK up down up_down down_up
+
+  definition pequiv_plift [constructor] (A : Type*) : A ≃* plift A :=
+  pequiv_of_equiv (equiv_lift A) idp
+
+end lift open lift
+
 namespace is_conn
 
   local attribute comm_group.to_group [coercion]
   local attribute is_equiv_tinverse [instance]
 
-  theorem is_equiv_π_of_is_connected.{u} {A B : pType.{u}} (n k : ℕ) (f : A →* B)
-    [H : is_conn_fun n f] (H2 : k ≤ n) : is_equiv (π→[k] f) :=
+  -- TODO: generalize this to arbitrary maps using lifts,
+  -- using that up : A → lift A and down : lift A → A are equivalences
+  theorem is_equiv_π_of_is_connected'.{u} {A B : pType.{u}} {n k : ℕ} (f : A →* B)
+     (H2 : k ≤ n) [H : is_conn_fun n f] : is_equiv (π→[k] f) :=
   begin
     cases k with k,
     { /- k = 0 -/
@@ -127,6 +153,84 @@ namespace is_conn
         (homomorphism.struct (homomorphism_LES_of_homotopy_groups_fun f (k, 0)))},
   end
 
+  -- MOVE
+  -- Remark: ⁻¹ʰ conflicts with the inverse of a homomorphism
+  infix ` ⬝h `:75 := homotopy.trans
+  postfix `⁻¹ʰ`:(max+1) := homotopy.symm
+
+  -- MOVE
+  definition trunc_functor_homotopy [unfold 7] {X Y : Type} (n : ℕ₋₂) {f g : X → Y}
+    (p : f ~ g) (x : trunc n X) : trunc_functor n f x = trunc_functor n g x :=
+  begin
+    induction x with x, esimp, exact ap tr (p x)
+  end
+
+  -- MOVE
+  definition ptrunc_functor_phomotopy [constructor] {X Y : Type*} (n : ℕ₋₂) {f g : X →* Y}
+    (p : f ~* g) : ptrunc_functor n f ~* ptrunc_functor n g :=
+  begin
+    fapply phomotopy.mk,
+    { exact trunc_functor_homotopy n p},
+    { esimp, refine !ap_con⁻¹ ⬝ _, exact ap02 tr !to_homotopy_pt},
+  end
+
+  -- MOVE
+  definition phomotopy_group_functor_phomotopy [constructor] (n : ℕ) {A B : Type*} {f g : A →* B}
+    (p : f ~* g) : π→*[n] f ~* π→*[n] g :=
+  ptrunc_functor_phomotopy 0 (apn_phomotopy n p)
+
+  -- MOVE
+  definition phomotopy_group_functor_compose [constructor] (n : ℕ) {A B C : Type*} (g : B →* C)
+    (f : A →* B) : π→*[n] (g ∘* f) ~* π→*[n] g ∘* π→*[n] f :=
+  ptrunc_functor_phomotopy 0 !apn_compose ⬝* !ptrunc_functor_pcompose
+
+  -- MOVE
+  definition is_equiv_homotopy_group_functor [constructor] (n : ℕ) {A B : Type*} (f : A →* B)
+    [is_equiv f] : is_equiv (π→[n] f) :=
+  @(is_equiv_trunc_functor 0 _) !is_equiv_apn
+
+  -- MOVE this to init.equiv, and incorporate it in `is_equiv_ap`
+  theorem eq_of_fn_eq_fn'_ap {A B : Type} (f : A → B) [is_equiv f] {x y : A} (q : x = y)
+    : eq_of_fn_eq_fn' f (ap f q) = q :=
+  by induction q; apply con.left_inv
+
+  -- MOVE
+  definition fiber_lift_functor {A B : Type} (f : A → B) (b : B) :
+    fiber (lift_functor f) (up b) ≃ fiber f b :=
+  begin
+    fapply equiv.MK: intro v; cases v with a p,
+    { cases a with a, exact fiber.mk a (eq_of_fn_eq_fn' up p)},
+    { exact fiber.mk (up a) (ap up p)},
+    { esimp, apply ap (fiber.mk a), apply eq_of_fn_eq_fn'_ap},
+    { cases a with a, esimp, apply ap (fiber.mk (up a)), apply ap_eq_of_fn_eq_fn'}
+  end
+
+  -- MOVE
+  definition is_conn_fun_lift_functor (n : ℕ₋₂) {A B : Type} (f : A → B) [is_conn_fun n f] :
+    is_conn_fun n (lift_functor f) :=
+  begin
+    intro b, cases b with b, apply is_trunc_equiv_closed_rev,
+    { apply trunc_equiv_trunc, apply fiber_lift_functor}
+  end
+
+  theorem is_equiv_π_of_is_connected.{u v} {A : pType.{u}} {B : pType.{v}} {n k : ℕ} (f : A →* B)
+    (H2 : k ≤ n) [H : is_conn_fun n f] : is_equiv (π→[k] f) :=
+  begin
+    have π→*[k] pdown.{v u} ∘* π→*[k] (plift_functor f) ∘* π→*[k] pup.{u v} ~* π→*[k] f,
+    begin
+      refine pwhisker_left _ !phomotopy_group_functor_compose⁻¹* ⬝* _,
+      refine !phomotopy_group_functor_compose⁻¹* ⬝* _,
+      apply phomotopy_group_functor_phomotopy, apply plift_functor_phomotopy
+    end,
+    have π→[k] pdown.{v u} ∘ π→[k] (plift_functor f) ∘ π→[k] pup.{u v} ~ π→[k] f, from this,
+    apply is_equiv.homotopy_closed, rotate 1,
+    { exact this},
+    { do 2 apply is_equiv_compose,
+      { apply is_equiv_homotopy_group_functor, apply to_is_equiv !equiv_lift},
+      { refine @(is_equiv_π_of_is_connected' _ H2) _, apply is_conn_fun_lift_functor},
+      { apply is_equiv_homotopy_group_functor, apply to_is_equiv !equiv_lift⁻¹ᵉ}}
+  end
+
   theorem is_surjective_π_of_is_connected.{u} {A B : pType.{u}} (n : ℕ) (f : A →* B)
     [H : is_conn_fun n f] : is_surjective (π→[n + 1] f) :=
   @is_surjective_of_trivial _
@@ -143,10 +247,10 @@ namespace is_conn
 end is_conn
 
 namespace sigma
-  definition ppr1 {A : Type*} {B : A → Type*} : (Σ*(x : A), B x) →* A :=
+  definition ppr1 [constructor] {A : Type*} {B : A → Type*} : (Σ*(x : A), B x) →* A :=
   pmap.mk pr1 idp
 
-  definition ppr2 {A : Type*} (B : A → Type*) (v : (Σ*(x : A), B x)) : B (ppr1 v) :=
+  definition ppr2 [unfold_full] {A : Type*} (B : A → Type*) (v : (Σ*(x : A), B x)) : B (ppr1 v) :=
   pr2 v
 end sigma
 
@@ -155,13 +259,6 @@ namespace hopf
   open sphere.ops susp circle sphere_index
 
   attribute hopf [unfold 4]
-  -- definition phopf (x : psusp A) : Type* :=
-  -- pointed.MK (hopf A x)
-  -- begin
-  --   induction x with a: esimp,
-  --   do 2 exact 1,
-  --   apply pathover_of_tr_eq, rewrite [↑hopf, elim_type_merid, ▸*, mul_one],
-  -- end
 
   -- maybe define this as a composition of pointed maps?
   definition complex_phopf [constructor] : S. 3 →* S. 2 :=
