@@ -5,7 +5,7 @@ Authors: Michael Shulman
 
 -/
 
-import types.int types.pointed types.trunc homotopy.susp algebra.homotopy_group .chain_complex cubical
+import types.int types.pointed types.trunc homotopy.susp algebra.homotopy_group homotopy.chain_complex cubical
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi
 
 /-----------------------------------------
@@ -109,7 +109,7 @@ namespace pointed
 
   definition pfiber_loop_space {A B : Type*} (f : A →* B) : pfiber (Ω→ f) ≃* Ω (pfiber f) :=
     pequiv_of_equiv
-    (calc pfiber (Ω→ f) ≃ Σ(p : Point A = Point A), ap1 f p = rfl                                : (fiber.sigma_char (ap1 f) (Point Ω B))
+    (calc pfiber (Ω→ f) ≃ Σ(p : Point A = Point A), ap1 f p = rfl                                : (fiber.sigma_char (ap1 f) (Point (Ω B)))
                     ... ≃ Σ(p : Point A = Point A), (respect_pt f) = ap f p ⬝ (respect_pt f)      : (sigma_equiv_sigma_right (λp,
                               calc (ap1 f p = rfl) ≃ !respect_pt⁻¹ ⬝ (ap f p ⬝ !respect_pt) = rfl : equiv_eq_closed_left _ (con.assoc _ _ _)
                                                ... ≃ ap f p ⬝ (respect_pt f) = (respect_pt f)     : eq_equiv_inv_con_eq_idp
@@ -137,15 +137,15 @@ namespace pointed
   definition pequiv_postcompose {A B B' : Type*} (f : A →* B) (g : B ≃* B') : pfiber (g ∘* f) ≃* pfiber f :=
   begin
     fapply pequiv_of_equiv, esimp,
-    refine ((transport_fiber_equiv (g ∘* f) (respect_pt g)⁻¹) ⬝e (@fiber.equiv_postcompose A B f (Point B) B' g _)),
-    esimp, apply (ap (fiber.mk (Point A))), rewrite con.assoc, apply inv_con_eq_of_eq_con,
+    refine transport_fiber_equiv (g ∘* f) (respect_pt g)⁻¹ ⬝e fiber.equiv_postcompose f g (Point B),
+    esimp, apply (ap (fiber.mk (Point A))), refine !con.assoc ⬝ _, apply inv_con_eq_of_eq_con,
     rewrite [con.assoc, con.right_inv, con_idp, -ap_compose'], apply ap_con_eq_con
   end
 
   definition pequiv_precompose {A A' B : Type*} (f : A →* B) (g : A' ≃* A) : pfiber (f ∘* g) ≃* pfiber f :=
   begin
     fapply pequiv_of_equiv, esimp,
-    refine (@fiber.equiv_precompose A B f (Point B) A' g _),
+    refine fiber.equiv_precompose f g (Point B),
     esimp, apply (eq_of_fn_eq_fn (fiber.sigma_char _ _)), fapply sigma_eq: esimp,
     { apply respect_pt g },
     { apply pathover_eq_Fl' }
@@ -291,7 +291,7 @@ namespace spectrum
   definition sid {N : succ_str} (E : gen_spectrum N) : E →ₛ E :=
     smap.mk (λn, pid (E n))
     (λn, calc glue E n ∘* pid (E n) ~* glue E n                   : comp_pid
-                              ...   ~* pid Ω(E (S n)) ∘* glue E n : pid_comp
+                              ...   ~* pid (Ω(E (S n))) ∘* glue E n : pid_comp
                               ...   ~* Ω→(pid (E (S n))) ∘* glue E n : pwhisker_right (glue E n) ap1_id⁻¹*)
 
   definition scompose {N : succ_str} {X Y Z : gen_prespectrum N} (g : Y →ₛ Z) (f : X →ₛ Y) : X →ₛ Z :=

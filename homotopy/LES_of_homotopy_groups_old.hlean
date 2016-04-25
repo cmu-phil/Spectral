@@ -7,12 +7,12 @@ The old formalization of the LES of homotopy groups, where all the odd levels ha
   with negation
 -/
 
-import .LES_of_homotopy_groups
+import homotopy.LES_of_homotopy_groups
 
 open eq pointed sigma fiber equiv is_equiv sigma.ops is_trunc nat trunc algebra function
 
 /--------------
-    PART 1
+    PART 1 is the same as the new formalization
  --------------/
 
 namespace chain_complex
@@ -721,7 +721,7 @@ namespace chain_complex namespace old
     begin
       apply homomorphism.mk (cc_to_fn (LES_of_homotopy_groups3 f) (k + 1, 2)),
       exact abstract begin rewrite [LES_of_homotopy_groups_fun3_2],
-      refine @is_homomorphism_compose _ _ _ _ _ _ (π→*[2 * (k + 1)] boundary_map f) _ _ _,
+      refine @is_homomorphism_compose _ _ _ _ _ _ (π→*[2 * (k + 1)] (boundary_map f)) _ _ _,
       { apply group_homotopy_group ((2 * k) + 1)},
       { apply phomotopy_group_functor_mul},
       { rewrite [▸*, -ap_compose', ▸*],

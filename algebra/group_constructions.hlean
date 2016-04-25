@@ -3,10 +3,10 @@ Copyright (c) 2015 Floris van Doorn. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Floris van Doorn
 
-Constructions of groups
+Constructions with groups
 -/
 
-import .basic hit.set_quotient types.sigma types.list types.sum
+import algebra.group_theory hit.set_quotient types.sigma types.list types.sum
 
 open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function
      equiv
