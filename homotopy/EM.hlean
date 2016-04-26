@@ -10,7 +10,7 @@ Eilenberg MacLane spaces
 import homotopy.EM
 
 open eq is_equiv equiv is_conn is_trunc unit function pointed nat group algebra trunc trunc_index
-     fiber prod fin
+     fiber prod fin pointed
 
 namespace chain_complex
   open succ_str
@@ -41,6 +41,45 @@ namespace EM
     end
 
   /- Whitehead Corollaries -/
+
+  -- to pointed
+
+  definition pointed_eta_pequiv [constructor] (A : Type*) : A ≃* pointed.MK A pt :=
+  pequiv.mk id !is_equiv_id idp
+
+  /- every pointed map is homotopic to one of the form `pmap_of_map _ _`, up to some
+     pointed equivalences -/
+  definition phomotopy_pmap_of_map {A B : Type*} (f : A →* B) :
+    (pointed_eta_pequiv B ⬝e* (pequiv_of_eq_pt (respect_pt f))⁻¹ᵉ*) ∘* f ∘*
+      (pointed_eta_pequiv A)⁻¹ᵉ* ~* pmap_of_map f pt :=
+  begin
+    fapply phomotopy.mk,
+    { reflexivity},
+    { esimp [pequiv.trans, pequiv.symm],
+      exact !con.right_inv⁻¹ ⬝ ((!idp_con⁻¹ ⬝ !ap_id⁻¹) ◾ (!ap_id⁻¹⁻² ⬝ !idp_con⁻¹)), }
+  end
+
+  -- reorder arguments of is_equiv_compose
+  -- rename whiteheads_principle to whitehead_principle
+  definition whitehead_principle_pointed (n : ℕ₋₂) {A B : Type*}
+    [HA : is_trunc n A] [HB : is_trunc n B] [is_conn 0 A] (f : A →* B)
+    (H : Πk, is_equiv (π→*[k] f)) : is_equiv f :=
+  begin
+    apply whiteheads_principle n, rexact H 0,
+    intro a k, revert a, apply is_conn.elim -1,
+    have is_equiv (π→*[k + 1] (pointed_eta_pequiv B ⬝e* (pequiv_of_eq_pt (respect_pt f))⁻¹ᵉ*)
+           ∘* π→*[k + 1] f ∘* π→*[k + 1] (pointed_eta_pequiv A)⁻¹ᵉ*),
+    begin
+      apply is_equiv_compose (π→*[k + 1] f ∘* π→*[k + 1] (pointed_eta_pequiv A)⁻¹ᵉ*),
+      apply is_equiv_compose (π→*[k + 1] (pointed_eta_pequiv A)⁻¹ᵉ*),
+      all_goals apply is_equiv_homotopy_group_functor,
+    end,
+    refine @(is_equiv.homotopy_closed _) _ this _,
+    apply to_homotopy,
+    refine pwhisker_left _ !phomotopy_group_functor_compose⁻¹* ⬝* _,
+    refine !phomotopy_group_functor_compose⁻¹* ⬝* _,
+    apply phomotopy_group_functor_phomotopy, apply phomotopy_pmap_of_map
+  end
 
   -- replace in homotopy_group?
   theorem trivial_homotopy_group_of_is_trunc' (A : Type*) {n k : ℕ} [is_trunc n A] (H : n < k)
@@ -135,14 +174,67 @@ namespace EM
     rewrite -q, exact H3 a
   end
 
-  open sigma lift
-  definition flatten_univ.{u v} {A : Type.{u}} {B : Type.{v}} (f : A → B) :
-    Σ(A' B' : Type.{max u v}) (f' : A' → B') (g : A ≃ A') (h : B ≃ B'), h ∘ f ~ f' ∘ g :=
-  ⟨lift A, lift B, lift_functor f, proof equiv_lift A qed, proof equiv_lift B qed,
-    proof sorry qed⟩
+  -- open sigma lift
+  -- definition flatten_univ.{u v} {A : Type.{u}} {B : Type.{v}} (f : A → B) :
+  --   Σ(A' B' : Type.{max u v}) (f' : A' → B') (g : A ≃ A') (h : B ≃ B'), h ∘ f ~ f' ∘ g :=
+  -- ⟨lift A, lift B, lift_functor f, proof equiv_lift A qed, proof equiv_lift B qed,
+  --   proof sorry qed⟩
 
   definition is_conn_inf [reducible] (A : Type) : Type := Πn, is_conn n A
   definition is_conn_fun_inf [reducible] {A B : Type} (f : A → B) : Type := Πn, is_conn_fun n f
+
+  /- applications to EM spaces -/
+
+  -- TODO
+
+  definition pEM1_pmap [constructor] {G : Group} {X : Type*} (e : Ω X ≃ G)
+    (r : Πp q, e (p ⬝ q) = e p * e q) [is_conn 0 X] [is_trunc 1 X] : pEM1 G →* X :=
+  begin
+    apply pmap.mk (EM1_map e r),
+    reflexivity,
+  end
+
+  definition loop_pEM1 [constructor] (G : Group) : Ω (pEM1 G) ≃* pType_of_Group G :=
+  pequiv_of_equiv (base_eq_base_equiv G) idp
+
+  attribute base_eq_base_equiv [constructor]
+  export [unfold] groupoid_quotient
+
+  definition loop_pEM1_pmap {G : Group} {X : Type*} (e : Ω X ≃ G)
+    (r : Πp q, e (p ⬝ q) = e p * e q) [is_conn 0 X] [is_trunc 1 X] :
+    Ω→(pEM1_pmap e r) ~ e⁻¹ᵉ ∘ base_eq_base_equiv G :=
+  begin
+    apply homotopy_of_inv_homotopy_pre (base_eq_base_equiv G),
+    esimp, intro g, exact !idp_con ⬝ !elim_pth
+  end
+
+  definition pEM1_pequiv'.{u} {G : Group.{u}} {X : pType.{u}} (e : Ω X ≃ G)
+    (r : Πp q, e (p ⬝ q) = e p * e q) [is_conn 0 X] [is_trunc 1 X] : pEM1 G ≃* X :=
+  begin
+    apply pequiv_of_pmap (pEM1_pmap e r),
+    apply whitehead_principle_pointed 1,
+    intro k, cases k with k,
+    { apply @is_equiv_of_is_contr,
+      all_goals (esimp; exact _)},
+    { cases k with k,
+      { apply is_equiv_trunc_functor, esimp,
+        apply is_equiv.homotopy_closed, rotate 1,
+        { symmetry, exact loop_pEM1_pmap _ _},
+        apply is_equiv_compose, apply to_is_equiv},
+      { apply @is_equiv_of_is_contr,
+        do 2 apply trivial_homotopy_group_of_is_trunc _ _ _ !one_le_succ}}
+  end
+
+  definition pEM1_pequiv.{u} {G : Group.{u}} {X : pType.{u}} (e : π₁ X ≃g G)
+    [is_conn 0 X] [is_trunc 1 X] : pEM1 G ≃* X :=
+  begin
+    apply pEM1_pequiv' (!trunc_equiv⁻¹ᵉ ⬝e equiv_of_isomorphism e),
+    intro p q, esimp, exact respect_mul e (tr p) (tr q)
+  end
+
+  definition KG1_pequiv.{u} {X Y : pType.{u}} (e : π₁ X ≃g π₁ Y)
+    [is_conn 0 X] [is_trunc 1 X] [is_conn 0 Y] [is_trunc 1 Y] : X ≃* Y :=
+  (pEM1_pequiv e)⁻¹ᵉ* ⬝e* pEM1_pequiv !isomorphism.refl
 
 
 end EM
