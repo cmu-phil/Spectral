@@ -307,7 +307,7 @@ namespace chain_complex namespace old
   | (n, fin.mk k H) := Ω[2*n + 1] (pfiber f)
 
   definition homotopy_groups2_add1 (n : ℕ) : Π(x : fin (succ 5)),
-    homotopy_groups2 (n+1, x) = Ω Ω(homotopy_groups2 (n, x))
+    homotopy_groups2 (n+1, x) = Ω (Ω(homotopy_groups2 (n, x)))
   | (fin.mk 0 H) := by reflexivity
   | (fin.mk 1 H) := by reflexivity
   | (fin.mk 2 H) := by reflexivity
@@ -732,7 +732,6 @@ namespace chain_complex namespace old
       apply homomorphism.mk (cc_to_fn (LES_of_homotopy_groups3 f) (k + 1, 3)),
       exact abstract begin rewrite [LES_of_homotopy_groups_fun3_3],
       refine @is_homomorphism_compose _ _ _ _ _ _ (π→*[2 * (k + 1) + 1] f) tinverse _ _,
-      { apply group_homotopy_group (2 * (k+1))},
       { apply phomotopy_group_functor_mul},
       { apply is_homomorphism_inverse} end end
     end
@@ -741,7 +740,6 @@ namespace chain_complex namespace old
       apply homomorphism.mk (cc_to_fn (LES_of_homotopy_groups3 f) (k + 1, 4)),
       exact abstract begin rewrite [LES_of_homotopy_groups_fun3_4],
       refine @is_homomorphism_compose _ _ _ _ _ _ (π→*[2 * (k + 1) + 1] (ppoint f)) tinverse _ _,
-      { apply group_homotopy_group (2 * (k+1))},
       { apply phomotopy_group_functor_mul},
       { apply is_homomorphism_inverse} end end
     end
@@ -753,7 +751,6 @@ namespace chain_complex namespace old
                (π→*[2 * (k + 1) + 1] (boundary_map f) ∘ tinverse) _ _ _,
       { refine @is_homomorphism_compose _ _ _ _ _ _
                  (π→*[2 * (k + 1) + 1] (boundary_map f)) tinverse _ _,
-        { apply group_homotopy_group (2 * (k+1))},
         { apply phomotopy_group_functor_mul},
         { apply is_homomorphism_inverse}},
       { rewrite [▸*, -ap_compose', ▸*],
