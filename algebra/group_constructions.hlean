@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2015 Floris van Doorn. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Floris van Doorn
+Authors: Floris van Doorn, Egbert Rijke
 
 Constructions with groups
 -/
@@ -19,6 +19,26 @@ namespace group
     (Rone : R one)
     (Rmul : Π{g h}, R g → R h → R (g * h))
     (Rinv : Π{g}, R g → R (g⁻¹))
+
+  definition image_subgroup.{u1 u2} {G : Group.{u1}} {H : Group.{u2}} (f : G →g H) : subgroup_rel.{u2 (max u1 u2)} H :=
+    begin
+      fapply subgroup_rel.mk,
+        -- definition of the subset
+      { intro h, apply ttrunc, exact fiber f h},
+        -- subset contains 1
+      { apply trunc.tr, fapply fiber.mk, exact 1, apply respect_one},
+        -- subset is closed under multiplication
+      { intro h h', intro u v,
+        induction u with p, induction v with q,
+        induction p with x p, induction q with y q,
+        induction p, induction q,
+        apply tr, apply fiber.mk (x * y), apply respect_mul},
+        -- subset is closed under inverses
+      { intro g, intro t, induction t, induction a with x p, induction p,
+        apply tr, apply fiber.mk x⁻¹, apply respect_inv }
+    end 
+
+  /- Normal subgroups -/
 
   structure normal_subgroup_rel (G : Group) extends subgroup_rel G :=
     (is_normal : Π{g} h, R g → R (h * g * h⁻¹))
@@ -115,8 +135,11 @@ namespace group
   definition quotient_rel (g h : G) : Prop := N (g * h⁻¹)
 
   variable {N}
+
+    -- We prove that quotient_rel is an equivalence relation
   theorem quotient_rel_refl (g : G) : quotient_rel N g g :=
   transport (λx, N x) !mul.right_inv⁻¹ (subgroup_has_one N)
+
   theorem quotient_rel_symm (r : quotient_rel N g h) : quotient_rel N h g :=
   transport (λx, N x) (!mul_inv ⬝ ap (λx, x * _) !inv_inv) (subgroup_respect_inv N r)
 
@@ -128,6 +151,13 @@ namespace group
                       ... = g * k⁻¹               : by rewrite inv_mul_cancel_right,
   show N (g * k⁻¹), from H2 ▸ H1
 
+  theorem is_equivalence_quotient_rel : is_equivalence (quotient_rel N) :=
+  is_equivalence.mk quotient_rel_refl
+                    (λg h, quotient_rel_symm)
+                    (λg h k, quotient_rel_trans)
+
+    -- We prove that quotient_rel respects inverses and multiplication, so
+    -- it is a congruence relation
   theorem quotient_rel_resp_inv (r : quotient_rel N g h) : quotient_rel N g⁻¹ h⁻¹ :=
   have H1 : N (g⁻¹ * (h * g⁻¹) * g), from
     is_normal_subgroup' N g (quotient_rel_symm r),
@@ -147,15 +177,14 @@ namespace group
                         ... = (g * g') * (h * h')⁻¹ : by rewrite [mul_inv],
   show N ((g * g') * (h * h')⁻¹), from H2 ▸ H1
 
-  theorem is_equivalence_quotient_rel : is_equivalence (quotient_rel N) :=
-  is_equivalence.mk quotient_rel_refl
-                    (λg h, quotient_rel_symm)
-                    (λg h k, quotient_rel_trans)
-
   local attribute is_equivalence_quotient_rel [instance]
+
   variable (N)
+
   definition qg : Type := set_quotient (quotient_rel N)
+
   variable {N}
+
   local attribute qg [reducible]
 
   definition quotient_one [constructor] : qg N := class_of one
@@ -644,6 +673,7 @@ namespace group
     | rmk : Πi y₁ y₂, dirsum_rel (ι ⟨i, y₁⟩ * ι ⟨i, y₂⟩ * (ι ⟨i, y₁ * y₂⟩)⁻¹)
 
     definition direct_sum : CommGroup := quotient_comm_group_gen dirsum_carrier (λg, ∥dirsum_rel g∥)
+ 
   end
 
   /- Tensor group (WIP) -/
