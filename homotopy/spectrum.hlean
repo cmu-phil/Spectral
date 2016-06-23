@@ -33,7 +33,7 @@ end eq open eq
 namespace pointed
 
   definition pequiv_compose {A B C : Type*} (g : B ≃* C) (f : A ≃* B) : A ≃* C :=
-    pequiv_of_pmap (g ∘* f) (is_equiv_compose f g)
+    pequiv_of_pmap (g ∘* f) (is_equiv_compose g f)
 
   infixr ` ∘*ᵉ `:60 := pequiv_compose
 
@@ -63,7 +63,7 @@ namespace pointed
             ...  ≃ Σ(p : pmap.to_fun f = pmap.to_fun g), resp_pt f = ap (λh, h pt) p ⬝ resp_pt g
                    : sigma_equiv_sigma_right (λp, pathover_eq_equiv_Fl p (resp_pt f) (resp_pt g))
             ...  ≃ Σ(p : pmap.to_fun f = pmap.to_fun g), resp_pt f = ap10 p pt ⬝ resp_pt g
-                   : sigma_equiv_sigma_right (λp, equiv_eq_closed_right _ (whisker_right (ap_eq_ap10 p _) _))
+                   : sigma_equiv_sigma_right (λp, equiv_eq_closed_right _ (whisker_right (ap_eq_apd10 p _) _))
             ...  ≃ Σ(p : pmap.to_fun f ~ pmap.to_fun g), resp_pt f = p pt ⬝ resp_pt g
                    : sigma_equiv_sigma_left' eq_equiv_homotopy
             ...  ≃ Σ(p : pmap.to_fun f ~ pmap.to_fun g), p pt ⬝ resp_pt g = resp_pt f

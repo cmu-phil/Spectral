@@ -708,7 +708,7 @@ namespace chain_complex namespace old
   definition CommGroup_LES_of_homotopy_groups3 (n : +6ℕ) : CommGroup.{u} :=
   CommGroup.mk (LES_of_homotopy_groups3 f (pr1 n + 1, pr2 n))
                (comm_group_LES_of_homotopy_groups3 f (pr1 n) (pr2 n))
-
+exit
   definition homomorphism_LES_of_homotopy_groups_fun3 : Π(k : +6ℕ),
     CommGroup_LES_of_homotopy_groups3 f (S k) →g CommGroup_LES_of_homotopy_groups3 f k
   | (k, fin.mk 0 H) :=
