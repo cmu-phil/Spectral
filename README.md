@@ -28,7 +28,6 @@ Jeremy Avigad, Steve Awodey, Ulrik Buchholtz, Floris van Doorn, Clive Newstead, 
 - [convergence of spectral sequences](http://ncatlab.org/nlab/show/spectral+sequence#ConvergenceOfSpectralSequences)
 
 ### Topology To Do:
-- HoTT Book sections 8.7, 8.8.
 - fiber sequence
   + already have the LES
   + need shift isomorphism
@@ -49,7 +48,6 @@ Jeremy Avigad, Steve Awodey, Ulrik Buchholtz, Floris van Doorn, Clive Newstead, 
   + colimits need to be spectrified
 - long exact sequences from (co)fiber sequences of spectra
   + indexed on ℤ, need to splice together LES's
-- [Eilenberg-MacLane spaces](http://ncatlab.org/nlab/show/Eilenberg-Mac+Lane+space) and spectra
 - Postnikov towers of spectra
   + basic definition already there
   + fibers of Postnikov sequence unstably and stably
@@ -57,7 +55,8 @@ Jeremy Avigad, Steve Awodey, Ulrik Buchholtz, Floris van Doorn, Clive Newstead, 
   + need to splice together LES's
 
 ### Already Done:
-- Most things in the HoTT Book up to Section 8.6 (see [this file](https://github.com/leanprover/lean/blob/master/hott/book.md))
+- Most things in the HoTT Book up to Section 8.9 (see [this file](https://github.com/leanprover/lean/blob/master/hott/book.md))
 - pointed types, maps, homotopies and equivalences
 - definition of algebraic structures such as groups, rings, fields
 - some algebra: quotient, product, free groups.
+- [Eilenberg-MacLane spaces](http://ncatlab.org/nlab/show/Eilenberg-Mac+Lane+space) and EM-spectrum
