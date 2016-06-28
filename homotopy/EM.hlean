@@ -87,7 +87,7 @@ namespace EM
 
  -- general case
   definition EMadd1_map [unfold 8] {G : CommGroup} {X : Type*} {n : ℕ} (e : Ω[succ n] X ≃ G)
-    (r : Π(p q : Ω[succ n] X), e (@concat (Ω[n] X) pt pt pt p q) = e p * e q)
+    (r : Π(p q : Ω (Ω[n] X)), e (p ⬝ q) = e p * e q)
     [H1 : is_conn n X] [H2 : is_trunc (n.+1) X] : EMadd1 G n → X :=
   begin
     revert X e r H1 H2, induction n with n f: intro X e r H1 H2,
@@ -96,14 +96,14 @@ namespace EM
     induction x with x, induction x with x,
     { exact pt},
     { exact pt},
-    { change carrier (Ω X), refine f _ _ _ _ _ (tr x),
-      { refine _⁻¹ᵉ ⬝e e, apply equiv_of_pequiv, apply pequiv_of_eq, apply loop_space_succ_eq_in},
-      exact abstract begin
-        intro p q, refine _ ⬝ !r, apply ap e, esimp,
-        apply inv_tr_eq_of_eq_tr, symmetry,
-        rewrite [- + ap_inv, - + tr_compose],
-        refine !loop_space_succ_eq_in_concat ⬝ _, exact !tr_inv_tr ◾ !tr_inv_tr
-      end end}
+    change carrier (Ω X), refine f _ _ _ _ _ (tr x),
+    { refine _⁻¹ᵉ ⬝e e, apply equiv_of_pequiv, apply pequiv_of_eq, apply loop_space_succ_eq_in},
+    exact abstract begin
+      intro p q, refine _ ⬝ !r, apply ap e, esimp,
+      apply inv_tr_eq_of_eq_tr, symmetry,
+      rewrite [- + ap_inv, - + tr_compose],
+      refine !loop_space_succ_eq_in_concat ⬝ _, exact !tr_inv_tr ◾ !tr_inv_tr
+    end end
   end
 
   definition pEMadd1_pmap [constructor] {G : CommGroup} {X : Type*} {n : ℕ} (e : Ω[succ n] X ≃ G)
@@ -121,7 +121,7 @@ namespace EM
     revert X e r H1 H2, induction n with n IH: intro X e r H1 H2,
     { refine !idp_con ⬝ _, refine !ap_compose'⁻¹ ⬝ _, esimp, apply elim_pth},
     { replace (succ (succ n)) with ((succ n) + 1), rewrite [apn_succ],
-      unfold [ap1], exact sorry}
+      exact sorry}
     --exact !idp_con ⬝ !elim_pth
   end
 
@@ -157,8 +157,80 @@ namespace EM
     intro p q, esimp, exact to_respect_mul e (tr p) (tr q)
   end
 
+  definition EM_pequiv_succ {G : CommGroup} {X : Type*} {n : ℕ} (e : πg[n+1] X ≃g G)
+    [H1 : is_conn n X] [H2 : is_trunc (n.+1) X] : EM G (succ n) ≃* X :=
+  pEMadd1_pequiv e
+
+  definition EM_pequiv_zero {G : CommGroup} {X : Type*} (e : X ≃* pType_of_Group G) : EM G 0 ≃* X :=
+  proof e⁻¹ᵉ* qed
+
   definition EM_spectrum /-[constructor]-/ (G : CommGroup) : spectrum :=
   spectrum.Mk (K G) (λn, (loop_EM G n)⁻¹ᵉ*)
+
+  /- uniqueness of K(G,n), method 2: -/
+
+-- definition freudenthal_homotopy_group_pequiv (A : Type*) {n k : ℕ} [is_conn n A] (H : k ≤ 2 * n)
+--   : π*[k + 1] (psusp A) ≃* π*[k] A  :=
+-- calc
+--   π*[k + 1] (psusp A) ≃* π*[k] (Ω (psusp A)) : pequiv_of_eq (phomotopy_group_succ_in (psusp A) k)
+--     ... ≃* Ω[k] (ptrunc k (Ω (psusp A)))     : phomotopy_group_pequiv_loop_ptrunc k (Ω (psusp A))
+--     ... ≃* Ω[k] (ptrunc k A)                 : loopn_pequiv_loopn k (freudenthal_pequiv A H)
+--     ... ≃* π*[k] A                           : (phomotopy_group_pequiv_loop_ptrunc k A)⁻¹ᵉ*
+
+  definition iterate_psusp_succ_pequiv (n : ℕ) (A : Type*) :
+    iterate_psusp (succ n) A ≃* iterate_psusp n (psusp A) :=
+  begin
+    induction n with n IH,
+    { reflexivity},
+    { exact psusp_equiv IH}
+  end
+
+  definition is_conn_psusp [instance] (n : trunc_index) (A : Type*)
+    [H : is_conn n A] : is_conn (n .+1) (psusp A) :=
+  is_conn_susp n A
+
+  definition iterated_freudenthal_pequiv (A : Type*) {n k m : ℕ} [HA : is_conn n A] (H : k ≤ 2 * n)
+    : ptrunc k A ≃* ptrunc k (Ω[m] (iterate_psusp m A)) :=
+  begin
+    revert A n k HA H, induction m with m IH: intro A n k HA H,
+    { reflexivity},
+    { have H2 : succ k ≤ 2 * succ n,
+      from calc
+        succ k ≤ succ (2 * n) : succ_le_succ H
+           ... ≤ 2 * succ n   : self_le_succ,
+      exact calc
+        ptrunc k A ≃* ptrunc k (Ω (psusp A))   : freudenthal_pequiv A H
+          ... ≃* Ω (ptrunc (succ k) (psusp A)) : loop_ptrunc_pequiv
+          ... ≃* Ω (ptrunc (succ k) (Ω[m] (iterate_psusp m (psusp A)))) :
+                   loop_pequiv_loop (IH (psusp A) (succ n) (succ k) _ H2)
+          ... ≃* ptrunc k (Ω[succ m] (iterate_psusp m (psusp A))) : loop_ptrunc_pequiv
+          ... ≃* ptrunc k (Ω[succ m] (iterate_psusp (succ m) A)) :
+                   ptrunc_pequiv_ptrunc _ (loopn_pequiv_loopn _ !iterate_psusp_succ_pequiv)}
+  end
+
+  definition pmap_eq_of_phomotopy {A B : Type*} {f g : A →* B} (p : f ~* g) : f = g :=
+  pmap_eq (to_homotopy p) (to_homotopy_pt p)⁻¹
+
+  definition pmap_equiv_pmap_right {A B : Type*} (C : Type*) (f : A ≃* B) : C →* A ≃ C →* B :=
+  begin
+    fapply equiv.MK,
+    { exact pcompose f},
+    { exact pcompose f⁻¹ᵉ*},
+    { intro f, apply pmap_eq_of_phomotopy,
+      exact !passoc⁻¹* ⬝* pwhisker_right _ !pright_inv ⬝* !pid_comp},
+    { intro f, apply pmap_eq_of_phomotopy,
+      exact !passoc⁻¹* ⬝* pwhisker_right _ !pleft_inv ⬝* !pid_comp}
+  end
+
+  definition iterate_psusp_adjoint_loopn [constructor] (X Y : Type*) (n : ℕ) :
+    iterate_psusp n X →* Y ≃ X →* Ω[n] Y :=
+  begin
+    revert X Y, induction n with n IH: intro X Y,
+    { reflexivity},
+    { refine !susp_adjoint_loop ⬝e !IH ⬝e _, apply pmap_equiv_pmap_right,
+      symmetry, apply pequiv_of_eq, apply loop_space_succ_eq_in}
+  end
+
 
 end EM
 -- cohomology ∥ X → K(G,n) ∥
