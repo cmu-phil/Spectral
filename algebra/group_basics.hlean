@@ -34,13 +34,13 @@ namespace group
 
   definition is_trivial_subgroup (G : Group) (R : subgroup_rel G) : Prop := sorry /- Π g, R g = trivial_subgroup g -/
 
-  definition full_subgroup.{u} (G : Group.{u}) : subgroup_rel.{u u} G :=
+  definition full_subgroup.{u} (G : Group.{u}) : subgroup_rel.{u 0} G :=
   begin
     fapply subgroup_rel.mk,
-    { intro g, fapply trunctype.mk, exact g = g, exact _}, -- instead of the unit type, we take g = g, because the unit type is in Type₀ and not in Type.{u}
-    { esimp },
-    { intros g h p q, esimp },
-    { intros g p, esimp }
+    { intro g, fapply trunctype.mk, exact unit, exact _}, -- instead of the unit type, we take g = g, because the unit type is in Type₀ and not in Type.{u}
+    { esimp, constructor },
+    { intros g h p q, esimp, constructor },
+    { intros g p, esimp, constructor }
   end
 
   definition is_full_subgroup (G : Group) (R : subgroup_rel G) : Prop := sorry /- Π g, R g -/
