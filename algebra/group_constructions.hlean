@@ -58,11 +58,41 @@ namespace group
         apply tr, apply fiber.mk x⁻¹, apply respect_inv }
     end 
 
-  /-- TODO. There needs to be a definition of a kernel here. --/
-  definition kernel.{u} {G H : Group.{u}} (f : G →g H) : subgroup_rel.{u} G :=
+  section kernels
+
+  variables {G₁ G₂ : Group}
+
+  -- TODO: maybe define this in more generality for pointed types? <-- Do you mean pointed sets?
+  definition kernel_pred [constructor] (φ : G₁ →g G₂) (g : G₁) : Prop := trunctype.mk (φ g = 1) _
+
+  theorem kernel_mul (φ : G₁ →g G₂) (g h : G₁) (H₁ : kernel_pred φ g) (H₂ : kernel_pred φ h) : kernel_pred φ (g *[G₁] h) :=
   begin
-    exact sorry
+    esimp at *,
+    exact calc
+      φ (g * h) = (φ g) * (φ h) : to_respect_mul
+            ... = 1 * (φ h)     : H₁
+            ... = 1 * 1         : H₂
+            ... = 1             : one_mul
   end
+
+  theorem kernel_inv (φ : G₁ →g G₂) (g : G₁) (H : kernel_pred φ g) : kernel_pred φ (g⁻¹) :=
+  begin
+    esimp at *,
+    exact calc
+      φ g⁻¹ = (φ g)⁻¹ : to_respect_inv
+        ... = 1⁻¹     : H
+        ... = 1       : one_inv
+  end
+
+  definition kernel_subgroup [constructor] (φ : G₁ →g G₂) : subgroup_rel G₁ :=
+  ⦃ subgroup_rel,
+    R := kernel_pred φ,
+    Rone := respect_one φ,
+    Rmul := kernel_mul φ,
+    Rinv := kernel_inv φ
+  ⦄
+
+  end kernels
 
   /-- Now we should be able to show that if f is a homomorphism for which the kernel is trivial and the image is full, then f is an isomorphism, except that no one defined the proposition that f is an isomorphism :/ --/
   definition is_iso_from_kertriv_imfull {G H : Group} (f : G →g H) : is_trivial_subgroup G (kernel f) → is_full_subgroup H (image_subgroup f) → unit /- replace unit by is_isomorphism f -/ := sorry
@@ -130,6 +160,27 @@ namespace group
                         ... = g * (h * (h⁻¹ * (k * h))) : by rewrite [mul.assoc h⁻¹]
                         ... = g * (k * h)               : by rewrite [mul_inv_cancel_left],
   show N (g * (k * h)), from H2 ▸ H1
+  /-- In the following, we show that the kernel of any group homomorphism f : G₁ →g G₂ is a normal subgroup of G₁ --/
+  theorem is_normal_subgroup_kernel {G₁ G₂ : Group} (φ : G₁ →g G₂) (g : G₁) (h : G₁)
+    : kernel_pred φ g → kernel_pred φ (h * g * h⁻¹) :=
+  begin
+    esimp at *,
+    intro p,
+    exact calc
+      φ (h * g * h⁻¹) = (φ (h * g)) * φ (h⁻¹)   : to_respect_mul
+                  ... = (φ h) * (φ g) * (φ h⁻¹) : to_respect_mul
+                  ... = (φ h) * 1 * (φ h⁻¹)     : p
+                  ... = (φ h) * (φ h⁻¹)         : mul_one
+                  ... = (φ h) * (φ h)⁻¹         : to_respect_inv
+                  ... = 1                       : mul.right_inv
+  end
+
+  /-- Thus, we extend the kernel subgroup to a normal subgroup --/
+  definition normal_subgroup_kernel [constructor] {G₁ G₂ : Group} (φ : G₁ →g G₂) : normal_subgroup_rel G₁ :=
+  ⦃ normal_subgroup_rel,
+    kernel_subgroup φ,
+    is_normal := is_normal_subgroup_kernel φ
+  ⦄
 
   -- this is just (Σ(g : G), H g), but only defined if (H g) is a prop
   definition sg : Type := {g : G | H g}
@@ -749,61 +800,5 @@ namespace group
   quotient_comm_group (tensor_group_rel A B)
 
   end tensor_group-/
-
-  section kernels
-
-  variables {G₁ G₂ : Group}
-
-  -- TODO: maybe define this in more generality for pointed types?
-  definition kernel [constructor] (φ : G₁ →g G₂) (g : G₁) : Prop := trunctype.mk (φ g = 1) _
-
-  theorem kernel_mul (φ : G₁ →g G₂) (g h : G₁) (H₁ : kernel φ g) (H₂ : kernel φ h) : kernel φ (g *[G₁] h) :=
-  begin
-    esimp at *,
-    exact calc
-      φ (g * h) = (φ g) * (φ h) : to_respect_mul
-            ... = 1 * (φ h)     : H₁
-            ... = 1 * 1         : H₂
-            ... = 1             : one_mul
-  end
-
-  theorem kernel_inv (φ : G₁ →g G₂) (g : G₁) (H : kernel φ g) : kernel φ (g⁻¹) :=
-  begin
-    esimp at *,
-    exact calc
-      φ g⁻¹ = (φ g)⁻¹ : to_respect_inv
-        ... = 1⁻¹     : H
-        ... = 1       : one_inv
-  end
-
-  definition subgroup_kernel [constructor] (φ : G₁ →g G₂) : subgroup_rel G₁ :=
-  ⦃ subgroup_rel,
-    R := kernel φ,
-    Rone := respect_one φ,
-    Rmul := kernel_mul φ,
-    Rinv := kernel_inv φ
-  ⦄
-
-  theorem is_normal_subgroup_kernel (φ : G₁ →g G₂) (g : G₁) (h : G₁)
-    : kernel φ g → kernel φ (h * g * h⁻¹) :=
-  begin
-    esimp at *,
-    intro p,
-    exact calc
-      φ (h * g * h⁻¹) = (φ (h * g)) * φ (h⁻¹)   : to_respect_mul
-                  ... = (φ h) * (φ g) * (φ h⁻¹) : to_respect_mul
-                  ... = (φ h) * 1 * (φ h⁻¹)     : p
-                  ... = (φ h) * (φ h⁻¹)         : mul_one
-                  ... = (φ h) * (φ h)⁻¹         : to_respect_inv
-                  ... = 1                       : mul.right_inv
-  end
-
-  definition normal_subgroup_kernel [constructor] (φ : G₁ →g G₂) : normal_subgroup_rel G₁ :=
-  ⦃ normal_subgroup_rel,
-    subgroup_kernel φ,
-    is_normal := is_normal_subgroup_kernel φ
-  ⦄
-
-  end kernels
 
 end group
