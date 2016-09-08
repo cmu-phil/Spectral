@@ -16,16 +16,20 @@ namespace group
   /-- Recall that a subtype of a type A is the same thing as a family of mere propositions over A. Thus, we define a subgroup of a group G to be a family of mere propositions over (the underlying type of) G, closed under the constants and operations --/
 
   /-- Question: Why is this called subgroup_rel. Because it is a unary relation? --/
-  structure subgroup_rel (G : Group) :=
-    (R : G → Prop)
+  structure subgroup_rel.{u} (G : Group.{u}) : Type.{u+1} :=
+    (R : G → Prop.{u})
     (Rone : R one)
     (Rmul : Π{g h}, R g → R h → R (g * h))
     (Rinv : Π{g}, R g → R (g⁻¹))
 
   /-- Every group G has at least two subgroups, the trivial subgroup containing only one, and the full subgroup. --/
-  definition trivial_subgroup (G : Group) : subgroup_rel G :=
+  definition trivial_subgroup.{u} (G : Group.{u}) : subgroup_rel.{u} G :=
   begin
-    exact sorry /- λ g, g = one -/
+    fapply subgroup_rel.mk,
+    { intro g, fapply trunctype.mk, exact (g = one), exact _ },
+    { esimp },
+    { intros g h p q, esimp at *, rewrite p, rewrite q, exact mul_one one},
+    { intros g p, esimp at *, rewrite p, exact one_inv }
   end
 
   definition is_trivial_subgroup (G : Group) (R : subgroup_rel G) : Prop := sorry /- Π g, R g = trivial_subgroup g -/
