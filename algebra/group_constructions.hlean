@@ -12,14 +12,34 @@ open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum
      equiv
 namespace group
 
-  /- Subgroups -/
+  /- #Subgroups -/
+  /-- Recall that a subtype of a type A is the same thing as a family of mere propositions over A. Thus, we define a subgroup of a group G to be a family of mere propositions over (the underlying type of) G, closed under the constants and operations --/
 
+  /-- Question: Why is this called subgroup_rel. Because it is a unary relation? --/
   structure subgroup_rel (G : Group) :=
     (R : G → Prop)
     (Rone : R one)
     (Rmul : Π{g h}, R g → R h → R (g * h))
     (Rinv : Π{g}, R g → R (g⁻¹))
 
+  /-- Every group G has at least two subgroups, the trivial subgroup containing only one, and the full subgroup. --/
+  definition trivial_subgroup (G : Group) : subgroup_rel G :=
+  begin
+    exact sorry /- λ g, g = one -/
+  end
+
+  definition is_trivial_subgroup (G : Group) (R : subgroup_rel G) : Prop := sorry /- Π g, R g = trivial_subgroup g -/
+
+  definition full_subgroup (G : Group) : subgroup_rel G :=
+  begin
+    exact sorry /- λ g, unit -/
+  end
+
+  definition is_full_subgroup (G : Group) (R : subgroup_rel G) : Prop := sorry /- Π g, R g -/
+
+  /-- Every group homomorphism f : G -> H determines a subgroup of H, the image of f, and a subgroup of G, the kernel of f. In the following definition we define the image of f. Since a subgroup is required to be closed under the group operations, showing that the image of f is closed under the group operations is part of the definition of the image of f. --/
+
+  /-- TODO. We need to find some reasonable way of dealing with universe levels. The reason why it currently is what it is, is because lean is inflexible with universe leves once tactic mode is started --/
   definition image_subgroup.{u1 u2} {G : Group.{u1}} {H : Group.{u2}} (f : G →g H) : subgroup_rel.{u2 (max u1 u2)} H :=
     begin
       fapply subgroup_rel.mk,
@@ -38,10 +58,40 @@ namespace group
         apply tr, apply fiber.mk x⁻¹, apply respect_inv }
     end 
 
-  /- Normal subgroups -/
+  /-- TODO. There needs to be a definition of a kernel here. --/
+  definition kernel.{u} {G H : Group.{u}} (f : G →g H) : subgroup_rel.{u} G :=
+  begin
+    exact sorry
+  end
 
+  /-- Now we should be able to show that if f is a homomorphism for which the kernel is trivial and the image is full, then f is an isomorphism, except that no one defined the proposition that f is an isomorphism :/ --/
+  definition is_iso_from_kertriv_imfull {G H : Group} (f : G →g H) : is_trivial_subgroup G (kernel f) → is_full_subgroup H (image_subgroup f) → unit /- replace unit by is_isomorphism f -/ := sorry
+
+  /- #Normal subgroups -/
+
+  /-- Next, we formalize some aspects of normal subgroups. Recall that a normal subgroup H of a group G is a subgroup which is invariant under all inner automorophisms on G. --/
+
+  definition aut.{u} (G : Group.{u}) : Group.{u} :=
+  begin
+    fapply Group.mk, 
+    exact (G ≃g G),
+    fapply group.mk,
+    { intros e f, fapply isomorphism.mk, exact f ∘g e, exact is_equiv.is_equiv_compose f e},
+    { /-is_set G ≃g G-/ exact sorry},
+    { /-associativity-/ intros e f g, exact sorry},
+    { /-identity-/ fapply isomorphism.mk, exact sorry, exact sorry},
+    { /-identity is left unit-/ exact sorry},
+    { /-identity is right unit-/ exact sorry},
+    { /-inverses-/ exact sorry},
+    { /-inverse is right inverse?-/ exact sorry},
+  end
+
+  definition inner_aut (G : Group) : G →g (G ≃g G) := sorry /-- h ↦ h * g * h⁻¹ --/
+
+  /-- There is a problem with the following definition, namely that there is no mere proposition that says that N is normal --/
   structure normal_subgroup_rel (G : Group) extends subgroup_rel G :=
     (is_normal : Π{g} h, R g → R (h * g * h⁻¹))
+  /-- expect something like (is_normal : isNormal R) where isNormal R is a predefined predicate on subgroups of G --/
 
   attribute subgroup_rel.R [coercion]
   abbreviation subgroup_to_rel      [unfold 2] := @subgroup_rel.R
