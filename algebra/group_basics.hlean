@@ -16,14 +16,14 @@ namespace group
   /-- Recall that a subtype of a type A is the same thing as a family of mere propositions over A. Thus, we define a subgroup of a group G to be a family of mere propositions over (the underlying type of) G, closed under the constants and operations --/
 
   /-- Question: Why is this called subgroup_rel. Because it is a unary relation? --/
-  structure subgroup_rel.{u} (G : Group.{u}) : Type.{u+1} :=
-    (R : G → Prop.{u})
+  structure subgroup_rel.{u v} (G : Group.{u}) : Type.{max u (v+1)} :=
+    (R : G → Prop.{v})
     (Rone : R one)
     (Rmul : Π{g h}, R g → R h → R (g * h))
     (Rinv : Π{g}, R g → R (g⁻¹))
 
   /-- Every group G has at least two subgroups, the trivial subgroup containing only one, and the full subgroup. --/
-  definition trivial_subgroup.{u} (G : Group.{u}) : subgroup_rel.{u} G :=
+  definition trivial_subgroup.{u} (G : Group.{u}) : subgroup_rel.{u u} G :=
   begin
     fapply subgroup_rel.mk,
     { intro g, fapply trunctype.mk, exact (g = one), exact _ },
@@ -34,7 +34,7 @@ namespace group
 
   definition is_trivial_subgroup (G : Group) (R : subgroup_rel G) : Prop := sorry /- Π g, R g = trivial_subgroup g -/
 
-  definition full_subgroup (G : Group) : subgroup_rel G :=
+  definition full_subgroup.{u} (G : Group.{u}) : subgroup_rel.{u u} G :=
   begin
     fapply subgroup_rel.mk,
     { intro g, fapply trunctype.mk, exact g = g, exact _}, -- instead of the unit type, we take g = g, because the unit type is in Type₀ and not in Type.{u}
@@ -103,7 +103,7 @@ namespace group
   end kernels
 
   /-- Now we should be able to show that if f is a homomorphism for which the kernel is trivial and the image is full, then f is an isomorphism, except that no one defined the proposition that f is an isomorphism :/ --/
-  definition is_iso_from_kertriv_imfull {G H : Group} (f : G →g H) : is_trivial_subgroup G (kernel f) → is_full_subgroup H (image_subgroup f) → unit /- replace unit by is_isomorphism f -/ := sorry
+  -- definition is_iso_from_kertriv_imfull {G H : Group} (f : G →g H) : is_trivial_subgroup G (kernel f) → is_full_subgroup H (image_subgroup f) → unit /- replace unit by is_isomorphism f -/ := sorry
 
   /- #Normal subgroups -/
 
@@ -124,7 +124,7 @@ namespace group
     { /-inverse is right inverse?-/ exact sorry},
   end
 
-  definition inner_aut (G : Group) : G →g (G ≃g G) := sorry /-- h ↦ h * g * h⁻¹ --/
+  -- definition inner_aut (G : Group) : G →g (G ≃g G) := sorry /-- h ↦ h * g * h⁻¹ --/
 
   /-- There is a problem with the following definition, namely that there is no mere proposition that says that N is normal --/
   structure normal_subgroup_rel (G : Group) extends subgroup_rel G :=
