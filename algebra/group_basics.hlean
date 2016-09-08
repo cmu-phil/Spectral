@@ -37,7 +37,7 @@ namespace group
   definition full_subgroup (G : Group) : subgroup_rel G :=
   begin
     fapply subgroup_rel.mk,
-    { intro g, fapply trunctype.mk, exact g = g, exact _},
+    { intro g, fapply trunctype.mk, exact g = g, exact _}, -- instead of the unit type, we take g = g, because the unit type is in Type₀ and not in Type.{u}
     { esimp },
     { intros g h p q, esimp },
     { intros g p, esimp }
