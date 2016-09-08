@@ -36,7 +36,11 @@ namespace group
 
   definition full_subgroup (G : Group) : subgroup_rel G :=
   begin
-    exact sorry /- λ g, unit -/
+    fapply subgroup_rel.mk,
+    { intro g, fapply trunctype.mk, exact g = g, exact _},
+    { esimp },
+    { intros g h p q, esimp },
+    { intros g p, esimp }
   end
 
   definition is_full_subgroup (G : Group) (R : subgroup_rel G) : Prop := sorry /- Π g, R g -/
