@@ -1,11 +1,11 @@
 /-
 Copyright (c) 2016 Michael Shulman. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Michael Shulman
+Authors: Michael Shulman, Floris van Doorn
 
 -/
 
-import types.int types.pointed types.trunc homotopy.susp algebra.homotopy_group homotopy.chain_complex cubical
+import types.int types.pointed types.trunc homotopy.susp algebra.homotopy_group homotopy.chain_complex cubical .splice homotopy.LES_of_homotopy_groups
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi
 
 /-----------------------------------------
@@ -22,6 +22,11 @@ namespace sigma
 
 end sigma
 open sigma
+
+namespace group
+  open is_trunc
+  definition pSet_of_Group (G : Group) : Set* := ptrunctype.mk G _ 1
+end group open group
 
 namespace eq
 
@@ -351,9 +356,15 @@ namespace spectrum
   -- read off the homotopy groups without any tedious case-analysis of
   -- n.  We increment by 2 in order to ensure that they are all
   -- automatically abelian groups.
-  definition shomotopy_group [constructor] (n : ℤ) (E : spectrum) : CommGroup := πag[0+2] (E (2 + n))
+  definition shomotopy_group [constructor] (n : ℤ) (E : spectrum) : CommGroup := πag[0+2] (E (n + 2))
 
-  notation `πₛ[`:95  n:0    `] `:0 E:95 := shomotopy_group n E
+  notation `πₛ[`:95 n:0 `]`:0 := shomotopy_group n
+
+  definition shomotopy_group_fun [constructor] (n : ℤ) {E F : spectrum} (f : E →ₛ F) :
+    πₛ[n] E →g πₛ[n] F :=
+  π→g[1+1] (f (n + 2))
+
+  notation `πₛ→[`:95 n:0 `]`:0 := shomotopy_group_fun n
 
   /-------------------------------
     Cotensor of spectra by types
@@ -377,9 +388,52 @@ namespace spectrum
     Fibers and long exact sequences
   -----------------------------------------/
 
-  definition sfiber {N : succ_str} (E F : gen_spectrum N) (f : E →ₛ F) : gen_spectrum N :=
+  definition sfiber {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y) : gen_spectrum N :=
     spectrum.MK (λn, pfiber (f n))
       (λn, pfiber_loop_space (f (S n)) ∘*ᵉ pfiber_equiv_of_square (sglue_square f n))
+
+  /- the map from the fiber to the domain. The fact that the square commutes requires work -/
+  -- definition spoint {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y) : sfiber f →ₛ X :=
+  -- smap.mk (λn, ppoint (f n))
+  --   begin
+  --     intro n, exact sorry
+  --   end
+
+  /- TODO: fill in sorry's (and possibly generalize 2 to n) -/
+  definition π_glue (X : spectrum) (n : ℤ) : π*[2] (X (pred n)) ≃* π*[3] (X n) :=
+  sorry
+
+  definition π_glue_square {X Y : spectrum} (f : X →ₛ Y) (n : ℤ) :
+    π_glue Y n ∘* π→*[2] (f (pred n)) ~* π→*[3] (f n) ∘* π_glue X n :=
+  sorry
+
+  section
+  open chain_complex prod fin group
+
+  universe variable u
+  parameters {X Y : spectrum.{u}} (f : X →ₛ Y)
+
+  definition LES_of_shomotopy_groups : chain_complex -3ℤ :=
+  splice (λ(n : ℤ), LES_of_homotopy_groups (f n)) (2, 0) (π_glue Y) (π_glue X) (π_glue_square f)
+
+  -- In the comments below is a start on an explicit description of the LES for spectra
+  -- Maybe it's slightly nicer to work with than the above version
+
+--   definition shomotopy_groups [reducible] : -3ℤ → CommGroup
+--   | (n, fin.mk 0 H) := πₛ[n] Y
+--   | (n, fin.mk 1 H) := πₛ[n] X
+--   | (n, fin.mk k H) := πₛ[n] (sfiber f)
+
+--   definition shomotopy_groups_fun : Π(n : -3ℤ), shomotopy_groups (S n) →g shomotopy_groups n
+--   | (n, fin.mk 0 H) := proof π→g[1+1] (f (n + 2)) qed --π→*[2] f (n+2)
+-- --pmap_of_homomorphism (πₛ→[n] f)
+--   | (n, fin.mk 1 H) := proof π→g[1+1] (ppoint (f (n + 2))) qed
+--   | (n, fin.mk 2 H) :=
+--     proof _ ∘g π→g[1+1] equiv_glue Y (pred n + 2) qed
+-- --π→*[n] boundary_map ∘* pcast (ap (ptrunc 0) (loop_space_succ_eq_in Y n))
+--   | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
+
+  end
 
   structure sp_chain_complex (N : succ_str) : Type :=
     (car : N → spectrum)
