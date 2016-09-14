@@ -6,7 +6,7 @@ Authors: Floris van Doorn, Egbert Rijke
 Constructions with groups
 -/
 
-import algebra.subgroup hit.set_quotient types.list types.sum .group_basics
+import algebra.group_theory hit.set_quotient types.list types.sum .subgroup
 
 open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function
      equiv
@@ -78,7 +78,7 @@ namespace group
     g * ((g' * h'⁻¹) * h⁻¹) = g * (g' * (h'⁻¹ * h⁻¹)) : by rewrite [mul.assoc]
                         ... = (g * g') * (h'⁻¹ * h⁻¹) : mul.assoc
                         ... = (g * g') * (h * h')⁻¹ : by rewrite [mul_inv],
-  show N ((g * g') * (h * h')⁻¹), from H2 ▸ H1
+  show N ((g * g') * (h * h')⁻¹), from transport (λx, N x) H2 H1
 
   local attribute is_equivalence_quotient_rel [instance]
 
@@ -153,6 +153,36 @@ namespace group
   definition quotient_comm_group [constructor] {G : CommGroup} (N : subgroup_rel G)
     : CommGroup :=
   CommGroup.mk _ (comm_group_qg (normal_subgroup_rel_comm N))
+
+  definition gq_map : G →g quotient_group N :=
+  sorry
+
+  namespace quotient
+    notation `⟦`:max a `⟧`:0 := gq_map a _
+  end quotient
+
+  open quotient
+  variable {N}
+
+  definition gq_map_eq_one (g : G) (H : N g) : gq_map N g = 1 :=
+  sorry
+
+  definition rel_of_gq_map_eq_one (g : G) (H : gq_map N g = 1) : N g :=
+  sorry
+
+  definition glift (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) : quotient_group N →g G' :=
+  sorry
+
+  definition glift_gq_map (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) : glift f H ∘g gq_map N ~ f :=
+  sorry
+
+  definition glift_unique (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) (g : quotient_group N →g G') :
+    g ~ glift f H :=
+  sorry
+
+  definition gq_universal_property (f : G →g G') (H : Π⦃g⦄, N g → f g = 1)  :
+    is_contr (Σ(g : quotient_group N →g G'), g ∘g gq_map N = f) :=
+  sorry
 
   /- Binary products (direct sums) of Groups -/
   definition product_one [constructor] : G × G' := (one, one)
