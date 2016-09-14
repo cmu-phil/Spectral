@@ -356,13 +356,13 @@ namespace spectrum
   -- read off the homotopy groups without any tedious case-analysis of
   -- n.  We increment by 2 in order to ensure that they are all
   -- automatically abelian groups.
-  definition shomotopy_group [constructor] (n : ℤ) (E : spectrum) : CommGroup := πag[0+2] (E (n + 2))
+  definition shomotopy_group [constructor] (n : ℤ) (E : spectrum) : CommGroup := πag[0+2] (E (2 - n))
 
   notation `πₛ[`:95 n:0 `]`:0 := shomotopy_group n
 
   definition shomotopy_group_fun [constructor] (n : ℤ) {E F : spectrum} (f : E →ₛ F) :
     πₛ[n] E →g πₛ[n] F :=
-  π→g[1+1] (f (n + 2))
+  π→g[1+1] (f (2 - n))
 
   notation `πₛ→[`:95 n:0 `]`:0 := shomotopy_group_fun n
 
@@ -393,18 +393,24 @@ namespace spectrum
       (λn, pfiber_loop_space (f (S n)) ∘*ᵉ pfiber_equiv_of_square (sglue_square f n))
 
   /- the map from the fiber to the domain. The fact that the square commutes requires work -/
-  -- definition spoint {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y) : sfiber f →ₛ X :=
-  -- smap.mk (λn, ppoint (f n))
-  --   begin
-  --     intro n, exact sorry
-  --   end
+  definition spoint {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y) : sfiber f →ₛ X :=
+  smap.mk (λn, ppoint (f n))
+    begin
+      intro n, exact sorry
+    end
 
-  /- TODO: fill in sorry's (and possibly generalize 2 to n) -/
-  definition π_glue (X : spectrum) (n : ℤ) : π*[2] (X (pred n)) ≃* π*[3] (X n) :=
-  sorry
+   definition π_glue (X : spectrum) (n : ℤ) : π*[2] (X (2 - succ n)) ≃* π*[3] (X (2 - n)) :=
+  begin
+    symmetry,
+    refine pequiv_of_eq (phomotopy_group_succ_in (X (2 - n)) 2) ⬝e* _,
+    assert H : 2 - n = succ (2 - succ n), exact (sub_add_cancel (2-n) 1)⁻¹ ⬝ ap succ !sub_sub,
+    refine phomotopy_group_pequiv 2 (loop_pequiv_loop (pequiv_of_eq (ap X H))) ⬝e* _,
+    exact phomotopy_group_pequiv 2 (equiv_glue X (2 - succ n))⁻¹ᵉ*
+  end
 
+  /- TODO: fill in sorry -/
   definition π_glue_square {X Y : spectrum} (f : X →ₛ Y) (n : ℤ) :
-    π_glue Y n ∘* π→*[2] (f (pred n)) ~* π→*[3] (f n) ∘* π_glue X n :=
+    π_glue Y n ∘* π→*[2] (f (2 - succ n)) ~* π→*[3] (f (2 - n)) ∘* π_glue X n :=
   sorry
 
   section
@@ -413,8 +419,31 @@ namespace spectrum
   universe variable u
   parameters {X Y : spectrum.{u}} (f : X →ₛ Y)
 
-  definition LES_of_shomotopy_groups : chain_complex -3ℤ :=
-  splice (λ(n : ℤ), LES_of_homotopy_groups (f n)) (2, 0) (π_glue Y) (π_glue X) (π_glue_square f)
+  definition LES_of_shomotopy_groups : chain_complex +3ℤ :=
+  splice (λ(n : ℤ), LES_of_homotopy_groups (f (2 - n))) (2, 0)
+         (π_glue Y) (π_glue X) (π_glue_square f)
+
+  -- This LES is definitionally what we want:
+  example (n : ℤ) : LES_of_shomotopy_groups (n, 0) = πₛ[n] Y := idp
+  example (n : ℤ) : LES_of_shomotopy_groups (n, 1) = πₛ[n] X := idp
+  example (n : ℤ) : LES_of_shomotopy_groups (n, 2) = πₛ[n] (sfiber f) := idp
+  example (n : ℤ) : cc_to_fn LES_of_shomotopy_groups (n, 0) = πₛ→[n] f := idp
+  example (n : ℤ) : cc_to_fn LES_of_shomotopy_groups (n, 1) = πₛ→[n] (spoint f) := idp
+  -- the maps are ugly for (n, 2)
+
+  definition comm_group_LES_of_shomotopy_groups : Π(v : +3ℤ), comm_group (LES_of_shomotopy_groups v)
+  | (n, fin.mk 0 H) := proof CommGroup.struct (πₛ[n] Y) qed
+  | (n, fin.mk 1 H) := proof CommGroup.struct (πₛ[n] X) qed
+  | (n, fin.mk 2 H) := proof CommGroup.struct (πₛ[n] (sfiber f)) qed
+  | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
+  local attribute comm_group_LES_of_shomotopy_groups [instance]
+
+  definition is_homomorphism_LES_of_shomotopy_groups :
+    Π(v : +3ℤ), is_homomorphism (cc_to_fn LES_of_shomotopy_groups v)
+  | (n, fin.mk 0 H) := proof homomorphism.struct (πₛ→[n] f) qed
+  | (n, fin.mk 1 H) := proof homomorphism.struct (πₛ→[n] (spoint f))  qed
+  | (n, fin.mk 2 H) := proof is_homomorphism_compose sorry sorry qed
+  | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
 
   -- In the comments below is a start on an explicit description of the LES for spectra
   -- Maybe it's slightly nicer to work with than the above version
