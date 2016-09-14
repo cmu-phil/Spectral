@@ -6,7 +6,7 @@ Authors: Floris van Doorn, Egbert Rijke
 Constructions with groups
 -/
 
-import algebra.group_theory hit.set_quotient types.list types.sum .group_basics
+import algebra.subgroup hit.set_quotient types.list types.sum .group_basics
 
 open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function
      equiv
