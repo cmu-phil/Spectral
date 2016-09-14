@@ -16,8 +16,8 @@ namespace group
   /-- Recall that a subtype of a type A is the same thing as a family of mere propositions over A. Thus, we define a subgroup of a group G to be a family of mere propositions over (the underlying type of) G, closed under the constants and operations --/
 
   /-- Question: Why is this called subgroup_rel. Because it is a unary relation? --/
-  structure subgroup_rel.{u v} (G : Group.{u}) : Type.{max u (v+1)} :=
-    (R : G → Prop.{v})
+  structure subgroup_rel (G : Group) : Type :=
+    (R : G → Prop)
     (Rone : R one)
     (Rmul : Π{g h}, R g → R h → R (g * h))
     (Rinv : Π{g}, R g → R (g⁻¹))
@@ -64,7 +64,7 @@ namespace group
         -- subset is closed under inverses
       { intro g, intro t, induction t, induction a with x p, induction p,
         apply tr, apply fiber.mk x⁻¹, apply respect_inv }
-    end 
+    end
 
   section kernels
 
@@ -111,7 +111,7 @@ namespace group
 
   definition aut.{u} (G : Group.{u}) : Group.{u} :=
   begin
-    fapply Group.mk, 
+    fapply Group.mk,
     exact (G ≃g G),
     fapply group.mk,
     { intros e f, fapply isomorphism.mk, exact f ∘g e, exact is_equiv.is_equiv_compose f e},
