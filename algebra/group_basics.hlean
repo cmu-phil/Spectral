@@ -70,7 +70,7 @@ namespace group
 
   variables {G₁ G₂ : Group}
 
-  -- TODO: maybe define this in more generality for pointed types? <-- Do you mean pointed sets?
+  -- TODO: maybe define this in more generality for pointed sets?
   definition kernel_pred [constructor] (φ : G₁ →g G₂) (g : G₁) : Prop := trunctype.mk (φ g = 1) _
 
   theorem kernel_mul (φ : G₁ →g G₂) (g h : G₁) (H₁ : kernel_pred φ g) (H₂ : kernel_pred φ h) : kernel_pred φ (g *[G₁] h) :=
@@ -109,34 +109,18 @@ namespace group
 
   /-- Next, we formalize some aspects of normal subgroups. Recall that a normal subgroup H of a group G is a subgroup which is invariant under all inner automorophisms on G. --/
 
-  definition aut.{u} (G : Group.{u}) : Group.{u} :=
-  begin
-    fapply Group.mk,
-    exact (G ≃g G),
-    fapply group.mk,
-    { intros e f, fapply isomorphism.mk, exact f ∘g e, exact is_equiv.is_equiv_compose f e},
-    { /-is_set G ≃g G-/ exact sorry},
-    { /-associativity-/ intros e f g, exact sorry},
-    { /-identity-/ fapply isomorphism.mk, exact sorry, exact sorry},
-    { /-identity is left unit-/ exact sorry},
-    { /-identity is right unit-/ exact sorry},
-    { /-inverses-/ exact sorry},
-    { /-inverse is right inverse?-/ exact sorry},
-  end
+  definition is_normal [constructor] {G : Group} (R : G → Prop) : Prop :=
+  trunctype.mk (Π{g} h, R g → R (h * g * h⁻¹)) _
 
-  -- definition inner_aut (G : Group) : G →g (G ≃g G) := sorry /-- h ↦ h * g * h⁻¹ --/
-
-  /-- There is a problem with the following definition, namely that there is no mere proposition that says that N is normal --/
   structure normal_subgroup_rel (G : Group) extends subgroup_rel G :=
-    (is_normal : Π{g} h, R g → R (h * g * h⁻¹))
-  /-- expect something like (is_normal : isNormal R) where isNormal R is a predefined predicate on subgroups of G --/
+    (is_normal_subgroup : is_normal R)
 
   attribute subgroup_rel.R [coercion]
   abbreviation subgroup_to_rel      [unfold 2] := @subgroup_rel.R
   abbreviation subgroup_has_one     [unfold 2] := @subgroup_rel.Rone
   abbreviation subgroup_respect_mul [unfold 2] := @subgroup_rel.Rmul
   abbreviation subgroup_respect_inv [unfold 2] := @subgroup_rel.Rinv
-  abbreviation is_normal_subgroup   [unfold 2] := @normal_subgroup_rel.is_normal
+  abbreviation is_normal_subgroup   [unfold 2] := @normal_subgroup_rel.is_normal_subgroup
 
   variables {G G' : Group} (H : subgroup_rel G) (N : normal_subgroup_rel G) {g g' h h' k : G}
             {A B : CommGroup}
@@ -146,7 +130,7 @@ namespace group
 
   definition normal_subgroup_rel_comm.{u} (R : subgroup_rel.{_ u} A) : normal_subgroup_rel.{_ u} A :=
   ⦃normal_subgroup_rel, R,
-    is_normal := abstract begin
+    is_normal_subgroup := abstract begin
       intros g h r, xrewrite [mul.comm h g, mul_inv_cancel_right], exact r
       end end⦄
 
@@ -187,7 +171,7 @@ namespace group
   definition normal_subgroup_kernel [constructor] {G₁ G₂ : Group} (φ : G₁ →g G₂) : normal_subgroup_rel G₁ :=
   ⦃ normal_subgroup_rel,
     kernel_subgroup φ,
-    is_normal := is_normal_subgroup_kernel φ
+    is_normal_subgroup := is_normal_subgroup_kernel φ
   ⦄
 
   -- this is just (Σ(g : G), H g), but only defined if (H g) is a prop

@@ -12,6 +12,24 @@ open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum
      equiv
 namespace group
 
+  definition aut.{u} (G : Group.{u}) : Group.{u} :=
+  begin
+    fapply Group.mk,
+    exact (G ≃g G),
+    fapply group.mk,
+    { intros e f, fapply isomorphism.mk, exact f ∘g e, exact is_equiv.is_equiv_compose f e},
+    { /-is_set G ≃g G-/ exact sorry},
+    { /-associativity-/ intros e f g, exact sorry},
+    { /-identity-/ fapply isomorphism.mk, exact sorry, exact sorry},
+    { /-identity is left unit-/ exact sorry},
+    { /-identity is right unit-/ exact sorry},
+    { /-inverses-/ exact sorry},
+    { /-inverse is right inverse?-/ exact sorry},
+  end
+
+  -- definition inner_aut (G : Group) : G →g (G ≃g G) := sorry /-- h ↦ h * g * h⁻¹ --/
+
+
   variables {G G' : Group} (H : subgroup_rel G) (N : normal_subgroup_rel G) {g g' h h' k : G}
             {A B : CommGroup}
 
