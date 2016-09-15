@@ -6,14 +6,17 @@ Authors: Michael Shulman, Floris van Doorn
 -/
 
 import types.int types.pointed types.trunc homotopy.susp algebra.homotopy_group homotopy.chain_complex cubical .splice homotopy.LES_of_homotopy_groups
-open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi
+open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
 
 /-----------------------------------------
   Stuff that should go in other files
 -----------------------------------------/
 
-attribute equiv.symm equiv.trans is_equiv.is_equiv_ap fiber.equiv_postcompose fiber.equiv_precompose pequiv.to_pmap pequiv._trans_of_to_pmap [constructor]
+attribute equiv.symm equiv.trans is_equiv.is_equiv_ap fiber.equiv_postcompose fiber.equiv_precompose pequiv.to_pmap pequiv._trans_of_to_pmap ghomotopy_group_succ_in isomorphism_of_eq [constructor]
 attribute is_equiv.eq_of_fn_eq_fn' [unfold 3]
+attribute isomorphism._trans_of_to_hom [unfold 3]
+attribute homomorphism.struct [unfold 3]
+attribute pequiv.trans pequiv.symm [constructor]
 
 namespace sigma
 
@@ -26,6 +29,25 @@ open sigma
 namespace group
   open is_trunc
   definition pSet_of_Group (G : Group) : Set* := ptrunctype.mk G _ 1
+
+  definition pmap_of_isomorphism [constructor] {G₁ G₂ : Group} (φ : G₁ ≃g G₂) :
+    pType_of_Group G₁ →* pType_of_Group G₂ :=
+  pequiv_of_isomorphism φ
+
+  definition pequiv_of_isomorphism_of_eq {G₁ G₂ : Group} (p : G₁ = G₂) :
+    pequiv_of_isomorphism (isomorphism_of_eq p) = pequiv_of_eq (ap pType_of_Group p) :=
+  begin
+    induction p,
+    apply pequiv_eq,
+    fapply pmap_eq,
+    { intro g, reflexivity},
+    { apply is_prop.elim}
+  end
+
+  definition homomorphism_change_fun [constructor] {G₁ G₂ : Group} (φ : G₁ →g G₂) (f : G₁ → G₂)
+    (p : φ ~ f) : G₁ →g G₂ :=
+  homomorphism.mk f (λg h, (p (g * h))⁻¹ ⬝ to_respect_mul φ g h ⬝ ap011 mul (p g) (p h))
+
 end group open group
 
 namespace eq
@@ -409,12 +431,26 @@ namespace spectrum
       intro n, exact sorry
     end
 
-   definition π_glue (X : spectrum) (n : ℤ) : π*[2] (X (2 - succ n)) ≃* π*[3] (X (2 - n)) :=
+  definition π_glue (X : spectrum) (n : ℤ) : π*[2] (X (2 - succ n)) ≃* π*[3] (X (2 - n)) :=
   begin
     refine phomotopy_group_pequiv 2 (equiv_glue X (2 - succ n)) ⬝e* _,
     assert H : succ (2 - succ n) = 2 - n, exact ap succ !sub_sub⁻¹ ⬝ sub_add_cancel (2-n) 1,
-    refine pequiv_of_eq (ap (λn, π*[2] (Ω (X n))) H) ⬝e* _,
-    refine (pequiv_of_eq (phomotopy_group_succ_in (X (2 - n)) 2))⁻¹ᵉ*,
+    exact pequiv_of_eq (ap (λn, π*[2] (Ω (X n))) H),
+  end
+
+  definition πg_glue (X : spectrum) (n : ℤ) : πg[1+1] (X (2 - succ n)) ≃g πg[2+1] (X (2 - n)) :=
+  begin
+    refine homotopy_group_isomorphism_of_pequiv 1 (equiv_glue X (2 - succ n)) ⬝g _,
+    assert H : succ (2 - succ n) = 2 - n, exact ap succ !sub_sub⁻¹ ⬝ sub_add_cancel (2-n) 1,
+    exact isomorphism_of_eq (ap (λn, πg[1+1] (Ω (X n))) H),
+  end
+
+  definition πg_glue_homotopy_π_glue (X : spectrum) (n : ℤ) : πg_glue X n ~ π_glue X n :=
+  begin
+    intro x,
+    esimp [πg_glue, π_glue],
+    apply ap (λp, cast p _),
+    refine !ap_compose'⁻¹ ⬝ !ap_compose'
   end
 
   definition π_glue_square {X Y : spectrum} (f : X →ₛ Y) (n : ℤ) :
@@ -429,11 +465,7 @@ namespace spectrum
     refine pwhisker_left _ H1 ⬝* _, clear H1,
     refine !passoc⁻¹* ⬝* _ ⬝* !passoc,
     apply pwhisker_right,
-    rewrite [+ to_pmap_pequiv_trans],
-    refine !passoc ⬝* _,
-    refine pwhisker_left _ !pequiv_of_eq_commute ⬝* _,
-    refine !passoc⁻¹* ⬝* _ ⬝* !passoc,
-    reflexivity -- if we generalize 2 to n, this is not reflexivity anymore
+    refine !pequiv_of_eq_commute ⬝* by reflexivity
   end
 
   section
@@ -465,7 +497,9 @@ namespace spectrum
     Π(v : +3ℤ), is_homomorphism (cc_to_fn LES_of_shomotopy_groups v)
   | (n, fin.mk 0 H) := proof homomorphism.struct (πₛ→[n] f) qed
   | (n, fin.mk 1 H) := proof homomorphism.struct (πₛ→[n] (spoint f)) qed
-  | (n, fin.mk 2 H) := begin exact sorry end
+  | (n, fin.mk 2 H) := proof homomorphism.struct
+        (homomorphism_LES_of_homotopy_groups_fun (f (2 - n)) (1, 2) ∘g
+         homomorphism_change_fun (πg_glue Y n) _ (πg_glue_homotopy_π_glue Y n)) qed
   | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
 
   -- In the comments below is a start on an explicit description of the LES for spectra
