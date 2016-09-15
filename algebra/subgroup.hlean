@@ -49,7 +49,8 @@ namespace group
     { intros g p, esimp, constructor }
   end
 
-  definition is_full_subgroup (G : Group) (R : subgroup_rel G) : Prop := sorry /- Π g, R g -/
+  definition is_full_subgroup (G : Group) (R : subgroup_rel G) : Prop :=
+  trunctype.mk' -1 (Π g : G, R g)
 
   /-- Every group homomorphism f : G -> H determines a subgroup of H, the image of f, and a subgroup of G, the kernel of f. In the following definition we define the image of f. Since a subgroup is required to be closed under the group operations, showing that the image of f is closed under the group operations is part of the definition of the image of f. --/
 
