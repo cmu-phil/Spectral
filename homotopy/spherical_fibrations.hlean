@@ -1,7 +1,7 @@
 import homotopy.join homotopy.smash
 
 open eq equiv trunc function bool join sphere sphere_index sphere.ops prod
-open pointed sigma smash
+open pointed sigma smash is_trunc
 
 namespace spherical_fibrations
 
@@ -18,7 +18,10 @@ namespace spherical_fibrations
   pt = pt :> BG n
 
   definition G_char (n : ℕ) : G n ≃ (S n..-1 ≃ S n..-1) :=
-  sorry
+  calc
+    G n ≃ Σ(p : S n..-1 = S n..-1), _ : sigma_eq_equiv
+    ... ≃ (S n..-1 = S n..-1) : sigma_equiv_of_is_contr_right
+    ... ≃ (S n..-1 ≃ S n..-1) : eq_equiv_equiv
 
   definition mirror (n : ℕ) : S n..-1 → G n :=
   begin
@@ -134,7 +137,7 @@ namespace spherical_fibrations
   - all bundles on S 3 are trivial, incl. tangent bundle
   - Adams' result on vector fields on spheres:
      there are maximally ρ(n)-1 indep.sections of the tangent bundle of S (n-1)
-     where ρ(n) is the n'th Radon-Hurwitz number.→ 
+     where ρ(n) is the n'th Radon-Hurwitz number.→
 -/
 
 -- tangent bundle on S 2:
