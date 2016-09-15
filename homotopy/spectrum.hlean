@@ -170,6 +170,16 @@ namespace pointed
     pequiv_of_equiv (pi_equiv_pi_right g)
       begin esimp, apply eq_of_homotopy, intros a, esimp, exact (respect_pt (g a)) end
 
+  definition pcast_commute [constructor] {A : Type} {B C : A → Type*} (f : Πa, B a →* C a)
+    {a₁ a₂ : A} (p : a₁ = a₂) : pcast (ap C p) ∘* f a₁ ~* f a₂ ∘* pcast (ap B p) :=
+  phomotopy.mk
+    begin induction p, reflexivity end
+    begin induction p, esimp, refine !idp_con ⬝ !idp_con ⬝ !ap_id⁻¹ end
+
+  definition pequiv_of_eq_commute [constructor] {A : Type} {B C : A → Type*} (f : Πa, B a →* C a)
+    {a₁ a₂ : A} (p : a₁ = a₂) : pequiv_of_eq (ap C p) ∘* f a₁ ~* f a₂ ∘* pequiv_of_eq (ap B p) :=
+  pcast_commute f p
+
 end pointed
 open pointed
 
@@ -401,17 +411,30 @@ namespace spectrum
 
    definition π_glue (X : spectrum) (n : ℤ) : π*[2] (X (2 - succ n)) ≃* π*[3] (X (2 - n)) :=
   begin
-    symmetry,
-    refine pequiv_of_eq (phomotopy_group_succ_in (X (2 - n)) 2) ⬝e* _,
-    assert H : 2 - n = succ (2 - succ n), exact (sub_add_cancel (2-n) 1)⁻¹ ⬝ ap succ !sub_sub,
-    refine phomotopy_group_pequiv 2 (loop_pequiv_loop (pequiv_of_eq (ap X H))) ⬝e* _,
-    exact phomotopy_group_pequiv 2 (equiv_glue X (2 - succ n))⁻¹ᵉ*
+    refine phomotopy_group_pequiv 2 (equiv_glue X (2 - succ n)) ⬝e* _,
+    assert H : succ (2 - succ n) = 2 - n, exact ap succ !sub_sub⁻¹ ⬝ sub_add_cancel (2-n) 1,
+    refine pequiv_of_eq (ap (λn, π*[2] (Ω (X n))) H) ⬝e* _,
+    refine (pequiv_of_eq (phomotopy_group_succ_in (X (2 - n)) 2))⁻¹ᵉ*,
   end
 
-  /- TODO: fill in sorry -/
   definition π_glue_square {X Y : spectrum} (f : X →ₛ Y) (n : ℤ) :
     π_glue Y n ∘* π→*[2] (f (2 - succ n)) ~* π→*[3] (f (2 - n)) ∘* π_glue X n :=
-  sorry
+  begin
+    refine !passoc ⬝* _,
+    assert H1 : phomotopy_group_pequiv 2 (equiv_glue Y (2 - succ n)) ∘* π→*[2] (f (2 - succ n))
+     ~* π→*[2] (Ω→ (f (succ (2 - succ n)))) ∘* phomotopy_group_pequiv 2 (equiv_glue X (2 - succ n)),
+    { refine !phomotopy_group_functor_compose⁻¹* ⬝* _,
+      refine phomotopy_group_functor_phomotopy 2 !sglue_square ⬝* _,
+      apply phomotopy_group_functor_compose },
+    refine pwhisker_left _ H1 ⬝* _, clear H1,
+    refine !passoc⁻¹* ⬝* _ ⬝* !passoc,
+    apply pwhisker_right,
+    rewrite [+ to_pmap_pequiv_trans],
+    refine !passoc ⬝* _,
+    refine pwhisker_left _ !pequiv_of_eq_commute ⬝* _,
+    refine !passoc⁻¹* ⬝* _ ⬝* !passoc,
+    reflexivity -- if we generalize 2 to n, this is not reflexivity anymore
+  end
 
   section
   open chain_complex prod fin group
@@ -441,8 +464,8 @@ namespace spectrum
   definition is_homomorphism_LES_of_shomotopy_groups :
     Π(v : +3ℤ), is_homomorphism (cc_to_fn LES_of_shomotopy_groups v)
   | (n, fin.mk 0 H) := proof homomorphism.struct (πₛ→[n] f) qed
-  | (n, fin.mk 1 H) := proof homomorphism.struct (πₛ→[n] (spoint f))  qed
-  | (n, fin.mk 2 H) := proof is_homomorphism_compose sorry sorry qed
+  | (n, fin.mk 1 H) := proof homomorphism.struct (πₛ→[n] (spoint f)) qed
+  | (n, fin.mk 2 H) := begin exact sorry end
   | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
 
   -- In the comments below is a start on an explicit description of the LES for spectra
