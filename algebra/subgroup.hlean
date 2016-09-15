@@ -22,6 +22,8 @@ namespace group
     (Rmul : Π{g h}, R g → R h → R (g * h))
     (Rinv : Π{g}, R g → R (g⁻¹))
 
+  attribute subgroup_rel.R [coercion]
+
   /-- Every group G has at least two subgroups, the trivial subgroup containing only one, and the full subgroup. --/
   definition trivial_subgroup.{u} (G : Group.{u}) : subgroup_rel.{u u} G :=
   begin
@@ -32,7 +34,11 @@ namespace group
     { intros g p, esimp at *, rewrite p, exact one_inv }
   end
 
-  definition is_trivial_subgroup (G : Group) (R : subgroup_rel G) : Prop := sorry /- Π g, R g = trivial_subgroup g -/
+  definition is_trivial_subgroup (G : Group) (R : subgroup_rel G) : Prop :=
+  trunctype.mk (Π g : G, R g ↔ trivial_subgroup G g)
+  begin
+    apply pi.is_trunc_pi, intro g, apply is_trunc_prod
+  end
 
   definition full_subgroup.{u} (G : Group.{u}) : subgroup_rel.{u 0} G :=
   begin
