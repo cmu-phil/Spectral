@@ -155,7 +155,7 @@ namespace group
   CommGroup.mk _ (comm_group_qg (normal_subgroup_rel_comm N))
 
   definition gq_map : G →g quotient_group N :=
-  sorry
+  homomorphism.mk class_of (λ g h, idp)
 
   namespace quotient
     notation `⟦`:max a `⟧`:0 := gq_map a _
@@ -165,20 +165,56 @@ namespace group
   variable {N}
 
   definition gq_map_eq_one (g : G) (H : N g) : gq_map N g = 1 :=
-  sorry
+  begin 
+    apply eq_of_rel,
+      have e : (g * 1⁻¹ = g),
+      from calc 
+      g * 1⁻¹ = g * 1 : one_inv
+        ...   = g : mul_one,
+    unfold quotient_rel, rewrite e, exact H
+  end
 
   definition rel_of_gq_map_eq_one (g : G) (H : gq_map N g = 1) : N g :=
-  sorry
+  begin
+    have e : (g * 1⁻¹ = g),
+    from calc 
+      g * 1⁻¹ = g * 1 : one_inv
+        ...   = g : mul_one,
+    rewrite (inverse e),
+    apply rel_of_eq _ H    
+  end 
 
-  definition glift (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) : quotient_group N →g G' :=
-  sorry
+  definition quotient_group_elim (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) : quotient_group N →g G' :=
+  begin
+    fapply homomorphism.mk,
+      -- define function
+    { apply set_quotient.elim f, 
+      intro g h K,
+      apply eq_of_mul_inv_eq_one,
+      have e : f (g * h⁻¹) = f g * (f h)⁻¹,
+      from calc
+        f (g * h⁻¹) = f g * (f h⁻¹) : to_respect_mul
+               ...  = f g * (f h)⁻¹ : to_respect_inv,
+      rewrite (inverse e),
+      apply H, exact K},
+    { intro g h, induction g using set_quotient.rec_prop with g, 
+      induction h using set_quotient.rec_prop with h, 
+      krewrite (inverse (to_respect_mul (gq_map N) g h)),
+      unfold gq_map, esimp, exact to_respect_mul f g h }
+  end
 
-  definition glift_gq_map (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) : glift f H ∘g gq_map N ~ f :=
-  sorry
+  definition quotient_group_compute (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) : quotient_group_elim f H ∘g gq_map N ~ f :=
+  begin
+    intro g, reflexivity
+  end
 
-  definition glift_unique (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) (g : quotient_group N →g G') :
-    g ~ glift f H :=
-  sorry
+  definition glift_unique (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) (k : quotient_group N →g G')
+    : ( k ∘g gq_map N ~ f ) → k ~ quotient_group_elim f H :=
+  begin
+    intro K cg, induction cg using set_quotient.rec_prop with g,
+    krewrite (quotient_group_compute f),
+    exact K g
+  end
 
   definition gq_universal_property (f : G →g G') (H : Π⦃g⦄, N g → f g = 1)  :
     is_contr (Σ(g : quotient_group N →g G'), g ∘g gq_map N = f) :=
