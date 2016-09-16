@@ -220,7 +220,7 @@ namespace group
     is_contr (Σ(g : quotient_group N →g G'), g ∘g gq_map N = f) :=
   sorry
 
-  /- Binary products (direct sums) of Groups -/
+  /- Binary products (direct product) of Groups -/
   definition product_one [constructor] : G × G' := (one, one)
   definition product_inv [unfold 3] : G × G' → G × G' :=
   λv, (v.1⁻¹, v.2⁻¹)

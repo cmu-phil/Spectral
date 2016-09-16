@@ -63,31 +63,7 @@ begin
   { exact dif_pos p}
 end
 
---   definition splice_type {N M : succ_str} (G : N → chain_complex M) (k : ℕ) (m : M)
---     (x : stratified N k) : Set* :=
---   G x.1 (iterate S (val x.2) m)
-
--- --   definition splice_map {N M : succ_str} (G : N → chain_complex M) (k : ℕ) (m : M)
--- --     (x : stratified N k) : Set* :=
--- --   G x.1 (iterate S (val x.2) m)
-
---   definition splice (N M : succ_str) (G : N → chain_complex M) (k : ℕ) (m : M)
---     (e0 : Πn, G n m ≃* G (S n) (S (iterate S k m))) :
---     chain_complex (stratified N k) :=
---   chain_complex.mk (splice_type G k m)
---     begin
---       intro x, cases x with n l, cases l with l H,
---       refine if K : l = k then _ else _,
---       { intro p, induction p, exact sorry},
---       { exact sorry}
---       -- cases l with l,
---       -- { },
---       -- { }
---     end
---     begin
---       exact sorry
---     end
-
+  --move
   definition succ_str.add [reducible] {N : succ_str} (n : N) (k : ℕ) : N :=
   iterate S k n
 
