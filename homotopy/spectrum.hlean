@@ -50,6 +50,36 @@ namespace group
 
 end group open group
 
+namespace pi -- move to types.arrow
+
+  definition pmap_eq_idp {X Y : Type*} (f : X →* Y) :
+    pmap_eq (λx, idpath (f x)) !idp_con⁻¹ = idpath f :=
+  begin
+    cases f with f p, esimp [pmap_eq],
+    refine apd011 (apd011 pmap.mk) !eq_of_homotopy_idp _,
+    exact sorry
+  end
+
+  definition pfunext [constructor] (X Y : Type*) : ppmap X (Ω Y) ≃* Ω (ppmap X Y) :=
+  begin
+    fapply pequiv_of_equiv,
+    { fapply equiv.MK: esimp,
+      { intro f, fapply pmap_eq,
+        { intro x, exact f x },
+        { exact (respect_pt f)⁻¹ }},
+      { intro p, fapply pmap.mk,
+        { intro x, exact ap010 pmap.to_fun p x },
+        { note z := apd respect_pt p,
+          note z2 := square_of_pathover z,
+          refine eq_of_hdeg_square z2 ⬝ !ap_constant }},
+      { intro p, exact sorry },
+      { intro p, exact sorry }},
+    { apply pmap_eq_idp}
+  end
+
+
+end pi open pi
+
 namespace eq
 
   definition pathover_eq_Fl' {A B : Type} {f : A → B} {a₁ a₂ : A} {b : B} (p : a₁ = a₂) (q : f a₂ = b) : (ap f p) ⬝ q =[p] q :=
@@ -536,6 +566,17 @@ namespace spectrum
   end
 
   /- Mapping spectra -/
+
+  definition mapping_prespectrum [constructor] {N : succ_str} (X : Type*) (Y : gen_prespectrum N) :
+    gen_prespectrum N :=
+  gen_prespectrum.mk (λn, ppmap X (Y n)) (λn, pfunext X (Y (S n)) ∘* ppcompose_left (glue Y n))
+
+  definition mapping_spectrum [constructor] {N : succ_str} (X : Type*) (Y : gen_spectrum N) :
+    gen_spectrum N :=
+  gen_spectrum.mk
+    (mapping_prespectrum X Y)
+    (is_spectrum.mk (λn, to_is_equiv (equiv_ppcompose_left (equiv_glue Y n) ⬝e
+                         pfunext X (Y (S n)))))
 
   /- Spectrification -/
 
