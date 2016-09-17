@@ -20,13 +20,13 @@ open sigma
 
 namespace group
   open is_trunc
-  definition pSet_of_Group (G : Group) : Set* := ptrunctype.mk G _ 1
+  definition pSet_of_Group {i : signature} (G : Group i) : Set* := ptrunctype.mk G _ 1
 
-  definition pmap_of_isomorphism [constructor] {G₁ G₂ : Group} (φ : G₁ ≃g G₂) :
-    pType_of_Group G₁ →* pType_of_Group G₂ :=
+  definition pmap_of_isomorphism [constructor] {i j : signature} {G₁ : Group i} {G₂ : Group j}
+    (φ : G₁ ≃g G₂) : pType_of_Group G₁ →* pType_of_Group G₂ :=
   pequiv_of_isomorphism φ
 
-  definition pequiv_of_isomorphism_of_eq {G₁ G₂ : Group} (p : G₁ = G₂) :
+  definition pequiv_of_isomorphism_of_eq {i : signature} {G₁ G₂ : Group i} (p : G₁ = G₂) :
     pequiv_of_isomorphism (isomorphism_of_eq p) = pequiv_of_eq (ap pType_of_Group p) :=
   begin
     induction p,
@@ -36,8 +36,8 @@ namespace group
     { apply is_prop.elim}
   end
 
-  definition homomorphism_change_fun [constructor] {G₁ G₂ : Group} (φ : G₁ →g G₂) (f : G₁ → G₂)
-    (p : φ ~ f) : G₁ →g G₂ :=
+  definition homomorphism_change_fun [constructor] {i j : signature} {G₁ : Group i} {G₂ : Group j}
+    (φ : G₁ →g G₂) (f : G₁ → G₂) (p : φ ~ f) : G₁ →g G₂ :=
   homomorphism.mk f (λg h, (p (g * h))⁻¹ ⬝ to_respect_mul φ g h ⬝ ap011 mul (p g) (p h))
 
 end group open group
@@ -156,6 +156,28 @@ namespace pointed
   definition ap1_pconst (A B : Type*) : Ω→(pconst A B) ~* pconst (Ω A) (Ω B) :=
     phomotopy.mk (λp, idp_con _ ⬝ ap_constant p pt) rfl
 
+  definition loop_ppi_commute {A : Type} (B : A → Type*) : Ω(ppi B) ≃* Π*a, Ω (B a) :=
+    pequiv_of_equiv eq_equiv_homotopy rfl
+
+  definition equiv_ppi_right {A : Type} {P Q : A → Type*} (g : Πa, P a ≃* Q a)
+    : (Π*a, P a) ≃* (Π*a, Q a) :=
+    pequiv_of_equiv (pi_equiv_pi_right g)
+      begin esimp, apply eq_of_homotopy, intros a, esimp, exact (respect_pt (g a)) end
+
+  definition pcast_commute [constructor] {A : Type} {B C : A → Type*} (f : Πa, B a →* C a)
+    {a₁ a₂ : A} (p : a₁ = a₂) : pcast (ap C p) ∘* f a₁ ~* f a₂ ∘* pcast (ap B p) :=
+  phomotopy.mk
+    begin induction p, reflexivity end
+    begin induction p, esimp, refine !idp_con ⬝ !idp_con ⬝ !ap_id⁻¹ end
+
+  definition pequiv_of_eq_commute [constructor] {A : Type} {B C : A → Type*} (f : Πa, B a →* C a)
+    {a₁ a₂ : A} (p : a₁ = a₂) : pequiv_of_eq (ap C p) ∘* f a₁ ~* f a₂ ∘* pequiv_of_eq (ap B p) :=
+  pcast_commute f p
+
+end pointed
+
+namespace fiber
+
   definition pfiber_loop_space {A B : Type*} (f : A →* B) : pfiber (Ω→ f) ≃* Ω (pfiber f) :=
     pequiv_of_equiv
     (calc pfiber (Ω→ f) ≃ Σ(p : Point A = Point A), ap1 f p = rfl                                : (fiber.sigma_char (ap1 f) (Point (Ω B)))
@@ -206,25 +228,7 @@ namespace pointed
               ... ≃* pfiber (g ∘* h) : pfiber_equiv_of_phomotopy s
               ... ≃* pfiber g : pequiv_precompose
 
-  definition loop_ppi_commute {A : Type} (B : A → Type*) : Ω(ppi B) ≃* Π*a, Ω (B a) :=
-    pequiv_of_equiv eq_equiv_homotopy rfl
-
-  definition equiv_ppi_right {A : Type} {P Q : A → Type*} (g : Πa, P a ≃* Q a)
-    : (Π*a, P a) ≃* (Π*a, Q a) :=
-    pequiv_of_equiv (pi_equiv_pi_right g)
-      begin esimp, apply eq_of_homotopy, intros a, esimp, exact (respect_pt (g a)) end
-
-  definition pcast_commute [constructor] {A : Type} {B C : A → Type*} (f : Πa, B a →* C a)
-    {a₁ a₂ : A} (p : a₁ = a₂) : pcast (ap C p) ∘* f a₁ ~* f a₂ ∘* pcast (ap B p) :=
-  phomotopy.mk
-    begin induction p, reflexivity end
-    begin induction p, esimp, refine !idp_con ⬝ !idp_con ⬝ !ap_id⁻¹ end
-
-  definition pequiv_of_eq_commute [constructor] {A : Type} {B C : A → Type*} (f : Πa, B a →* C a)
-    {a₁ a₂ : A} (p : a₁ = a₂) : pequiv_of_eq (ap C p) ∘* f a₁ ~* f a₂ ∘* pequiv_of_eq (ap B p) :=
-  pcast_commute f p
-
-end pointed
+end fiber
 
 namespace eq --algebra.homotopy_group
 
