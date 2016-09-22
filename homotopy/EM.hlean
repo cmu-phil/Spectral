@@ -10,7 +10,7 @@ Eilenberg MacLane spaces
 import homotopy.EM .spectrum
 
 open eq is_equiv equiv is_conn is_trunc unit function pointed nat group algebra trunc trunc_index
-     fiber prod fin pointed susp EM.ops
+     fiber prod pointed susp EM.ops
 
 namespace EM
 
@@ -26,7 +26,7 @@ namespace EM
     induction n with n IH,
     { exact loop_pequiv_loop (loop_EM2 G)},
     refine _ ⬝e* IH,
-    refine !phomotopy_group_pequiv_loop_ptrunc⁻¹ᵉ* ⬝e* _ ⬝e* !phomotopy_group_pequiv_loop_ptrunc,
+    refine !homotopy_group_pequiv_loop_ptrunc⁻¹ᵉ* ⬝e* _ ⬝e* !homotopy_group_pequiv_loop_ptrunc,
     apply iterate_psusp_stability_pequiv,
     rexact add_mul_le_mul_add n 1 1
   end
@@ -97,12 +97,12 @@ namespace EM
     { exact pt},
     { exact pt},
     change carrier (Ω X), refine f _ _ _ _ _ (tr x),
-    { refine _⁻¹ᵉ ⬝e e, apply equiv_of_pequiv, apply pequiv_of_eq, apply loop_space_succ_eq_in},
+    { refine _⁻¹ᵉ ⬝e e, apply equiv_of_pequiv, apply loopn_succ_in},
     exact abstract begin
       intro p q, refine _ ⬝ !r, apply ap e, esimp,
-      apply inv_tr_eq_of_eq_tr, symmetry,
-      rewrite [- + ap_inv, - + tr_compose],
-      refine !loop_space_succ_eq_in_concat ⬝ _, exact !tr_inv_tr ◾ !tr_inv_tr
+      apply inv_eq_of_eq,
+      refine _⁻¹ ⬝ !loopn_succ_in_con⁻¹,
+      exact to_right_inv (loopn_succ_in X (succ n)) p ◾ to_right_inv (loopn_succ_in X (succ n)) q
     end end
   end
 
@@ -172,10 +172,10 @@ namespace EM
 -- definition freudenthal_homotopy_group_pequiv (A : Type*) {n k : ℕ} [is_conn n A] (H : k ≤ 2 * n)
 --   : π*[k + 1] (psusp A) ≃* π*[k] A  :=
 -- calc
---   π*[k + 1] (psusp A) ≃* π*[k] (Ω (psusp A)) : pequiv_of_eq (phomotopy_group_succ_in (psusp A) k)
---     ... ≃* Ω[k] (ptrunc k (Ω (psusp A)))     : phomotopy_group_pequiv_loop_ptrunc k (Ω (psusp A))
+--   π*[k + 1] (psusp A) ≃* π*[k] (Ω (psusp A)) : pequiv_of_eq (homotopy_group_succ_in (psusp A) k)
+--     ... ≃* Ω[k] (ptrunc k (Ω (psusp A)))     : homotopy_group_pequiv_loop_ptrunc k (Ω (psusp A))
 --     ... ≃* Ω[k] (ptrunc k A)                 : loopn_pequiv_loopn k (freudenthal_pequiv A H)
---     ... ≃* π*[k] A                           : (phomotopy_group_pequiv_loop_ptrunc k A)⁻¹ᵉ*
+--     ... ≃* π*[k] A                           : (homotopy_group_pequiv_loop_ptrunc k A)⁻¹ᵉ*
 
   definition iterate_psusp_succ_pequiv (n : ℕ) (A : Type*) :
     iterate_psusp (succ n) A ≃* iterate_psusp n (psusp A) :=
@@ -217,9 +217,9 @@ namespace EM
     { exact pcompose f},
     { exact pcompose f⁻¹ᵉ*},
     { intro f, apply pmap_eq_of_phomotopy,
-      exact !passoc⁻¹* ⬝* pwhisker_right _ !pright_inv ⬝* !pid_comp},
+      exact !passoc⁻¹* ⬝* pwhisker_right _ !pright_inv ⬝* !pid_pcompose},
     { intro f, apply pmap_eq_of_phomotopy,
-      exact !passoc⁻¹* ⬝* pwhisker_right _ !pleft_inv ⬝* !pid_comp}
+      exact !passoc⁻¹* ⬝* pwhisker_right _ !pleft_inv ⬝* !pid_pcompose}
   end
 
   definition iterate_psusp_adjoint_loopn [constructor] (X Y : Type*) (n : ℕ) :
@@ -228,9 +228,8 @@ namespace EM
     revert X Y, induction n with n IH: intro X Y,
     { reflexivity},
     { refine !susp_adjoint_loop ⬝e !IH ⬝e _, apply pmap_equiv_pmap_right,
-      symmetry, apply pequiv_of_eq, apply loop_space_succ_eq_in}
+      symmetry, apply loopn_succ_in}
   end
-
 
 end EM
 -- cohomology ∥ X → K(G,n) ∥

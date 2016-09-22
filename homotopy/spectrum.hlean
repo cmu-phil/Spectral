@@ -130,9 +130,9 @@ namespace spectrum
 
   definition sid {N : succ_str} (E : gen_spectrum N) : E →ₛ E :=
     smap.mk (λn, pid (E n))
-    (λn, calc glue E n ∘* pid (E n) ~* glue E n                   : comp_pid
-                              ...   ~* pid (Ω(E (S n))) ∘* glue E n : pid_comp
-                              ...   ~* Ω→(pid (E (S n))) ∘* glue E n : pwhisker_right (glue E n) ap1_id⁻¹*)
+    (λn, calc glue E n ∘* pid (E n) ~* glue E n                   : pcompose_pid
+                              ...   ~* pid (Ω(E (S n))) ∘* glue E n : pid_pcompose
+                              ...   ~* Ω→(pid (E (S n))) ∘* glue E n : pwhisker_right (glue E n) ap1_pid⁻¹*)
 
   definition scompose {N : succ_str} {X Y Z : gen_prespectrum N} (g : Y →ₛ Z) (f : X →ₛ Y) : X →ₛ Z :=
     smap.mk (λn, g n ∘* f n)
@@ -142,7 +142,7 @@ namespace spectrum
          ... ~* Ω→(to_fun g (S n)) ∘* (glue Y n ∘* to_fun f n)      : passoc
          ... ~* Ω→(to_fun g (S n)) ∘* (Ω→ (f (S n)) ∘* glue X n) : pwhisker_left Ω→(to_fun g (S n)) (glue_square f n)
          ... ~* (Ω→(to_fun g (S n)) ∘* Ω→(f (S n))) ∘* glue X n  : passoc
-         ... ~* Ω→(to_fun g (S n) ∘* to_fun f (S n)) ∘* glue X n : pwhisker_right (glue X n) (ap1_compose _ _))
+         ... ~* Ω→(to_fun g (S n) ∘* to_fun f (S n)) ∘* glue X n : pwhisker_right (glue X n) (ap1_pcompose _ _))
 
   infixr ` ∘ₛ `:60 := scompose
 
@@ -209,7 +209,7 @@ namespace spectrum
   -- prespectra too, but as with truncation, why bother?
   definition sp_cotensor {N : succ_str} (A : Type*) (B : gen_spectrum N) : gen_spectrum N :=
     spectrum.MK (λn, ppmap A (B n))
-      (λn, (loop_pmap_commute A (B (S n)))⁻¹ᵉ* ∘*ᵉ (equiv_ppcompose_left (equiv_glue B n)))
+      (λn, (loop_pmap_commute A (B (S n)))⁻¹ᵉ* ∘*ᵉ (pequiv_ppcompose_left (equiv_glue B n)))
 
   ----------------------------------------
   -- Sections of parametrized spectra
@@ -234,11 +234,11 @@ namespace spectrum
       intro n, exact sorry
     end
 
-  definition π_glue (X : spectrum) (n : ℤ) : π*[2] (X (2 - succ n)) ≃* π*[3] (X (2 - n)) :=
+  definition π_glue (X : spectrum) (n : ℤ) : π[2] (X (2 - succ n)) ≃* π[3] (X (2 - n)) :=
   begin
-    refine phomotopy_group_pequiv 2 (equiv_glue X (2 - succ n)) ⬝e* _,
+    refine homotopy_group_pequiv 2 (equiv_glue X (2 - succ n)) ⬝e* _,
     assert H : succ (2 - succ n) = 2 - n, exact ap succ !sub_sub⁻¹ ⬝ sub_add_cancel (2-n) 1,
-    exact pequiv_of_eq (ap (λn, π*[2] (Ω (X n))) H),
+    exact pequiv_of_eq (ap (λn, π[2] (Ω (X n))) H),
   end
 
   definition πg_glue (X : spectrum) (n : ℤ) : πg[1+1] (X (2 - succ n)) ≃g πg[2+1] (X (2 - n)) :=
@@ -257,14 +257,14 @@ namespace spectrum
   end
 
   definition π_glue_square {X Y : spectrum} (f : X →ₛ Y) (n : ℤ) :
-    π_glue Y n ∘* π→*[2] (f (2 - succ n)) ~* π→*[3] (f (2 - n)) ∘* π_glue X n :=
+    π_glue Y n ∘* π→[2] (f (2 - succ n)) ~* π→[3] (f (2 - n)) ∘* π_glue X n :=
   begin
     refine !passoc ⬝* _,
-    assert H1 : phomotopy_group_pequiv 2 (equiv_glue Y (2 - succ n)) ∘* π→*[2] (f (2 - succ n))
-     ~* π→*[2] (Ω→ (f (succ (2 - succ n)))) ∘* phomotopy_group_pequiv 2 (equiv_glue X (2 - succ n)),
-    { refine !phomotopy_group_functor_compose⁻¹* ⬝* _,
-      refine phomotopy_group_functor_phomotopy 2 !sglue_square ⬝* _,
-      apply phomotopy_group_functor_compose },
+    assert H1 : homotopy_group_pequiv 2 (equiv_glue Y (2 - succ n)) ∘* π→[2] (f (2 - succ n))
+     ~* π→[2] (Ω→ (f (succ (2 - succ n)))) ∘* homotopy_group_pequiv 2 (equiv_glue X (2 - succ n)),
+    { refine !homotopy_group_functor_compose⁻¹* ⬝* _,
+      refine homotopy_group_functor_phomotopy 2 !sglue_square ⬝* _,
+      apply homotopy_group_functor_compose },
     refine pwhisker_left _ H1 ⬝* _, clear H1,
     refine !passoc⁻¹* ⬝* _ ⬝* !passoc,
     apply pwhisker_right,
@@ -314,12 +314,12 @@ namespace spectrum
 --   | (n, fin.mk k H) := πₛ[n] (sfiber f)
 
 --   definition shomotopy_groups_fun : Π(n : -3ℤ), shomotopy_groups (S n) →g shomotopy_groups n
---   | (n, fin.mk 0 H) := proof π→g[1+1] (f (n + 2)) qed --π→*[2] f (n+2)
+--   | (n, fin.mk 0 H) := proof π→g[1+1] (f (n + 2)) qed --π→[2] f (n+2)
 -- --pmap_of_homomorphism (πₛ→[n] f)
 --   | (n, fin.mk 1 H) := proof π→g[1+1] (ppoint (f (n + 2))) qed
 --   | (n, fin.mk 2 H) :=
 --     proof _ ∘g π→g[1+1] equiv_glue Y (pred n + 2) qed
--- --π→*[n] boundary_map ∘* pcast (ap (ptrunc 0) (loop_space_succ_eq_in Y n))
+-- --π→[n] boundary_map ∘* pcast (ap (ptrunc 0) (loop_space_succ_eq_in Y n))
 --   | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
 
   end
@@ -348,7 +348,7 @@ namespace spectrum
     gen_spectrum N :=
   gen_spectrum.mk
     (mapping_prespectrum X Y)
-    (is_spectrum.mk (λn, to_is_equiv (equiv_ppcompose_left (equiv_glue Y n) ⬝e
+    (is_spectrum.mk (λn, to_is_equiv (pequiv_ppcompose_left (equiv_glue Y n) ⬝e
                          pfunext X (Y (S n)))))
 
   /- Spectrification -/

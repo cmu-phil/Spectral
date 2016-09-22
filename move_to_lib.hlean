@@ -20,13 +20,13 @@ open sigma
 
 namespace group
   open is_trunc
-  definition pSet_of_Group {i : signature} (G : Group i) : Set* := ptrunctype.mk G _ 1
+  definition pSet_of_Group (G : Group) : Set* := ptrunctype.mk G _ 1
 
-  definition pmap_of_isomorphism [constructor] {i j : signature} {G₁ : Group i} {G₂ : Group j}
+  definition pmap_of_isomorphism [constructor] {G₁ : Group} {G₂ : Group}
     (φ : G₁ ≃g G₂) : pType_of_Group G₁ →* pType_of_Group G₂ :=
   pequiv_of_isomorphism φ
 
-  definition pequiv_of_isomorphism_of_eq {i : signature} {G₁ G₂ : Group i} (p : G₁ = G₂) :
+  definition pequiv_of_isomorphism_of_eq {G₁ G₂ : Group} (p : G₁ = G₂) :
     pequiv_of_isomorphism (isomorphism_of_eq p) = pequiv_of_eq (ap pType_of_Group p) :=
   begin
     induction p,
@@ -36,7 +36,7 @@ namespace group
     { apply is_prop.elim}
   end
 
-  definition homomorphism_change_fun [constructor] {i j : signature} {G₁ : Group i} {G₂ : Group j}
+  definition homomorphism_change_fun [constructor] {G₁ G₂ : Group}
     (φ : G₁ →g G₂) (f : G₁ → G₂) (p : φ ~ f) : G₁ →g G₂ :=
   homomorphism.mk f (λg h, (p (g * h))⁻¹ ⬝ to_respect_mul φ g h ⬝ ap011 mul (p g) (p h))
 
@@ -128,30 +128,30 @@ namespace pointed
                      ... -/ ≃ (A →* Ω B)                                       : pmap.sigma_char)
       (by reflexivity)
 
-  definition ppcompose_left {A B C : Type*} (g : B →* C) : ppmap A B →* ppmap A C :=
-    pmap.mk (pcompose g) (eq_of_phomotopy (phomotopy.mk (λa, resp_pt g) (idp_con _)⁻¹))
+  -- definition ppcompose_left {A B C : Type*} (g : B →* C) : ppmap A B →* ppmap A C :=
+  --   pmap.mk (pcompose g) (eq_of_phomotopy (phomotopy.mk (λa, resp_pt g) (idp_con _)⁻¹))
 
-  definition is_equiv_ppcompose_left [instance] {A B C : Type*} (g : B →* C) [H : is_equiv g] : is_equiv (@ppcompose_left A B C g) :=
-  begin
-    fapply is_equiv.adjointify,
-    { exact (ppcompose_left (pequiv_of_pmap g H)⁻¹ᵉ*) },
-    all_goals (intros f; esimp; apply eq_of_phomotopy),
-    { exact calc g ∘* ((pequiv_of_pmap g H)⁻¹ᵉ* ∘* f) ~* (g ∘* (pequiv_of_pmap g H)⁻¹ᵉ*) ∘* f : passoc
-                                                  ... ~* pid _ ∘* f : pwhisker_right f (pright_inv (pequiv_of_pmap g H))
-                                                  ... ~* f : pid_comp f },
-    { exact calc (pequiv_of_pmap g H)⁻¹ᵉ* ∘* (g ∘* f) ~* ((pequiv_of_pmap g H)⁻¹ᵉ* ∘* g) ∘* f : passoc
-                                                  ... ~* pid _ ∘* f : pwhisker_right f (pleft_inv (pequiv_of_pmap g H))
-                                                  ... ~* f : pid_comp f }
-  end
+  -- definition is_equiv_ppcompose_left [instance] {A B C : Type*} (g : B →* C) [H : is_equiv g] : is_equiv (@ppcompose_left A B C g) :=
+  -- begin
+  --   fapply is_equiv.adjointify,
+  --   { exact (ppcompose_left (pequiv_of_pmap g H)⁻¹ᵉ*) },
+  --   all_goals (intros f; esimp; apply eq_of_phomotopy),
+  --   { exact calc g ∘* ((pequiv_of_pmap g H)⁻¹ᵉ* ∘* f) ~* (g ∘* (pequiv_of_pmap g H)⁻¹ᵉ*) ∘* f : passoc
+  --                                                 ... ~* pid _ ∘* f : pwhisker_right f (pright_inv (pequiv_of_pmap g H))
+  --                                                 ... ~* f : pid_pcompose f },
+  --   { exact calc (pequiv_of_pmap g H)⁻¹ᵉ* ∘* (g ∘* f) ~* ((pequiv_of_pmap g H)⁻¹ᵉ* ∘* g) ∘* f : passoc
+  --                                                 ... ~* pid _ ∘* f : pwhisker_right f (pleft_inv (pequiv_of_pmap g H))
+  --                                                 ... ~* f : pid_pcompose f }
+  -- end
 
-  definition equiv_ppcompose_left {A B C : Type*} (g : B ≃* C) : ppmap A B ≃* ppmap A C :=
-    pequiv_of_pmap (ppcompose_left g) _
+  -- definition pequiv_ppcompose_left {A B C : Type*} (g : B ≃* C) : ppmap A B ≃* ppmap A C :=
+  --   pequiv_of_pmap (ppcompose_left g) _
 
-  definition pcompose_pconst {A B C : Type*} (f : B →* C) : f ∘* pconst A B ~* pconst A C :=
-    phomotopy.mk (λa, respect_pt f) (idp_con _)⁻¹
+  -- definition pcompose_pconst {A B C : Type*} (f : B →* C) : f ∘* pconst A B ~* pconst A C :=
+  --   phomotopy.mk (λa, respect_pt f) (idp_con _)⁻¹
 
-  definition pconst_pcompose {A B C : Type*} (f : A →* B) : pconst B C ∘* f ~* pconst A C :=
-    phomotopy.mk (λa, rfl) (ap_constant _ _)⁻¹
+  -- definition pconst_pcompose {A B C : Type*} (f : A →* B) : pconst B C ∘* f ~* pconst A C :=
+  --   phomotopy.mk (λa, rfl) (ap_constant _ _)⁻¹
 
   definition ap1_pconst (A B : Type*) : Ω→(pconst A B) ~* pconst (Ω A) (Ω B) :=
     phomotopy.mk (λp, idp_con _ ⬝ ap_constant p pt) rfl
@@ -232,7 +232,7 @@ end fiber
 
 namespace eq --algebra.homotopy_group
 
-  definition phomotopy_group_functor_pid (n : ℕ) (A : Type*) : π→*[n] (pid A) ~* pid (π*[n] A) :=
+  definition phomotopy_group_functor_pid (n : ℕ) (A : Type*) : π→[n] (pid A) ~* pid (π[n] A) :=
   ptrunc_functor_phomotopy 0 !apn_pid ⬝* !ptrunc_functor_pid
 
 end eq

@@ -48,10 +48,10 @@ namespace spherical_fibrations
 
   /- classifying type of pointed spherical fibrations -/
   definition BF (n : ℕ) : Type₁ :=
-  Σ(X : Type*), ∥ X ≃* S. n ∥
+  Σ(X : Type*), ∥ X ≃* S* n ∥
 
   definition pointed_BF [instance] [constructor] (n : ℕ) : pointed (BF n) :=
-  pointed.mk ⟨ S. n , tr pequiv.rfl ⟩
+  pointed.mk ⟨ S* n , tr pequiv.rfl ⟩
 
   definition pBF [constructor] (n : ℕ) : Type* := pointed.mk' (BF n)
 

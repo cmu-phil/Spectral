@@ -22,5 +22,5 @@ ordinary_cohomology X agℤ n
 notation `H^` n `[`:0 X:0 `, ` Y:0 `]`:0 := cohomology X Y n
 notation `H^` n `[`:0 X:0 `]`:0 := ordinary_cohomology_Z X n
 
-check H^3[S¹.,EM_spectrum agℤ]
-check H^3[S¹.]
+check H^3[S¹*,EM_spectrum agℤ]
+check H^3[S¹*]

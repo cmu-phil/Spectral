@@ -165,10 +165,10 @@ namespace group
   variable {N}
 
   definition gq_map_eq_one (g : G) (H : N g) : gq_map N g = 1 :=
-  begin 
+  begin
     apply eq_of_rel,
       have e : (g * 1⁻¹ = g),
-      from calc 
+      from calc
       g * 1⁻¹ = g * 1 : one_inv
         ...   = g : mul_one,
     unfold quotient_rel, rewrite e, exact H
@@ -177,18 +177,18 @@ namespace group
   definition rel_of_gq_map_eq_one (g : G) (H : gq_map N g = 1) : N g :=
   begin
     have e : (g * 1⁻¹ = g),
-    from calc 
+    from calc
       g * 1⁻¹ = g * 1 : one_inv
         ...   = g : mul_one,
     rewrite (inverse e),
-    apply rel_of_eq _ H    
-  end 
+    apply rel_of_eq _ H
+  end
 
   definition quotient_group_elim (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) : quotient_group N →g G' :=
   begin
     fapply homomorphism.mk,
       -- define function
-    { apply set_quotient.elim f, 
+    { apply set_quotient.elim f,
       intro g h K,
       apply eq_of_mul_inv_eq_one,
       have e : f (g * h⁻¹) = f g * (f h)⁻¹,
@@ -197,8 +197,8 @@ namespace group
                ...  = f g * (f h)⁻¹ : to_respect_inv,
       rewrite (inverse e),
       apply H, exact K},
-    { intro g h, induction g using set_quotient.rec_prop with g, 
-      induction h using set_quotient.rec_prop with h, 
+    { intro g h, induction g using set_quotient.rec_prop with g,
+      induction h using set_quotient.rec_prop with h,
       krewrite (inverse (to_respect_mul (gq_map N) g h)),
       unfold gq_map, esimp, exact to_respect_mul f g h }
   end
