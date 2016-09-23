@@ -14,6 +14,46 @@ open eq is_equiv equiv is_conn is_trunc unit function pointed nat group algebra 
 
 namespace EM
 
+  /- Functorial action of Eilenberg-Maclane spaces -/
+
+  definition pEM1_functor [constructor] {G H : Group} (φ : G →g H) : pEM1 G →* pEM1 H :=
+  begin
+    fconstructor,
+    { intro g, induction g,
+      { exact base },
+      { exact pth (φ g) },
+      { exact ap pth (respect_mul φ g h) ⬝ resp_mul (φ g) (φ h) }},
+    { reflexivity }
+  end
+
+  definition EMadd1_functor [constructor] {G H : CommGroup} (φ : G →g H) (n : ℕ) :
+    EMadd1 G n →* EMadd1 H n :=
+  begin
+    apply ptrunc_functor,
+    apply iterate_psusp_functor,
+    apply pEM1_functor,
+    exact φ
+  end
+
+  definition EM_functor {G H : CommGroup} (φ : G →g H) (n : ℕ) :
+    K G n →* K H n :=
+  begin
+    cases n with n,
+    { exact pmap_of_homomorphism φ },
+    { exact EMadd1_functor φ n }
+  end
+
+  /- Equivalence of Groups and pointed connected 1-truncated types -/
+
+  definition pEM1_pequiv_ptruncconntype (X : 1-Type*[0]) : pEM1 (π₁ X) ≃* X :=
+  pEM1_pequiv_type
+
+  definition Group_equiv_ptruncconntype [constructor] : Group ≃ 1-Type*[0] :=
+  equiv.MK (λG, ptruncconntype.mk (pEM1 G) _ pt !is_conn_pEM1)
+           (λX, π₁ X)
+           begin intro X, apply ptruncconntype_eq, esimp, exact pEM1_pequiv_type end
+           begin intro G, apply eq_of_isomorphism, apply fundamental_group_pEM1 end
+
   /- Higher EM-spaces -/
 
   /- K(G, 2) is unique (see below for general case) -/

@@ -3,6 +3,7 @@
 import homotopy.sphere2
 
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
+     is_trunc
 
 attribute equiv.symm equiv.trans is_equiv.is_equiv_ap fiber.equiv_postcompose fiber.equiv_precompose pequiv.to_pmap pequiv._trans_of_to_pmap ghomotopy_group_succ_in isomorphism_of_eq [constructor]
 attribute is_equiv.eq_of_fn_eq_fn' [unfold 3]
@@ -236,3 +237,95 @@ namespace eq --algebra.homotopy_group
   ptrunc_functor_phomotopy 0 !apn_pid ⬝* !ptrunc_functor_pid
 
 end eq
+
+namespace susp
+
+  definition iterate_psusp_functor (n : ℕ) {A B : Type*} (f : A →* B) :
+    iterate_psusp n A →* iterate_psusp n B :=
+  begin
+    induction n with n g,
+    { exact f },
+    { exact psusp_functor g }
+  end
+
+end susp
+
+namespace is_conn -- homotopy.connectedness
+
+  structure conntype (n : ℕ₋₂) : Type :=
+    (carrier : Type)
+    (struct : is_conn n carrier)
+
+  notation `Type[`:95  n:0 `]`:0 := conntype n
+
+  attribute conntype.carrier [coercion]
+  attribute conntype.struct [instance] [priority 1300]
+
+  section
+    universe variable u
+    structure pconntype (n : ℕ₋₂) extends conntype.{u} n, pType.{u}
+
+    notation `Type*[`:95  n:0 `]`:0 := pconntype n
+
+    /-
+      There are multiple coercions from pconntype to Type. Type class inference doesn't recognize
+      that all of them are definitionally equal (for performance reasons). One instance is
+      automatically generated, and we manually add the missing instances.
+    -/
+
+    definition is_conn_pconntype [instance] {n : ℕ₋₂} (X : Type*[n]) : is_conn n X :=
+    conntype.struct X
+
+    /- Now all the instances work -/
+    example {n : ℕ₋₂} (X : Type*[n]) : is_conn n X := _
+    example {n : ℕ₋₂} (X : Type*[n]) : is_conn n (pconntype.to_pType X) := _
+    example {n : ℕ₋₂} (X : Type*[n]) : is_conn n (pconntype.to_conntype X) := _
+    example {n : ℕ₋₂} (X : Type*[n]) : is_conn n (pconntype._trans_of_to_pType X) := _
+    example {n : ℕ₋₂} (X : Type*[n]) : is_conn n (pconntype._trans_of_to_conntype X) := _
+
+    structure truncconntype (n k : ℕ₋₂) extends trunctype.{u} n,
+                                                conntype.{u} k renaming struct→conn_struct
+
+    notation n `-Type[`:95  k:0 `]`:0 := truncconntype n k
+
+    definition is_conn_truncconntype [instance] {n k : ℕ₋₂} (X : n-Type[k]) :
+      is_conn k (truncconntype._trans_of_to_trunctype X) :=
+    conntype.struct X
+
+    definition is_trunc_truncconntype [instance] {n k : ℕ₋₂} (X : n-Type[k]) : is_trunc n X :=
+    trunctype.struct X
+
+    structure ptruncconntype (n k : ℕ₋₂) extends ptrunctype.{u} n,
+                                                 pconntype.{u} k renaming struct→conn_struct
+
+    notation n `-Type*[`:95  k:0 `]`:0 := ptruncconntype n k
+
+    attribute ptruncconntype._trans_of_to_pconntype ptruncconntype._trans_of_to_ptrunctype
+              ptruncconntype._trans_of_to_pconntype_1 ptruncconntype._trans_of_to_ptrunctype_1
+              ptruncconntype._trans_of_to_pconntype_2 ptruncconntype._trans_of_to_ptrunctype_2
+              ptruncconntype.to_pconntype ptruncconntype.to_ptrunctype
+              truncconntype._trans_of_to_conntype truncconntype._trans_of_to_trunctype
+              truncconntype.to_conntype truncconntype.to_trunctype [unfold 3]
+    attribute pconntype._trans_of_to_conntype pconntype._trans_of_to_pType
+              pconntype.to_pType pconntype.to_conntype [unfold 2]
+
+    definition is_conn_ptruncconntype [instance] {n k : ℕ₋₂} (X : n-Type*[k]) :
+      is_conn k (ptruncconntype._trans_of_to_ptrunctype X) :=
+    conntype.struct X
+
+    definition is_trunc_ptruncconntype [instance] {n k : ℕ₋₂} (X : n-Type*[k]) :
+      is_trunc n (ptruncconntype._trans_of_to_pconntype X) :=
+    trunctype.struct X
+
+    definition ptruncconntype_eq {n k : ℕ₋₂} {X Y : n-Type*[k]} (p : X ≃* Y) : X = Y :=
+    begin
+      induction X with X Xt Xp Xc, induction Y with Y Yt Yp Yc,
+      note q := pType_eq_elim (eq_of_pequiv p),
+      cases q with r s, esimp at *, induction r,
+      exact ap0111 (ptruncconntype.mk X) !is_prop.elim (eq_of_pathover_idp s) !is_prop.elim
+    end
+
+  end
+
+
+end is_conn
