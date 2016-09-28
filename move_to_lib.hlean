@@ -21,6 +21,10 @@ open sigma
 
 namespace group
   open is_trunc
+
+  theorem inv_eq_one {A : Type} [group A] {a : A} (H : a = 1) : a⁻¹ = 1 :=
+  iff.mpr (inv_eq_one_iff_eq_one a) H
+
   definition pSet_of_Group (G : Group) : Set* := ptrunctype.mk G _ 1
 
   definition pmap_of_isomorphism [constructor] {G₁ : Group} {G₂ : Group}
@@ -40,6 +44,20 @@ namespace group
   definition homomorphism_change_fun [constructor] {G₁ G₂ : Group}
     (φ : G₁ →g G₂) (f : G₁ → G₂) (p : φ ~ f) : G₁ →g G₂ :=
   homomorphism.mk f (λg h, (p (g * h))⁻¹ ⬝ to_respect_mul φ g h ⬝ ap011 mul (p g) (p h))
+
+  definition Group_of_pgroup (G : Type*) [pgroup G] : Group :=
+  Group.mk G _
+
+  definition pgroup_pType_of_Group [instance] (G : Group) : pgroup (pType_of_Group G) :=
+  ⦃ pgroup, Group.struct G,
+    pt_mul := one_mul,
+    mul_pt := mul_one,
+    mul_left_inv_pt := mul.left_inv ⦄
+
+  definition comm_group_pType_of_Group [instance] (G : CommGroup) : comm_group (pType_of_Group G) :=
+  CommGroup.struct G
+
+  abbreviation gid [constructor] := @homomorphism_id
 
 end group open group
 
@@ -95,6 +113,16 @@ namespace pointed
     { exact pmap.mk f p },
     all_goals reflexivity
   end
+
+  definition is_trunc_pmap [instance] (n : ℕ₋₂) (A B : Type*) [is_trunc n B] : is_trunc n (A →* B) :=
+  is_trunc_equiv_closed_rev _ !pmap.sigma_char
+
+  definition is_trunc_ppmap [instance] (n : ℕ₋₂) {A B : Type*} [is_trunc n B] :
+    is_trunc n (ppmap A B) :=
+  !is_trunc_pmap
+
+  definition pmap_eq_of_homotopy {A B : Type*} {f g : A →* B} [is_set B] (p : f ~ g) : f = g :=
+  pmap_eq p !is_set.elim
 
   definition phomotopy.sigma_char [constructor] {A B : Type*} (f g : A →* B) : (f ~* g) ≃ Σ(p : f ~ g), p pt ⬝ resp_pt g = resp_pt f :=
   begin
