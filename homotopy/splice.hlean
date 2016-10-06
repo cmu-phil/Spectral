@@ -29,7 +29,7 @@ So far, the splicing seems to be only needed for k = 3, so it seems to be suffic
 
 -/
 
-import homotopy.chain_complex
+import homotopy.chain_complex ..move_to_lib
 
 open prod prod.ops succ_str fin pointed nat algebra eq is_trunc equiv is_equiv
 
@@ -62,12 +62,6 @@ begin
   { exact if_pos p},
   { exact dif_pos p}
 end
-
-  --move
-  definition succ_str.add [reducible] {N : succ_str} (n : N) (k : ℕ) : N :=
-  iterate S k n
-
-  infix ` +' `:65 := succ_str.add
 
   definition splice_type [unfold 5] {N M : succ_str} (G : N → chain_complex M) (m : M)
     (x : stratified N 2) : Set* :=

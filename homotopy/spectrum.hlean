@@ -5,8 +5,9 @@ Authors: Michael Shulman, Floris van Doorn
 
 -/
 
-import homotopy.LES_of_homotopy_groups .splice homotopy.susp ..move_to_lib
+import homotopy.LES_of_homotopy_groups .splice homotopy.susp ..move_to_lib ..colim
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
+     seq_colim
 
 /---------------------
   Basic definitions
@@ -37,6 +38,8 @@ attribute gen_spectrum.to_is_spectrum [instance]
 -- Classically, spectra and prespectra use the successor structure +ℕ.
 -- But we will use +ℤ instead, to reduce case analysis later on.
 
+abbreviation prespectrum := gen_prespectrum +ℤ
+abbreviation prespectrum.mk := @gen_prespectrum.mk +ℤ
 abbreviation spectrum := gen_spectrum +ℤ
 abbreviation spectrum.mk := @gen_spectrum.mk +ℤ
 
@@ -97,7 +100,8 @@ namespace spectrum
 
   -- Generally it's easiest to define a spectrum by giving 'equiv's
   -- directly.  This works for any indexing succ_str.
-  protected definition MK {N : succ_str} (deloop : N → Type*) (glue : Π(n:N), (deloop n) ≃* (Ω (deloop (S n)))) : gen_spectrum N :=
+  protected definition MK [constructor] {N : succ_str} (deloop : N → Type*)
+    (glue : Π(n:N), (deloop n) ≃* (Ω (deloop (S n)))) : gen_spectrum N :=
     gen_spectrum.mk (gen_prespectrum.mk deloop (λ(n:N), glue n))
     (begin
       apply is_spectrum.mk, intros n, esimp,
@@ -105,7 +109,8 @@ namespace spectrum
     end)
 
   -- Finally, we combine them and give a way to produce a (ℤ-)spectrum from a ℕ-indexed family of 'equiv's.
-  protected definition Mk (deloop : ℕ → Type*) (glue : Π(n:ℕ), (deloop n) ≃* (Ω (deloop (nat.succ n)))) : spectrum :=
+  protected definition Mk [constructor] (deloop : ℕ → Type*)
+    (glue : Π(n:ℕ), (deloop n) ≃* (Ω (deloop (nat.succ n)))) : spectrum :=
     spectrum.of_nat_indexed (spectrum.MK deloop glue)
 
   ------------------------------
@@ -352,6 +357,60 @@ namespace spectrum
                          pfunext X (Y (S n)))))
 
   /- Spectrification -/
+
+  open chain_complex
+  definition spectrify_type_term {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ) : Type* :=
+  Ω[k] (X (n +' k))
+
+  definition spectrify_type_fun' {N : succ_str} (X : gen_prespectrum N) (k : ℕ) (n : N) :
+    Ω[k] (X n) →* Ω[k+1] (X (S n)) :=
+  !loopn_succ_in⁻¹ᵉ* ∘* Ω→[k] (glue X n)
+
+  definition spectrify_type_fun {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ) :
+    spectrify_type_term X n k →* spectrify_type_term X n (k+1) :=
+  spectrify_type_fun' X k (n +' k)
+
+  definition spectrify_type {N : succ_str} (X : gen_prespectrum N) (n : N) : Type* :=
+  pseq_colim (spectrify_type_fun X n)
+
+  definition spectrify_pequiv {N : succ_str} (X : gen_prespectrum N) (n : N) :
+    spectrify_type X n ≃* Ω (spectrify_type X (S n)) :=
+  begin
+    refine _ ⬝e* !pseq_colim_loop⁻¹ᵉ*,
+    refine !pshift_equiv ⬝e* _,
+    refine _ ⬝e* pseq_colim_equiv_constant (λn, !ap1_pcompose⁻¹*),
+    transitivity pseq_colim (λk, spectrify_type_fun' X (succ k) (S n +' k)),
+    rotate 1, --exact pseq_colim_equiv_constant (λn, !ap1_pcompose⁻¹*),
+    reflexivity,
+    transitivity pseq_colim (λk, spectrify_type_fun' X (succ k) (n +' succ k)),
+    reflexivity,
+    fapply pseq_colim_pequiv,
+    { intro n, apply loopn_pequiv_loopn, apply pequiv_ap X, apply succ_str.add_succ },
+    { intro n, apply to_homotopy, exact sorry }
+  end
+
+  definition spectrify [constructor] {N : succ_str} (X : gen_prespectrum N) : gen_spectrum N :=
+  spectrum.MK (spectrify_type X) (spectrify_pequiv X)
+
+  definition gluen {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ)
+    : X n →* Ω[k] (X (n +' k)) :=
+  by induction k with k f; reflexivity; exact !loopn_succ_in⁻¹ᵉ* ∘* Ω→[k] (glue X (n +' k)) ∘* f
+
+  -- note: the forward map is (currently) not definitionally equal to gluen.
+  definition equiv_gluen {N : succ_str} (X : gen_spectrum N) (n : N) (k : ℕ)
+    : X n ≃* Ω[k] (X (n +' k)) :=
+  by induction k with k f; reflexivity; exact f ⬝e* loopn_pequiv_loopn k (equiv_glue X (n +' k))
+                                                ⬝e* !loopn_succ_in⁻¹ᵉ*
+
+  definition spectrify_map {N : succ_str} {X : gen_prespectrum N} {Y : gen_spectrum N}
+    (f : X →ₛ Y) : spectrify X →ₛ Y :=
+  begin
+    fapply smap.mk,
+    { intro n, fapply pseq_colim.elim,
+      { intro k, refine !equiv_gluen⁻¹ᵉ* ∘* apn k (f (n +' k)) },
+      { intro k, apply to_homotopy, exact sorry }},
+    { intro n, exact sorry }
+  end
 
   /- Tensor by spaces -/
 

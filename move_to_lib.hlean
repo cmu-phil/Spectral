@@ -3,7 +3,7 @@
 import homotopy.sphere2
 
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
-     is_trunc
+     is_trunc function
 
 attribute equiv.symm equiv.trans is_equiv.is_equiv_ap fiber.equiv_postcompose fiber.equiv_precompose pequiv.to_pmap pequiv._trans_of_to_pmap ghomotopy_group_succ_in isomorphism_of_eq [constructor]
 attribute is_equiv.eq_of_fn_eq_fn' [unfold 3]
@@ -99,6 +99,14 @@ namespace eq
 end eq open eq
 
 namespace pointed
+
+  definition ptransport [constructor] {A : Type} (B : A → Type*) {a a' : A} (p : a = a')
+    : B a →* B a' :=
+  pmap.mk (transport B p) (apdt (λa, Point (B a)) p)
+
+  definition pequiv_ap [constructor] {A : Type} (B : A → Type*) {a a' : A} (p : a = a')
+    : B a ≃* B a' :=
+  pequiv_of_pmap (ptransport B p) !is_equiv_tr
 
   definition pequiv_compose {A B C : Type*} (g : B ≃* C) (f : A ≃* B) : A ≃* C :=
     pequiv_of_pmap (g ∘* f) (is_equiv_compose g f)
@@ -357,3 +365,17 @@ namespace is_conn -- homotopy.connectedness
 
 
 end is_conn
+
+namespace succ_str
+  variables {N : succ_str}
+
+  protected definition add [reducible] (n : N) (k : ℕ) : N :=
+  iterate S k n
+
+  infix ` +' `:65 := succ_str.add
+
+  definition add_succ (n : N) (k : ℕ) : n +' (k + 1) = (S n) +' k :=
+  by induction k with k p; reflexivity; exact ap S p
+
+
+end succ_str
