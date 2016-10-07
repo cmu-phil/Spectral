@@ -96,9 +96,77 @@ namespace eq
   definition pathover_eq_Fl' {A B : Type} {f : A → B} {a₁ a₂ : A} {b : B} (p : a₁ = a₂) (q : f a₂ = b) : (ap f p) ⬝ q =[p] q :=
   by induction p; induction q; exact idpo
 
+  -- this should be renamed square_pathover. The one in cubical.cube should be renamed
+  definition square_pathover' {A B : Type} {a a' : A} {b₁ b₂ b₃ b₄ : A → B}
+    {f₁ : b₁ ~ b₂} {f₂ : b₃ ~ b₄} {f₃ : b₁ ~ b₃} {f₄ : b₂ ~ b₄} {p : a = a'}
+    {q : square (f₁ a) (f₂ a) (f₃ a) (f₄ a)}
+    {r : square (f₁ a') (f₂ a') (f₃ a') (f₄ a')}
+    (s : cube (natural_square_tr f₁ p) (natural_square_tr f₂ p)
+              (natural_square_tr f₃ p) (natural_square_tr f₄ p) q r) : q =[p] r :=
+  by induction p; apply pathover_idp_of_eq; exact eq_of_deg12_cube s
+
+  -- define natural_square_tr this way. Also, natural_square_tr and natural_square should swap names
+  definition natural_square_tr_eq {A B : Type} {a a' : A} {f g : A → B}
+    (p : f ~ g) (q : a = a') : natural_square_tr p q = square_of_pathover (apd p q) :=
+  by induction q; reflexivity
+
+  section
+  variables {A : Type} {a₀₀₀ a₂₀₀ a₀₂₀ a₂₂₀ a₀₀₂ a₂₀₂ a₀₂₂ a₂₂₂ : A}
+            {p₁₀₀ : a₀₀₀ = a₂₀₀} {p₀₁₀ : a₀₀₀ = a₀₂₀} {p₀₀₁ : a₀₀₀ = a₀₀₂}
+            {p₁₂₀ : a₀₂₀ = a₂₂₀} {p₂₁₀ : a₂₀₀ = a₂₂₀} {p₂₀₁ : a₂₀₀ = a₂₀₂}
+            {p₁₀₂ : a₀₀₂ = a₂₀₂} {p₀₁₂ : a₀₀₂ = a₀₂₂} {p₀₂₁ : a₀₂₀ = a₀₂₂}
+            {p₁₂₂ : a₀₂₂ = a₂₂₂} {p₂₁₂ : a₂₀₂ = a₂₂₂} {p₂₂₁ : a₂₂₀ = a₂₂₂}
+            {s₁₁₀ : square p₀₁₀ p₂₁₀ p₁₀₀ p₁₂₀}
+            {s₁₁₂ : square p₀₁₂ p₂₁₂ p₁₀₂ p₁₂₂}
+            {s₀₁₁ : square p₀₁₀ p₀₁₂ p₀₀₁ p₀₂₁}
+            {s₂₁₁ : square p₂₁₀ p₂₁₂ p₂₀₁ p₂₂₁}
+            {s₁₀₁ : square p₁₀₀ p₁₀₂ p₀₀₁ p₂₀₁}
+            {s₁₂₁ : square p₁₂₀ p₁₂₂ p₀₂₁ p₂₂₁}
+
+  -- move to cubical.cube
+  definition eq_concat1 {s₀₁₁' : square p₀₁₀ p₀₁₂ p₀₀₁ p₀₂₁} (r : s₀₁₁' = s₀₁₁)
+    (c : cube s₀₁₁ s₂₁₁ s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂) : cube s₀₁₁' s₂₁₁ s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂ :=
+  by induction r; exact c
+
+  definition concat1_eq {s₂₁₁' : square p₂₁₀ p₂₁₂ p₂₀₁ p₂₂₁}
+    (c : cube s₀₁₁ s₂₁₁ s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂) (r : s₂₁₁ = s₂₁₁')
+    : cube s₀₁₁ s₂₁₁' s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂ :=
+  by induction r; exact c
+
+  definition eq_concat2 {s₁₀₁' : square p₁₀₀ p₁₀₂ p₀₀₁ p₂₀₁} (r : s₁₀₁' = s₁₀₁)
+    (c : cube s₀₁₁ s₂₁₁ s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂) : cube s₀₁₁ s₂₁₁ s₁₀₁' s₁₂₁ s₁₁₀ s₁₁₂ :=
+  by induction r; exact c
+
+  definition concat2_eq {s₁₂₁' : square p₁₂₀ p₁₂₂ p₀₂₁ p₂₂₁}
+    (c : cube s₀₁₁ s₂₁₁ s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂) (r : s₁₂₁ = s₁₂₁')
+    : cube s₀₁₁ s₂₁₁ s₁₀₁ s₁₂₁' s₁₁₀ s₁₁₂ :=
+  by induction r; exact c
+
+  definition eq_concat3 {s₁₁₀' : square p₀₁₀ p₂₁₀ p₁₀₀ p₁₂₀} (r : s₁₁₀' = s₁₁₀)
+    (c : cube s₀₁₁ s₂₁₁ s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂) : cube s₀₁₁ s₂₁₁ s₁₀₁ s₁₂₁ s₁₁₀' s₁₁₂ :=
+  by induction r; exact c
+
+  definition concat3_eq {s₁₁₂' : square p₀₁₂ p₂₁₂ p₁₀₂ p₁₂₂}
+    (c : cube s₀₁₁ s₂₁₁ s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂) (r : s₁₁₂ = s₁₁₂')
+    : cube s₀₁₁ s₂₁₁ s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂' :=
+  by induction r; exact c
+
+  end
+
+  infix ` ⬝1 `:75 := cube_concat1
+  infix ` ⬝2 `:75 := cube_concat2
+  infix ` ⬝3 `:75 := cube_concat3
+  infix ` ⬝p1 `:75 := eq_concat1
+  infix ` ⬝1p `:75 := concat1_eq
+  infix ` ⬝p2 `:75 := eq_concat3
+  infix ` ⬝2p `:75 := concat2_eq
+  infix ` ⬝p3 `:75 := eq_concat3
+  infix ` ⬝3p `:75 := concat3_eq
+
 end eq open eq
 
 namespace pointed
+  -- in init.pointed `pointed_carrier` should be [unfold 1] instead of [constructor]
 
   definition ptransport [constructor] {A : Type} (B : A → Type*) {a a' : A} (p : a = a')
     : B a →* B a' :=
@@ -379,3 +447,31 @@ namespace succ_str
 
 
 end succ_str
+
+namespace join
+
+  definition pjoin [constructor] (A B : Type*) : Type* := pointed.MK (join A B) (inl pt)
+
+end join
+
+namespace circle
+
+
+/-
+  Suppose for `f, g : A -> B` I prove a homotopy `H : f ~ g` by induction on the element in `A`.
+  And suppose `p : a = a'` is a path constructor in `A`.
+  Then `natural_square_tr H p` has type `square (H a) (H a') (ap f p) (ap g p)` and is equal
+  to the square which defined H on the path constructor
+-/
+
+  definition natural_square_tr_elim_loop {A : Type} {f g : S¹ → A} (p : f base = g base)
+    (q : square p p (ap f loop) (ap g loop))
+    : natural_square_tr (circle.rec p (eq_pathover q)) loop = q :=
+  begin
+    refine !natural_square_tr_eq ⬝ _,
+    refine ap square_of_pathover !rec_loop ⬝ _,
+    exact to_right_inv !eq_pathover_equiv_square q
+  end
+
+
+end circle
