@@ -8,6 +8,14 @@ namespace seq_colim
   definition pseq_colim [constructor] {X : ℕ → Type*} (f : Πn, X n →* X (n+1)) : Type* :=
   pointed.MK (seq_colim f) (@sι _ _ 0 pt)
 
+  definition inclusion_pt [constructor] {X : ℕ → Type*} (f : Πn, X n →* X (n+1)) (n : ℕ)
+    : inclusion f (Point (X n)) = Point (pseq_colim f) :=
+  by induction n with n p; reflexivity; exact (ap (sι f) !respect_pt)⁻¹ ⬝ !glue ⬝ p
+
+  definition pinclusion [constructor] {X : ℕ → Type*} (f : Πn, X n →* X (n+1)) (n : ℕ)
+    : X n →* pseq_colim f :=
+  pmap.mk (inclusion f) (inclusion_pt f n)
+
   -- TODO: we need to prove this
   definition pseq_colim_loop {X : ℕ → Type*} (f : Πn, X n →* X (n+1)) :
     Ω (pseq_colim f) ≃* pseq_colim (λn, Ω→(f n)) :=

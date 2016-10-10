@@ -50,6 +50,11 @@ namespace spectrum
   definition equiv_glue {N : succ_str} (E : gen_prespectrum N) [H : is_spectrum E] (n:N) : (E n) ≃* (Ω (E (S n))) :=
     pequiv_of_pmap (glue E n) (is_spectrum.is_equiv_glue E n)
 
+  -- a square when we compose glue with transporting over a path in N
+  definition glue_ptransport {N : succ_str} (X : gen_prespectrum N) {n n' : N} (p : n = n') :
+    glue X n' ∘* ptransport X p ~* Ω→ (ptransport X (ap S p)) ∘* glue X n :=
+  by induction p; exact !pcompose_pid ⬝* !pid_pcompose⁻¹* ⬝* pwhisker_right _ !ap1_pid⁻¹*
+
   -- Sometimes an ℕ-indexed version does arise naturally, however, so
   -- we give a standard way to extend an ℕ-indexed (pre)spectrum to a
   -- ℤ-indexed one.
@@ -151,11 +156,19 @@ namespace spectrum
 
   infixr ` ∘ₛ `:60 := scompose
 
-  definition szero {N : succ_str} (E F : gen_prespectrum N) : E →ₛ F :=
+  definition szero [constructor] {N : succ_str} (E F : gen_prespectrum N) : E →ₛ F :=
     smap.mk (λn, pconst (E n) (F n))
       (λn, calc glue F n ∘* pconst (E n) (F n) ~* pconst (E n) (Ω(F (S n)))                    : pcompose_pconst
                                          ...   ~* pconst (Ω(E (S n))) (Ω(F (S n))) ∘* glue E n : pconst_pcompose
                                          ...   ~* Ω→(pconst (E (S n)) (F (S n))) ∘* glue E n   : pwhisker_right (glue E n) (ap1_pconst _ _))
+
+  definition stransport [constructor] {N : succ_str} {A : Type} {a a' : A} (p : a = a')
+  (E : A → gen_prespectrum N) : E a →ₛ E a' :=
+  smap.mk (λn, ptransport (λa, E a n) p)
+          begin
+            intro n, induction p,
+            exact !pcompose_pid ⬝* !pid_pcompose⁻¹* ⬝* pwhisker_right _ !ap1_pid⁻¹*,
+          end
 
   structure shomotopy {N : succ_str} {E F : gen_prespectrum N} (f g : E →ₛ F) :=
     (to_phomotopy : Πn, f n ~* g n)
@@ -378,15 +391,15 @@ namespace spectrum
   begin
     refine _ ⬝e* !pseq_colim_loop⁻¹ᵉ*,
     refine !pshift_equiv ⬝e* _,
-    refine _ ⬝e* pseq_colim_equiv_constant (λn, !ap1_pcompose⁻¹*),
-    transitivity pseq_colim (λk, spectrify_type_fun' X (succ k) (S n +' k)),
-    rotate 1, --exact pseq_colim_equiv_constant (λn, !ap1_pcompose⁻¹*),
-    reflexivity,
-    transitivity pseq_colim (λk, spectrify_type_fun' X (succ k) (n +' succ k)),
-    reflexivity,
+    transitivity pseq_colim (λk, spectrify_type_fun' X (succ k) (S n +' k)), rotate 1,
+    refine pseq_colim_equiv_constant (λn, !ap1_pcompose⁻¹*),
     fapply pseq_colim_pequiv,
     { intro n, apply loopn_pequiv_loopn, apply pequiv_ap X, apply succ_str.add_succ },
-    { intro n, apply to_homotopy, exact sorry }
+    { intro k, apply to_homotopy,
+      refine !passoc⁻¹* ⬝* _, refine pwhisker_right _ (loopn_succ_in_inv_apn (succ k) _) ⬝* _,
+      refine !passoc ⬝* _ ⬝* !passoc⁻¹*, apply pwhisker_left,
+      refine !apn_pcompose⁻¹* ⬝* _ ⬝* !apn_pcompose, apply apn_phomotopy,
+      exact !glue_ptransport⁻¹* }
   end
 
   definition spectrify [constructor] {N : succ_str} (X : gen_prespectrum N) : gen_spectrum N :=
@@ -396,13 +409,21 @@ namespace spectrum
     : X n →* Ω[k] (X (n +' k)) :=
   by induction k with k f; reflexivity; exact !loopn_succ_in⁻¹ᵉ* ∘* Ω→[k] (glue X (n +' k)) ∘* f
 
-  -- note: the forward map is (currently) not definitionally equal to gluen.
+  -- note: the forward map is (currently) not definitionally equal to gluen. Is that a problem?
   definition equiv_gluen {N : succ_str} (X : gen_spectrum N) (n : N) (k : ℕ)
     : X n ≃* Ω[k] (X (n +' k)) :=
   by induction k with k f; reflexivity; exact f ⬝e* loopn_pequiv_loopn k (equiv_glue X (n +' k))
                                                 ⬝e* !loopn_succ_in⁻¹ᵉ*
 
   definition spectrify_map {N : succ_str} {X : gen_prespectrum N} {Y : gen_spectrum N}
+    (f : X →ₛ Y) : X →ₛ spectrify X :=
+  begin
+    fapply smap.mk,
+    { intro n, exact pinclusion _ 0},
+    { intro n, exact sorry}
+  end
+
+  definition spectrify.elim {N : succ_str} {X : gen_prespectrum N} {Y : gen_spectrum N}
     (f : X →ₛ Y) : spectrify X →ₛ Y :=
   begin
     fapply smap.mk,

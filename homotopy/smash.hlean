@@ -203,6 +203,7 @@ namespace smash
     { exact gluel' pt a ⬝ ap (smash.mk a) loop ⬝ gluel' a pt },
   end
 
+exit -- the definitions below compile, but take a long time to do so and have sorry's in them
   definition smash_pcircle_of_psusp_of_smash_pcircle_pt [unfold 3] (a : A) (x : S¹*) :
     smash_pcircle_of_psusp (psusp_of_smash_pcircle (smash.mk a x)) = smash.mk a x :=
   begin
@@ -232,7 +233,6 @@ namespace smash
     { apply square_of_eq, exact whisker_right !con.right_inv _ },
     { apply square_pathover', exact sorry }
   end
-exit
 
   definition smash_pcircle_pequiv [constructor] (A : Type*) : smash A S¹* ≃* psusp A :=
   begin

@@ -172,6 +172,15 @@ namespace pointed
     : B a →* B a' :=
   pmap.mk (transport B p) (apdt (λa, Point (B a)) p)
 
+  definition ptransport_change_eq [constructor] {A : Type} (B : A → Type*) {a a' : A} {p q : a = a'}
+    (r : p = q) : ptransport B p ~* ptransport B q :=
+  phomotopy.mk (λb, ap (λp, transport B p b) r) begin induction r, exact !idp_con end
+
+  definition pnatural_square {A B : Type} (X : B → Type*) {f g : A → B}
+    (h : Πa, X (f a) →* X (g a)) {a a' : A} (p : a = a') :
+    h a' ∘* ptransport X (ap f p) ~* ptransport X (ap g p) ∘* h a :=
+  by induction p; exact !pcompose_pid ⬝* !pid_pcompose⁻¹*
+
   definition pequiv_ap [constructor] {A : Type} (B : A → Type*) {a a' : A} (p : a = a')
     : B a ≃* B a' :=
   pequiv_of_pmap (ptransport B p) !is_equiv_tr
@@ -278,6 +287,16 @@ namespace pointed
   definition pequiv_of_eq_commute [constructor] {A : Type} {B C : A → Type*} (f : Πa, B a →* C a)
     {a₁ a₂ : A} (p : a₁ = a₂) : pequiv_of_eq (ap C p) ∘* f a₁ ~* f a₂ ∘* pequiv_of_eq (ap B p) :=
   pcast_commute f p
+
+  -- TODO: make the name apn_succ_phomotopy_in consistent with this
+  definition loopn_succ_in_inv_apn {A B : Type*} (n : ℕ) (f : A →* B) :
+    Ω→[n + 1] f ∘* (loopn_succ_in A n)⁻¹ᵉ* ~* (loopn_succ_in B n)⁻¹ᵉ* ∘* Ω→[n] (Ω→ f):=
+  begin
+    apply pinv_right_phomotopy_of_phomotopy,
+    refine _ ⬝* !passoc⁻¹*,
+    apply phomotopy_pinv_left_of_phomotopy,
+    apply apn_succ_phomotopy_in
+  end
 
 end pointed
 
