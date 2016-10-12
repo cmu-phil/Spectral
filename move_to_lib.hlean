@@ -3,9 +3,11 @@
 import homotopy.sphere2
 
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
-     is_trunc function
+     is_trunc function sphere
 
-attribute equiv.symm equiv.trans is_equiv.is_equiv_ap fiber.equiv_postcompose fiber.equiv_precompose pequiv.to_pmap pequiv._trans_of_to_pmap ghomotopy_group_succ_in isomorphism_of_eq [constructor]
+attribute equiv.symm equiv.trans is_equiv.is_equiv_ap fiber.equiv_postcompose
+          fiber.equiv_precompose pequiv.to_pmap pequiv._trans_of_to_pmap ghomotopy_group_succ_in
+          isomorphism_of_eq pmap_bool_equiv sphere_equiv_bool psphere_pequiv_pbool [constructor]
 attribute is_equiv.eq_of_fn_eq_fn' [unfold 3]
 attribute isomorphism._trans_of_to_hom [unfold 3]
 attribute homomorphism.struct [unfold 3]
@@ -270,6 +272,14 @@ namespace pointed
   definition ap1_pconst (A B : Type*) : Ω→(pconst A B) ~* pconst (Ω A) (Ω B) :=
     phomotopy.mk (λp, idp_con _ ⬝ ap_constant p pt) rfl
 
+  definition apn_pconst (A B : Type*) (n : ℕ) :
+    apn n (pconst A B) ~* pconst (Ω[n] A) (Ω[n] B) :=
+  begin
+    induction n with n IH,
+    { reflexivity },
+    { exact ap1_phomotopy IH ⬝* !ap1_pconst }
+  end
+
   definition loop_ppi_commute {A : Type} (B : A → Type*) : Ω(ppi B) ≃* Π*a, Ω (B a) :=
     pequiv_of_equiv eq_equiv_homotopy rfl
 
@@ -298,7 +308,44 @@ namespace pointed
     apply apn_succ_phomotopy_in
   end
 
-end pointed
+  definition papply [constructor] {A : Type*} (B : Type*) (a : A) : ppmap A B →* B :=
+  pmap.mk (λ(f : A →* B), f a) idp
+
+  definition papply_pcompose [constructor] {A : Type*} (B : Type*) (a : A) : ppmap A B →* B :=
+  pmap.mk (λ(f : A →* B), f a) idp
+
+  open bool --also rename pmap_bool_equiv -> pmap_pbool_equiv
+
+  definition pbool_pmap [constructor] {A : Type*} (a : A) : pbool →* A :=
+  pmap.mk (bool.rec pt a) idp
+
+  definition pmap_pbool_pequiv [constructor] (B : Type*) : ppmap pbool B ≃* B :=
+  begin
+    fapply pequiv.MK,
+    { exact papply B tt },
+    { exact pbool_pmap },
+    { intro f, fapply pmap_eq,
+      { intro b, cases b, exact !respect_pt⁻¹, reflexivity },
+      { exact !con.left_inv⁻¹ }},
+    { intro b, reflexivity },
+  end
+
+  definition papn_pt [constructor] (n : ℕ) (A B : Type*) : ppmap A B →* ppmap (Ω[n] A) (Ω[n] B) :=
+  pmap.mk (λf, apn n f) (eq_of_phomotopy !apn_pconst)
+
+  definition papn_fun [constructor] {n : ℕ} {A : Type*} (B : Type*) (p : Ω[n] A) :
+    ppmap A B →* Ω[n] B :=
+  papply _ p ∘* papn_pt n A B
+
+  definition loopn_succ_in_natural {A B : Type*} {n : ℕ} (f : A →* B) :
+    loopn_succ_in B n ∘* Ω→[n+1] f ~* Ω→[n] (Ω→ f) ∘* loopn_succ_in A n :=
+  !apn_succ_phomotopy_in
+
+  definition loopn_succ_in_inv_natural {A B : Type*} {n : ℕ} (f : A →* B) :
+    (loopn_succ_in B n)⁻¹ᵉ* ∘* Ω→[n] (Ω→ f) ~* Ω→[n+1] f ∘* (loopn_succ_in A n)⁻¹ᵉ* :=
+  sorry
+
+end pointed open pointed
 
 namespace fiber
 
@@ -494,3 +541,172 @@ namespace circle
 
 
 end circle
+
+-- this should replace various definitions in homotopy.susp, lines 241 - 338
+namespace new_susp
+
+  variables {X Y Z : Type*}
+
+  definition loop_psusp_unit [constructor] (X : Type*) : X →* Ω(psusp X) :=
+  begin
+    fconstructor,
+    { intro x, exact merid x ⬝ (merid pt)⁻¹ },
+    { apply con.right_inv },
+  end
+
+  definition loop_psusp_unit_natural (f : X →* Y)
+    : loop_psusp_unit Y ∘* f ~* ap1 (psusp_functor f) ∘* loop_psusp_unit X :=
+  begin
+    induction X with X x, induction Y with Y y, induction f with f pf, esimp at *, induction pf,
+    fconstructor,
+    { intro x', esimp [psusp_functor], symmetry,
+      exact
+        !idp_con ⬝
+        (!ap_con ⬝
+        whisker_left _ !ap_inv) ⬝
+        (!elim_merid ◾ (inverse2 !elim_merid)) },
+    { rewrite [▸*,idp_con (con.right_inv _)],
+      apply inv_con_eq_of_eq_con,
+      refine _ ⬝ !con.assoc',
+      rewrite inverse2_right_inv,
+      refine _ ⬝ !con.assoc',
+      rewrite [ap_con_right_inv],
+      xrewrite [idp_con_idp, -ap_compose (concat idp)] },
+  end
+
+  definition loop_psusp_counit [constructor] (X : Type*) : psusp (Ω X) →* X :=
+  begin
+    fconstructor,
+    { intro x, induction x, exact pt, exact pt, exact a },
+    { reflexivity },
+  end
+
+  definition loop_psusp_counit_natural (f : X →* Y)
+    : f ∘* loop_psusp_counit X ~* loop_psusp_counit Y ∘* (psusp_functor (ap1 f)) :=
+  begin
+    induction X with X x, induction Y with Y y, induction f with f pf, esimp at *, induction pf,
+    fconstructor,
+    { intro x', induction x' with p,
+      { reflexivity },
+      { reflexivity },
+      { esimp, apply eq_pathover, apply hdeg_square,
+        xrewrite [ap_compose' f, ap_compose' (susp.elim (f x) (f x) (λ (a : f x = f x), a)),▸*],
+        xrewrite [+elim_merid,▸*,idp_con] }},
+    { reflexivity }
+  end
+
+  definition loop_psusp_counit_unit (X : Type*)
+    : ap1 (loop_psusp_counit X) ∘* loop_psusp_unit (Ω X) ~* pid (Ω X) :=
+  begin
+    induction X with X x, fconstructor,
+    { intro p, esimp,
+      refine !idp_con ⬝
+             (!ap_con ⬝
+             whisker_left _ !ap_inv) ⬝
+             (!elim_merid ◾ inverse2 !elim_merid) },
+    { rewrite [▸*,inverse2_right_inv (elim_merid id idp)],
+      refine !con.assoc ⬝ _,
+      xrewrite [ap_con_right_inv (susp.elim x x (λa, a)) (merid idp),idp_con_idp,-ap_compose] }
+  end
+
+  definition loop_psusp_unit_counit (X : Type*)
+    : loop_psusp_counit (psusp X) ∘* psusp_functor (loop_psusp_unit X) ~* pid (psusp X) :=
+  begin
+    induction X with X x, fconstructor,
+    { intro x', induction x',
+      { reflexivity },
+      { exact merid pt },
+      { apply eq_pathover,
+        xrewrite [▸*, ap_id, ap_compose' (susp.elim north north (λa, a)), +elim_merid,▸*],
+        apply square_of_eq, exact !idp_con ⬝ !inv_con_cancel_right⁻¹ }},
+    { reflexivity }
+  end
+
+  -- TODO: rename to psusp_adjoint_loop (also in above lemmas)
+  definition psusp_adjoint_loop_unpointed [constructor] (X Y : Type*) : psusp X →* Y ≃ X →* Ω Y :=
+  begin
+    fapply equiv.MK,
+    { intro f, exact ap1 f ∘* loop_psusp_unit X },
+    { intro g, exact loop_psusp_counit Y ∘* psusp_functor g },
+    { intro g, apply eq_of_phomotopy, esimp,
+      refine !pwhisker_right !ap1_pcompose ⬝* _,
+      refine !passoc ⬝* _,
+      refine !pwhisker_left !loop_psusp_unit_natural⁻¹* ⬝* _,
+      refine !passoc⁻¹* ⬝* _,
+      refine !pwhisker_right !loop_psusp_counit_unit ⬝* _,
+      apply pid_pcompose },
+    { intro f, apply eq_of_phomotopy, esimp,
+      refine !pwhisker_left !psusp_functor_compose ⬝* _,
+      refine !passoc⁻¹* ⬝* _,
+      refine !pwhisker_right !loop_psusp_counit_natural⁻¹* ⬝* _,
+      refine !passoc ⬝* _,
+      refine !pwhisker_left !loop_psusp_unit_counit ⬝* _,
+      apply pcompose_pid },
+  end
+
+  definition psusp_adjoint_loop_pconst (X Y : Type*) :
+    psusp_adjoint_loop_unpointed X Y (pconst (psusp X) Y) ~* pconst X (Ω Y) :=
+  begin
+    refine pwhisker_right _ !ap1_pconst ⬝* _,
+    apply pconst_pcompose
+  end
+
+  definition psusp_adjoint_loop [constructor] (X Y : Type*) : ppmap (psusp X) Y ≃* ppmap X (Ω Y) :=
+  begin
+    apply pequiv_of_equiv (psusp_adjoint_loop_unpointed X Y),
+    apply eq_of_phomotopy,
+    apply psusp_adjoint_loop_pconst
+  end
+
+end new_susp open new_susp
+
+-- this should replace corresponding definitions in homotopy.sphere
+namespace new_sphere
+
+  open sphere sphere.ops
+
+  -- the definition was wrong for n = 0
+  definition new.surf {n : ℕ} : Ω[n] (S* n) :=
+  begin
+    induction n with n s,
+    { exact south },
+    { exact (loopn_succ_in (S* (succ n)) n)⁻¹ᵉ* (apn n (equator n) s), }
+  end
+
+
+  definition psphere_pmap_pequiv' (A : Type*) (n : ℕ) : ppmap (S* n) A ≃* Ω[n] A :=
+  begin
+    revert A, induction n with n IH: intro A,
+    { refine _ ⬝e* !pmap_pbool_pequiv, exact pequiv_ppcompose_right psphere_pequiv_pbool⁻¹ᵉ* },
+    { refine psusp_adjoint_loop (S* n) A ⬝e* IH (Ω A) ⬝e* !loopn_succ_in⁻¹ᵉ*  }
+  end
+
+  definition psphere_pmap_pequiv (A : Type*) (n : ℕ) : ppmap (S* n) A ≃* Ω[n] A :=
+  begin
+    fapply pequiv_change_fun,
+    { exact psphere_pmap_pequiv' A n },
+    { exact papn_fun A new.surf },
+    { revert A, induction n with n IH: intro A,
+      { reflexivity },
+      { intro f, refine ap !loopn_succ_in⁻¹ᵉ* (IH (Ω A) _ ⬝ !apn_pcompose _) ⬝ _,
+        exact !loopn_succ_in_inv_natural _ }}
+  end
+
+end new_sphere
+
+namespace sphere
+
+  open sphere.ops new_sphere
+
+  -- definition constant_sphere_map_sphere {n m : ℕ} (H : n < m) (f : S* n →* S* m) :
+  --   f ~* pconst (S* n) (S* m) :=
+  -- begin
+  --   assert H : is_contr (Ω[n] (S* m)),
+  --   { apply homotopy_group_sphere_le, },
+  --   apply phomotopy_of_eq,
+  --   apply eq_of_fn_eq_fn !psphere_pmap_pequiv,
+  --   apply @is_prop.elim
+  -- end
+
+end sphere
+
