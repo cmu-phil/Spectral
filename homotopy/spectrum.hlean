@@ -123,6 +123,7 @@ namespace spectrum
   ------------------------------
 
   -- These make sense for any succ_str.
+
   structure smap {N : succ_str} (E F : gen_prespectrum N) :=
     (to_fun : Π(n:N), E n →* F n)
     (glue_square : Π(n:N), glue F n ∘* to_fun n ~* Ω→ (to_fun (S n)) ∘* glue E n)
@@ -243,13 +244,16 @@ namespace spectrum
 
   definition sfiber {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y) : gen_spectrum N :=
     spectrum.MK (λn, pfiber (f n))
-      (λn, pfiber_loop_space (f (S n)) ∘*ᵉ pfiber_equiv_of_square (sglue_square f n))
+      (λn, pfiber_loop_space (f (S n)) ∘*ᵉ pfiber_equiv_of_square _ _ (sglue_square f n))
 
-  /- the map from the fiber to the domain. The fact that the square commutes requires work -/
+  /- the map from the fiber to the domain -/
   definition spoint {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y) : sfiber f →ₛ X :=
   smap.mk (λn, ppoint (f n))
     begin
-      intro n, exact sorry
+      intro n,
+      refine _ ⬝* !passoc,
+      refine _ ⬝* pwhisker_right _ !ap1_ppoint_phomotopy⁻¹*,
+      rexact (pfiber_equiv_of_square_ppoint (equiv_glue X n) (equiv_glue Y n) (sglue_square f n))⁻¹*
     end
 
   definition π_glue (X : spectrum) (n : ℤ) : π[2] (X (2 - succ n)) ≃* π[3] (X (2 - n)) :=
@@ -386,6 +390,15 @@ namespace spectrum
   definition spectrify_type {N : succ_str} (X : gen_prespectrum N) (n : N) : Type* :=
   pseq_colim (spectrify_type_fun X n)
 
+  /-
+    Let Y = spectify X. Then
+    Ω Y (n+1) ≡ Ω colim_k Ω^k X ((n + 1) + k)
+          ... = colim_k Ω^{k+1} X ((n + 1) + k)
+          ... = colim_k Ω^{k+1} X (n + (k + 1))
+          ... = colim_k Ω^k X(n + k)
+          ... ≡ Y n
+  -/
+
   definition spectrify_pequiv {N : succ_str} (X : gen_prespectrum N) (n : N) :
     spectrify_type X n ≃* Ω (spectrify_type X (S n)) :=
   begin
@@ -396,7 +409,7 @@ namespace spectrum
     fapply pseq_colim_pequiv,
     { intro n, apply loopn_pequiv_loopn, apply pequiv_ap X, apply succ_str.add_succ },
     { intro k, apply to_homotopy,
-      refine !passoc⁻¹* ⬝* _, refine pwhisker_right _ (loopn_succ_in_inv_apn (succ k) _) ⬝* _,
+      refine !passoc⁻¹* ⬝* _, refine pwhisker_right _ (loopn_succ_in_inv_natural (succ k) _) ⬝* _,
       refine !passoc ⬝* _ ⬝* !passoc⁻¹*, apply pwhisker_left,
       refine !apn_pcompose⁻¹* ⬝* _ ⬝* !apn_pcompose, apply apn_phomotopy,
       exact !glue_ptransport⁻¹* }

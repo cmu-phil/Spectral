@@ -20,9 +20,9 @@ such that the evident squares commute, we can obtain a single sequence
 
 However, in this formalization, we will only do this for k = 3, because we get more definitional
 equalities in this specific case than in the general case. The reason is that we need to check
-whether a term `x : fin (succ k)` represents `n`. If we do this in general using
-if x = n then ... else ...
-we don't get definitionally that x = n and the successor of x is 0, which means that when defining
+whether a term `x : fin (succ k)` represents `k`. If we do this in general using
+if x = k then ... else ...
+we don't get definitionally that x = k and the successor of x is 0, which means that when defining
 maps G_{n,m} -> G_{n+1,m+k-1} we need to transport along those paths, which is annoying.
 
 So far, the splicing seems to be only needed for k = 3, so it seems to be sufficient.

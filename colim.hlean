@@ -16,12 +16,8 @@ namespace seq_colim
     : X n →* pseq_colim f :=
   pmap.mk (inclusion f) (inclusion_pt f n)
 
-  -- TODO: we need to prove this
-  definition pseq_colim_loop {X : ℕ → Type*} (f : Πn, X n →* X (n+1)) :
-    Ω (pseq_colim f) ≃* pseq_colim (λn, Ω→(f n)) :=
- sorry
-
   definition seq_diagram [reducible] (A : ℕ → Type) : Type := Π⦃n⦄, A n → A (succ n)
+  definition pseq_diagram [reducible] (A : ℕ → Type*) : Type := Π⦃n⦄, A n →* A (succ n)
 
   structure Seq_diagram : Type :=
     (carrier : ℕ → Type)
@@ -192,8 +188,13 @@ namespace seq_colim
     seq_diagram (λn, Πx, A x n) :=
   λn f x, g (f x)
 
+  namespace seq_colim.ops
   abbreviation ι  [constructor] := @inclusion
+  abbreviation pι  [constructor] {A} (f) {n} := @pinclusion A f n
+  abbreviation pι'  [constructor] [parsing_only] := @pinclusion
   abbreviation ι' [constructor] [parsing_only] {A} (f n) := @inclusion A f n
+  end seq_colim.ops
+  open seq_colim.ops
 
   definition rep0_glue (k : ℕ) (a : A 0) : ι f (rep0 f k a) = ι f a :=
   begin
@@ -343,6 +344,122 @@ namespace seq_colim
       { exact g n a },
       { exact p n a }},
     { esimp, apply respect_pt }
+  end
+
+  definition prep0 [constructor] {A : ℕ → Type*} (f : pseq_diagram A) (k : ℕ) : A 0 →* A k :=
+  pmap.mk (rep0 (λn x, f x) k)
+          begin induction k with k p, reflexivity, exact ap (@f k) p ⬝ !respect_pt end
+
+  definition respect_pt_prep0_succ {A : ℕ → Type*} (f : pseq_diagram A) (k : ℕ)
+    : respect_pt (prep0 f (succ k)) = ap (@f k) (respect_pt (prep0 f k)) ⬝ respect_pt (@f k) :=
+  by reflexivity
+
+  theorem prep0_succ_lemma {A : ℕ → Type*} (f : pseq_diagram A) (n : ℕ)
+    (p : rep0 (λn x, f x) n pt = rep0 (λn x, f x) n pt)
+    (q : prep0 f n (Point (A 0)) = Point (A n))
+    : loop_equiv_eq_closed (ap (@f n) q ⬝ respect_pt (@f n))
+    (ap (@f n) p) = Ω→(@f n) (loop_equiv_eq_closed q p) :=
+  by rewrite [▸*, con_inv, +ap_con, ap_inv, +con.assoc]
+
+  definition succ_add_tr_rep {n : ℕ} (k : ℕ) (x : A n)
+    : transport A (succ_add n k) (rep f k (f x)) = rep f (succ k) x :=
+  begin
+    induction k with k p,
+      reflexivity,
+      exact tr_ap A succ (succ_add n k) _ ⬝ (fn_tr_eq_tr_fn (succ_add n k) f _)⁻¹ ⬝ ap (@f _) p,
+  end
+
+  definition succ_add_tr_rep_succ {n : ℕ} (k : ℕ) (x : A n)
+    : succ_add_tr_rep f (succ k) x = tr_ap A succ (succ_add n k) _ ⬝
+        (fn_tr_eq_tr_fn (succ_add n k) f _)⁻¹ ⬝ ap (@f _) (succ_add_tr_rep f k x) :=
+  by reflexivity
+
+  definition code_glue_equiv [constructor] {n : ℕ} (k : ℕ) (x y : A n)
+    : rep f k (f x) = rep f k (f y) ≃ rep f (succ k) x = rep f (succ k) y :=
+  begin
+    refine eq_equiv_fn_eq_of_equiv (equiv_ap A (succ_add n k)) _ _ ⬝e _,
+    apply eq_equiv_eq_closed,
+      exact succ_add_tr_rep f k x,
+      exact succ_add_tr_rep f k y
+  end
+
+  theorem code_glue_equiv_ap {n : ℕ} {k : ℕ} {x y : A n} (p : rep f k (f x) = rep f k (f y))
+    : code_glue_equiv f (succ k) x y (ap (@f _) p) = ap (@f _) (code_glue_equiv f k x y p) :=
+  begin
+    rewrite [▸*, +ap_con, ap_inv, +succ_add_tr_rep_succ, con_inv, inv_con_inv_right, +con.assoc],
+    apply whisker_left,
+    rewrite [- +con.assoc], apply whisker_right, rewrite [- +ap_compose'],
+    note s := (eq_top_of_square (natural_square
+      (λx, fn_tr_eq_tr_fn (succ_add n k) f x ⬝ (tr_ap A succ (succ_add n k) (f x))⁻¹) p))⁻¹,
+    rewrite [inv_con_inv_right at s, -con.assoc at s], exact s
+  end
+
+  section
+  parameters {X : ℕ → Type} (g : seq_diagram X) (x : X 0)
+
+  definition rep_eq_diag ⦃n : ℕ⦄ (y : X n) : seq_diagram (λk, rep g k (rep0 g n x) = rep g k y) :=
+  proof λk, ap (@g (n + k)) qed
+
+  definition code_incl ⦃n : ℕ⦄ (y : X n) : Type :=
+  seq_colim (rep_eq_diag y)
+
+  definition code [unfold 4] : seq_colim g → Type :=
+  seq_colim.elim_type g code_incl
+  begin
+    intro n y,
+    refine _ ⬝e !shift_equiv⁻¹ᵉ,
+    fapply seq_colim_equiv,
+    { intro k, exact code_glue_equiv g k (rep0 g n x) y },
+    { intro k p, exact code_glue_equiv_ap g p }
+  end
+
+  definition encode [unfold 5] (y : seq_colim g) (p : ι g x = y) : code y :=
+  transport code p (ι' _ 0 idp)
+
+  definition decode [unfold 4] (y : seq_colim g) (c : code y) : ι g x = y :=
+  begin
+    induction y,
+    { esimp at c, exact sorry},
+    { exact sorry }
+  end
+
+  definition decode_encode (y : seq_colim g) (p : ι g x = y) : decode y (encode y p) = p :=
+  sorry
+
+  definition encode_decode (y : seq_colim g) (c : code y) : encode y (decode y c) = c :=
+  sorry
+
+  definition seq_colim_eq_equiv_code [constructor] (y : seq_colim g) : (ι g x = y) ≃ code y :=
+  equiv.MK (encode y) (decode y) (encode_decode y) (decode_encode y)
+
+  definition seq_colim_eq {n : ℕ} (y : X n) : (ι g x = ι g y) ≃ seq_colim (rep_eq_diag y) :=
+  proof seq_colim_eq_equiv_code (ι g y) qed
+
+  end
+
+  definition rep0_eq_diag {X : ℕ → Type} (f : seq_diagram X) (x y : X 0)
+    : seq_diagram (λk, rep0 f k x = rep0 f k y) :=
+  proof λk, ap (@f (k)) qed
+
+  definition seq_colim_eq0 {X : ℕ → Type} (f : seq_diagram X) (x y : X 0) :
+    (ι f x = ι f y) ≃ seq_colim (rep0_eq_diag f x y)  :=
+  begin
+    refine !seq_colim_eq ⬝e _,
+    fapply seq_colim_equiv,
+    { intro n, exact sorry},
+    { intro n p, exact sorry }
+  end
+
+
+  definition pseq_colim_loop {X : ℕ → Type*} (f : Πn, X n →* X (n+1)) :
+    Ω (pseq_colim f) ≃* pseq_colim (λn, Ω→(f n)) :=
+  begin
+    fapply pequiv_of_equiv,
+    { refine !seq_colim_eq0 ⬝e _,
+      fapply seq_colim_equiv,
+      { intro n, exact loop_equiv_eq_closed (respect_pt (prep0 f n)) },
+      { intro n p, apply prep0_succ_lemma }},
+    { exact sorry }
   end
 
   -- open succ_str

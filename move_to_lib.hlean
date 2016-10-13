@@ -7,7 +7,8 @@ open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc
 
 attribute equiv.symm equiv.trans is_equiv.is_equiv_ap fiber.equiv_postcompose
           fiber.equiv_precompose pequiv.to_pmap pequiv._trans_of_to_pmap ghomotopy_group_succ_in
-          isomorphism_of_eq pmap_bool_equiv sphere_equiv_bool psphere_pequiv_pbool [constructor]
+          isomorphism_of_eq pmap_bool_equiv sphere_equiv_bool psphere_pequiv_pbool fiber_eq_equiv
+          [constructor]
 attribute is_equiv.eq_of_fn_eq_fn' [unfold 3]
 attribute isomorphism._trans_of_to_hom [unfold 3]
 attribute homomorphism.struct [unfold 3]
@@ -90,10 +91,20 @@ namespace pi -- move to types.arrow
     { apply pmap_eq_idp}
   end
 
-
 end pi open pi
 
 namespace eq
+
+  -- types.eq
+  definition loop_equiv_eq_closed [constructor] {A : Type} {a a' : A} (p : a = a')
+    : (a = a) ≃ (a' = a') :=
+  eq_equiv_eq_closed p p
+
+  -- init.path
+  definition tr_ap {A B : Type} {x y : A} (P : B → Type) (f : A → B) (p : x = y) (z : P (f x)) :
+    transport P (ap f p) z = transport (P ∘ f) p z :=
+  (tr_compose P f p z)⁻¹
+
 
   definition pathover_eq_Fl' {A B : Type} {f : A → B} {a₁ a₂ : A} {b : B} (p : a₁ = a₂) (q : f a₂ = b) : (ap f p) ⬝ q =[p] q :=
   by induction p; induction q; exact idpo
@@ -298,16 +309,6 @@ namespace pointed
     {a₁ a₂ : A} (p : a₁ = a₂) : pequiv_of_eq (ap C p) ∘* f a₁ ~* f a₂ ∘* pequiv_of_eq (ap B p) :=
   pcast_commute f p
 
-  -- TODO: make the name apn_succ_phomotopy_in consistent with this
-  definition loopn_succ_in_inv_apn {A B : Type*} (n : ℕ) (f : A →* B) :
-    Ω→[n + 1] f ∘* (loopn_succ_in A n)⁻¹ᵉ* ~* (loopn_succ_in B n)⁻¹ᵉ* ∘* Ω→[n] (Ω→ f):=
-  begin
-    apply pinv_right_phomotopy_of_phomotopy,
-    refine _ ⬝* !passoc⁻¹*,
-    apply phomotopy_pinv_left_of_phomotopy,
-    apply apn_succ_phomotopy_in
-  end
-
   definition papply [constructor] {A : Type*} (B : Type*) (a : A) : ppmap A B →* B :=
   pmap.mk (λ(f : A →* B), f a) idp
 
@@ -337,30 +338,52 @@ namespace pointed
     ppmap A B →* Ω[n] B :=
   papply _ p ∘* papn_pt n A B
 
-  definition loopn_succ_in_natural {A B : Type*} {n : ℕ} (f : A →* B) :
+  definition loopn_succ_in_natural {A B : Type*} (n : ℕ) (f : A →* B) :
     loopn_succ_in B n ∘* Ω→[n+1] f ~* Ω→[n] (Ω→ f) ∘* loopn_succ_in A n :=
   !apn_succ_phomotopy_in
 
-  definition loopn_succ_in_inv_natural {A B : Type*} {n : ℕ} (f : A →* B) :
-    (loopn_succ_in B n)⁻¹ᵉ* ∘* Ω→[n] (Ω→ f) ~* Ω→[n+1] f ∘* (loopn_succ_in A n)⁻¹ᵉ* :=
-  sorry
+  definition loopn_succ_in_inv_natural {A B : Type*} (n : ℕ) (f : A →* B) :
+    Ω→[n + 1] f ∘* (loopn_succ_in A n)⁻¹ᵉ* ~* (loopn_succ_in B n)⁻¹ᵉ* ∘* Ω→[n] (Ω→ f):=
+  begin
+    apply pinv_right_phomotopy_of_phomotopy,
+    refine _ ⬝* !passoc⁻¹*,
+    apply phomotopy_pinv_left_of_phomotopy,
+    apply apn_succ_phomotopy_in
+  end
 
 end pointed open pointed
 
 namespace fiber
 
+  definition pfiber.sigma_char [constructor] {A B : Type*} (f : A →* B)
+    : pfiber f ≃* pointed.MK (Σa, f a = pt) ⟨pt, respect_pt f⟩ :=
+  pequiv_of_equiv (fiber.sigma_char f pt) idp
+
+  definition ppoint_sigma_char [constructor] {A B : Type*} (f : A →* B)
+    : ppoint f ~* pmap.mk pr1 idp ∘* pfiber.sigma_char f :=
+  !phomotopy.refl
+
   definition pfiber_loop_space {A B : Type*} (f : A →* B) : pfiber (Ω→ f) ≃* Ω (pfiber f) :=
     pequiv_of_equiv
-    (calc pfiber (Ω→ f) ≃ Σ(p : Point A = Point A), ap1 f p = rfl                                : (fiber.sigma_char (ap1 f) (Point (Ω B)))
-                    ... ≃ Σ(p : Point A = Point A), (respect_pt f) = ap f p ⬝ (respect_pt f)      : (sigma_equiv_sigma_right (λp,
-                              calc (ap1 f p = rfl) ≃ !respect_pt⁻¹ ⬝ (ap f p ⬝ !respect_pt) = rfl : equiv_eq_closed_left _ (con.assoc _ _ _)
-                                               ... ≃ ap f p ⬝ (respect_pt f) = (respect_pt f)     : eq_equiv_inv_con_eq_idp
-                                               ... ≃ (respect_pt f) = ap f p ⬝ (respect_pt f)     : eq_equiv_eq_symm))
-                    ... ≃ fiber.mk (Point A) (respect_pt f) = fiber.mk pt (respect_pt f)          : fiber_eq_equiv
-                    ... ≃ Ω (pfiber f)                                                            : erfl)
-    (begin cases f with f p, cases A with A a, cases B with B b, esimp at p, esimp at f, induction p, reflexivity end)
+    (calc pfiber (Ω→ f) ≃ Σ(p : Point A = Point A), ap1 f p = rfl
+                          : (fiber.sigma_char (ap1 f) (Point (Ω B)))
+                    ... ≃ Σ(p : Point A = Point A), (respect_pt f) = ap f p ⬝ (respect_pt f)
+                          : (sigma_equiv_sigma_right (λp,
+                              calc (ap1 f p = rfl) ≃ !respect_pt⁻¹ ⬝ (ap f p ⬝ !respect_pt) = rfl
+                                                     : equiv_eq_closed_left _ (con.assoc _ _ _)
+                                               ... ≃ ap f p ⬝ (respect_pt f) = (respect_pt f)
+                                                     : eq_equiv_inv_con_eq_idp
+                                               ... ≃ (respect_pt f) = ap f p ⬝ (respect_pt f)
+                                                     : eq_equiv_eq_symm))
+                    ... ≃ fiber.mk (Point A) (respect_pt f) = fiber.mk pt (respect_pt f)
+                          : fiber_eq_equiv
+                    ... ≃ Ω (pfiber f)
+                          : erfl)
+    (begin cases f with f p, cases A with A a, cases B with B b, esimp at p, esimp at f,
+           induction p, reflexivity end)
 
-  definition pfiber_equiv_of_phomotopy {A B : Type*} {f g : A →* B} (h : f ~* g) : pfiber f ≃* pfiber g :=
+  definition pfiber_equiv_of_phomotopy {A B : Type*} {f g : A →* B} (h : f ~* g)
+    : pfiber f ≃* pfiber g :=
   begin
     fapply pequiv_of_equiv,
     { refine (fiber.sigma_char f pt ⬝e _ ⬝e (fiber.sigma_char g pt)⁻¹ᵉ),
@@ -371,12 +394,14 @@ namespace fiber
       rewrite idp_con, apply inv_con_eq_of_eq_con, symmetry, exact (to_homotopy_pt h) }
   end
 
-  definition transport_fiber_equiv [constructor] {A B : Type} (f : A → B) {b1 b2 : B} (p : b1 = b2) : fiber f b1 ≃ fiber f b2 :=
+  definition transport_fiber_equiv [constructor] {A B : Type} (f : A → B) {b1 b2 : B} (p : b1 = b2)
+    : fiber f b1 ≃ fiber f b2 :=
     calc fiber f b1 ≃ Σa, f a = b1 : fiber.sigma_char
                ...  ≃ Σa, f a = b2 : sigma_equiv_sigma_right (λa, equiv_eq_closed_right (f a) p)
                ...  ≃ fiber f b2   : fiber.sigma_char
 
-  definition pequiv_postcompose {A B B' : Type*} (f : A →* B) (g : B ≃* B') : pfiber (g ∘* f) ≃* pfiber f :=
+  definition pequiv_postcompose {A B B' : Type*} (f : A →* B) (g : B ≃* B')
+    : pfiber (g ∘* f) ≃* pfiber f :=
   begin
     fapply pequiv_of_equiv, esimp,
     refine transport_fiber_equiv (g ∘* f) (respect_pt g)⁻¹ ⬝e fiber.equiv_postcompose f g (Point B),
@@ -384,7 +409,8 @@ namespace fiber
     rewrite [con.assoc, con.right_inv, con_idp, -ap_compose'], apply ap_con_eq_con
   end
 
-  definition pequiv_precompose {A A' B : Type*} (f : A →* B) (g : A' ≃* A) : pfiber (f ∘* g) ≃* pfiber f :=
+  definition pequiv_precompose {A A' B : Type*} (f : A →* B) (g : A' ≃* A)
+    : pfiber (f ∘* g) ≃* pfiber f :=
   begin
     fapply pequiv_of_equiv, esimp,
     refine fiber.equiv_precompose f g (Point B),
@@ -393,11 +419,22 @@ namespace fiber
     { apply pathover_eq_Fl' }
   end
 
-  definition pfiber_equiv_of_square {A B C D : Type*} {f : A →* B} {g : C →* D} {h : A ≃* C} {k : B ≃* D} (s : k ∘* f ~* g ∘* h)
-    : pfiber f ≃* pfiber g :=
+  definition pfiber_equiv_of_square {A B C D : Type*} {f : A →* B} {g : C →* D} (h : A ≃* C)
+    (k : B ≃* D) (s : k ∘* f ~* g ∘* h) : pfiber f ≃* pfiber g :=
     calc pfiber f ≃* pfiber (k ∘* f) : pequiv_postcompose
               ... ≃* pfiber (g ∘* h) : pfiber_equiv_of_phomotopy s
               ... ≃* pfiber g : pequiv_precompose
+
+  definition ap1_ppoint_phomotopy {A B : Type*} (f : A →* B)
+    : Ω→ (ppoint f) ∘* pfiber_loop_space f ~* ppoint (Ω→ f) :=
+  begin
+    exact sorry
+  end
+
+  definition pfiber_equiv_of_square_ppoint {A B C D : Type*} {f : A →* B} {g : C →* D}
+    (h : A ≃* C) (k : B ≃* D) (s : k ∘* f ~* g ∘* h)
+    : ppoint g ∘* pfiber_equiv_of_square h k s ~* h ∘* ppoint f :=
+  sorry
 
 end fiber
 
@@ -689,7 +726,7 @@ namespace new_sphere
     { revert A, induction n with n IH: intro A,
       { reflexivity },
       { intro f, refine ap !loopn_succ_in⁻¹ᵉ* (IH (Ω A) _ ⬝ !apn_pcompose _) ⬝ _,
-        exact !loopn_succ_in_inv_natural _ }}
+        exact !loopn_succ_in_inv_natural⁻¹* _ }}
   end
 
 end new_sphere
@@ -709,4 +746,3 @@ namespace sphere
   -- end
 
 end sphere
-
