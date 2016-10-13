@@ -6,14 +6,13 @@ Authors: Floris van Doorn, Egbert Rijke
 Constructions with groups
 -/
 
-import algebra.group_theory hit.set_quotient types.list types.sum .subgroup .quotient_group .product_group
+import algebra.group_theory hit.set_quotient types.list types.sum
 
-open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function
-     equiv
+open eq algebra is_trunc set_quotient relation sigma sigma.ops prod sum list trunc function equiv
+
 namespace group
 
-  variables {G G' : Group} (H : subgroup_rel G) (N : normal_subgroup_rel G) {g g' h h' k : G}
-            {A B : CommGroup}
+  variables {G G' : Group} {g g' h h' k : G} {A B : CommGroup}
 
   /- Free Group of a set -/
   variables (X : Set) {l l' : list (X ⊎ X)}

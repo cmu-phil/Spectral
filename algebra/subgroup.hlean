@@ -6,10 +6,10 @@ Authors: Floris van Doorn, Egbert Rijke
 Basic concepts of group theory
 -/
 
-import algebra.group_theory hit.set_quotient types.sigma types.list types.sum
+import algebra.group_theory
 
-open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function
-     equiv
+open eq algebra is_trunc sigma sigma.ops prod trunc
+
 namespace group
 
   /- #Subgroups -/
