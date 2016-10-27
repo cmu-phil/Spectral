@@ -230,4 +230,26 @@ namespace group
     : CommGroup :=
   CommGroup.mk _ (comm_group_sg H)
 
+  definition kernel {G H : Group} (f : G →g H) : Group := subgroup (kernel_subgroup f)
+
+  definition incl_of_subgroup [constructor] {G : Group} (H : subgroup_rel G) : subgroup H →g G :=
+  begin
+    fapply homomorphism.mk,
+      -- the underlying function
+    { intro h, induction h with g, exact g},
+      -- is a homomorphism
+    intro g h, reflexivity
+  end
+
+  definition subgroup_rel_of_subgroup {G : Group} (H1 H2 : subgroup_rel G) (hyp : Π (g : G), subgroup_rel.R H1 g → subgroup_rel.R H2 g) : subgroup_rel (subgroup H2) := 
+  subgroup_rel.mk 
+      -- definition of the subset
+    (λ h, H1 (incl_of_subgroup H2 h)) 
+      -- contains 1
+    (subgroup_has_one H1) 
+      -- closed under multiplication
+    (λ g h p q, subgroup_respect_mul H1 p q) 
+      -- closed under inverses
+    (λ h p, subgroup_respect_inv H1 p)
+
 end group
