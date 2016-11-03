@@ -7,7 +7,7 @@ open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc
 
 attribute equiv.symm equiv.trans is_equiv.is_equiv_ap fiber.equiv_postcompose
           fiber.equiv_precompose pequiv.to_pmap pequiv._trans_of_to_pmap ghomotopy_group_succ_in
-          isomorphism_of_eq pmap_bool_equiv sphere_equiv_bool psphere_pequiv_pbool fiber_eq_equiv
+          isomorphism_of_eq pmap_bool_equiv sphere_equiv_bool psphere_pequiv_pbool fiber_eq_equiv int.equiv_succ
           [constructor]
 attribute is_equiv.eq_of_fn_eq_fn' [unfold 3]
 attribute isomorphism._trans_of_to_hom [unfold 3]
@@ -24,6 +24,21 @@ open sigma
 
 namespace group
   open is_trunc
+
+  -- some extra instances for type class inference
+  definition is_homomorphism_comm_homomorphism [instance] {G G' : CommGroup} (φ : G →g G')
+    : @is_homomorphism G G' (@comm_group.to_group _ (CommGroup.struct G))
+                            (@comm_group.to_group _ (CommGroup.struct G')) φ :=
+  homomorphism.struct φ
+
+  definition is_homomorphism_comm_homomorphism1 [instance] {G G' : CommGroup} (φ : G →g G')
+    : @is_homomorphism G G' _
+                            (@comm_group.to_group _ (CommGroup.struct G')) φ :=
+  homomorphism.struct φ
+
+  definition is_homomorphism_comm_homomorphism2 [instance] {G G' : CommGroup} (φ : G →g G')
+    : @is_homomorphism G G' (@comm_group.to_group _ (CommGroup.struct G)) _ φ :=
+  homomorphism.struct φ
 
   theorem inv_eq_one {A : Type} [group A] {a : A} (H : a = 1) : a⁻¹ = 1 :=
   iff.mpr (inv_eq_one_iff_eq_one a) H

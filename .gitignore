@@ -13,6 +13,7 @@ GPATH
 GRTAGS
 GSYMS
 GTAGS
+TAGS
 Makefile
 *.cmake
 CMakeFiles/

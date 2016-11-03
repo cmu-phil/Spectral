@@ -6,9 +6,9 @@
   However, we define it (equivalently) as the pushout of the maps A + B → 2 and A + B → A × B.
 -/
 
-import homotopy.circle homotopy.join types.pointed ..move_to_lib
+import homotopy.circle homotopy.join types.pointed homotopy.cofiber ..move_to_lib
 
-open bool pointed eq equiv is_equiv sum bool prod unit circle
+open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber
 
 namespace smash
 
@@ -180,6 +180,38 @@ namespace smash
      and both are equivalent to the reduced join -/
 
   /- To prove: commutative, associative -/
+
+  /- smash A B ≃ pcofiber (pprod_of_pwedge A B) -/
+
+  definition prod_of_pwedge [unfold 3] (v : pwedge A B) : A × B :=
+  begin
+    induction v with a b ,
+    { exact (a, pt) },
+    { exact (pt, b) },
+    { reflexivity }
+  end
+
+  definition pprod_of_pwedge [constructor] : pwedge A B →* A ×* B :=
+  begin
+    fconstructor,
+    { intro v, induction v with a b ,
+      { exact (a, pt) },
+      { exact (pt, b) },
+      { reflexivity }},
+    { reflexivity }
+  end
+
+  attribute pcofiber [constructor]
+  definition pcofiber_of_smash (x : smash A B) : pcofiber (@pprod_of_pwedge A B) :=
+  begin
+    induction x,
+    { exact pushout.inr (a, b) },
+    { exact pushout.inl ⋆ },
+    { exact pushout.inl ⋆ },
+    { symmetry, },
+    { }
+  end
+
 
   /- smash A S¹ = susp A -/
   open susp
