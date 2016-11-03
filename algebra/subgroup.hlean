@@ -123,11 +123,12 @@ namespace group
     (is_normal_subgroup : is_normal R)
 
   attribute subgroup_rel.R [coercion]
-  abbreviation subgroup_to_rel      [unfold 2] := @subgroup_rel.R
-  abbreviation subgroup_has_one     [unfold 2] := @subgroup_rel.Rone
-  abbreviation subgroup_respect_mul [unfold 2] := @subgroup_rel.Rmul
-  abbreviation subgroup_respect_inv [unfold 2] := @subgroup_rel.Rinv
-  abbreviation is_normal_subgroup   [unfold 2] := @normal_subgroup_rel.is_normal_subgroup
+  abbreviation subgroup_to_rel      [parsing_only] [unfold 2] := @subgroup_rel.R
+  abbreviation subgroup_has_one     [parsing_only] [unfold 2] := @subgroup_rel.Rone
+  abbreviation subgroup_respect_mul [parsing_only] [unfold 2] := @subgroup_rel.Rmul
+  abbreviation subgroup_respect_inv [parsing_only] [unfold 2] := @subgroup_rel.Rinv
+  abbreviation is_normal_subgroup   [parsing_only] [unfold 2] :=
+  @normal_subgroup_rel.is_normal_subgroup
 
   variables {G G' : Group} (H : subgroup_rel G) (N : normal_subgroup_rel G) {g g' h h' k : G}
             {A B : CommGroup}
