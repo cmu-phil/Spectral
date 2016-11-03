@@ -232,6 +232,8 @@ namespace group
 
   definition kernel {G H : Group} (f : G →g H) : Group := subgroup (kernel_subgroup f)
 
+  definition comm_kernel {G H : CommGroup} (f : G →g H) : CommGroup := comm_subgroup (kernel_subgroup f)
+
   definition incl_of_subgroup [constructor] {G : Group} (H : subgroup_rel G) : subgroup H →g G :=
   begin
     fapply homomorphism.mk,
@@ -251,5 +253,36 @@ namespace group
     (λ g h p q, subgroup_respect_mul H1 p q) 
       -- closed under inverses
     (λ h p, subgroup_respect_inv H1 p)
+
+  definition image {G H : Group} (f : G →g H) : Group :=
+    subgroup (image_subgroup f)
+
+  definition image_incl {G H : Group} (f : G →g H) : image f →g H :=
+    incl_of_subgroup (image_subgroup f)
+
+  definition hom_lift {G H : Group} (f : G →g H) (K : subgroup_rel H) (Hyp : Π (g : G), K (f g)) : G →g subgroup K :=
+  begin
+    fapply homomorphism.mk,
+    intro g,
+    fapply sigma.mk,
+    exact f g,
+    fapply Hyp,
+    intro g h, apply subtype_eq, esimp, apply respect_mul
+  end
+
+  definition image_lift {G H : Group} (f : G →g H) : G →g image f :=
+  begin
+    fapply hom_lift f,
+    intro g, 
+    apply tr,
+    fapply fiber.mk, 
+    exact g, reflexivity
+  end
+
+  definition image_factor {G H : Group} (f : G →g H) : f = (image_incl f) ∘g (image_lift f) :=
+  begin
+    fapply homomorphism_eq,
+    reflexivity
+  end
 
 end group
