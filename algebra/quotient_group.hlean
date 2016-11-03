@@ -17,6 +17,9 @@ namespace group
 
   /- Quotient Group -/
 
+  definition homotopy_of_homomorphism_eq {f g : G →g G'}(p : f = g) : f ~ g :=
+  λx : G , ap010 group_fun p x
+
   definition quotient_rel (g h : G) : Prop := N (g * h⁻¹)
 
   variable {N}
@@ -190,7 +193,7 @@ namespace group
     intro g, reflexivity
   end
 
-  definition glift_unique (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) (k : quotient_group N →g G')
+  definition gelim_unique (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) (k : quotient_group N →g G')
     : ( k ∘g gq_map N ~ f ) → k ~ quotient_group_elim f H :=
   begin
     intro K cg, induction cg using set_quotient.rec_prop with g,
@@ -200,7 +203,15 @@ namespace group
 
   definition gq_universal_property (f : G →g G') (H : Π⦃g⦄, N g → f g = 1)  :
     is_contr (Σ(g : quotient_group N →g G'), g ∘g gq_map N = f) :=
-  sorry
+  begin
+    fapply is_contr.mk,
+      -- give center of contraction
+    { fapply sigma.mk, exact quotient_group_elim f H, apply homomorphism_eq, exact quotient_group_compute f H },
+      -- give contraction
+    { intro pair, induction pair with g p, fapply sigma_eq, 
+      {esimp, apply homomorphism_eq, symmetry, exact gelim_unique f H g (homotopy_of_homomorphism_eq p)},
+      {fapply is_prop.elimo} }
+  end
 
     /- set generating normal subgroup -/
 

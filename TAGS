@@ -1,0 +1,692 @@
+
+homotopy/spherical_fibrations.hlean,1152
+  definition pointed_BFspherical_fibrations.pointed_BF50,1310
+  definition pBGspherical_fibrations.pBG15,414
+  definition BF_of_BG_mulspherical_fibrations.BF_of_BG_mul95,2692
+  definition BFspherical_fibrations.BF47,1244
+    definition thom_spacespherical_fibrations.thom.thom_space109,3059
+  definition mirrorspherical_fibrations.mirror23,605
+  definition Gspherical_fibrations.G17,484
+  definition G_charspherical_fibrations.G_char20,537
+  definition BG_mulspherical_fibrations.BG_mul78,2096
+  definition BF_succspherical_fibrations.BF_succ55,1496
+  definition BG_of_BFspherical_fibrations.BG_of_BF71,1919
+  definition BF_of_BGspherical_fibrations.BF_of_BG62,1681
+    protected definition secspherical_fibrations.thom.sec104,2964
+    definition tauspherical_fibrations.two_sphere.tau144,4263
+  definition BG_succspherical_fibrations.BG_succ39,1009
+  definition pBFspherical_fibrations.pBF53,1426
+  definition pointed_BGspherical_fibrations.pointed_BG12,301
+  definition BF_mulspherical_fibrations.BF_mul87,2401
+  definition BGspherical_fibrations.BG9,233
+  definition S_of_BGspherical_fibrations.S_of_BG36,936
+
+homotopy/homotopy_groups.hlean,743
+    definition group_equiv_onemy.group_equiv_one44,1189
+    theorem group_equiv_mul_assocmy.group_equiv_mul_assoc52,1423
+    theorem group_equiv_mul_onemy.group_equiv_mul_one58,1710
+    definition group_equiv_invmy.group_equiv_inv46,1234
+  theorem ap1_conmy.ap1_con25,626
+    theorem group_equiv_mul_left_invmy.group_equiv_mul_left_inv61,1852
+    definition group_equiv_closedmy.group_equiv_closed65,2030
+    theorem group_equiv_one_mulmy.group_equiv_one_mul55,1568
+    definition group_equiv_mulmy.group_equiv_mul42,1118
+  definition apn_composemy.apn_compose18,411
+  definition apn_conmy.apn_con30,784
+  definition homotopy_group_homomorphismeq.homotopy_group_homomorphism83,2503
+  definition tr_mulmy.tr_mul34,931
+
+homotopy/sample.hlean,1236
+    definition is_conn_of_map_from_unithomotopy.is_conn_of_map_from_unit97,3227
+  definition is_connhomotopy.is_conn12,308
+    definition elimhomotopy.is_conn_fun.elim51,1665
+  definition is_conn_homotopyhomotopy.is_conn_homotopy154,4935
+    definition introhomotopy.is_conn_fun.intro70,2280
+  definition is_conn_funhomotopy.is_conn_fun24,636
+    definition rechomotopy.is_conn_fun.rec39,1224
+    definition is_conn_of_map_to_unithomotopy.is_conn_of_map_to_unit88,2969
+  definition merely_of_minus_one_connhomotopy.merely_of_minus_one_conn131,4268
+  definition minus_one_conn_of_merelyhomotopy.minus_one_conn_of_merely134,4364
+  definition is_conn_susphomotopy.is_conn_susp165,5320
+  definition minus_one_conn_of_surjectivehomotopy.minus_one_conn_of_surjective117,3839
+    definition is_conn_fun_from_unithomotopy.is_conn_fun_from_unit106,3534
+  definition is_surjection_of_minus_one_connhomotopy.is_surjection_of_minus_one_conn124,4078
+  definition is_conn_equiv_closedhomotopy.is_conn_equiv_closed15,404
+  definition minus_two_connhomotopy.minus_two_conn159,5215
+    definition elim_βhomotopy.is_conn_fun.elim_β54,1767
+    definition retract_of_conn_is_connhomotopy.retract_of_conn_is_conn143,4572
+
+homotopy/LES_applications.hlean,701
+    definition add_plus_one_minus_oneis_conn.add_plus_one_minus_one110,4328
+    definition add_plus_one_succis_conn.add_plus_one_succ111,4398
+  definition eq_even_or_eq_oddnat.eq_even_or_eq_odd7,278
+  definition join_empty_rightis_conn.join_empty_right87,3633
+    definition succ_add_plus_oneis_conn.succ_add_plus_one114,4613
+  definition rec_on_even_oddnat.rec_on_even_odd16,554
+  theorem is_surjective_π_of_is_connectedis_conn.is_surjective_π_of_is_connected69,2838
+    definition minus_one_add_plus_oneis_conn.minus_one_add_plus_one112,4480
+  definition natural_square2is_conn.natural_square2102,4049
+  theorem is_equiv_π_of_is_connectedis_conn.is_equiv_π_of_is_connected32,921
+
+homotopy/LES_of_homotopy_groups.hlean,8241
+  definition LES_of_homotopy_groups3_1chain_complex.LES_of_homotopy_groups3_1882,34115
+  definition is_exact_LES_of_homotopy_groups3chain_complex.is_exact_LES_of_homotopy_groups3857,32991
+  definition LES_of_homotopy_groups3_4chain_complex.LES_of_homotopy_groups3_4888,34446
+  definition homotopy_groups_fun2chain_complex.homotopy_groups_fun2544,20051
+  definition LES_of_homotopy_groups_mul3add2'chain_complex.LES_of_homotopy_groups_mul3add2'477,17839
+  definition LES_of_homotopy_groups3_3chain_complex.LES_of_homotopy_groups3_3886,34336
+  definition tr_mul_trchain_complex.tr_mul_tr500,18472
+  definition is_exact_fiber_sequencechain_complex.is_exact_fiber_sequence80,2506
+  definition boundary_mapchain_complex.boundary_map225,8385
+  theorem fiber_sequence_fun_phomotopychain_complex.fiber_sequence_fun_phomotopy216,8057
+  definition is_exact_LES_of_homotopy_groupschain_complex.is_exact_LES_of_homotopy_groups410,15146
+  definition LES_of_homotopy_groups3_2chain_complex.LES_of_homotopy_groups3_2884,34221
+  definition homotopy_groups_mul3add2chain_complex.homotopy_groups_mul3add2254,9279
+  definition type_LES_of_homotopy_groupschain_complex.type_LES_of_homotopy_groups386,14323
+  definition homotopy_groups_fun2_add1_5chain_complex.homotopy_groups_fun2_add1_5592,22238
+  definition homotopy_groups_fun'chain_complex.homotopy_groups_fun'276,10198
+  definition fin_prod_nat_equiv_natchain_complex.fin_prod_nat_equiv_nat620,23461
+  definition fiber_sequence_helpernchain_complex.fiber_sequence_helpern54,1759
+  theorem fiber_sequence_carrier_pequiv_eq_point_eq_idpchain_complex.fiber_sequence_carrier_pequiv_eq_point_eq_idp177,6559
+  definition homotopy_groups_funchain_complex.homotopy_groups_fun260,9523
+  definition fiber_sequence_carrierchain_complex.fiber_sequence_carrier62,1987
+  definition homotopy_groups_fun_add3chain_complex.homotopy_groups_fun_add3312,11532
+  definition comm_group_LES_of_homotopy_groupschain_complex.comm_group_LES_of_homotopy_groups486,18179
+  definition LES_of_homotopy_groups2chain_complex.LES_of_homotopy_groups2779,30007
+  definition LES_of_homotopy_groups_mul3add1chain_complex.LES_of_homotopy_groups_mul3add1451,17024
+  definition homotopy_groups_add3chain_complex.homotopy_groups_add3240,8787
+  definition LES_of_homotopy_groups3_0chain_complex.LES_of_homotopy_groups3_0880,34009
+  definition homotopy_groups3eq2chain_complex.homotopy_groups3eq2794,30462
+  definition fiber_sequence_helperchain_complex.fiber_sequence_helper50,1612
+  definition homotopy_groups2_pequiv'chain_complex.homotopy_groups2_pequiv'641,24217
+  definition fiber_sequence_carrier_equiv_inv_eqchain_complex.fiber_sequence_carrier_equiv_inv_eq125,4437
+  definition homotopy_groups2chain_complex.homotopy_groups2526,19349
+  definition fiber_sequence_pequiv_homotopy_groupschain_complex.fiber_sequence_pequiv_homotopy_groups319,11794
+  definition is_homomorphism_cast_loop_space_succ_eq_inchain_complex.is_homomorphism_cast_loop_space_succ_eq_in504,18597
+  definition fiber_sequence_funchain_complex.fiber_sequence_fun65,2078
+  definition LES_of_homotopy_groups_mul3add1'chain_complex.LES_of_homotopy_groups_mul3add1'471,17652
+  definition nat_of_str_6Schain_complex.nat_of_str_6S610,23009
+  definition homotopy_groups_mul3chain_complex.homotopy_groups_mul3244,8912
+  definition LES_of_homotopy_groupschain_complex.LES_of_homotopy_groups401,14827
+  definition homotopy_groups_fun2_add1_4chain_complex.homotopy_groups_fun2_add1_4583,21862
+  definition homotopy_groups3chain_complex.homotopy_groups3786,30178
+  definition fiber_sequence_pequiv_homotopy_groups_3_phomotopychain_complex.fiber_sequence_pequiv_homotopy_groups_3_phomotopy336,12382
+  definition homotopy_groupschain_complex.homotopy_groups234,8658
+  definition homotopy_groups_fun2_add1_2chain_complex.homotopy_groups_fun2_add1_2565,21099
+  definition homotopy_groups_fun2_phomotopychain_complex.homotopy_groups_fun2_phomotopy689,26060
+  definition LES_of_homotopy_groups3_5chain_complex.LES_of_homotopy_groups3_5890,34556
+  definition LES_of_homotopy_groups_fun3_1chain_complex.LES_of_homotopy_groups_fun3_1899,34906
+  definition group_LES_of_homotopy_groups3_0chain_complex.group_LES_of_homotopy_groups3_0916,35755
+  definition CommGroup_LES_of_homotopy_groups3chain_complex.CommGroup_LES_of_homotopy_groups3933,36775
+  definition is_exact_type_LES_of_homotopy_groups2chain_complex.is_exact_type_LES_of_homotopy_groups2772,29801
+  theorem homotopy_groups_fun_eqchain_complex.homotopy_groups_fun_eq287,10605
+  definition LES_of_homotopy_groups_mul3'chain_complex.LES_of_homotopy_groups_mul3'465,17477
+  definition LES_of_homotopy_groups_fun3_0chain_complex.LES_of_homotopy_groups_fun3_0896,34780
+  definition comm_group_LES_of_homotopy_groups3chain_complex.comm_group_LES_of_homotopy_groups3923,36148
+  definition homotopy_groups_fun2_add1_1chain_complex.homotopy_groups_fun2_add1_1560,20890
+  definition fiber_sequence_pequiv_homotopy_groups_add3chain_complex.fiber_sequence_pequiv_homotopy_groups_add3331,12158
+  definition homotopy_groups_fun'_add3chain_complex.homotopy_groups_fun'_add3283,10455
+  definition is_homomorphism_inversechain_complex.is_homomorphism_inverse514,19037
+  theorem fiber_sequence_fun_phomotopy_helperchain_complex.fiber_sequence_fun_phomotopy_helper194,7170
+  definition homotopy_groups_fun_add6chain_complex.homotopy_groups_fun_add6270,9919
+  definition LES_of_homotopy_groups_fun3_5chain_complex.LES_of_homotopy_groups_fun3_5911,35532
+  theorem fiber_sequence_phomotopy_homotopy_groups'chain_complex.fiber_sequence_phomotopy_homotopy_groups'344,12670
+  definition LES_of_homotopy_groups_fun3_4chain_complex.LES_of_homotopy_groups_fun3_4908,35381
+  definition is_exact_type_LES_of_homotopy_groupschain_complex.is_exact_type_LES_of_homotopy_groups393,14582
+  definition fiber_sequence_carrier_equiv_eqchain_complex.fiber_sequence_carrier_equiv_eq110,3830
+  definition LES_of_homotopy_groups_mul3chain_complex.LES_of_homotopy_groups_mul3444,16814
+  definition LES_of_homotopy_groups3chain_complex.LES_of_homotopy_groups3850,32786
+  theorem fiber_sequence_phomotopy_homotopy_groupschain_complex.fiber_sequence_phomotopy_homotopy_groups377,13934
+  definition LES_of_homotopy_groups_mul3add2chain_complex.LES_of_homotopy_groups_mul3add2458,17246
+  definition homotopy_groups_fun3chain_complex.homotopy_groups_fun3804,30894
+  definition homotopy_groups_mul3add1chain_complex.homotopy_groups_mul3add1249,9089
+  definition fiber_sequence_carrier_pequiv_inv_eqchain_complex.fiber_sequence_carrier_pequiv_inv_eq149,5360
+  definition fiber_sequence_carrier_pequivchain_complex.fiber_sequence_carrier_pequiv134,4778
+  theorem fiber_sequence_fun_eqchain_complex.fiber_sequence_fun_eq208,7685
+  definition fiber_sequence_carrier_equivchain_complex.fiber_sequence_carrier_equiv84,2664
+  definition nat_of_strchain_complex.nat_of_str604,22800
+  definition fiber_sequencechain_complex.fiber_sequence70,2251
+  definition str_of_natchain_complex.str_of_nat607,22917
+  definition homomorphism_LES_of_homotopy_groups_fun3chain_complex.homomorphism_LES_of_homotopy_groups_fun3937,36984
+  definition homotopy_groups_fun3eq2chain_complex.homotopy_groups_fun3eq2816,31572
+  definition homotopy_groups_fun2_add1_0chain_complex.homotopy_groups_fun2_add1_0555,20681
+  definition fiber_sequence_fun_eq_helperchain_complex.fiber_sequence_fun_eq_helper157,5693
+  definition homotopy_groups2_add1chain_complex.homotopy_groups2_add1534,19628
+  definition homotopy_groups_fun2_add1_3chain_complex.homotopy_groups_fun2_add1_3574,21486
+  definition LES_of_homotopy_groups_fun3_3chain_complex.LES_of_homotopy_groups_fun3_3905,35239
+  definition LES_of_homotopy_groups_fun3_2chain_complex.LES_of_homotopy_groups_fun3_2902,35041
+  definition type_LES_of_homotopy_groups2chain_complex.type_LES_of_homotopy_groups2758,29331
+  definition homotopy_groups2_pequivchain_complex.homotopy_groups2_pequiv684,25855
+  definition group_LES_of_homotopy_groupschain_complex.group_LES_of_homotopy_groups483,18035
+  definition fiber_sequence_carrier_pequiv_eqchain_complex.fiber_sequence_carrier_pequiv_eq142,5004
+
+group_theory/constructions.hlean,10223
+  definition normal_subgroup_kernelgroup.normal_subgroup_kernel721,26462
+  structure Rinvgroup.normal_subgroup_rel.Rinv23,565
+    | rinvgroup.generating_relation'.rinv614,22880
+  | rreflgroup.free_comm_group.fcg_rel.rrefl435,16260
+  definition fcg_mulgroup.free_comm_group.fcg_mul492,18417
+  theorem subgroup_one_mulgroup.subgroup_one_mul82,3290
+  structure rec_ongroup.normal_subgroup_rel.rec_on23,565
+    definition quotient_comm_group_gengroup.quotient_comm_group_gen633,23558
+  structure Rgroup.subgroup_rel.R17,410
+  theorem kernel_mulgroup.kernel_mul680,25173
+  definition sggroup.sg65,2698
+  theorem subgroup_mul_assocgroup.subgroup_mul_assoc79,3183
+    | rmulgroup.generating_relation'.rmul613,22779
+  definition subgroup_onegroup.subgroup_one68,2786
+  definition is_reflexive_Rgroup.free_group.is_reflexive_R290,10899
+  inductive cases_ongroup.free_group.free_group_rel.cases_on274,10175
+  abbreviation subgroup_has_onegroup.subgroup_has_one28,791
+  definition free_group_onegroup.free_group.free_group_one315,11815
+  theorem quotient_rel_symmgroup.quotient_rel_symm120,4459
+  | resp_appendgroup.free_group.free_group_rel.resp_append278,10373
+  definition fcg_carriergroup.free_comm_group.fcg_carrier449,16786
+  definition group_qggroup.group_qg210,7984
+  theorem product_one_mulgroup.product_one_mul240,9105
+  definition free_group_inclusiongroup.free_group_inclusion376,13925
+  structure destructgroup.subgroup_rel.destruct17,410
+  definition free_comm_group_inclusiongroup.free_comm_group_inclusion560,20652
+  theorem free_group_mul_left_invgroup.free_group.free_group_mul_left_inv348,12968
+  definition group_prodgroup.group_prod255,9511
+  | rtransgroup.free_group.free_group_rel.rtrans280,10519
+  definition free_comm_group_homgroup.free_comm_group_hom575,21250
+    definition normal_generating_relationgroup.normal_generating_relation625,23357
+  definition free_comm_groupgroup.free_comm_group555,20471
+  structure to_subgroup_relgroup.normal_subgroup_rel.to_subgroup_rel23,565
+  definition free_group_invgroup.free_group.free_group_inv316,11879
+  structure Rmulgroup.normal_subgroup_rel.Rmul23,565
+  theorem rel_respect_reversegroup.free_comm_group.rel_respect_reverse468,17493
+  theorem free_group_mul_assocgroup.free_group.free_group_mul_assoc327,12349
+  structure normal_subgroup_relgroup.normal_subgroup_rel23,565
+    definition gr_mulgroup.gr_mul622,23272
+  theorem product_mul_assocgroup.product_mul_assoc237,8989
+  definition quotient_comm_groupgroup.quotient_comm_group221,8428
+  theorem fcg_one_mulgroup.free_comm_group.fcg_one_mul509,18950
+  abbreviation subgroup_respect_mulgroup.subgroup_respect_mul29,860
+  definition comm_group_prodgroup.comm_group_prod262,9779
+  inductive fcg_relgroup.free_comm_group.fcg_rel.rec434,16208
+  definition quotient_relgroup.quotient_rel115,4268
+    inductive dirsum_relgroup.dirsum_rel643,23866
+  theorem quotient_mul_assocgroup.quotient_mul_assoc172,6919
+  theorem product_mul_commgroup.product_mul_comm249,9371
+  definition subgroupgroup.subgroup102,3873
+  theorem fgh_helper_respect_comm_relgroup.fgh_helper_respect_comm_rel563,20753
+  theorem quotient_rel_transgroup.quotient_rel_trans123,4623
+  definition kernelgroup.kernel678,25082
+  definition qggroup.qg157,6375
+  definition comm_subgroupgroup.comm_subgroup109,4111
+    definition direct_sumgroup.direct_sum646,23998
+  structure normal_subgroup_relgroup.normal_subgroup_rel.rec23,565
+    definition gr_invgroup.gr_inv620,23198
+  theorem rel_cons_concatgroup.free_comm_group.rel_cons_concat479,17905
+  theorem fgh_helper_mulgroup.fgh_helper_mul393,14566
+  definition comm_group_sggroup.comm_group_sg105,3947
+  | resp_appendgroup.free_comm_group.fcg_rel.resp_append439,16420
+  definition fn_of_free_group_homgroup.fn_of_free_group_hom413,15391
+  theorem fcg_mul_assocgroup.free_comm_group.fcg_mul_assoc500,18669
+  theorem product_mul_left_invgroup.product_mul_left_inv246,9271
+  definition comm_group_qggroup.comm_group_qg217,8257
+  definition normal_subgroup_rel_commgroup.normal_subgroup_rel_comm39,1314
+  | cancel1group.free_comm_group.fcg_rel.cancel1436,16290
+  definition fgh_helpergroup.fgh_helper379,14019
+  definition product_onegroup.product_one226,8642
+    mkgroup.normal_subgroup_rel.mk24,627
+    definition generating_relationgroup.generating_relation617,23026
+  | cancel2group.free_group.free_group_rel.cancel2277,10322
+    | rmkgroup.dirsum_rel.rmk644,23910
+  structure no_confusiongroup.subgroup_rel.no_confusion17,410
+  inductive rec_ongroup.free_comm_group.fcg_rel.rec_on434,16208
+  theorem is_normal_subgroup_kernelgroup.is_normal_subgroup_kernel707,25917
+  theorem fgh_helper_respect_relgroup.fgh_helper_respect_rel382,14131
+  abbreviation is_normal_subgroupgroup.is_normal_subgroup31,998
+    | rinclgroup.generating_relation'.rincl612,22730
+  definition free_group_carriergroup.free_group.free_group_carrier287,10767
+  theorem quotient_mul_onegroup.quotient_mul_one187,7357
+  | rtransgroup.free_comm_group.fcg_rel.rtrans441,16545
+  structure Rinvgroup.subgroup_rel.Rinv17,410
+  definition fn_of_free_comm_group_homgroup.fn_of_free_comm_group_hom586,21759
+    mkgroup.subgroup_rel.mk18,442
+    definition gr_onegroup.gr_one619,23155
+  theorem is_normal_subgroup_rev'group.is_normal_subgroup_rev'52,1969
+  structure subgroup_relgroup.subgroup_rel.rec17,410
+  structure Rgroup.normal_subgroup_rel.R23,565
+  inductive fcg_relgroup.free_comm_group.fcg_rel434,16208
+  definition quotient_onegroup.quotient_one161,6480
+  theorem quotient_rel_reflgroup.quotient_rel_refl118,4339
+  theorem product_mul_onegroup.product_mul_one243,9188
+  definition free_comm_group_hom_equiv_fngroup.free_comm_group_hom_equiv_fn590,21903
+  definition subgroup_kernelgroup.subgroup_kernel699,25721
+  | cancel1group.free_group.free_group_rel.cancel1276,10271
+  definition product_mulgroup.product_mul229,8782
+  theorem quotient_rel_resp_mulgroup.quotient_rel_resp_mul140,5543
+  definition free_groupgroup.free_group371,13774
+  theorem is_normal_subgroup'group.is_normal_subgroup'36,1200
+  definition productgroup.product259,9701
+  definition free_group_homgroup.free_group_hom402,14897
+  theorem normal_subgroup_insertgroup.normal_subgroup_insert55,2094
+  theorem quotient_mul_left_invgroup.quotient_mul_left_inv193,7512
+  structure Rmulgroup.subgroup_rel.Rmul17,410
+  theorem quotient_rel_resp_invgroup.quotient_rel_resp_inv131,5061
+  theorem fcg_mul_commgroup.free_comm_group.fcg_mul_comm536,19740
+  definition group_free_comm_groupgroup.group_free_comm_group551,20268
+    inductive cases_ongroup.dirsum_rel.cases_on643,23866
+  structure Ronegroup.normal_subgroup_rel.Rone23,565
+  structure is_normalgroup.normal_subgroup_rel.is_normal23,565
+  abbreviation subgroup_to_relgroup.subgroup_to_rel27,725
+  definition is_reflexive_Rgroup.free_comm_group.is_reflexive_R452,16904
+  structure cases_ongroup.normal_subgroup_rel.cases_on23,565
+  | rflipgroup.free_comm_group.fcg_rel.rflip438,16378
+  definition product_invgroup.product_inv227,8704
+  structure Ronegroup.subgroup_rel.Rone17,410
+  | cancel2group.free_comm_group.fcg_rel.cancel2437,16334
+  inductive free_group_relgroup.free_group.free_group_rel274,10175
+  definition group_sggroup.group_sg98,3680
+  definition subgroup_invgroup.subgroup_inv69,2861
+  theorem rel_respect_reversegroup.free_group.rel_respect_reverse305,11444
+    inductive dirsum_relgroup.dirsum_rel.rec643,23866
+  definition quotient_groupgroup.quotient_group214,8177
+  definition free_group_mulgroup.free_group.free_group_mul319,12069
+    definition dirsum_carriergroup.dirsum_carrier641,23724
+    inductive rec_ongroup.generating_relation'.rec_on611,22688
+  structure destructgroup.normal_subgroup_rel.destruct23,565
+    inductive generating_relation'group.generating_relation'611,22688
+  theorem quotient_mul_commgroup.quotient_mul_comm199,7679
+  theorem kernel_invgroup.kernel_inv690,25493
+  inductive rec_ongroup.free_group.free_group_rel.rec_on274,10175
+  theorem free_group_one_mulgroup.free_group.free_group_one_mul336,12637
+  theorem rel_respect_flipgroup.free_comm_group.rel_respect_flip457,17078
+  inductive free_group_relgroup.free_group.free_group_rel.rec274,10175
+    inductive cases_ongroup.generating_relation'.cases_on611,22688
+  definition fcg_invgroup.free_comm_group.fcg_inv489,18234
+  theorem subgroup_mul_commgroup.subgroup_mul_comm91,3530
+    inductive rec_ongroup.dirsum_rel.rec_on643,23866
+  definition fcg_onegroup.free_comm_group.fcg_one488,18177
+  structure rec_ongroup.subgroup_rel.rec_on17,410
+  theorem subgroup_mul_left_invgroup.subgroup_mul_left_inv88,3442
+  theorem fcg_mul_left_invgroup.free_comm_group.fcg_mul_left_inv521,19267
+  theorem rel_respect_flipgroup.free_group.rel_respect_flip295,11073
+  | rreflgroup.free_group.free_group_rel.rrefl275,10234
+    inductive generating_relation'group.generating_relation'.rec611,22688
+  theorem quotient_one_mulgroup.quotient_one_mul181,7202
+  definition quotient_invgroup.quotient_inv162,6543
+  theorem is_equivalence_quotient_relgroup.is_equivalence_quotient_rel150,6091
+  theorem free_group_mul_onegroup.free_group.free_group_mul_one342,12802
+  theorem is_normal_subgroup_revgroup.is_normal_subgroup_rev45,1563
+  structure no_confusiongroup.normal_subgroup_rel.no_confusion23,565
+  structure subgroup_relgroup.subgroup_rel17,410
+  definition group_free_groupgroup.group_free_group367,13543
+    | ronegroup.generating_relation'.rone615,22950
+  theorem fcg_mul_onegroup.free_comm_group.fcg_mul_one515,19108
+  abbreviation subgroup_respect_invgroup.subgroup_respect_inv30,929
+  definition free_group_hom_equiv_fngroup.free_group_hom_equiv_fn417,15520
+  inductive cases_ongroup.free_comm_group.fcg_rel.cases_on434,16208
+  theorem subgroup_mul_onegroup.subgroup_mul_one85,3366
+  definition comm_productgroup.comm_product265,9929
+  definition subgroup_mulgroup.subgroup_mul71,2957
+  structure cases_ongroup.subgroup_rel.cases_on17,410
+  definition quotient_mulgroup.quotient_mul164,6665
+
+homotopy/fin.hlean,557
+  definition my_succfin.my_succ30,720
+inductive is_succis_succ.rec13,236
+  definition has_one_finfin.has_one_fin46,1254
+  protected definition addfin.add40,1035
+  definition has_add_finfin.has_add_fin49,1401
+definition is_succ_bit0is_succ_bit024,585
+inductive rec_onis_succ.rec_on13,236
+inductive is_succis_succ13,236
+| mkis_succ.mk14,268
+definition is_succ_add_rightis_succ_add_right18,339
+inductive cases_onis_succ.cases_on13,236
+  definition has_zero_finfin.has_zero_fin43,1114
+definition is_succ_add_leftis_succ_add_left21,460
+
+group_theory/basic.hlean,2779
+  definition to_respect_mulgroup.to_respect_mul94,3090
+  definition structgroup.homomorphism.struct88,2858
+    mkgroup.homomorphism.mk82,2703
+  definition comm_group_Group_of_CommGroupgroup.comm_group_Group_of_CommGroup30,953
+  definition is_homomorphism_idgroup.is_homomorphism_id76,2559
+  theorem to_respect_invgroup.to_respect_inv100,3245
+  definition to_ginvgroup.to_ginv151,5068
+  definition Set_of_Groupgroup.Set_of_Group25,788
+  theorem respect_onegroup.respect_one51,1730
+  definition pointed_Groupgroup.pointed_Group23,631
+  definition precategory_groupgroup.precategory_group183,6085
+  definition Group_of_CommGroupgroup.Group_of_CommGroup27,853
+  structure destructgroup.homomorphism.destruct81,2660
+  structure no_confusiongroup.homomorphism.no_confusion81,2660
+  definition reflgroup.isomorphism.refl158,5270
+  definition is_set_homomorphismgroup.is_set_homomorphism106,3462
+  structure to_homgroup.isomorphism.to_hom140,4744
+    mkgroup.isomorphism.mk141,4777
+  theorem to_respect_onegroup.to_respect_one97,3182
+  structure isomorphismgroup.isomorphism.rec140,4744
+  definition transgroup.isomorphism.trans164,5502
+  definition is_embedding_homomorphismgroup.is_embedding_homomorphism61,2062
+  structure homomorphismgroup.homomorphism81,2660
+  definition pmap_of_homomorphismgroup.pmap_of_homomorphism120,3991
+  definition homomorphism_composegroup.homomorphism_compose131,4395
+  theorem respect_invgroup.respect_inv58,1922
+  definition group_fungroup.group_fun87,2794
+  structure rec_ongroup.homomorphism.rec_on81,2660
+  structure φgroup.homomorphism.φ81,2660
+  definition homomorphism_eqgroup.homomorphism_eq123,4120
+  definition to_is_embedding_homomorphismgroup.to_is_embedding_homomorphism103,3330
+  definition equiv_of_isomorphismgroup.equiv_of_isomorphism148,4976
+  structure no_confusiongroup.isomorphism.no_confusion140,4744
+  definition symmgroup.isomorphism.symm161,5378
+  structure destructgroup.isomorphism.destruct140,4744
+  definition is_homomorphismgroup.is_homomorphism39,1242
+  structure rec_ongroup.isomorphism.rec_on140,4744
+  structure is_equiv_to_homgroup.isomorphism.is_equiv_to_hom140,4744
+  structure isomorphismgroup.isomorphism140,4744
+  definition homomorphism_idgroup.homomorphism_id134,4544
+  structure homomorphismgroup.homomorphism.rec81,2660
+  definition group_pType_of_Groupgroup.group_pType_of_Group34,1108
+  definition respect_mulgroup.respect_mul48,1643
+  definition pType_of_Groupgroup.pType_of_Group24,711
+  structure cases_ongroup.homomorphism.cases_on81,2660
+  definition is_homomorphism_composegroup.is_homomorphism_compose72,2369
+  structure pgroup.homomorphism.p81,2660
+  structure cases_ongroup.isomorphism.cases_on140,4744
+
+homotopy/join_theorem.hlean,366
+    protected definition introis_conn.intro51,1299
+  definition is_retraction_composeretraction.is_retraction_compose11,231
+  definition is_retraction_compose_equiv_leftretraction.is_retraction_compose_equiv_left27,703
+theorem is_conn_joinis_conn_join70,1667
+  definition is_retraction_compose_equiv_rightretraction.is_retraction_compose_equiv_right32,871
+
+homotopy/sec86.hlean,1825
+definition freudenthal_pequivfreudenthal_pequiv223,8078
+  definition encode'freudenthal.encode'121,4379
+  definition code_merid_inv_ptfreudenthal.code_merid_inv_pt92,3441
+  definition upfreudenthal.up58,2252
+  definition decodefreudenthal.decode174,6391
+  definition decode_north_ptfreudenthal.decode_north_pt115,4165
+  definition decode_coh_gfreudenthal.decode_coh_g148,5307
+  definition psphere_succpsphere_succ47,1992
+  theorem elim_type_merid_invelim_type_merid_inv36,1519
+  definition decode_northfreudenthal.decode_north112,4042
+  theorem decode_cohfreudenthal.decode_coh160,5802
+  definition code_merid_cohfreudenthal.code_merid_coh76,2843
+  definition equiv'freudenthal.equiv'188,6798
+  definition decode_coh_lemfreudenthal.decode_coh_lem156,5625
+definition freudenthal_equivfreudenthal_equiv229,8371
+  definition is_trunc_codefreudenthal.is_trunc_code103,3823
+  definition code_meridfreudenthal.code_merid61,2360
+  theorem encode_decode_northfreudenthal.encode_decode_north130,4628
+  definition is_equiv_code_meridfreudenthal.is_equiv_code_merid81,3004
+  definition is_conn_truncis_conn_trunc40,1776
+  definition pequiv'freudenthal.pequiv'191,6935
+  definition decode_southfreudenthal.decode_south118,4253
+  definition encodefreudenthal.encode124,4469
+  definition decode_coh_ffreudenthal.decode_coh_f139,4992
+  definition code_merid_β_leftfreudenthal.code_merid_β_left70,2625
+  definition stability_pequivsphere.stability_pequiv236,8573
+  definition code_merid_equivfreudenthal.code_merid_equiv89,3312
+  definition codefreudenthal.code100,3704
+  theorem decode_encodefreudenthal.decode_encode182,6599
+  definition code_merid_β_rightfreudenthal.code_merid_β_right73,2727
+  definition iterated_loop_ptrunc_pequiv_coniterated_loop_ptrunc_pequiv_con23,1032
+
+homotopy/chain_complex.hlean,5324
+definition sintsint36,1114
+structure carriersucc_str.carrier24,757
+  structure mul_left_inv_ptchain_complex.pgroup.mul_left_inv_pt478,19042
+  structure type_chain_complexchain_complex.type_chain_complex88,3028
+  definition transfer_chain_complex2'chain_complex.transfer_chain_complex2'336,12565
+  structure invchain_complex.pgroup.inv478,19042
+structure no_confusionsucc_str.no_confusion24,757
+  definition cc_to_fnchain_complex.cc_to_fn248,9540
+  definition transfer_chain_complexchain_complex.transfer_chain_complex280,10737
+definition stratifiedstratified57,1945
+  structure cases_onchain_complex.chain_complex.cases_on239,9213
+  definition is_exact_at_tchain_complex.is_exact_at_t103,3692
+  definition whisker_left_idp_con_eq_assoceq.whisker_left_idp_con_eq_assoc17,554
+  structure pgroupchain_complex.pgroup478,19042
+definition stratified_succstratified_succ53,1777
+definition snatsnat34,955
+  definition cast_inv_castchain_complex.cast_inv_cast178,6596
+  definition cast_cast_invchain_complex.cast_cast_inv174,6433
+  definition is_surjective_of_trivialchain_complex.is_surjective_of_trivial516,20301
+structure succ_strsucc_str.rec24,757
+  structure destructchain_complex.type_chain_complex.destruct88,3028
+  theorem is_exact_at_transferchain_complex.is_exact_at_transfer292,11186
+  structure is_set_carrierchain_complex.pgroup.is_set_carrier478,19042
+  structure to_has_invchain_complex.pgroup.to_has_inv478,19042
+  definition inv_commute1'chain_complex.inv_commute1'162,5796
+  mksucc_str.mk25,778
+  definition is_exact_tchain_complex.is_exact_t106,3821
+  structure cases_onchain_complex.type_chain_complex.cases_on88,3028
+  definition tcc_to_carchain_complex.tcc_to_car96,3299
+structure succsucc_str.succ24,757
+  structure fnchain_complex.chain_complex.fn239,9213
+    mkchain_complex.chain_complex.mk240,9256
+  structure mul_assocchain_complex.pgroup.mul_assoc478,19042
+  definition is_exact_at_truncchain_complex.is_exact_at_trunc324,12208
+  definition is_embedding_of_trivialchain_complex.is_embedding_of_trivial501,19848
+  definition cc_to_carchain_complex.cc_to_car247,9473
+  definition inv_commute1chain_complex.inv_commute1166,6045
+  definition is_equiv_of_trivialchain_complex.is_equiv_of_trivial524,20541
+  definition is_exact_at_transfer2chain_complex.is_exact_at_transfer2201,7632
+  definition transfer_type_chain_complexchain_complex.transfer_type_chain_complex130,4624
+  structure rec_onchain_complex.pgroup.rec_on478,19042
+  definition fn_cast_eq_cast_fnchain_complex.fn_cast_eq_cast_fn170,6235
+  definition is_exact_atchain_complex.is_exact_at254,9852
+  structure carchain_complex.type_chain_complex.car88,3028
+definition stratified_typestratified_type44,1365
+  structure cases_onchain_complex.pgroup.cases_on478,19042
+  structure destructchain_complex.pgroup.destruct478,19042
+  definition is_exact_at_transfer2'chain_complex.is_exact_at_transfer2'357,13539
+    mkchain_complex.type_chain_complex.mk89,3076
+  definition trunc_chain_complexchain_complex.trunc_chain_complex312,11842
+  definition is_exactchain_complex.is_exact257,9977
+  definition tcc_is_chain_complexchain_complex.tcc_is_chain_complex98,3453
+definition sint'sint'37,1193
+  structure is_chain_complexchain_complex.chain_complex.is_chain_complex239,9213
+  definition group_of_pgroupchain_complex.group_of_pgroup483,19228
+  structure chain_complexchain_complex.chain_complex239,9213
+  structure chain_complexchain_complex.chain_complex.rec239,9213
+  definition cc_is_chain_complexchain_complex.cc_is_chain_complex249,9618
+  structure type_chain_complexchain_complex.type_chain_complex.rec88,3028
+  structure no_confusionchain_complex.type_chain_complex.no_confusion88,3028
+definition snat'snat'35,1034
+  structure destructchain_complex.chain_complex.destruct239,9213
+  structure mul_ptchain_complex.pgroup.mul_pt478,19042
+  structure pgroupchain_complex.pgroup.rec478,19042
+  structure carchain_complex.chain_complex.car239,9213
+  structure fnchain_complex.type_chain_complex.fn88,3028
+definition Ssucc_str.S30,875
+  structure is_chain_complexchain_complex.type_chain_complex.is_chain_complex88,3028
+  structure mulchain_complex.pgroup.mul478,19042
+structure cases_onsucc_str.cases_on24,757
+  definition transfer_type_chain_complex2chain_complex.transfer_type_chain_complex2183,6842
+    mkchain_complex.pgroup.mk479,19107
+  definition pgroup_of_groupchain_complex.pgroup_of_group491,19482
+structure rec_onsucc_str.rec_on24,757
+  definition tcc_to_fnchain_complex.tcc_to_fn97,3372
+  structure rec_onchain_complex.type_chain_complex.rec_on88,3028
+  structure no_confusionchain_complex.pgroup.no_confusion478,19042
+  theorem is_exact_at_t_transferchain_complex.is_exact_at_t_transfer142,5091
+  structure rec_onchain_complex.chain_complex.rec_on239,9213
+structure succ_strsucc_str24,757
+  definition is_trunc_ptrunctypechain_complex.is_trunc_ptrunctype473,18817
+  structure to_semigroupchain_complex.pgroup.to_semigroup478,19042
+structure destructsucc_str.destruct24,757
+  definition transport_eq_Fl_idp_lefteq.transport_eq_Fl_idp_left13,386
+  structure no_confusionchain_complex.chain_complex.no_confusion239,9213
+  structure pt_mulchain_complex.pgroup.pt_mul478,19042
+
+homotopy/spectrum.hlean,5800
+structure is_spectrumis_spectrum.rec187,9094
+structure destructgen_spectrum.destruct192,9275
+  definition pequiv_postcomposepointed.pequiv_postcompose137,7133
+structure no_confusiongen_prespectrum.no_confusion181,8929
+structure gluegen_prespectrum.glue181,8929
+  structure cases_onspectrum.sp_chain_complex.cases_on386,18262
+  structure no_confusionspectrum.sp_chain_complex.no_confusion386,18262
+  definition pequiv_precomposepointed.pequiv_precompose145,7584
+  definition loop_pmap_commutepointed.loop_pmap_commute73,2970
+abbreviation mkspectrum.mk203,9684
+  definition psp_of_gen_indexedspectrum.psp_of_gen_indexed248,11436
+  structure shomotopyspectrum.shomotopy317,15315
+  structure shomotopyspectrum.shomotopy.rec317,15315
+structure destructgen_prespectrum.destruct181,8929
+  structure fnspectrum.sp_chain_complex.fn386,18262
+    definition scc_to_carspectrum.scc_to_car394,18517
+  structure sp_chain_complexspectrum.sp_chain_complex386,18262
+  structure carspectrum.sp_chain_complex.car386,18262
+  protected definition of_gen_indexedspectrum.of_gen_indexed257,11975
+  definition shomotopy_groupspectrum.shomotopy_group356,16961
+structure cases_onis_spectrum.cases_on187,9094
+structure cases_ongen_spectrum.cases_on192,9275
+  structure rec_onspectrum.sp_chain_complex.rec_on386,18262
+  mkgen_prespectrum.mk182,8965
+  definition ppcompose_leftpointed.ppcompose_left82,3567
+structure no_confusionis_spectrum.no_confusion187,9094
+  definition scomposespectrum.scompose299,14044
+structure to_prespectrumgen_spectrum.to_prespectrum192,9275
+  structure no_confusionspectrum.smap.no_confusion278,13041
+  definition szerospectrum.szero311,14839
+  structure cases_onspectrum.smap.cases_on278,13041
+structure gen_prespectrumgen_prespectrum.rec181,8929
+  structure no_confusionspectrum.shomotopy.no_confusion317,15315
+abbreviation spectrumspectrum202,9643
+  structure cases_onspectrum.shomotopy.cases_on317,15315
+    definition scc_is_chain_complexspectrum.scc_is_chain_complex396,18670
+  definition struncspectrum.strunc343,16403
+  structure glue_squarespectrum.smap.glue_square278,13041
+structure destructis_spectrum.destruct187,9094
+  structure smapspectrum.smap.rec278,13041
+  definition pfiber_loop_spacepointed.pfiber_loop_space110,5185
+  definition pequiv_composepointed.pequiv_compose35,1119
+  definition psuspnspectrum.psuspn330,15866
+  definition pmap_eq_equivpointed.pmap_eq_equiv58,1870
+structure deloopgen_prespectrum.deloop181,8929
+  structure rec_onspectrum.shomotopy.rec_on317,15315
+  definition transport_fiber_equivpointed.transport_fiber_equiv132,6798
+  definition pcompose_pconstpointed.pcompose_pconst101,4763
+  mkis_spectrum.mk188,9158
+  definition sglue_squarespectrum.sglue_square288,13371
+  definition equiv_ppcompose_leftpointed.equiv_ppcompose_left98,4631
+  definition ap1_pconstpointed.ap1_pconst107,5048
+  definition ppipointed.ppi160,8279
+  structure glue_homotopyspectrum.shomotopy.glue_homotopy317,15315
+structure rec_ongen_spectrum.rec_on192,9275
+  definition sigma_equiv_sigma_left'sigma.sigma_equiv_sigma_left'20,711
+  definition is_spectrum_of_gen_indexedspectrum.is_spectrum_of_gen_indexed251,11679
+  structure to_funspectrum.smap.to_fun278,13041
+  definition pfiber_equiv_of_phomotopypointed.pfiber_equiv_of_phomotopy121,6291
+  structure destructspectrum.sp_chain_complex.destruct386,18262
+structure gen_spectrumgen_spectrum.rec192,9275
+  protected definition of_nat_indexedspectrum.of_nat_indexed237,10937
+  protected definition MKspectrum.MK262,12282
+  definition equiv_ppi_rightpointed.equiv_ppi_right166,8498
+    definition scc_to_fnspectrum.scc_to_fn395,18590
+structure rec_onis_spectrum.rec_on187,9094
+  structure destructspectrum.shomotopy.destruct317,15315
+structure gen_prespectrumgen_prespectrum181,8929
+  definition is_spectrum_of_nat_indexedspectrum.is_spectrum_of_nat_indexed230,10636
+  protected definition Mkspectrum.Mk270,12731
+  definition equiv_gluespectrum.equiv_glue209,9865
+    mkspectrum.smap.mk279,13094
+  mkgen_spectrum.mk193,9308
+structure is_equiv_glueis_spectrum.is_equiv_glue187,9094
+  definition gluespectrum.glue207,9753
+  definition sigma_charpointed.phomotopy.sigma_char49,1559
+  structure sp_chain_complexspectrum.sp_chain_complex.rec386,18262
+  structure smapspectrum.smap278,13041
+    mkspectrum.shomotopy.mk318,15388
+structure gen_spectrumgen_spectrum192,9275
+  definition psp_suspspectrum.psp_susp335,16065
+structure is_spectrumis_spectrum187,9094
+  structure is_chain_complexspectrum.sp_chain_complex.is_chain_complex386,18262
+structure cases_ongen_prespectrum.cases_on181,8929
+  definition sfiberspectrum.sfiber382,18050
+  definition of_natspectrum.succ_str.of_nat244,11289
+  definition pathover_eq_Fl'eq.pathover_eq_Fl'28,913
+structure rec_ongen_prespectrum.rec_on181,8929
+  definition pconst_pcomposepointed.pconst_pcompose104,4907
+structure no_confusiongen_spectrum.no_confusion192,9275
+  structure rec_onspectrum.smap.rec_on278,13041
+    mkspectrum.sp_chain_complex.mk387,18308
+  definition sp_cotensorspectrum.sp_cotensor366,17352
+  definition pfiber_equiv_of_squarepointed.pfiber_equiv_of_square154,7944
+  structure destructspectrum.smap.destruct278,13041
+  definition loop_ppi_commutepointed.loop_ppi_commute163,8361
+  definition sidspectrum.sid293,13688
+  structure to_phomotopyspectrum.shomotopy.to_phomotopy317,15315
+structure to_is_spectrumgen_spectrum.to_is_spectrum192,9275
+  definition psp_of_nat_indexedspectrum.psp_of_nat_indexed216,10207
+  definition spispectrum.spi374,17699
+  definition sigma_charpointed.pmap.sigma_char40,1292
+  definition is_equiv_ppcompose_leftpointed.is_equiv_ppcompose_left85,3741
+
+algebra/module.hlean,3083
+mkleft_module.mk22,563
+structure destructleft_module.destruct20,467
+structure cases_onvector_space.cases_on72,2518
+  proposition smul_zerosmul_zero50,1651
+structure rec_onleft_module.rec_on20,467
+structure mul_smulleft_module.mul_smul20,467
+  proposition neg_one_smulneg_one_smul57,1961
+structure has_scalarhas_scalar13,339
+structure smul_left_distribvector_space.smul_left_distrib72,2518
+structure add_zerovector_space.add_zero72,2518
+structure cases_onhas_scalar.cases_on13,339
+  proposition one_smulone_smul44,1413
+structure zero_addleft_module.zero_add20,467
+structure rec_onhas_scalar.rec_on13,339
+structure smulvector_space.smul72,2518
+structure addvector_space.add72,2518
+structure smul_left_distribleft_module.smul_left_distrib20,467
+structure left_moduleleft_module.rec20,467
+  proposition mul_smulmul_smul41,1310
+  proposition smul_left_distribsmul_left_distrib35,1074
+structure destructhas_scalar.destruct13,339
+structure smulleft_module.smul20,467
+structure negleft_module.neg20,467
+structure vector_spacevector_space72,2518
+  proposition smul_negsmul_neg60,2054
+structure one_smulleft_module.one_smul20,467
+structure is_set_carrierleft_module.is_set_carrier20,467
+structure left_moduleleft_module20,467
+structure no_confusionleft_module.no_confusion20,467
+  proposition neg_smulneg_smul54,1811
+structure no_confusionhas_scalar.no_confusion13,339
+structure destructvector_space.destruct72,2518
+structure add_commvector_space.add_comm72,2518
+structure mkvector_space.mk72,2518
+structure zero_addvector_space.zero_add72,2518
+structure zerovector_space.zero72,2518
+structure add_zeroleft_module.add_zero20,467
+structure smul_right_distribvector_space.smul_right_distrib72,2518
+  proposition zero_smulzero_smul46,1488
+structure vector_spacevector_space.rec72,2518
+structure negvector_space.neg72,2518
+structure has_scalarhas_scalar.rec13,339
+structure add_assocvector_space.add_assoc72,2518
+structure one_smulvector_space.one_smul72,2518
+structure add_assocleft_module.add_assoc20,467
+  proposition sub_smul_right_distribsub_smul_right_distrib66,2336
+structure zeroleft_module.zero20,467
+structure smul_right_distribleft_module.smul_right_distrib20,467
+  proposition smul_right_distribsmul_right_distrib38,1191
+structure add_commleft_module.add_comm20,467
+structure is_set_carriervector_space.is_set_carrier72,2518
+structure add_left_invvector_space.add_left_inv72,2518
+structure cases_onleft_module.cases_on20,467
+structure rec_onvector_space.rec_on72,2518
+structure no_confusionvector_space.no_confusion72,2518
+  proposition smul_sub_left_distribsmul_sub_left_distrib63,2189
+structure smulhas_scalar.smul13,339
+structure to_add_comm_groupleft_module.to_add_comm_group20,467
+structure mul_smulvector_space.mul_smul72,2518
+structure add_left_invleft_module.add_left_inv20,467
+mkhas_scalar.mk14,374
+structure addleft_module.add20,467
+structure to_left_modulevector_space.to_left_module72,2518
+structure to_has_scalarleft_module.to_has_scalar20,467
