@@ -123,12 +123,11 @@ namespace group
     (is_normal_subgroup : is_normal R)
 
   attribute subgroup_rel.R [coercion]
-  abbreviation subgroup_to_rel      [parsing_only] [unfold 2] := @subgroup_rel.R
-  abbreviation subgroup_has_one     [parsing_only] [unfold 2] := @subgroup_rel.Rone
-  abbreviation subgroup_respect_mul [parsing_only] [unfold 2] := @subgroup_rel.Rmul
-  abbreviation subgroup_respect_inv [parsing_only] [unfold 2] := @subgroup_rel.Rinv
-  abbreviation is_normal_subgroup   [parsing_only] [unfold 2] :=
-  @normal_subgroup_rel.is_normal_subgroup
+  abbreviation subgroup_to_rel      [unfold 2] := @subgroup_rel.R
+  abbreviation subgroup_has_one     [unfold 2] := @subgroup_rel.Rone
+  abbreviation subgroup_respect_mul [unfold 2] := @subgroup_rel.Rmul
+  abbreviation subgroup_respect_inv [unfold 2] := @subgroup_rel.Rinv
+  abbreviation is_normal_subgroup   [unfold 2] := @normal_subgroup_rel.is_normal_subgroup
 
   variables {G G' : Group} (H : subgroup_rel G) (N : normal_subgroup_rel G) {g g' h h' k : G}
             {A B : CommGroup}
@@ -257,6 +256,29 @@ namespace group
 
   definition image {G H : Group} (f : G →g H) : Group :=
     subgroup (image_subgroup f)
+
+  definition CommGroup_of_Group.{u} (G : Group.{u}) (H : Π (g h : G), mul g h = mul h g) : CommGroup.{u} :=
+  begin
+    induction G,
+    induction struct,
+    fapply CommGroup.mk,
+    exact carrier,
+    fapply comm_group.mk,
+    repeat assumption, 
+    exact H
+  end
+
+  definition comm_image {G : CommGroup} {H : Group} (f : G →g H) : CommGroup :=
+  CommGroup_of_Group (image f) 
+  begin
+    intro g h,
+    induction g with x t, induction h with y s,
+    fapply subtype_eq,
+    induction t with p, induction s with q, induction p with g p, induction q with h q, induction p, induction q, 
+    refine (((respect_mul f g h)⁻¹ ⬝ _) ⬝ (respect_mul f h g)),
+    apply (ap f),
+    induction G, induction struct, apply mul_comm
+  end
 
   definition image_incl {G H : Group} (f : G →g H) : image f →g H :=
     incl_of_subgroup (image_subgroup f)
