@@ -248,7 +248,10 @@ definition comm_group_first_iso_thm (A B : CommGroup) (f : A →g B) : quotient_
     fapply image_lift,
     intro a,
     intro k,
-    fapply comm_gq_map_eq_one  (f a),
+    fapply image_incl_eq_one,
+    exact k,
+    exact sorry,
+    -- show that the above map is injective and surjective.
   end  
 
     /- set generating normal subgroup -/

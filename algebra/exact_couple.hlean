@@ -15,9 +15,9 @@ structure is_exact {A B C : CommGroup} (f : A →g B) (g : B →g C) :=
   ( im_in_ker : Π(a:A), g (f a) = 1)
   ( ker_in_im : Π(b:B), (g b = 1) → ∃(a:A), f a = b)  
 
-definition is_boundary {B : CommGroup} (d : B →g B) := Π(b:B), d (d b) = 1
+definition is_differential {B : CommGroup} (d : B →g B) := Π(b:B), d (d b) = 1
 
-definition image_subgroup_of_bd {B : CommGroup} (d : B →g B) (H : is_boundary d) : subgroup_rel (comm_kernel d) :=
+definition image_subgroup_of_diff {B : CommGroup} (d : B →g B) (H : is_differential d) : subgroup_rel (comm_kernel d) :=
   subgroup_rel_of_subgroup (image_subgroup d) (kernel_subgroup d)
   begin
     intro g p, 
@@ -27,8 +27,8 @@ definition image_subgroup_of_bd {B : CommGroup} (d : B →g B) (H : is_boundary 
     exact H h 
   end
 
-definition homology {B : CommGroup} (d : B →g B) (H : is_boundary d) : CommGroup := 
-  @quotient_comm_group (comm_kernel d) (image_subgroup_of_bd d H)
+definition homology {B : CommGroup} (d : B →g B) (H : is_differential d) : CommGroup := 
+  @quotient_comm_group (comm_kernel d) (image_subgroup_of_diff d H)
 
 structure exact_couple (A B : CommGroup) : Type :=
   ( i : A →g A) (j : A →g B) (k : B →g A)
@@ -36,12 +36,12 @@ structure exact_couple (A B : CommGroup) : Type :=
   ( exact_jk : is_exact j k)
   ( exact_ki : is_exact k i)
 
-definition boundary {A B : CommGroup} (CC : exact_couple A B) : B →g B := 
-  (exact_couple.j CC) ∘g (exact_couple.k CC)
+definition differential {A B : CommGroup} (EC : exact_couple A B) : B →g B := 
+  (exact_couple.j EC) ∘g (exact_couple.k EC)
 
-definition boundary_is_boundary {A B : CommGroup} (CC : exact_couple A B) : is_boundary (boundary CC) :=
+definition differential_is_differential {A B : CommGroup} (EC : exact_couple A B) : is_differential (differential EC) :=
   begin
-    induction CC, 
+    induction EC, 
     induction exact_jk, 
     intro b,
     exact (ap (group_fun j) (im_in_ker (group_fun k b))) ⬝ (respect_one j)
@@ -49,21 +49,21 @@ definition boundary_is_boundary {A B : CommGroup} (CC : exact_couple A B) : is_b
 
 section derived_couple
 
-  variables {A B : CommGroup} (CC : exact_couple A B) 
+  variables {A B : CommGroup} (EC : exact_couple A B) 
 
 definition derived_couple_A : CommGroup :=
-  comm_subgroup (image_subgroup (exact_couple.i CC))
+  comm_subgroup (image_subgroup (exact_couple.i EC))
 
 definition derived_couple_B : CommGroup :=
-  homology (boundary CC) (boundary_is_boundary CC)
+  homology (differential EC) (differential_is_differential EC)
 
-definition derived_couple_i : derived_couple_A CC →g derived_couple_A CC :=
-  (image_lift (exact_couple.i CC)) ∘g (image_incl (exact_couple.i CC))
+definition derived_couple_i : derived_couple_A EC →g derived_couple_A EC :=
+  (image_lift (exact_couple.i EC)) ∘g (image_incl (exact_couple.i EC))
 
-definition derived_couple_j : derived_couple_A CC →g derived_couple_B CC :=
+definition derived_couple_j : derived_couple_A EC →g derived_couple_B EC :=
   begin
+  exact sorry,
 --    refine (comm_gq_map (comm_kernel (boundary CC)) (image_subgroup_of_bd (boundary CC) (boundary_is_boundary CC))) ∘g _,
-  exact sorry
   end
 
 end derived_couple
