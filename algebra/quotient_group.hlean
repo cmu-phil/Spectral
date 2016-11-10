@@ -166,6 +166,17 @@ namespace group
     unfold quotient_rel, rewrite e, exact H
   end
 
+  definition comm_gq_map_eq_one {K : subgroup_rel A} (a :A) (H : K a) : comm_gq_map K a = 1 :=
+  begin
+    apply eq_of_rel,
+      have e : (g * 1⁻¹ = g),
+      from calc
+      g * 1⁻¹ = g * 1 : one_inv
+        ...   = g : mul_one,
+    unfold quotient_rel, rewrite e, exact H
+  end
+
+   --- there should be a smarter way to do this!! Please have a look, Floris.
   definition rel_of_gq_map_eq_one (g : G) (H : gq_map N g = 1) : N g :=
   begin
     have e : (g * 1⁻¹ = g),
@@ -225,11 +236,20 @@ definition comm_group_quotient_homomorphism (A B : CommGroup)(K : subgroup_rel A
     begin
     fapply quotient_group_elim,
     exact (comm_gq_map L) ∘g f,
-    
--- homomorphism.mk,
-  
-
+    intro a,
+    intro k,
+    exact @comm_gq_map_eq_one B L (f a) (p a k),
     end
+
+definition comm_group_first_iso_thm (A B : CommGroup) (f : A →g B) : quotient_comm_group (kernel_subgroup f) ≃g comm_image f :=
+  begin
+    fapply isomorphism.mk,
+    fapply quotient_group_elim,
+    fapply image_lift,
+    intro a,
+    intro k,
+    fapply comm_gq_map_eq_one  (f a),
+  end  
 
     /- set generating normal subgroup -/
 
