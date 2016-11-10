@@ -308,4 +308,18 @@ namespace group
     reflexivity
   end
 
+  definition image_incl_injective {G H : Group} (f : G →g H) : Π (x y : image f), (image_incl f x = image_incl f y) → (x = y) :=
+  begin
+    intro x y,
+    intro p,
+    fapply subtype_eq,
+    exact p
+  end 
+
+  definition image_incl_eq_one {G H : Group} (f : G →g H) : Π (x : image f), (image_incl f x = 1) → x = 1 :=
+  begin
+    intro x,
+    fapply image_incl_injective f x 1,
+  end
+
 end group
