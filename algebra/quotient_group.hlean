@@ -220,6 +220,17 @@ namespace group
       {fapply is_prop.elimo} }
   end
 
+definition comm_group_quotient_homomorphism (A B : CommGroup)(K : subgroup_rel A)(L : subgroup_rel B) (f : A →g B)
+     (p : Π(a:A), K(a) → L(f a)) : quotient_comm_group K →g quotient_comm_group L :=
+    begin
+    fapply quotient_group_elim,
+    exact (comm_gq_map L) ∘g f,
+    
+-- homomorphism.mk,
+  
+
+    end
+
     /- set generating normal subgroup -/
 
   section
