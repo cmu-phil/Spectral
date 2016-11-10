@@ -142,6 +142,13 @@ namespace group
   definition gq_map : G →g quotient_group N :=
   homomorphism.mk class_of (λ g h, idp)
 
+  definition comm_gq_map {G : CommGroup} (N : subgroup_rel G) : G →g quotient_comm_group N :=
+  begin
+    fapply homomorphism.mk,
+    exact class_of,
+    exact λ g h, idp
+  end
+
   namespace quotient
     notation `⟦`:max a `⟧`:0 := gq_map a _
   end quotient
