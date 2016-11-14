@@ -1,6 +1,6 @@
 -- definitions, theorems and attributes which should be moved to files in the HoTT library
 
-import homotopy.sphere2
+import homotopy.sphere2 homotopy.cofiber homotopy.wedge
 
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
      is_trunc function sphere
@@ -86,7 +86,7 @@ namespace pi -- move to types.arrow
   begin
     cases f with f p, esimp [pmap_eq],
     refine apd011 (apd011 pmap.mk) !eq_of_homotopy_idp _,
-    exact sorry
+    induction Y with Y y0, esimp at *, induction p, esimp, exact sorry
   end
 
   definition pfunext [constructor] (X Y : Type*) : ppmap X (Ω Y) ≃* Ω (ppmap X Y) :=
@@ -761,3 +761,39 @@ namespace sphere
   -- end
 
 end sphere
+
+namespace cofiber
+
+  -- replace with the definition of pcofiber (and remove primes in homotopy.smash)
+  definition pcofiber' [constructor] {A B : Type*} (f : A →* B) : Type* :=
+  pointed.MK (cofiber f) !cofiber.base
+  attribute pcofiber [constructor]
+  -- move ppushout attribute out namespace
+
+  protected definition elim {A : Type} {B : Type} {f : A → B} {P : Type}
+    (Pinl : P) (Pinr : B → P) (Pglue : Π (x : A), Pinl = Pinr (f x)) (y : cofiber f) : P :=
+  begin
+    induction y using pushout.elim with x x x, induction x, exact Pinl, exact Pinr x, exact Pglue x,
+  end
+
+end cofiber
+attribute cofiber.rec cofiber.elim [recursor 8] [unfold 8]
+
+namespace wedge
+  open pushout unit
+  definition wedge (A B : Type*) : Type := ppushout (pconst punit A) (pconst punit B)
+  local attribute wedge [reducible]
+  definition pwedge' (A B : Type*) : Type* := pointed.mk' (wedge A B)
+
+  protected definition rec {A B : Type*} {P : wedge A B → Type} (Pinl : Π(x : A), P (inl x))
+    (Pinr : Π(x : B), P (inr x)) (Pglue : pathover P (Pinl pt) (glue ⋆) (Pinr pt))
+    (y : wedge A B) : P y :=
+  by induction y; apply Pinl; apply Pinr; induction x; exact Pglue
+
+  protected definition elim {A B : Type*} {P : Type} (Pinl : A → P)
+    (Pinr : B → P) (Pglue : Pinl pt = Pinr pt) (y : wedge A B) : P :=
+  by induction y with a b x; exact Pinl a; exact Pinr b; induction x; exact Pglue
+
+end wedge
+
+attribute wedge.rec wedge.elim [recursor 7] [unfold 7]

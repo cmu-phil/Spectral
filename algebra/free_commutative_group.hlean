@@ -160,7 +160,7 @@ namespace group
     { exact !IH₁ ⬝ !IH₂}
   end
 
-  definition free_comm_group_hom [constructor] (f : X → A) : free_comm_group X →g A :=
+  definition free_comm_group_elim [constructor] (f : X → A) : free_comm_group X →g A :=
   begin
     fapply homomorphism.mk,
     { intro g, refine set_quotient.elim _ _ g,
@@ -171,15 +171,15 @@ namespace group
       esimp, refine !foldl_append ⬝ _, esimp, apply fgh_helper_mul}
   end
 
-  definition fn_of_free_comm_group_hom [unfold_full] (φ : free_comm_group X →g A) : X → A :=
+  definition fn_of_free_comm_group_elim [unfold_full] (φ : free_comm_group X →g A) : X → A :=
   φ ∘ free_comm_group_inclusion
 
   variables (X A)
-  definition free_comm_group_hom_equiv_fn : (free_comm_group X →g A) ≃ (X → A) :=
+  definition free_comm_group_elim_equiv_fn : (free_comm_group X →g A) ≃ (X → A) :=
   begin
     fapply equiv.MK,
-    { exact fn_of_free_comm_group_hom},
-    { exact free_comm_group_hom},
+    { exact fn_of_free_comm_group_elim},
+    { exact free_comm_group_elim},
     { intro f, apply eq_of_homotopy, intro x, esimp, unfold [foldl], apply one_mul},
     { intro φ, apply homomorphism_eq, refine set_quotient.rec_prop _, intro l, esimp,
       induction l with s l IH,

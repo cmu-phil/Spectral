@@ -35,13 +35,15 @@ namespace EM
     exact φ
   end
 
-  definition EM_functor {G H : CommGroup} (φ : G →g H) (n : ℕ) :
+  definition EM_functor [unfold 4] {G H : CommGroup} (φ : G →g H) (n : ℕ) :
     K G n →* K H n :=
   begin
     cases n with n,
     { exact pmap_of_homomorphism φ },
     { exact EMadd1_functor φ n }
   end
+
+  -- TODO: (K G n →* K H n) ≃ (G →g H)
 
   /- Equivalence of Groups and pointed connected 1-truncated types -/
 
@@ -159,10 +161,10 @@ namespace EM
     apply homotopy_of_inv_homotopy_pre (loopn_EMadd1 G n),
     intro g, esimp at *,
     revert X e r H1 H2, induction n with n IH: intro X e r H1 H2,
-    { refine !idp_con ⬝ _, refine !ap_compose'⁻¹ ⬝ _, esimp, apply elim_pth},
+    { refine !idp_con ⬝ _, refine !ap_compose'⁻¹ ⬝ _, apply elim_pth},
     { replace (succ (succ n)) with ((succ n) + 1), rewrite [apn_succ],
       exact sorry}
-    --exact !idp_con ⬝ !elim_pth
+    -- exact !idp_con ⬝ !elim_pth
   end
 
   -- definition is_conn_of_le (n : ℕ₋₂) (A : Type) [is_conn (n.+1) A] :

@@ -135,7 +135,8 @@ namespace group
   theorem is_normal_subgroup' (h : G) (r : N g) : N (h⁻¹ * g * h) :=
   inv_inv h ▸ is_normal_subgroup N h⁻¹ r
 
-  definition normal_subgroup_rel_comm.{u} (R : subgroup_rel.{_ u} A) : normal_subgroup_rel.{_ u} A :=
+  definition normal_subgroup_rel_comm.{u} [constructor] (R : subgroup_rel.{_ u} A)
+    : normal_subgroup_rel.{_ u} A :=
   ⦃normal_subgroup_rel, R,
     is_normal_subgroup := abstract begin
       intros g h r, xrewrite [mul.comm h g, mul_inv_cancel_right], exact r
@@ -243,14 +244,14 @@ namespace group
     intro g h, reflexivity
   end
 
-  definition subgroup_rel_of_subgroup {G : Group} (H1 H2 : subgroup_rel G) (hyp : Π (g : G), subgroup_rel.R H1 g → subgroup_rel.R H2 g) : subgroup_rel (subgroup H2) := 
-  subgroup_rel.mk 
+  definition subgroup_rel_of_subgroup {G : Group} (H1 H2 : subgroup_rel G) (hyp : Π (g : G), subgroup_rel.R H1 g → subgroup_rel.R H2 g) : subgroup_rel (subgroup H2) :=
+  subgroup_rel.mk
       -- definition of the subset
-    (λ h, H1 (incl_of_subgroup H2 h)) 
+    (λ h, H1 (incl_of_subgroup H2 h))
       -- contains 1
-    (subgroup_has_one H1) 
+    (subgroup_has_one H1)
       -- closed under multiplication
-    (λ g h p q, subgroup_respect_mul H1 p q) 
+    (λ g h p q, subgroup_respect_mul H1 p q)
       -- closed under inverses
     (λ h p, subgroup_respect_inv H1 p)
 

@@ -13,7 +13,7 @@ open eq algebra is_trunc set_quotient relation sigma sigma.ops prod trunc functi
 namespace group
 
   variables {G G' : Group} (H : subgroup_rel G) (N : normal_subgroup_rel G) {g g' h h' k : G}
-            {A B : CommGroup}
+  variables {A B : CommGroup}
 
   /- Quotient Group -/
 
@@ -139,7 +139,7 @@ namespace group
     : CommGroup :=
   CommGroup.mk _ (comm_group_qg (normal_subgroup_rel_comm N))
 
-  definition gq_map : G →g quotient_group N :=
+  definition qg_map [constructor] : G →g quotient_group N :=
   homomorphism.mk class_of (λ g h, idp)
 
   definition comm_gq_map {G : CommGroup} (N : subgroup_rel G) : G →g quotient_comm_group N :=
@@ -150,13 +150,13 @@ namespace group
   end
 
   namespace quotient
-    notation `⟦`:max a `⟧`:0 := gq_map a _
+    notation `⟦`:max a `⟧`:0 := qg_map a _
   end quotient
 
   open quotient
   variable {N}
 
-  definition gq_map_eq_one (g : G) (H : N g) : gq_map N g = 1 :=
+  definition qg_map_eq_one (g : G) (H : N g) : qg_map N g = 1 :=
   begin
     apply eq_of_rel,
       have e : (g * 1⁻¹ = g),
@@ -166,18 +166,18 @@ namespace group
     unfold quotient_rel, rewrite e, exact H
   end
 
-  definition comm_gq_map_eq_one {K : subgroup_rel A} (a :A) (H : K a) : comm_gq_map K a = 1 :=
+  definition comm_gq_map_eq_one {K : subgroup_rel A} (g :A) (H : K g) : comm_gq_map K g = 1 :=
   begin
     apply eq_of_rel,
       have e : (g * 1⁻¹ = g),
       from calc
       g * 1⁻¹ = g * 1 : one_inv
         ...   = g : mul_one,
-    unfold quotient_rel, rewrite e, exact H
+    unfold quotient_rel, xrewrite e, exact H
   end
 
    --- there should be a smarter way to do this!! Please have a look, Floris.
-  definition rel_of_gq_map_eq_one (g : G) (H : gq_map N g = 1) : N g :=
+  definition rel_of_qg_map_eq_one (g : G) (H : qg_map N g = 1) : N g :=
   begin
     have e : (g * 1⁻¹ = g),
     from calc
@@ -202,31 +202,31 @@ namespace group
       apply H, exact K},
     { intro g h, induction g using set_quotient.rec_prop with g,
       induction h using set_quotient.rec_prop with h,
-      krewrite (inverse (to_respect_mul (gq_map N) g h)),
-      unfold gq_map, esimp, exact to_respect_mul f g h }
+      krewrite (inverse (to_respect_mul (qg_map N) g h)),
+      unfold qg_map, esimp, exact to_respect_mul f g h }
   end
 
-  definition quotient_group_compute (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) : quotient_group_elim f H ∘g gq_map N ~ f :=
+  definition quotient_group_compute (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) : quotient_group_elim f H ∘g qg_map N ~ f :=
   begin
     intro g, reflexivity
   end
 
   definition gelim_unique (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) (k : quotient_group N →g G')
-    : ( k ∘g gq_map N ~ f ) → k ~ quotient_group_elim f H :=
+    : ( k ∘g qg_map N ~ f ) → k ~ quotient_group_elim f H :=
   begin
     intro K cg, induction cg using set_quotient.rec_prop with g,
     krewrite (quotient_group_compute f),
     exact K g
   end
 
-  definition gq_universal_property (f : G →g G') (H : Π⦃g⦄, N g → f g = 1)  :
-    is_contr (Σ(g : quotient_group N →g G'), g ∘g gq_map N = f) :=
+  definition qg_universal_property (f : G →g G') (H : Π⦃g⦄, N g → f g = 1)  :
+    is_contr (Σ(g : quotient_group N →g G'), g ∘g qg_map N = f) :=
   begin
     fapply is_contr.mk,
       -- give center of contraction
     { fapply sigma.mk, exact quotient_group_elim f H, apply homomorphism_eq, exact quotient_group_compute f H },
       -- give contraction
-    { intro pair, induction pair with g p, fapply sigma_eq, 
+    { intro pair, induction pair with g p, fapply sigma_eq,
       {esimp, apply homomorphism_eq, symmetry, exact gelim_unique f H g (homotopy_of_homomorphism_eq p)},
       {fapply is_prop.elimo} }
   end
@@ -252,37 +252,67 @@ definition comm_group_first_iso_thm (A B : CommGroup) (f : A →g B) : quotient_
     exact k,
     exact sorry,
     -- show that the above map is injective and surjective.
-  end  
+  end
 
     /- set generating normal subgroup -/
 
   section
 
-    parameters {GG : CommGroup} (S : GG → Prop)
+    parameters {A₁ : CommGroup} (S : A₁ → Prop)
+    variable {A₂ : CommGroup}
 
-    inductive generating_relation' : GG → Type :=
+    inductive generating_relation' : A₁ → Type :=
     | rincl : Π{g}, S g → generating_relation' g
     | rmul  : Π{g h}, generating_relation' g → generating_relation' h → generating_relation' (g * h)
     | rinv  : Π{g}, generating_relation' g → generating_relation' g⁻¹
     | rone  : generating_relation' 1
     open generating_relation'
-    definition generating_relation (g : GG) : Prop := ∥ generating_relation' g ∥
+    definition generating_relation (g : A₁) : Prop := ∥ generating_relation' g ∥
     local abbreviation R := generating_relation
     definition gr_one : R 1 := tr (rone S)
-    definition gr_inv (g : GG) : R g → R g⁻¹ :=
+    definition gr_inv (g : A₁) : R g → R g⁻¹ :=
     trunc_functor -1 rinv
-    definition gr_mul (g h : GG) : R g → R h → R (g * h) :=
+    definition gr_mul (g h : A₁) : R g → R h → R (g * h) :=
     trunc_functor2 rmul
 
-    definition normal_generating_relation : subgroup_rel GG :=
+    definition normal_generating_relation : subgroup_rel A₁ :=
     ⦃ subgroup_rel,
-      R := generating_relation,
+      R := R,
       Rone := gr_one,
       Rinv := gr_inv,
       Rmul := gr_mul⦄
 
-    parameter (GG)
+    parameter (A₁)
     definition quotient_comm_group_gen : CommGroup := quotient_comm_group normal_generating_relation
+
+    definition gqg_map [constructor] : A₁ →g quotient_comm_group_gen :=
+    qg_map _
+
+    parameter {A₁}
+    definition gqg_eq_of_rel {g h : A₁} (H : S (g * h⁻¹)) : gqg_map g = gqg_map h :=
+    eq_of_rel (tr (rincl H))
+
+    definition gqg_elim (f : A₁ →g A₂) (H : Π⦃g⦄, S g → f g = 1)
+      : quotient_comm_group_gen →g A₂ :=
+    begin
+      apply quotient_group_elim f,
+      intro g r, induction r with r,
+      induction r with g s g h r r' IH1 IH2 g r IH,
+      { exact H s },
+      { exact !respect_mul ⬝ ap011 mul IH1 IH2 ⬝ !one_mul },
+      { exact !respect_inv ⬝ ap inv IH ⬝ !one_inv },
+      { apply respect_one }
+    end
+
+    definition gqg_elim_compute (f : A₁ →g A₂) (H : Π⦃g⦄, S g → f g = 1)
+      : gqg_elim f H ∘g gqg_map ~ f :=
+    begin
+      intro g, reflexivity
+    end
+
+    definition gqg_elim_unique (f : A₁ →g A₂) (H : Π⦃g⦄, S g → f g = 1)
+      (k : quotient_comm_group_gen →g A₂) : ( k ∘g gqg_map ~ f ) → k ~ gqg_elim f H :=
+    !gelim_unique
 
   end
 

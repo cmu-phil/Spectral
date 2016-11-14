@@ -8,7 +8,7 @@
 
 import homotopy.circle homotopy.join types.pointed homotopy.cofiber ..move_to_lib
 
-open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber
+open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops wedge
 
 namespace smash
 
@@ -183,7 +183,7 @@ namespace smash
 
   /- smash A B ≃ pcofiber (pprod_of_pwedge A B) -/
 
-  definition prod_of_pwedge [unfold 3] (v : pwedge A B) : A × B :=
+  definition prod_of_pwedge [unfold 3] (v : pwedge' A B) : A × B :=
   begin
     induction v with a b ,
     { exact (a, pt) },
@@ -191,7 +191,7 @@ namespace smash
     { reflexivity }
   end
 
-  definition pprod_of_pwedge [constructor] : pwedge A B →* A ×* B :=
+  definition pprod_of_pwedge [constructor] : pwedge' A B →* A ×* B :=
   begin
     fconstructor,
     { intro v, induction v with a b ,
@@ -202,16 +202,35 @@ namespace smash
   end
 
   attribute pcofiber [constructor]
-  definition pcofiber_of_smash (x : smash A B) : pcofiber (@pprod_of_pwedge A B) :=
+  definition pcofiber_of_smash (x : smash A B) : pcofiber' (@pprod_of_pwedge A B) :=
   begin
     induction x,
     { exact pushout.inr (a, b) },
     { exact pushout.inl ⋆ },
     { exact pushout.inl ⋆ },
-    { symmetry, },
-    { }
+    { symmetry, exact pushout.glue (pushout.inl a) },
+    { symmetry, exact pushout.glue (pushout.inr b) }
   end
 
+  definition ap_eq_ap011 {A B C X : Type} (f : A → B → C) (g : X → A) (h : X → B) {x x' : X}
+    (p : x = x') : ap (λx, f (g x) (h x)) p = ap011 f (ap g p) (ap h p) :=
+  by induction p; reflexivity
+
+  definition smash_of_pcofiber (x : pcofiber' (@pprod_of_pwedge A B)) : smash A B :=
+  begin
+    induction x with x x,
+    { exact smash.mk pt pt },
+    { exact smash.mk x.1 x.2 },
+    { induction x with a b: esimp,
+      { apply gluel' },
+      { apply gluer' },
+      { apply eq_pathover_constant_left, refine _ ⬝hp (ap_eq_ap011 smash.mk _ _ _)⁻¹,
+        unfold [wedge.elim],
+        rewrite [ap_compose' prod.pr1, ap_compose' prod.pr2],
+        -- TODO: define elim_glue for wedges and remove krewrite
+        krewrite [pushout.elim_glue], esimp, apply vdeg_square,
+        exact !con.right_inv ⬝ !con.right_inv⁻¹ }}
+  end
 
   /- smash A S¹ = susp A -/
   open susp
