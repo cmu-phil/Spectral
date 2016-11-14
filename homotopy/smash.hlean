@@ -26,8 +26,10 @@ namespace smash
   definition smash' (A B : Type*) : Type := pushout (@prod_of_sum A B) (@bool_of_sum A B)
   protected definition mk (a : A) (b : B) : smash' A B := inl (a, b)
 
+  definition pointed_smash' [instance] [constructor] (A B : Type*) : pointed (smash' A B) :=
+  pointed.mk (smash.mk pt pt)
   definition smash [constructor] (A B : Type*) : Type* :=
-  pointed.MK (smash' A B) (smash.mk pt pt)
+  pointed.mk' (smash' A B)
 
   definition auxl : smash A B := inr ff
   definition auxr : smash A B := inr tt
@@ -183,7 +185,7 @@ namespace smash
 
   /- smash A B ≃ pcofiber (pprod_of_pwedge A B) -/
 
-  definition prod_of_pwedge [unfold 3] (v : pwedge' A B) : A × B :=
+  definition prod_of_wedge [unfold 3] (v : pwedge' A B) : A × B :=
   begin
     induction v with a b ,
     { exact (a, pt) },
@@ -191,18 +193,17 @@ namespace smash
     { reflexivity }
   end
 
+  variables (A B)
   definition pprod_of_pwedge [constructor] : pwedge' A B →* A ×* B :=
   begin
     fconstructor,
-    { intro v, induction v with a b ,
-      { exact (a, pt) },
-      { exact (pt, b) },
-      { reflexivity }},
+    { exact prod_of_wedge },
     { reflexivity }
   end
 
+  variables {A B}
   attribute pcofiber [constructor]
-  definition pcofiber_of_smash (x : smash A B) : pcofiber' (@pprod_of_pwedge A B) :=
+  definition pcofiber_of_smash [unfold 3] (x : smash A B) : pcofiber' (@pprod_of_pwedge A B) :=
   begin
     induction x,
     { exact pushout.inr (a, b) },
@@ -212,25 +213,71 @@ namespace smash
     { symmetry, exact pushout.glue (pushout.inr b) }
   end
 
+  -- move
   definition ap_eq_ap011 {A B C X : Type} (f : A → B → C) (g : X → A) (h : X → B) {x x' : X}
     (p : x = x') : ap (λx, f (g x) (h x)) p = ap011 f (ap g p) (ap h p) :=
   by induction p; reflexivity
 
-  definition smash_of_pcofiber (x : pcofiber' (@pprod_of_pwedge A B)) : smash A B :=
+  definition smash_of_pcofiber_glue [unfold 3] (x : pwedge' A B) :
+    Point (smash A B) = smash.mk (prod_of_wedge x).1 (prod_of_wedge x).2  :=
+  begin
+    induction x with a b: esimp,
+    { apply gluel' },
+    { apply gluer' },
+    { apply eq_pathover_constant_left, refine _ ⬝hp (ap_eq_ap011 smash.mk _ _ _)⁻¹,
+      rewrite [ap_compose' prod.pr1, ap_compose' prod.pr2],
+      -- TODO: define elim_glue for wedges and remove k in krewrite
+      krewrite [pushout.elim_glue], esimp, apply vdeg_square,
+      exact !con.right_inv ⬝ !con.right_inv⁻¹ }
+  end
+
+  definition smash_of_pcofiber [unfold 3] (x : pcofiber' (pprod_of_pwedge A B)) : smash A B :=
   begin
     induction x with x x,
     { exact smash.mk pt pt },
     { exact smash.mk x.1 x.2 },
-    { induction x with a b: esimp,
-      { apply gluel' },
-      { apply gluer' },
-      { apply eq_pathover_constant_left, refine _ ⬝hp (ap_eq_ap011 smash.mk _ _ _)⁻¹,
-        unfold [wedge.elim],
-        rewrite [ap_compose' prod.pr1, ap_compose' prod.pr2],
-        -- TODO: define elim_glue for wedges and remove krewrite
-        krewrite [pushout.elim_glue], esimp, apply vdeg_square,
-        exact !con.right_inv ⬝ !con.right_inv⁻¹ }}
+    { exact smash_of_pcofiber_glue x }
   end
+
+  definition pcofiber_of_smash_of_pcofiber (x : pcofiber' (pprod_of_pwedge A B)) :
+    pcofiber_of_smash (smash_of_pcofiber x) = x :=
+  begin
+    induction x with x x,
+    { refine (pushout.glue pt)⁻¹ },
+    { },
+    { }
+  end
+
+  definition smash_of_pcofiber_of_smash (x : smash A B) :
+    smash_of_pcofiber (pcofiber_of_smash x) = x :=
+  begin
+    induction x,
+    { reflexivity },
+    { apply gluel },
+    { apply gluer },
+    { apply eq_pathover_id_right, refine ap_compose smash_of_pcofiber _ _ ⬝ph _,
+      refine ap02 _ !elim_gluel ⬝ph _, refine !ap_inv ⬝ph _, refine !pushout.elim_glue⁻² ⬝ph _,
+      esimp, apply square_of_eq, refine !idp_con ⬝ _ ⬝ whisker_right !inv_con_inv_right⁻¹ _,
+      exact !inv_con_cancel_right⁻¹ },
+    { apply eq_pathover_id_right, refine ap_compose smash_of_pcofiber _ _ ⬝ph _,
+      refine ap02 _ !elim_gluer ⬝ph _, refine !ap_inv ⬝ph _, refine !pushout.elim_glue⁻² ⬝ph _,
+      esimp, apply square_of_eq, refine !idp_con ⬝ _ ⬝ whisker_right !inv_con_inv_right⁻¹ _,
+      exact !inv_con_cancel_right⁻¹ },
+  end
+
+  variables (A B)
+  definition smash_pequiv_pcofiber : smash A B ≃* pcofiber' (pprod_of_pwedge A B) :=
+  begin
+    fapply pequiv_of_equiv,
+    { fapply equiv.MK,
+      { apply pcofiber_of_smash },
+      { apply smash_of_pcofiber },
+      { exact pcofiber_of_smash_of_pcofiber },
+      { exact smash_of_pcofiber_of_smash }},
+    { esimp, symmetry, apply pushout.glue pt }
+  end
+
+  variables {A B}
 
   /- smash A S¹ = susp A -/
   open susp
