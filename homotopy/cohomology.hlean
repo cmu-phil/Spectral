@@ -6,9 +6,12 @@ Authors: Floris van Doorn
 Reduced cohomology
 -/
 
-import .EM algebra.arrow_group
+import .EM algebra.arrow_group .spectrum
 
-open eq spectrum int trunc pointed EM group algebra circle sphere nat
+open eq spectrum int trunc pointed EM group algebra circle sphere nat EM.ops
+
+definition EM_spectrum /-[constructor]-/ (G : CommGroup) : spectrum :=
+spectrum.Mk (K G) (λn, (loop_EM G n)⁻¹ᵉ*)
 
 definition cohomology (X : Type*) (Y : spectrum) (n : ℤ) : CommGroup :=
 CommGroup_pmap X (πag[2] (Y (2+n)))

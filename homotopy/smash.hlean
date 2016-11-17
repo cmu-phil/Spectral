@@ -244,8 +244,8 @@ namespace smash
   begin
     induction x with x x,
     { refine (pushout.glue pt)⁻¹ },
-    { },
-    { }
+    { exact sorry },
+    { exact sorry }
   end
 
   definition smash_of_pcofiber_of_smash (x : smash A B) :

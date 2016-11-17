@@ -14,6 +14,23 @@ attribute isomorphism._trans_of_to_hom [unfold 3]
 attribute homomorphism.struct [unfold 3]
 attribute pequiv.trans pequiv.symm [constructor]
 
+namespace equiv
+
+  variables {A B : Type} (f : A ≃ B) {a : A} {b : B}
+  definition to_eq_of_eq_inv (p : a = f⁻¹ b) : f a = b :=
+  ap f p ⬝ right_inv f b
+
+  definition to_eq_of_inv_eq (p : f⁻¹ b = a) : b = f a :=
+  (eq_of_eq_inv p⁻¹)⁻¹
+
+  definition to_inv_eq_of_eq (p : b = f a) : f⁻¹ b = a :=
+  ap f⁻¹ p ⬝ left_inv f a
+
+  definition to_eq_inv_of_eq (p : f a = b) : a = f⁻¹ b :=
+  (inv_eq_of_eq p⁻¹)⁻¹
+
+end equiv open equiv
+
 namespace sigma
 
   definition sigma_equiv_sigma_left' [constructor] {A A' : Type} {B : A' → Type} (Hf : A ≃ A') : (Σa, B (Hf a)) ≃ (Σa', B a') :=
@@ -77,7 +94,123 @@ namespace group
 
   abbreviation gid [constructor] := @homomorphism_id
 
+  definition comm_group.to_has_mul {A : Type} (H : comm_group A) : has_mul A := _
+  local attribute comm_group.to_has_mul [coercion]
+
+  definition comm_group_eq {A : Type} {G H : comm_group A}
+    (same_mul : Π(g h : A), @mul A G g h = @mul A H g h)
+    : G = H :=
+  begin
+    have g_eq : @comm_group.to_group A G = @comm_group.to_group A H, from group_eq same_mul,
+    cases G with Gm Gs Gh1 G1 Gh2 Gh3 Gi Gh4 Gh5,
+    cases H with Hm Hs Hh1 H1 Hh2 Hh3 Hi Hh4 Hh5,
+    have pm : Gm = Hm, from ap (@mul _ ∘ _) g_eq,
+    have pi : Gi = Hi, from ap (@inv _ ∘ _) g_eq,
+    have p1 : G1 = H1, from ap (@one _ ∘ _) g_eq,
+    induction pm, induction pi, induction p1,
+    have ps  : Gs  = Hs,  from !is_prop.elim,
+    have ph1 : Gh1 = Hh1, from !is_prop.elim,
+    have ph2 : Gh2 = Hh2, from !is_prop.elim,
+    have ph3 : Gh3 = Hh3, from !is_prop.elim,
+    have ph4 : Gh4 = Hh4, from !is_prop.elim,
+    have ph5 : Gh5 = Hh5, from !is_prop.elim,
+    induction ps, induction ph1, induction ph2, induction ph3, induction ph4, induction ph5,
+    reflexivity
+  end
+
+  definition comm_group_pathover {A B : Type} {G : comm_group A} {H : comm_group B} {p : A = B}
+    (resp_mul : Π(g h : A), cast p (g * h) = cast p g * cast p h) : G =[p] H :=
+  begin
+    induction p,
+    apply pathover_idp_of_eq, exact comm_group_eq (resp_mul)
+  end
+
+  definition CommGroup_eq_of_isomorphism {G₁ G₂ : CommGroup} (φ : G₁ ≃g G₂) : G₁ = G₂ :=
+  begin
+    induction G₁, induction G₂,
+    apply apd011 CommGroup.mk (ua (equiv_of_isomorphism φ)),
+    apply comm_group_pathover,
+    intro g h, exact !cast_ua ⬝ respect_mul φ g h ⬝ ap011 mul !cast_ua⁻¹ !cast_ua⁻¹
+  end
+
 end group open group
+
+namespace trunc
+
+  -- TODO: make argument in ptrunc_pequiv implicit
+
+  definition ptr [constructor] (n : ℕ₋₂) (A : Type*) : A →* ptrunc n A :=
+  pmap.mk tr idp
+
+  definition puntrunc [constructor] (n : ℕ₋₂) (A : Type*) [is_trunc n A] : ptrunc n A →* A :=
+  pmap.mk untrunc_of_is_trunc idp
+
+  definition ptrunc.elim [constructor] (n : ℕ₋₂) {X Y : Type*} [is_trunc n Y] (f : X →* Y) :
+    ptrunc n X →* Y :=
+  pmap.mk (trunc.elim f) (respect_pt f)
+
+  definition ptrunc_elim_ptr [constructor] (n : ℕ₋₂) {X Y : Type*} [is_trunc n Y] (f : X →* Y) :
+    ptrunc.elim n f ∘* ptr n X ~* f :=
+  begin
+    fapply phomotopy.mk,
+    { reflexivity },
+    { reflexivity }
+  end
+
+  definition ptrunc_elim_phomotopy (n : ℕ₋₂) {X Y : Type*} [is_trunc n Y] {f g : X →* Y}
+    (H : f ~* g) : ptrunc.elim n f ~* ptrunc.elim n g :=
+  begin
+    fapply phomotopy.mk,
+    { intro x, induction x with x, exact H x },
+    { exact to_homotopy_pt H }
+  end
+
+  definition ap1_ptrunc_functor (n : ℕ₋₂) {A B : Type*} (f : A →* B) :
+    Ω→ (ptrunc_functor (n.+1) f) ∘* (loop_ptrunc_pequiv n A)⁻¹ᵉ* ~*
+    (loop_ptrunc_pequiv n B)⁻¹ᵉ* ∘* ptrunc_functor n (Ω→ f) :=
+  begin
+    fapply phomotopy.mk,
+    { intro p, induction p with p,
+      refine (!ap_inv⁻¹ ◾ !ap_compose⁻¹ ◾ idp) ⬝ _ ⬝ !ap_con⁻¹,
+      apply whisker_right, refine _ ⬝ !ap_con⁻¹, exact whisker_left _ !ap_compose },
+    { induction B with B b, induction f with f p, esimp at f, esimp at p, induction p, reflexivity }
+  end
+
+  definition ap1_ptrunc_elim (n : ℕ₋₂) {A B : Type*} (f : A →* B) [is_trunc (n.+1) B] :
+    Ω→ (ptrunc.elim (n.+1) f) ∘* (loop_ptrunc_pequiv n A)⁻¹ᵉ* ~*
+    ptrunc.elim n (Ω→ f) :=
+  begin
+    fapply phomotopy.mk,
+    { intro p, induction p with p, exact idp ◾ !ap_compose⁻¹ ◾ idp },
+    { reflexivity }
+  end
+
+  definition ap1_ptr (n : ℕ₋₂) (A : Type*) :
+    Ω→ (ptr (n.+1) A) ~* (loop_ptrunc_pequiv n A)⁻¹ᵉ* ∘* ptr n (Ω A) :=
+  begin
+    fapply phomotopy.mk,
+    { intro p, apply idp_con },
+    { reflexivity }
+  end
+
+  -- definition ap1_ptr' (n : ℕ₋₂) (A : Type*) :
+  --   loop_ptrunc_pequiv n A ∘* Ω→ (ptr (n.+1) A) ~* ptr n (Ω A) :=
+  -- begin
+  --   fapply phomotopy.mk,
+  --   { intro p, refine ap trunc.encode !idp_con ⬝ _, esimp, },
+  --   { reflexivity }
+  -- end
+
+  definition ptrunc_elim_ptrunc_functor (n : ℕ₋₂) {A B C : Type*} (g : B →* C) (f : A →* B)
+    [is_trunc n C] :
+    ptrunc.elim n g ∘* ptrunc_functor n f ~* ptrunc.elim n (g ∘* f) :=
+  begin
+    fapply phomotopy.mk,
+    { intro x, induction x with a, reflexivity },
+    { esimp, exact !idp_con ⬝ whisker_right !ap_compose _ },
+  end
+
+end trunc open trunc
 
 namespace pi -- move to types.arrow
 
@@ -218,6 +351,73 @@ namespace pointed
 
   infixr ` ∘*ᵉ `:60 := pequiv_compose
 
+  definition pcompose2 {A B C : Type*} {g g' : B →* C} {f f' : A →* B} (p : f ~* f') (q : g ~* g') :
+    g ∘* f ~* g' ∘* f' :=
+  pwhisker_right f q ⬝* pwhisker_left g' p
+
+  infixr ` ◾* `:80 := pcompose2
+
+  definition phomotopy_pinv_of_phomotopy_pid {A B : Type*} {f : A →* B} {g : B ≃* A}
+    (p : g ∘* f ~* pid A) : f ~* g⁻¹ᵉ* :=
+  phomotopy_pinv_left_of_phomotopy p ⬝* !pcompose_pid
+
+  definition phomotopy_pinv_of_phomotopy_pid' {A B : Type*} {f : A →* B} {g : B ≃* A}
+    (p : f ∘* g ~* pid B) : f ~* g⁻¹ᵉ* :=
+  phomotopy_pinv_right_of_phomotopy p ⬝* !pid_pcompose
+
+  definition pinv_phomotopy_of_pid_phomotopy {A B : Type*} {f : A →* B} {g : B ≃* A}
+    (p : pid A ~* g ∘* f) : g⁻¹ᵉ* ~* f :=
+  (phomotopy_pinv_of_phomotopy_pid p⁻¹*)⁻¹*
+
+  definition pinv_phomotopy_of_pid_phomotopy' {A B : Type*} {f : A →* B} {g : B ≃* A}
+    (p : pid B ~* f ∘* g) : g⁻¹ᵉ* ~* f :=
+  (phomotopy_pinv_of_phomotopy_pid' p⁻¹*)⁻¹*
+
+  definition pinv_pinv {A B : Type*} (f : A ≃* B) : (f⁻¹ᵉ*)⁻¹ᵉ* ~* f :=
+  (phomotopy_pinv_of_phomotopy_pid (pleft_inv f))⁻¹*
+
+  definition pinv2 {A B : Type*} {f f' : A ≃* B} (p : f ~* f') : f⁻¹ᵉ* ~* f'⁻¹ᵉ* :=
+  phomotopy_pinv_of_phomotopy_pid (pinv_right_phomotopy_of_phomotopy (!pid_pcompose ⬝* p)⁻¹*)
+
+  postfix [parsing_only] `⁻²*`:(max+10) := pinv2
+
+  definition trans_pinv {A B C : Type*} (f : A ≃* B) (g : B ≃* C) :
+    (f ⬝e* g)⁻¹ᵉ* ~* f⁻¹ᵉ* ∘* g⁻¹ᵉ* :=
+  begin
+    refine (phomotopy_pinv_of_phomotopy_pid _)⁻¹*,
+    refine !passoc ⬝* _,
+    refine pwhisker_left _ (!passoc⁻¹* ⬝* pwhisker_right _ !pright_inv ⬝* !pid_pcompose) ⬝* _,
+    apply pright_inv
+  end
+
+  definition pinv_trans_pinv_left {A B C : Type*} (f : B ≃* A) (g : B ≃* C) :
+    (f⁻¹ᵉ* ⬝e* g)⁻¹ᵉ* ~* f ∘* g⁻¹ᵉ* :=
+  !trans_pinv ⬝* pwhisker_right _ !pinv_pinv
+
+  definition pinv_trans_pinv_right {A B C : Type*} (f : A ≃* B) (g : C ≃* B) :
+    (f ⬝e* g⁻¹ᵉ*)⁻¹ᵉ* ~* f⁻¹ᵉ* ∘* g :=
+  !trans_pinv ⬝* pwhisker_left _ !pinv_pinv
+
+  definition pinv_trans_pinv_pinv {A B C : Type*} (f : B ≃* A) (g : C ≃* B) :
+    (f⁻¹ᵉ* ⬝e* g⁻¹ᵉ*)⁻¹ᵉ* ~* f ∘* g :=
+  !trans_pinv ⬝* !pinv_pinv ◾* !pinv_pinv
+
+  definition pinv_pcompose_cancel_left {A B C : Type*} (g : B ≃* C) (f : A →* B) :
+    g⁻¹ᵉ* ∘* (g ∘* f) ~* f :=
+  !passoc⁻¹* ⬝* pwhisker_right f !pleft_inv ⬝* !pid_pcompose
+
+  definition pcompose_pinv_cancel_left {A B C : Type*} (g : C ≃* B) (f : A →* B) :
+    g ∘* (g⁻¹ᵉ* ∘* f) ~* f :=
+  !passoc⁻¹* ⬝* pwhisker_right f !pright_inv ⬝* !pid_pcompose
+
+  definition pinv_pcompose_cancel_right {A B C : Type*} (g : B →* C) (f : B ≃* A) :
+    (g ∘* f⁻¹ᵉ*) ∘* f ~* g :=
+  !passoc ⬝* pwhisker_left g !pleft_inv ⬝* !pcompose_pid
+
+  definition pcompose_pinv_cancel_right {A B C : Type*} (g : B →* C) (f : A ≃* B) :
+    (g ∘* f) ∘* f⁻¹ᵉ* ~* g :=
+  !passoc ⬝* pwhisker_left g !pright_inv ⬝* !pcompose_pid
+
   definition pmap.sigma_char [constructor] {A B : Type*} : (A →* B) ≃ Σ(f : A → B), f pt = pt :=
   begin
     fapply equiv.MK : intros f,
@@ -269,31 +469,6 @@ namespace pointed
                      ... /- ≃ Σ(f : A → Ω B), f pt = pt                        : erfl
                      ... -/ ≃ (A →* Ω B)                                       : pmap.sigma_char)
       (by reflexivity)
-
-  -- definition ppcompose_left {A B C : Type*} (g : B →* C) : ppmap A B →* ppmap A C :=
-  --   pmap.mk (pcompose g) (eq_of_phomotopy (phomotopy.mk (λa, resp_pt g) (idp_con _)⁻¹))
-
-  -- definition is_equiv_ppcompose_left [instance] {A B C : Type*} (g : B →* C) [H : is_equiv g] : is_equiv (@ppcompose_left A B C g) :=
-  -- begin
-  --   fapply is_equiv.adjointify,
-  --   { exact (ppcompose_left (pequiv_of_pmap g H)⁻¹ᵉ*) },
-  --   all_goals (intros f; esimp; apply eq_of_phomotopy),
-  --   { exact calc g ∘* ((pequiv_of_pmap g H)⁻¹ᵉ* ∘* f) ~* (g ∘* (pequiv_of_pmap g H)⁻¹ᵉ*) ∘* f : passoc
-  --                                                 ... ~* pid _ ∘* f : pwhisker_right f (pright_inv (pequiv_of_pmap g H))
-  --                                                 ... ~* f : pid_pcompose f },
-  --   { exact calc (pequiv_of_pmap g H)⁻¹ᵉ* ∘* (g ∘* f) ~* ((pequiv_of_pmap g H)⁻¹ᵉ* ∘* g) ∘* f : passoc
-  --                                                 ... ~* pid _ ∘* f : pwhisker_right f (pleft_inv (pequiv_of_pmap g H))
-  --                                                 ... ~* f : pid_pcompose f }
-  -- end
-
-  -- definition pequiv_ppcompose_left {A B C : Type*} (g : B ≃* C) : ppmap A B ≃* ppmap A C :=
-  --   pequiv_of_pmap (ppcompose_left g) _
-
-  -- definition pcompose_pconst {A B C : Type*} (f : B →* C) : f ∘* pconst A B ~* pconst A C :=
-  --   phomotopy.mk (λa, respect_pt f) (idp_con _)⁻¹
-
-  -- definition pconst_pcompose {A B C : Type*} (f : A →* B) : pconst B C ∘* f ~* pconst A C :=
-  --   phomotopy.mk (λa, rfl) (ap_constant _ _)⁻¹
 
   definition ap1_pconst (A B : Type*) : Ω→(pconst A B) ~* pconst (Ω A) (Ω B) :=
     phomotopy.mk (λp, idp_con _ ⬝ ap_constant p pt) rfl
@@ -469,6 +644,18 @@ namespace susp
     { exact f },
     { exact psusp_functor g }
   end
+
+  definition iterate_psusp_succ_in (n : ℕ) (A : Type*) :
+    iterate_psusp (succ n) A ≃* iterate_psusp n (psusp A) :=
+  begin
+    induction n with n IH,
+    { reflexivity},
+    { exact psusp_equiv IH}
+  end
+
+  definition is_conn_psusp [instance] (n : trunc_index) (A : Type*)
+    [H : is_conn n A] : is_conn (n .+1) (psusp A) :=
+  is_conn_susp n A
 
 end susp
 
@@ -674,26 +861,46 @@ namespace new_susp
     { reflexivity }
   end
 
+  definition psusp.elim [constructor] {X Y : Type*} (f : X →* Ω Y) : psusp X →* Y :=
+  loop_psusp_counit Y ∘* psusp_functor f
+
+  definition loop_psusp_intro [constructor] {X Y : Type*} (f : psusp X →* Y) : X →* Ω Y :=
+  ap1 f ∘* loop_psusp_unit X
+
+  definition psusp_adjoint_loop_right_inv {X Y : Type*} (g : X →* Ω Y) :
+    loop_psusp_intro (psusp.elim g) ~* g :=
+  begin
+    refine !pwhisker_right !ap1_pcompose ⬝* _,
+    refine !passoc ⬝* _,
+    refine !pwhisker_left !loop_psusp_unit_natural⁻¹* ⬝* _,
+    refine !passoc⁻¹* ⬝* _,
+    refine !pwhisker_right !loop_psusp_counit_unit ⬝* _,
+    apply pid_pcompose
+  end
+
+  definition psusp_adjoint_loop_left_inv {X Y : Type*} (f : psusp X →* Y) :
+    psusp.elim (loop_psusp_intro f) ~* f :=
+  begin
+    refine !pwhisker_left !psusp_functor_compose ⬝* _,
+    refine !passoc⁻¹* ⬝* _,
+    refine !pwhisker_right !loop_psusp_counit_natural⁻¹* ⬝* _,
+    refine !passoc ⬝* _,
+    refine !pwhisker_left !loop_psusp_unit_counit ⬝* _,
+    apply pcompose_pid
+  end
+
+  definition ap1_psusp_elim {A : Type*} {X : Type*} (p : A →* Ω X) :
+    Ω→(psusp.elim p) ∘* loop_psusp_unit A ~* p :=
+  psusp_adjoint_loop_right_inv p
+
   -- TODO: rename to psusp_adjoint_loop (also in above lemmas)
   definition psusp_adjoint_loop_unpointed [constructor] (X Y : Type*) : psusp X →* Y ≃ X →* Ω Y :=
   begin
     fapply equiv.MK,
-    { intro f, exact ap1 f ∘* loop_psusp_unit X },
-    { intro g, exact loop_psusp_counit Y ∘* psusp_functor g },
-    { intro g, apply eq_of_phomotopy, esimp,
-      refine !pwhisker_right !ap1_pcompose ⬝* _,
-      refine !passoc ⬝* _,
-      refine !pwhisker_left !loop_psusp_unit_natural⁻¹* ⬝* _,
-      refine !passoc⁻¹* ⬝* _,
-      refine !pwhisker_right !loop_psusp_counit_unit ⬝* _,
-      apply pid_pcompose },
-    { intro f, apply eq_of_phomotopy, esimp,
-      refine !pwhisker_left !psusp_functor_compose ⬝* _,
-      refine !passoc⁻¹* ⬝* _,
-      refine !pwhisker_right !loop_psusp_counit_natural⁻¹* ⬝* _,
-      refine !passoc ⬝* _,
-      refine !pwhisker_left !loop_psusp_unit_counit ⬝* _,
-      apply pcompose_pid },
+    { exact loop_psusp_intro },
+    { exact psusp.elim },
+    { intro g, apply eq_of_phomotopy, exact psusp_adjoint_loop_right_inv g },
+    { intro f, apply eq_of_phomotopy, exact psusp_adjoint_loop_left_inv f }
   end
 
   definition psusp_adjoint_loop_pconst (X Y : Type*) :
@@ -710,8 +917,120 @@ namespace new_susp
     apply psusp_adjoint_loop_pconst
   end
 
+  -- in freudenthal
+  open trunc
+  local attribute ptrunc_pequiv_ptrunc_of_le [constructor]
+  definition to_pmap_freudenthal_pequiv {A : Type*} (n k : ℕ) [is_conn n A] (H : k ≤ 2 * n)
+    : freudenthal_pequiv A H ~* ptrunc_functor k (loop_psusp_unit A) :=
+  begin
+    fapply phomotopy.mk,
+    { intro x, induction x with a, reflexivity },
+    { refine !idp_con ⬝ _, refine _ ⬝ ap02 _ !idp_con⁻¹, refine _ ⬝ !ap_compose, apply ap_compose }
+  end
+
+  definition ptrunc_elim_freudenthal_pequiv {A B : Type*} (n k : ℕ) [is_conn n A] (H : k ≤ 2 * n)
+    (f : A →* Ω B) [is_trunc (k.+1) (B)] :
+    ptrunc.elim k (Ω→ (psusp.elim f)) ∘* freudenthal_pequiv A H ~* ptrunc.elim k f :=
+  begin
+    refine pwhisker_left _ !to_pmap_freudenthal_pequiv ⬝* _,
+    refine !ptrunc_elim_ptrunc_functor ⬝* _,
+    exact ptrunc_elim_phomotopy k !ap1_psusp_elim,
+  end
+
+  open susp
+  definition iterated_freudenthal_pequiv (A : Type*) {n k m : ℕ} [HA : is_conn n A] (H : k ≤ 2 * n)
+    : ptrunc k A ≃* ptrunc k (Ω[m] (iterate_psusp m A)) :=
+  begin
+    revert A n k HA H, induction m with m IH: intro A n k HA H,
+    { reflexivity},
+    { have H2 : succ k ≤ 2 * succ n,
+      from calc
+        succ k ≤ succ (2 * n) : succ_le_succ H
+           ... ≤ 2 * succ n   : self_le_succ,
+      exact calc
+        ptrunc k A ≃* ptrunc k (Ω (psusp A))   : freudenthal_pequiv A H
+          ... ≃* Ω (ptrunc (succ k) (psusp A)) : loop_ptrunc_pequiv
+          ... ≃* Ω (ptrunc (succ k) (Ω[m] (iterate_psusp m (psusp A)))) :
+                   loop_pequiv_loop (IH (psusp A) (succ n) (succ k) _ H2)
+          ... ≃* ptrunc k (Ω[succ m] (iterate_psusp m (psusp A))) : loop_ptrunc_pequiv
+          ... ≃* ptrunc k (Ω[succ m] (iterate_psusp (succ m) A)) :
+                   ptrunc_pequiv_ptrunc _ (loopn_pequiv_loopn _ !iterate_psusp_succ_in)}
+  end
+
+  definition iterate_psusp_adjoint_loopn [constructor] (X Y : Type*) (n : ℕ) :
+    ppmap (iterate_psusp n X) Y ≃* ppmap X (Ω[n] Y) :=
+  begin
+    revert X Y, induction n with n IH: intro X Y,
+    { reflexivity },
+    { refine !psusp_adjoint_loop ⬝e* !IH ⬝e* _, apply pequiv_ppcompose_left,
+      symmetry, apply loopn_succ_in }
+  end
+
 end new_susp open new_susp
 
+namespace hopf
+
+  definition my_transport_codes_merid.{u} (A : Type.{u}) [T : is_trunc 1 A] [K : is_conn 0 A]
+    [H : h_space A] (a a' : A) : transport (hopf A) (merid a) a' = a * a' :> A :=
+  ap10 (elim_type_merid _ _ _ a) a'
+
+  definition my_transport_codes_merid_one_inv.{u} (A : Type.{u}) [T : is_trunc 1 A]
+    [K : is_conn 0 A] [H : h_space A] (a : A) : transport (hopf A) (merid 1)⁻¹ a = a :=
+  ap10 (elim_type_merid_inv _ _ _ 1) a ⬝
+  begin apply to_inv_eq_of_eq, esimp, refine !one_mul⁻¹ end
+
+  definition my_encode_decode' (A : Type) [T : is_trunc 1 A] [K : is_conn 0 A]
+    [H : h_space A] (a : A) : encode A (decode' A a) = a :=
+  begin
+    esimp [encode, decode', encode₀],
+--    refine ap (λp, transport (hopf A) p a) _ ⬝ _
+    refine !con_tr ⬝ _,
+    refine (ap (transport _ _) !my_transport_codes_merid ⬝ !my_transport_codes_merid_one_inv) ⬝ _,
+    apply mul_one
+  end
+
+  definition to_pmap_main_lemma_point_pinv (A : Type) [T : is_trunc 1 A] [K : is_conn 0 A]
+    [H : h_space A] (coh : one_mul 1 = mul_one 1 :> (1 * 1 = 1 :> A))
+    : (main_lemma_point A coh)⁻¹ᵉ* ~* !ptr ∘* loop_psusp_unit (pointed.MK A 1) :=
+  begin
+    apply pinv_phomotopy_of_pid_phomotopy,
+    fapply phomotopy.mk,
+    { intro a, exact (my_encode_decode' A a)⁻¹ },
+    { esimp [main_lemma_point, main_lemma, encode],
+      apply inv_con_eq_of_eq_con,
+      refine !ap_compose'⁻¹ ⬝ _, esimp,
+      esimp [my_encode_decode'],
+      unfold [encode₀],
+      exact sorry
+     --  assert p : Π(A : Type) (a a' : A) (p : a = a') (B : A → Type) (b : B a),
+     --    ap (λ p, p ▸ b) (con.right_inv p) = con_tr p p⁻¹ b ⬝ (ap (transport B p⁻¹)
+     -- (transport_codes_merid A b b ⬝ mul_one 1) ⬝ transport_codes_merid_one_inv A 1),
+
+      }
+  end
+
+  definition to_pmap_delooping_pinv (A : Type) [T : is_trunc 1 A] [K : is_conn 0 A] [H : h_space A]
+    (coh : one_mul 1 = mul_one 1 :> (1 * 1 = 1 :> A))
+    : (hopf.delooping A coh)⁻¹ᵉ* ~* Ω→ !ptr ∘* loop_psusp_unit (pointed.MK A 1) :=
+  begin
+    refine !trans_pinv ⬝* _,
+    refine pwhisker_left _ !to_pmap_main_lemma_point_pinv ⬝* _,
+    refine !passoc⁻¹* ⬝* _,
+    refine pwhisker_right _ !ap1_ptr⁻¹*,
+  end
+
+  definition hopf_delooping_elim {A : Type} {B : Type*} [T : is_trunc 1 A] [K : is_conn 0 A]
+    [H : h_space A] (coh : one_mul 1 = mul_one 1 :> (1 * 1 = 1 :> A)) (f : pointed.MK A 1 →* Ω B)
+    /-[H1 : is_conn 1 B]-/ [H2 : is_trunc 2 B] :
+    Ω→(ptrunc.elim 2 (psusp.elim f)) ∘* (hopf.delooping A coh)⁻¹ᵉ* ~* f :=
+  begin
+    refine pwhisker_left _ !to_pmap_delooping_pinv ⬝* _,
+    refine !passoc⁻¹* ⬝* _,
+    refine pwhisker_right _ (!ap1_pcompose⁻¹* ⬝* ap1_phomotopy !ptrunc_elim_ptr) ⬝* _,
+    apply ap1_psusp_elim
+  end
+
+end hopf
 -- this should replace corresponding definitions in homotopy.sphere
 namespace new_sphere
 
