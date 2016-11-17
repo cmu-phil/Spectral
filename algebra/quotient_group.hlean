@@ -254,6 +254,54 @@ definition comm_group_first_iso_thm (A B : CommGroup) (f : A →g B) : quotient_
     -- show that the above map is injective and surjective.
   end
 
+definition comm_group_kernel_factor {A B C: CommGroup} (f : A →g B)(g : A →g C){i : C →g B}(H : f = i ∘g g ) 
+           : Π a:A , kernel_subgroup(g)(a) → kernel_subgroup(f)(a) :=
+  begin
+   intro a,
+   intro p,
+   exact calc
+     f a = i (g a)            : homotopy_of_eq (ap group_fun H) a
+     ... = i 1                : ap i p
+     ... = 1                  : respect_one i
+  end
+
+definition comm_group_kernel_equivalent {A B : CommGroup} (C : CommGroup) (f : A →g B)(g : A →g C)(i : C →g B)(H : f = i ∘g g )(K : is_embedding i) 
+           : Π a:A , kernel_subgroup(g)(a) ↔ kernel_subgroup(f)(a) :=
+begin
+  intro a,
+  fapply iff.intro,
+  exact comm_group_kernel_factor f g H a,
+  intro p,
+  apply @is_injective_of_is_embedding _ _ i _ (g a) 1,
+  exact calc
+    i (g a) = f a       : (homotopy_of_eq (ap group_fun H) a)⁻¹
+        ... = 1         : p
+        ... = i 1       : (respect_one i)⁻¹
+end
+
+definition comm_group_kernel_image_lift (A B : CommGroup) (f : A →g B) 
+           : Π a : A, kernel_subgroup(image_lift(f))(a) ↔ kernel_subgroup(f)(a) :=
+  begin
+    fapply comm_group_kernel_equivalent (comm_image f) (f) (image_lift(f)) (image_incl(f)),
+    exact image_factor f,
+    exact is_embedding_of_is_injective (image_incl_injective(f)),
+  end
+
+definition comm_group_kernel_quotient_to_image {A B : CommGroup} (f : A →g B) 
+           : quotient_comm_group (kernel_subgroup f) →g comm_image (f) :=
+begin
+fapply quotient_group_elim (image_lift f), intro a, intro p, 
+apply iff.mpr (comm_group_kernel_image_lift _ _ f a) p
+end
+
+definition is_surjective_kernel_quotient_to_image {A B : CommGroup} (f : A →g B)
+  : is_surjective (comm_group_kernel_quotient_to_image f) :=
+  begin
+    intro b, exact sorry
+    -- have H : is_surjective (image_lift f)
+  end
+
+print iff.mpr
     /- set generating normal subgroup -/
 
   section
