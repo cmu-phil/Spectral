@@ -37,7 +37,7 @@ namespace group
   have H2 : (g * h⁻¹) * (h * k⁻¹) = g * k⁻¹, from calc
     (g * h⁻¹) * (h * k⁻¹) = ((g * h⁻¹) * h) * k⁻¹ : by rewrite [mul.assoc (g * h⁻¹)]
                       ... = g * k⁻¹               : by rewrite inv_mul_cancel_right,
-  show N (g * k⁻¹), from H2 ▸ H1
+  show N (g * k⁻¹), by rewrite [-H2]; exact H1
 
   theorem is_equivalence_quotient_rel : is_equivalence (quotient_rel N) :=
   is_equivalence.mk quotient_rel_refl
@@ -53,7 +53,7 @@ namespace group
     g⁻¹ * (h * g⁻¹) * g = g⁻¹ * h * g⁻¹ * g : by rewrite -mul.assoc
                     ... = g⁻¹ * h           : inv_mul_cancel_right
                     ... = g⁻¹ * h⁻¹⁻¹       : by rewrite algebra.inv_inv,
-  show N (g⁻¹ * h⁻¹⁻¹), from H2 ▸ H1
+  show N (g⁻¹ * h⁻¹⁻¹), by rewrite [-H2]; exact H1
 
   theorem quotient_rel_resp_mul (r : quotient_rel N g h) (r' : quotient_rel N g' h')
     : quotient_rel N (g * g') (h * h') :=
@@ -187,26 +187,33 @@ namespace group
     apply rel_of_eq _ H
   end
 
-  definition quotient_group_elim (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) : quotient_group N →g G' :=
+  definition quotient_group_elim_fun [unfold 6] (f : G →g G') (H : Π⦃g⦄, N g → f g = 1)
+    (g : quotient_group N) : G' :=
+  begin
+    refine set_quotient.elim f _ g,
+    intro g h K,
+    apply eq_of_mul_inv_eq_one,
+    have e : f (g * h⁻¹) = f g * (f h)⁻¹,
+    from calc
+      f (g * h⁻¹) = f g * (f h⁻¹) : to_respect_mul
+             ...  = f g * (f h)⁻¹ : to_respect_inv,
+    rewrite (inverse e),
+    apply H, exact K
+  end
+
+  definition quotient_group_elim [constructor] (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) : quotient_group N →g G' :=
   begin
     fapply homomorphism.mk,
       -- define function
-    { apply set_quotient.elim f,
-      intro g h K,
-      apply eq_of_mul_inv_eq_one,
-      have e : f (g * h⁻¹) = f g * (f h)⁻¹,
-      from calc
-        f (g * h⁻¹) = f g * (f h⁻¹) : to_respect_mul
-               ...  = f g * (f h)⁻¹ : to_respect_inv,
-      rewrite (inverse e),
-      apply H, exact K},
+    { exact quotient_group_elim_fun f H },
     { intro g h, induction g using set_quotient.rec_prop with g,
       induction h using set_quotient.rec_prop with h,
       krewrite (inverse (to_respect_mul (qg_map N) g h)),
       unfold qg_map, esimp, exact to_respect_mul f g h }
   end
 
-  definition quotient_group_compute (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) : quotient_group_elim f H ∘g qg_map N ~ f :=
+  definition quotient_group_compute (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) :
+    quotient_group_elim f H ∘g qg_map N ~ f :=
   begin
     intro g, reflexivity
   end
@@ -215,7 +222,6 @@ namespace group
     : ( k ∘g qg_map N ~ f ) → k ~ quotient_group_elim f H :=
   begin
     intro K cg, induction cg using set_quotient.rec_prop with g,
-    krewrite (quotient_group_compute f),
     exact K g
   end
 
@@ -340,7 +346,7 @@ print iff.mpr
     definition gqg_eq_of_rel {g h : A₁} (H : S (g * h⁻¹)) : gqg_map g = gqg_map h :=
     eq_of_rel (tr (rincl H))
 
-    definition gqg_elim (f : A₁ →g A₂) (H : Π⦃g⦄, S g → f g = 1)
+    definition gqg_elim [constructor] (f : A₁ →g A₂) (H : Π⦃g⦄, S g → f g = 1)
       : quotient_comm_group_gen →g A₂ :=
     begin
       apply quotient_group_elim f,

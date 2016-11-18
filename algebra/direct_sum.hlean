@@ -23,7 +23,7 @@ namespace group
     variables {A' : CommGroup}
 
     definition dirsum_carrier : CommGroup := free_comm_group (trunctype.mk (Σi, Y i) _)
-    local abbreviation ι := @free_comm_group_inclusion
+    local abbreviation ι [constructor] := @free_comm_group_inclusion
     inductive dirsum_rel : dirsum_carrier → Type :=
     | rmk : Πi y₁ y₂, dirsum_rel (ι ⟨i, y₁⟩ * ι ⟨i, y₂⟩ * (ι ⟨i, y₁ * y₂⟩)⁻¹)
 
@@ -35,26 +35,30 @@ namespace group
     homomorphism.mk (λy, class_of (ι ⟨i, y⟩))
       begin intro g h, symmetry, apply gqg_eq_of_rel, apply tr, apply dirsum_rel.rmk end
 
-    definition dirsum_elim [constructor] (f : Πi, Y i →g A') : dirsum →g A' :=
+    definition dirsum_elim_resp_quotient (f : Πi, Y i →g A') (g : dirsum_carrier)
+      (r : ∥dirsum_rel g∥) : free_comm_group_elim (λv, f v.1 v.2) g = 1 :=
     begin
-      refine homomorphism.mk (gqg_elim _ (free_comm_group_elim (λv, f v.1 v.2)) _) _,
-      { intro g r, induction r with r, induction r,
-        rewrite [to_respect_mul, to_respect_inv], apply mul_inv_eq_of_eq_mul,
-        rewrite [one_mul], apply ap (free_comm_group_elim (λ v, group_fun (f v.1) v.2)),
-        exact sorry
-        },
-      { exact sorry }
+      induction r with r, induction r,
+      rewrite [to_respect_mul, to_respect_inv], apply mul_inv_eq_of_eq_mul,
+      rewrite [one_mul, to_respect_mul, ▸*, ↑foldl, +one_mul, to_respect_mul]
     end
+
+    definition dirsum_elim [constructor] (f : Πi, Y i →g A') : dirsum →g A' :=
+    gqg_elim _ (free_comm_group_elim (λv, f v.1 v.2)) (dirsum_elim_resp_quotient f)
 
     definition dirsum_elim_compute (f : Πi, Y i →g A') (i : I) :
       dirsum_elim f ∘g dirsum_incl i ~ f i :=
     begin
-      intro g, exact sorry
+      intro g, apply one_mul
     end
 
     definition dirsum_elim_unique (f : Πi, Y i →g A') (k : dirsum →g A')
       (H : Πi, k ∘g dirsum_incl i ~ f i) : k ~ dirsum_elim f :=
-    sorry
+    begin
+      apply gqg_elim_unique,
+      apply free_comm_group_elim_unique,
+      intro x, induction x with i y, exact H i y
+    end
 
 
   end

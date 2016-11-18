@@ -174,20 +174,27 @@ namespace group
   definition fn_of_free_comm_group_elim [unfold_full] (φ : free_comm_group X →g A) : X → A :=
   φ ∘ free_comm_group_inclusion
 
+  definition free_comm_group_elim_unique [constructor] (f : X → A) (k : free_comm_group X →g A)
+    (H : k ∘ free_comm_group_inclusion ~ f) : k ~ free_comm_group_elim f :=
+  begin
+    refine set_quotient.rec_prop _, intro l, esimp,
+      induction l with s l IH,
+      { esimp [foldl], exact to_respect_one k},
+      { rewrite [foldl_cons, fgh_helper_mul],
+        refine to_respect_mul k (class_of [s]) (class_of l) ⬝ _,
+        rewrite [IH], apply ap (λx, x * _), induction s: rewrite [▸*, one_mul, -H a],
+        apply to_respect_inv }
+  end
+
   variables (X A)
-  definition free_comm_group_elim_equiv_fn : (free_comm_group X →g A) ≃ (X → A) :=
+  definition free_comm_group_elim_equiv_fn [constructor] : (free_comm_group X →g A) ≃ (X → A) :=
   begin
     fapply equiv.MK,
     { exact fn_of_free_comm_group_elim},
     { exact free_comm_group_elim},
     { intro f, apply eq_of_homotopy, intro x, esimp, unfold [foldl], apply one_mul},
-    { intro φ, apply homomorphism_eq, refine set_quotient.rec_prop _, intro l, esimp,
-      induction l with s l IH,
-      { esimp [foldl], symmetry, exact to_respect_one φ},
-      { rewrite [foldl_cons, fgh_helper_mul],
-        refine _ ⬝ (to_respect_mul φ (class_of [s]) (class_of l))⁻¹,
-        rewrite [▸*,IH], induction s: rewrite [▸*, one_mul], apply ap (λx, x * _),
-        exact !to_respect_inv⁻¹}}
+    { intro k, symmetry, apply homomorphism_eq, apply free_comm_group_elim_unique,
+      reflexivity }
   end
 
 end group
