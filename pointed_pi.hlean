@@ -13,7 +13,7 @@ open eq pointed equiv sigma
   of the type of pointed maps, giving the connectivity of
   the domain and the truncation level of the codomain.
   This is is_trunc_pmap at the end.
- 
+
   First we define the type of dependent pointed maps
   as a tool, because these appear in the more general
   statement is_trunc_ppi (the generality needed for induction).
@@ -23,13 +23,6 @@ open eq pointed equiv sigma
 -/
 
 namespace pointed
-
-  -- needs another name! (one more p?)
-  structure ppi (A : Type*) (P : A → Type*) :=
-    (to_fun : Π a : A, P a)
-    (resp_pt : to_fun (Point A) = Point (P (Point A)))
-  
-  attribute ppi.to_fun [coercion]
 
   abbreviation ppi_resp_pt [unfold 3] := @ppi.resp_pt
 
@@ -79,7 +72,7 @@ namespace pointed
     esimp at *,
     fapply apd011 ppi.mk,
     { apply eq_of_homotopy h },
-    { esimp, apply concato_eq, apply pathover_eq_Fl, apply inv_con_eq_of_eq_con,
+    { esimp, apply concato_eq, apply eq_pathover_Fl, apply inv_con_eq_of_eq_con,
       rewrite [ap_eq_apd10, apd10_eq_of_homotopy], exact r }
   end
 
@@ -105,11 +98,11 @@ namespace pointed
             ...  ≃ Σ(p : ppi.to_fun f = ppi.to_fun g),
                      ppi_resp_pt f = ap (λh, h pt) p ⬝ ppi_resp_pt g
                    : sigma_equiv_sigma_right
-                       (λp, pathover_eq_equiv_Fl p (ppi_resp_pt f) (ppi_resp_pt g))
+                       (λp, eq_pathover_equiv_Fl p (ppi_resp_pt f) (ppi_resp_pt g))
             ...  ≃ Σ(p : ppi.to_fun f = ppi.to_fun g),
                      ppi_resp_pt f = apd10 p pt ⬝ ppi_resp_pt g
                    : sigma_equiv_sigma_right
-                       (λp, equiv_eq_closed_right _ (whisker_right (ap_eq_apd10 p _) _))
+                       (λp, equiv_eq_closed_right _ (whisker_right _ (ap_eq_apd10 p _)))
             ...  ≃ Σ(p : f ~ g), ppi_resp_pt f = p pt ⬝ ppi_resp_pt g
                    : sigma_equiv_sigma_left' eq_equiv_homotopy
             ...  ≃ Σ(p : f ~ g), p pt ⬝ ppi_resp_pt g = ppi_resp_pt f

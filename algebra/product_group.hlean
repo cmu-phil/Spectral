@@ -13,7 +13,7 @@ open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum
 namespace group
 
   variables {G G' : Group} (H : subgroup_rel G) (N : normal_subgroup_rel G) {g g' h h' k : G}
-            {A B : CommGroup}
+            {A B : AbGroup}
 
   /- Binary products (direct product) of Groups -/
   definition product_one [constructor] : G × G' := (one, one)
@@ -39,7 +39,7 @@ namespace group
   theorem product_mul_left_inv (g : G × G') : g⁻¹ * g = 1 :=
   prod_eq !mul.left_inv !mul.left_inv
 
-  theorem product_mul_comm {G G' : CommGroup} (g h : G × G') : g * h = h * g :=
+  theorem product_mul_comm {G G' : AbGroup} (g h : G × G') : g * h = h * g :=
   prod_eq !mul.comm !mul.comm
 
   end
@@ -52,11 +52,11 @@ namespace group
   definition product [constructor] : Group :=
   Group.mk _ (group_prod G G')
 
-  definition comm_group_prod [constructor] (G G' : CommGroup) : comm_group (G × G') :=
-  ⦃comm_group, group_prod G G', mul_comm := product_mul_comm⦄
+  definition ab_group_prod [constructor] (G G' : AbGroup) : ab_group (G × G') :=
+  ⦃ab_group, group_prod G G', mul_comm := product_mul_comm⦄
 
-  definition comm_product [constructor] (G G' : CommGroup) : CommGroup :=
-  CommGroup.mk _ (comm_group_prod G G')
+  definition ab_product [constructor] (G G' : AbGroup) : AbGroup :=
+  AbGroup.mk _ (ab_group_prod G G')
 
   infix ` ×g `:30 := group.product
 

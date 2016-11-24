@@ -6,6 +6,7 @@ Authors: Michael Shulman, Floris van Doorn
 -/
 
 import homotopy.LES_of_homotopy_groups .splice homotopy.susp ..move_to_lib ..colim
+       ..pointed_pi
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
      seq_colim
 
@@ -190,7 +191,7 @@ namespace spectrum
 
   -- Suspension prespectra are one that's naturally indexed on the natural numbers
   definition psp_susp (X : Type*) : gen_prespectrum +ℕ :=
-    gen_prespectrum.mk (λn, psuspn n X) (λn, loop_susp_unit (psuspn n X))
+    gen_prespectrum.mk (λn, psuspn n X) (λn, loop_psusp_unit (psuspn n X))
 
   /- Truncations -/
 
@@ -210,7 +211,7 @@ namespace spectrum
   -- read off the homotopy groups without any tedious case-analysis of
   -- n.  We increment by 2 in order to ensure that they are all
   -- automatically abelian groups.
-  definition shomotopy_group [constructor] (n : ℤ) (E : spectrum) : CommGroup := πag[0+2] (E (2 - n))
+  definition shomotopy_group [constructor] (n : ℤ) (E : spectrum) : AbGroup := πag[0+2] (E (2 - n))
 
   notation `πₛ[`:95 n:0 `]`:0 := shomotopy_group n
 
@@ -234,9 +235,10 @@ namespace spectrum
   -- Sections of parametrized spectra
   ----------------------------------------
 
-  definition spi {N : succ_str} (A : Type) (E : A -> gen_spectrum N) : gen_spectrum N :=
-    spectrum.MK (λn, ppi (λa, E a n))
-      (λn, (loop_ppi_commute (λa, E a (S n)))⁻¹ᵉ* ∘*ᵉ equiv_ppi_right (λa, equiv_glue (E a) n))
+  -- this definition must be changed to use dependent maps respecting the basepoint, presumably
+  -- definition spi {N : succ_str} (A : Type) (E : A -> gen_spectrum N) : gen_spectrum N :=
+  --   spectrum.MK (λn, ppi (λa, E a n))
+  --     (λn, (loop_ppi_commute (λa, E a (S n)))⁻¹ᵉ* ∘*ᵉ equiv_ppi_right (λa, equiv_glue (E a) n))
 
   /-----------------------------------------
     Fibers and long exact sequences
@@ -311,12 +313,12 @@ namespace spectrum
   example (n : ℤ) : cc_to_fn LES_of_shomotopy_groups (n, 1) = πₛ→[n] (spoint f) := idp
   -- the maps are ugly for (n, 2)
 
-  definition comm_group_LES_of_shomotopy_groups : Π(v : +3ℤ), comm_group (LES_of_shomotopy_groups v)
-  | (n, fin.mk 0 H) := proof CommGroup.struct (πₛ[n] Y) qed
-  | (n, fin.mk 1 H) := proof CommGroup.struct (πₛ[n] X) qed
-  | (n, fin.mk 2 H) := proof CommGroup.struct (πₛ[n] (sfiber f)) qed
+  definition ab_group_LES_of_shomotopy_groups : Π(v : +3ℤ), ab_group (LES_of_shomotopy_groups v)
+  | (n, fin.mk 0 H) := proof AbGroup.struct (πₛ[n] Y) qed
+  | (n, fin.mk 1 H) := proof AbGroup.struct (πₛ[n] X) qed
+  | (n, fin.mk 2 H) := proof AbGroup.struct (πₛ[n] (sfiber f)) qed
   | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
-  local attribute comm_group_LES_of_shomotopy_groups [instance]
+  local attribute ab_group_LES_of_shomotopy_groups [instance]
 
   definition is_homomorphism_LES_of_shomotopy_groups :
     Π(v : +3ℤ), is_homomorphism (cc_to_fn LES_of_shomotopy_groups v)
@@ -330,7 +332,7 @@ namespace spectrum
   -- In the comments below is a start on an explicit description of the LES for spectra
   -- Maybe it's slightly nicer to work with than the above version
 
---   definition shomotopy_groups [reducible] : -3ℤ → CommGroup
+--   definition shomotopy_groups [reducible] : -3ℤ → AbGroup
 --   | (n, fin.mk 0 H) := πₛ[n] Y
 --   | (n, fin.mk 1 H) := πₛ[n] X
 --   | (n, fin.mk k H) := πₛ[n] (sfiber f)

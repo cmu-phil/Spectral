@@ -13,7 +13,7 @@ open eq algebra is_trunc set_quotient relation sigma sigma.ops prod trunc functi
 namespace group
 
   variables {G G' : Group} (H : subgroup_rel G) (N : normal_subgroup_rel G) {g g' h h' k : G}
-  variables {A B : CommGroup}
+  variables {A B : AbGroup}
 
   /- Quotient Group -/
 
@@ -113,7 +113,7 @@ namespace group
     exact ap class_of !mul.left_inv
   end
 
-  theorem quotient_mul_comm {G : CommGroup} {N : normal_subgroup_rel G} (g h : qg N)
+  theorem quotient_mul_comm {G : AbGroup} {N : normal_subgroup_rel G} (g h : qg N)
     : g * h = h * g :=
   begin
     refine set_quotient.rec_prop _ g, clear g, intro g,
@@ -131,18 +131,18 @@ namespace group
   definition quotient_group [constructor] : Group :=
   Group.mk _ (group_qg N)
 
-  definition comm_group_qg [constructor] {G : CommGroup} (N : normal_subgroup_rel G)
-    : comm_group (qg N) :=
-  ⦃comm_group, group_qg N, mul_comm := quotient_mul_comm⦄
+  definition ab_group_qg [constructor] {G : AbGroup} (N : normal_subgroup_rel G)
+    : ab_group (qg N) :=
+  ⦃ab_group, group_qg N, mul_comm := quotient_mul_comm⦄
 
-  definition quotient_comm_group [constructor] {G : CommGroup} (N : subgroup_rel G)
-    : CommGroup :=
-  CommGroup.mk _ (comm_group_qg (normal_subgroup_rel_comm N))
+  definition quotient_ab_group [constructor] {G : AbGroup} (N : subgroup_rel G)
+    : AbGroup :=
+  AbGroup.mk _ (ab_group_qg (normal_subgroup_rel_ab N))
 
   definition qg_map [constructor] : G →g quotient_group N :=
   homomorphism.mk class_of (λ g h, idp)
 
-  definition comm_gq_map {G : CommGroup} (N : subgroup_rel G) : G →g quotient_comm_group N :=
+  definition ab_gq_map {G : AbGroup} (N : subgroup_rel G) : G →g quotient_ab_group N :=
   begin
     fapply homomorphism.mk,
     exact class_of,
@@ -166,7 +166,7 @@ namespace group
     unfold quotient_rel, rewrite e, exact H
   end
 
-  definition comm_gq_map_eq_one {K : subgroup_rel A} (g :A) (H : K g) : comm_gq_map K g = 1 :=
+  definition ab_gq_map_eq_one {K : subgroup_rel A} (g :A) (H : K g) : ab_gq_map K g = 1 :=
   begin
     apply eq_of_rel,
       have e : (g * 1⁻¹ = g),
@@ -237,17 +237,17 @@ namespace group
       {fapply is_prop.elimo} }
   end
 
-definition comm_group_quotient_homomorphism (A B : CommGroup)(K : subgroup_rel A)(L : subgroup_rel B) (f : A →g B)
-     (p : Π(a:A), K(a) → L(f a)) : quotient_comm_group K →g quotient_comm_group L :=
+definition ab_group_quotient_homomorphism (A B : AbGroup)(K : subgroup_rel A)(L : subgroup_rel B) (f : A →g B)
+     (p : Π(a:A), K(a) → L(f a)) : quotient_ab_group K →g quotient_ab_group L :=
     begin
     fapply quotient_group_elim,
-    exact (comm_gq_map L) ∘g f,
+    exact (ab_gq_map L) ∘g f,
     intro a,
     intro k,
-    exact @comm_gq_map_eq_one B L (f a) (p a k),
+    exact @ab_gq_map_eq_one B L (f a) (p a k),
     end
 
-definition comm_group_first_iso_thm (A B : CommGroup) (f : A →g B) : quotient_comm_group (kernel_subgroup f) ≃g comm_image f :=
+definition ab_group_first_iso_thm (A B : AbGroup) (f : A →g B) : quotient_ab_group (kernel_subgroup f) ≃g ab_image f :=
   begin
     fapply isomorphism.mk,
     fapply quotient_group_elim,
@@ -260,7 +260,7 @@ definition comm_group_first_iso_thm (A B : CommGroup) (f : A →g B) : quotient_
     -- show that the above map is injective and surjective.
   end
 
-definition comm_group_kernel_factor {A B C: CommGroup} (f : A →g B)(g : A →g C){i : C →g B}(H : f = i ∘g g ) 
+definition ab_group_kernel_factor {A B C: AbGroup} (f : A →g B)(g : A →g C){i : C →g B}(H : f = i ∘g g )
            : Π a:A , kernel_subgroup(g)(a) → kernel_subgroup(f)(a) :=
   begin
    intro a,
@@ -271,12 +271,12 @@ definition comm_group_kernel_factor {A B C: CommGroup} (f : A →g B)(g : A →g
      ... = 1                  : respect_one i
   end
 
-definition comm_group_kernel_equivalent {A B : CommGroup} (C : CommGroup) (f : A →g B)(g : A →g C)(i : C →g B)(H : f = i ∘g g )(K : is_embedding i) 
+definition ab_group_kernel_equivalent {A B : AbGroup} (C : AbGroup) (f : A →g B)(g : A →g C)(i : C →g B)(H : f = i ∘g g )(K : is_embedding i)
            : Π a:A , kernel_subgroup(g)(a) ↔ kernel_subgroup(f)(a) :=
 begin
   intro a,
   fapply iff.intro,
-  exact comm_group_kernel_factor f g H a,
+  exact ab_group_kernel_factor f g H a,
   intro p,
   apply @is_injective_of_is_embedding _ _ i _ (g a) 1,
   exact calc
@@ -285,23 +285,23 @@ begin
         ... = i 1       : (respect_one i)⁻¹
 end
 
-definition comm_group_kernel_image_lift (A B : CommGroup) (f : A →g B) 
+definition ab_group_kernel_image_lift (A B : AbGroup) (f : A →g B)
            : Π a : A, kernel_subgroup(image_lift(f))(a) ↔ kernel_subgroup(f)(a) :=
   begin
-    fapply comm_group_kernel_equivalent (comm_image f) (f) (image_lift(f)) (image_incl(f)),
+    fapply ab_group_kernel_equivalent (ab_image f) (f) (image_lift(f)) (image_incl(f)),
     exact image_factor f,
     exact is_embedding_of_is_injective (image_incl_injective(f)),
   end
 
-definition comm_group_kernel_quotient_to_image {A B : CommGroup} (f : A →g B) 
-           : quotient_comm_group (kernel_subgroup f) →g comm_image (f) :=
+definition ab_group_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
+           : quotient_ab_group (kernel_subgroup f) →g ab_image (f) :=
 begin
-fapply quotient_group_elim (image_lift f), intro a, intro p, 
-apply iff.mpr (comm_group_kernel_image_lift _ _ f a) p
+fapply quotient_group_elim (image_lift f), intro a, intro p,
+apply iff.mpr (ab_group_kernel_image_lift _ _ f a) p
 end
 
-definition is_surjective_kernel_quotient_to_image {A B : CommGroup} (f : A →g B)
-  : is_surjective (comm_group_kernel_quotient_to_image f) :=
+definition is_surjective_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
+  : is_surjective (ab_group_kernel_quotient_to_image f) :=
   begin
     intro b, exact sorry
     -- have H : is_surjective (image_lift f)
@@ -312,8 +312,8 @@ print iff.mpr
 
   section
 
-    parameters {A₁ : CommGroup} (S : A₁ → Prop)
-    variable {A₂ : CommGroup}
+    parameters {A₁ : AbGroup} (S : A₁ → Prop)
+    variable {A₂ : AbGroup}
 
     inductive generating_relation' : A₁ → Type :=
     | rincl : Π{g}, S g → generating_relation' g
@@ -337,9 +337,9 @@ print iff.mpr
       Rmul := gr_mul⦄
 
     parameter (A₁)
-    definition quotient_comm_group_gen : CommGroup := quotient_comm_group normal_generating_relation
+    definition quotient_ab_group_gen : AbGroup := quotient_ab_group normal_generating_relation
 
-    definition gqg_map [constructor] : A₁ →g quotient_comm_group_gen :=
+    definition gqg_map [constructor] : A₁ →g quotient_ab_group_gen :=
     qg_map _
 
     parameter {A₁}
@@ -347,7 +347,7 @@ print iff.mpr
     eq_of_rel (tr (rincl H))
 
     definition gqg_elim [constructor] (f : A₁ →g A₂) (H : Π⦃g⦄, S g → f g = 1)
-      : quotient_comm_group_gen →g A₂ :=
+      : quotient_ab_group_gen →g A₂ :=
     begin
       apply quotient_group_elim f,
       intro g r, induction r with r,
@@ -365,7 +365,7 @@ print iff.mpr
     end
 
     definition gqg_elim_unique (f : A₁ →g A₂) (H : Π⦃g⦄, S g → f g = 1)
-      (k : quotient_comm_group_gen →g A₂) : ( k ∘g gqg_map ~ f ) → k ~ gqg_elim f H :=
+      (k : quotient_ab_group_gen →g A₂) : ( k ∘g gqg_map ~ f ) → k ~ gqg_elim f H :=
     !gelim_unique
 
   end

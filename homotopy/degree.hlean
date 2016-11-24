@@ -55,7 +55,7 @@ namespace sphere
 
   definition deg_id (n : ℕ) [H : is_succ n] : deg (pid (S* n)) = (1 : ℤ) :=
   by induction H with n;
-     exact ap (πnSn n) (phomotopy_group_functor_pid (succ n) (S* (succ n)) (tr surf)) ⬝ πnSn_surf n
+     exact ap (πnSn n) (homotopy_group_functor_pid (succ n) (S* (succ n)) (tr surf)) ⬝ πnSn_surf n
 
   definition deg_phomotopy {n : ℕ} [H : is_succ n] {f g : S* n →* S* n} (p : f ~* g) :
     deg f = deg g :=

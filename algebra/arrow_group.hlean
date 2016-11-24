@@ -21,12 +21,12 @@ namespace group
   definition Group_arrow (A : Type) (G : Group) : Group :=
   Group.mk (A → G) _
 
-  definition comm_group_arrow [instance] (A B : Type) [comm_group B] : comm_group (A → B) :=
-  ⦃comm_group, group_arrow A B,
+  definition ab_group_arrow [instance] (A B : Type) [ab_group B] : ab_group (A → B) :=
+  ⦃ab_group, group_arrow A B,
      mul_comm := by intros; apply eq_of_homotopy; intro a; apply mul.comm⦄
 
-  definition CommGroup_arrow (A : Type) (G : CommGroup) : CommGroup :=
-  CommGroup.mk (A → G) _
+  definition AbGroup_arrow (A : Type) (G : AbGroup) : AbGroup :=
+  AbGroup.mk (A → G) _
 
   definition pgroup_ppmap [instance] (A B : Type*) [pgroup B] : pgroup (ppmap A B) :=
   begin
@@ -44,12 +44,12 @@ namespace group
   definition Group_pmap (A : Type*) (G : Group) : Group :=
   Group_of_pgroup (ppmap A (pType_of_Group G))
 
-  definition CommGroup_pmap (A : Type*) (G : CommGroup) : CommGroup :=
-  CommGroup.mk (A →* pType_of_Group G)
-  ⦃ comm_group, Group.struct (Group_pmap A G),
+  definition AbGroup_pmap (A : Type*) (G : AbGroup) : AbGroup :=
+  AbGroup.mk (A →* pType_of_Group G)
+  ⦃ ab_group, Group.struct (Group_pmap A G),
     mul_comm := by intro f g; apply pmap_eq_of_homotopy; intro a; apply mul.comm ⦄
 
-  definition Group_pmap_homomorphism [constructor] {A A' : Type*} (f : A' →* A) (G : CommGroup) :
+  definition Group_pmap_homomorphism [constructor] {A A' : Type*} (f : A' →* A) (G : AbGroup) :
     Group_pmap A G →g Group_pmap A' G :=
   begin
     fapply homomorphism.mk,

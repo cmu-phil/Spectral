@@ -90,7 +90,7 @@ namespace spherical_fibrations
   definition BF_mul {n m : ℕ} (X : BF n) (Y : BF m) : BF (n + m) :=
   begin
     cases X with X hX, cases Y with Y hY,
-    apply sigma.mk (psmash X Y),
+    apply sigma.mk (smash X Y),
     induction hX with fX, induction hY with fY, apply tr,
     exact sorry -- needs smash.spheres : psmash (S. n) (S. m) ≃ S. (n + m)
   end
