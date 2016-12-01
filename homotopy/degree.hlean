@@ -51,11 +51,11 @@ namespace sphere
   end
 
   definition deg {n : ℕ} [H : is_succ n] (f : S* n →* S* n) : ℤ :=
-  by induction H with n; exact πnSn n ((π→g[n+1] f) (tr surf))
+  by induction H with n; exact πnSn n (π→g[n+1] f (tr surf))
 
   definition deg_id (n : ℕ) [H : is_succ n] : deg (pid (S* n)) = (1 : ℤ) :=
   by induction H with n;
-     exact ap (πnSn n) (phomotopy_group_functor_pid (succ n) (S* (succ n)) (tr surf)) ⬝ πnSn_surf n
+     exact ap (πnSn n) (homotopy_group_functor_pid (succ n) (S* (succ n)) (tr surf)) ⬝ πnSn_surf n
 
   definition deg_phomotopy {n : ℕ} [H : is_succ n] {f g : S* n →* S* n} (p : f ~* g) :
     deg f = deg g :=
@@ -94,7 +94,7 @@ namespace sphere
     apply eq_one_or_eq_neg_one_of_mul_eq_one (deg f⁻¹ᵉ*),
     refine !deg_compose⁻¹ ⬝ _,
     refine deg_phomotopy (pright_inv f) ⬝ _,
-    apply deg_id,
+    apply deg_id
   end
 
 end sphere

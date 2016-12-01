@@ -12,12 +12,12 @@ open eq algebra is_trunc set_quotient relation sigma sigma.ops prod sum list tru
 
 namespace group
 
-  variables {G G' : Group} {g g' h h' k : G} {A B : CommGroup}
+  variables {G G' : Group} {g g' h h' k : G} {A B : AbGroup}
 
   variables (X : Set) {l l' : list (X ⊎ X)}
 
-  /- Free Commutative Group of a set -/
-  namespace free_comm_group
+  /- Free Abelian Group of a set -/
+  namespace free_ab_group
 
   inductive fcg_rel : list (X ⊎ X) → list (X ⊎ X) → Type :=
   | rrefl   : Πl, fcg_rel l l
@@ -133,22 +133,22 @@ namespace group
       rewrite [-append_concat], apply IH}
   end
   end
-  end free_comm_group open free_comm_group
+  end free_ab_group open free_ab_group
 
   variables (X)
-  definition group_free_comm_group [constructor] : comm_group (fcg_carrier X) :=
-  comm_group.mk fcg_mul _ fcg_mul_assoc fcg_one fcg_one_mul fcg_mul_one
+  definition group_free_ab_group [constructor] : ab_group (fcg_carrier X) :=
+  ab_group.mk fcg_mul _ fcg_mul_assoc fcg_one fcg_one_mul fcg_mul_one
            fcg_inv fcg_mul_left_inv fcg_mul_comm
 
-  definition free_comm_group [constructor] : CommGroup :=
-  CommGroup.mk _ (group_free_comm_group X)
+  definition free_ab_group [constructor] : AbGroup :=
+  AbGroup.mk _ (group_free_ab_group X)
 
   /- The universal property of the free commutative group -/
   variables {X A}
-  definition free_comm_group_inclusion [constructor] (x : X) : free_comm_group X :=
+  definition free_ab_group_inclusion [constructor] (x : X) : free_ab_group X :=
   class_of [inl x]
 
-  theorem fgh_helper_respect_comm_rel (f : X → A) (r : fcg_rel X l l')
+  theorem fgh_helper_respect_fcg_rel (f : X → A) (r : fcg_rel X l l')
     : Π(g : A), foldl (fgh_helper f) g l = foldl (fgh_helper f) g l' :=
   begin
     induction r with l x x x y l₁ l₂ l₃ l₄ r₁ r₂ IH₁ IH₂ l₁ l₂ l₃ r₁ r₂ IH₁ IH₂: intro g,
@@ -160,34 +160,41 @@ namespace group
     { exact !IH₁ ⬝ !IH₂}
   end
 
-  definition free_comm_group_elim [constructor] (f : X → A) : free_comm_group X →g A :=
+  definition free_ab_group_elim [constructor] (f : X → A) : free_ab_group X →g A :=
   begin
     fapply homomorphism.mk,
     { intro g, refine set_quotient.elim _ _ g,
       { intro l, exact foldl (fgh_helper f) 1 l},
       { intro l l' r, esimp at *, refine trunc.rec _ r, clear r, intro r,
-        exact fgh_helper_respect_comm_rel f r 1}},
+        exact fgh_helper_respect_fcg_rel f r 1}},
     { refine set_quotient.rec_prop _, intro l, refine set_quotient.rec_prop _, intro l',
       esimp, refine !foldl_append ⬝ _, esimp, apply fgh_helper_mul}
   end
 
-  definition fn_of_free_comm_group_elim [unfold_full] (φ : free_comm_group X →g A) : X → A :=
-  φ ∘ free_comm_group_inclusion
+  definition fn_of_free_ab_group_elim [unfold_full] (φ : free_ab_group X →g A) : X → A :=
+  φ ∘ free_ab_group_inclusion
+
+  definition free_ab_group_elim_unique [constructor] (f : X → A) (k : free_ab_group X →g A)
+    (H : k ∘ free_ab_group_inclusion ~ f) : k ~ free_ab_group_elim f :=
+  begin
+    refine set_quotient.rec_prop _, intro l, esimp,
+      induction l with s l IH,
+      { esimp [foldl], exact to_respect_one k},
+      { rewrite [foldl_cons, fgh_helper_mul],
+        refine to_respect_mul k (class_of [s]) (class_of l) ⬝ _,
+        rewrite [IH], apply ap (λx, x * _), induction s: rewrite [▸*, one_mul, -H a],
+        apply to_respect_inv }
+  end
 
   variables (X A)
-  definition free_comm_group_elim_equiv_fn : (free_comm_group X →g A) ≃ (X → A) :=
+  definition free_ab_group_elim_equiv_fn [constructor] : (free_ab_group X →g A) ≃ (X → A) :=
   begin
     fapply equiv.MK,
-    { exact fn_of_free_comm_group_elim},
-    { exact free_comm_group_elim},
+    { exact fn_of_free_ab_group_elim},
+    { exact free_ab_group_elim},
     { intro f, apply eq_of_homotopy, intro x, esimp, unfold [foldl], apply one_mul},
-    { intro φ, apply homomorphism_eq, refine set_quotient.rec_prop _, intro l, esimp,
-      induction l with s l IH,
-      { esimp [foldl], symmetry, exact to_respect_one φ},
-      { rewrite [foldl_cons, fgh_helper_mul],
-        refine _ ⬝ (to_respect_mul φ (class_of [s]) (class_of l))⁻¹,
-        rewrite [▸*,IH], induction s: rewrite [▸*, one_mul], apply ap (λx, x * _),
-        exact !to_respect_inv⁻¹}}
+    { intro k, symmetry, apply homomorphism_eq, apply free_ab_group_elim_unique,
+      reflexivity }
   end
 
 end group

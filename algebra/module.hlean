@@ -17,7 +17,7 @@ infixl ` • `:73 := has_scalar.smul
 
 /- modules over a ring -/
 
-structure left_module (R M : Type) [ringR : ring R] extends has_scalar R M, comm_group M renaming
+structure left_module (R M : Type) [ringR : ring R] extends has_scalar R M, ab_group M renaming
   mul→add mul_assoc→add_assoc one→zero one_mul→zero_add mul_one→add_zero inv→neg
   mul_left_inv→add_left_inv mul_comm→add_comm :=
 (smul_left_distrib : Π (r : R) (x y : M), smul r (add x y) = (add (smul r x) (smul r y)))
@@ -26,12 +26,12 @@ structure left_module (R M : Type) [ringR : ring R] extends has_scalar R M, comm
 (one_smul : Π x, smul one x = x)
 
 /- we make it a class now (and not as part of the structure) to avoid
-  left_module.to_comm_group to be an instance -/
+  left_module.to_ab_group to be an instance -/
 attribute left_module [class]
 
-definition add_comm_group_of_left_module [reducible] [trans_instance] (R M : Type) [K : ring R]
-  [H : left_module R M] : add_comm_group M :=
-@left_module.to_comm_group R M K H
+definition add_ab_group_of_left_module [reducible] [trans_instance] (R M : Type) [K : ring R]
+  [H : left_module R M] : add_ab_group M :=
+@left_module.to_ab_group R M K H
 
 definition has_scalar_of_left_module [reducible] [trans_instance] (R M : Type) [K : ring R]
   [H : left_module R M] : has_scalar R M :=

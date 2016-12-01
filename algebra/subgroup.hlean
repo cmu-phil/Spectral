@@ -130,12 +130,12 @@ namespace group
   abbreviation is_normal_subgroup   [unfold 2] := @normal_subgroup_rel.is_normal_subgroup
 
   variables {G G' : Group} (H : subgroup_rel G) (N : normal_subgroup_rel G) {g g' h h' k : G}
-            {A B : CommGroup}
+            {A B : AbGroup}
 
   theorem is_normal_subgroup' (h : G) (r : N g) : N (h⁻¹ * g * h) :=
   inv_inv h ▸ is_normal_subgroup N h⁻¹ r
 
-  definition normal_subgroup_rel_comm.{u} [constructor] (R : subgroup_rel.{_ u} A)
+  definition normal_subgroup_rel_ab.{u} [constructor] (R : subgroup_rel.{_ u} A)
     : normal_subgroup_rel.{_ u} A :=
   ⦃normal_subgroup_rel, R,
     is_normal_subgroup := abstract begin
@@ -209,7 +209,7 @@ namespace group
   theorem subgroup_mul_left_inv (g : sg H) : g⁻¹ * g = 1 :=
   subtype_eq !mul.left_inv
 
-  theorem subgroup_mul_comm {G : CommGroup} {H : subgroup_rel G} (g h : sg H)
+  theorem subgroup_mul_comm {G : AbGroup} {H : subgroup_rel G} (g h : sg H)
     : g * h = h * g :=
   subtype_eq !mul.comm
 
@@ -223,17 +223,17 @@ namespace group
   definition subgroup [constructor] : Group :=
   Group.mk _ (group_sg H)
 
-  definition comm_group_sg [constructor] {G : CommGroup} (H : subgroup_rel G)
-    : comm_group (sg H) :=
-  ⦃comm_group, group_sg H, mul_comm := subgroup_mul_comm⦄
+  definition ab_group_sg [constructor] {G : AbGroup} (H : subgroup_rel G)
+    : ab_group (sg H) :=
+  ⦃ab_group, group_sg H, mul_comm := subgroup_mul_comm⦄
 
-  definition comm_subgroup [constructor] {G : CommGroup} (H : subgroup_rel G)
-    : CommGroup :=
-  CommGroup.mk _ (comm_group_sg H)
+  definition ab_subgroup [constructor] {G : AbGroup} (H : subgroup_rel G)
+    : AbGroup :=
+  AbGroup.mk _ (ab_group_sg H)
 
   definition kernel {G H : Group} (f : G →g H) : Group := subgroup (kernel_subgroup f)
 
-  definition comm_kernel {G H : CommGroup} (f : G →g H) : CommGroup := comm_subgroup (kernel_subgroup f)
+  definition ab_kernel {G H : AbGroup} (f : G →g H) : AbGroup := ab_subgroup (kernel_subgroup f)
 
   definition incl_of_subgroup [constructor] {G : Group} (H : subgroup_rel G) : subgroup H →g G :=
   begin
@@ -258,24 +258,24 @@ namespace group
   definition image {G H : Group} (f : G →g H) : Group :=
     subgroup (image_subgroup f)
 
-  definition CommGroup_of_Group.{u} (G : Group.{u}) (H : Π (g h : G), mul g h = mul h g) : CommGroup.{u} :=
+  definition AbGroup_of_Group.{u} (G : Group.{u}) (H : Π (g h : G), mul g h = mul h g) : AbGroup.{u} :=
   begin
     induction G,
     induction struct,
-    fapply CommGroup.mk,
+    fapply AbGroup.mk,
     exact carrier,
-    fapply comm_group.mk,
-    repeat assumption, 
+    fapply ab_group.mk,
+    repeat assumption,
     exact H
   end
 
-  definition comm_image {G : CommGroup} {H : Group} (f : G →g H) : CommGroup :=
-  CommGroup_of_Group (image f) 
+  definition ab_image {G : AbGroup} {H : Group} (f : G →g H) : AbGroup :=
+  AbGroup_of_Group (image f)
   begin
     intro g h,
     induction g with x t, induction h with y s,
     fapply subtype_eq,
-    induction t with p, induction s with q, induction p with g p, induction q with h q, induction p, induction q, 
+    induction t with p, induction s with q, induction p with g p, induction q with h q, induction p, induction q,
     refine (((respect_mul f g h)⁻¹ ⬝ _) ⬝ (respect_mul f h g)),
     apply (ap f),
     induction G, induction struct, apply mul_comm
@@ -299,9 +299,9 @@ namespace group
   definition image_lift {G H : Group} (f : G →g H) : G →g image f :=
   begin
     fapply hom_lift f,
-    intro g, 
+    intro g,
     apply tr,
-    fapply fiber.mk, 
+    fapply fiber.mk,
     exact g, reflexivity
   end
 
@@ -317,7 +317,7 @@ namespace group
     intro p,
     fapply subtype_eq,
     exact p
-  end 
+  end
 
   definition image_incl_eq_one {G H : Group} (f : G →g H) : Π (x : image f), (image_incl f x = 1) → x = 1 :=
   begin

@@ -389,7 +389,7 @@ namespace seq_colim
     rewrite [▸*, +ap_con, ap_inv, +succ_add_tr_rep_succ, con_inv, inv_con_inv_right, +con.assoc],
     apply whisker_left,
     rewrite [- +con.assoc], apply whisker_right, rewrite [- +ap_compose'],
-    note s := (eq_top_of_square (natural_square
+    note s := (eq_top_of_square (natural_square_tr
       (λx, fn_tr_eq_tr_fn (succ_add n k) f x ⬝ (tr_ap A succ (succ_add n k) (f x))⁻¹) p))⁻¹,
     rewrite [inv_con_inv_right at s, -con.assoc at s], exact s
   end

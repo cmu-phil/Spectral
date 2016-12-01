@@ -12,7 +12,7 @@ open eq algebra is_trunc set_quotient relation sigma sigma.ops prod sum list tru
 
 namespace group
 
-  variables {G G' : Group} {g g' h h' k : G} {A B : CommGroup}
+  variables {G G' : Group} {g g' h h' k : G} {A B : AbGroup}
 
   /- Free Group of a set -/
   variables (X : Set) {l l' : list (X ⊎ X)}

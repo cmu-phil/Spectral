@@ -6,26 +6,29 @@ Authors: Floris van Doorn
 Reduced cohomology
 -/
 
-import .EM algebra.arrow_group
+import algebra.arrow_group .spectrum homotopy.EM
 
-open eq spectrum int trunc pointed EM group algebra circle sphere nat
+open eq spectrum int trunc pointed EM group algebra circle sphere nat EM.ops
 
-definition cohomology (X : Type*) (Y : spectrum) (n : ℤ) : CommGroup :=
-CommGroup_pmap X (πag[2] (Y (2+n)))
+definition EM_spectrum /-[constructor]-/ (G : AbGroup) : spectrum :=
+spectrum.Mk (K G) (λn, (loop_EM G n)⁻¹ᵉ*)
 
-definition ordinary_cohomology [reducible] (X : Type*) (G : CommGroup) (n : ℤ) : CommGroup :=
+definition cohomology (X : Type*) (Y : spectrum) (n : ℤ) : AbGroup :=
+AbGroup_pmap X (πag[2] (Y (2+n)))
+
+definition ordinary_cohomology [reducible] (X : Type*) (G : AbGroup) (n : ℤ) : AbGroup :=
 cohomology X (EM_spectrum G) n
 
-definition ordinary_cohomology_Z [reducible] (X : Type*) (n : ℤ) : CommGroup :=
+definition ordinary_cohomology_Z [reducible] (X : Type*) (n : ℤ) : AbGroup :=
 ordinary_cohomology X agℤ n
 
 notation `H^` n `[`:0 X:0 `, ` Y:0 `]`:0 := cohomology X Y n
 notation `H^` n `[`:0 X:0 `]`:0 := ordinary_cohomology_Z X n
 
-check H^3[S¹*,EM_spectrum agℤ]
-check H^3[S¹*]
+-- check H^3[S¹*,EM_spectrum agℤ]
+-- check H^3[S¹*]
 
-definition unpointed_cohomology (X : Type) (Y : spectrum) (n : ℤ) : CommGroup :=
+definition unpointed_cohomology (X : Type) (Y : spectrum) (n : ℤ) : AbGroup :=
 cohomology X₊ Y n
 
 definition cohomology_homomorphism [constructor] {X X' : Type*} (f : X' →* X) (Y : spectrum)

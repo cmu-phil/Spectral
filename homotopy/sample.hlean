@@ -175,7 +175,7 @@ namespace homotopy
       apply trunc.rec,
       intro a',
       apply pathover_of_tr_eq,
-      rewrite [transport_eq_Fr,idp_con],
+      rewrite [eq_transport_Fr,idp_con],
       revert H, induction n with [n, IH],
       { intro H, apply is_prop.elim },
       { intros H,
