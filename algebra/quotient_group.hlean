@@ -247,19 +247,6 @@ definition ab_group_quotient_homomorphism (A B : AbGroup)(K : subgroup_rel A)(L 
     exact @ab_gq_map_eq_one B L (f a) (p a k),
     end
 
-definition ab_group_first_iso_thm (A B : AbGroup) (f : A →g B) : quotient_ab_group (kernel_subgroup f) ≃g ab_image f :=
-  begin
-    fapply isomorphism.mk,
-    fapply quotient_group_elim,
-    fapply image_lift,
-    intro a,
-    intro k,
-    fapply image_incl_eq_one,
-    exact k,
-    exact sorry,
-    -- show that the above map is injective and surjective.
-  end
-
 definition ab_group_kernel_factor {A B C: AbGroup} (f : A →g B)(g : A →g C){i : C →g B}(H : f = i ∘g g )
            : Π a:A , kernel_subgroup(g)(a) → kernel_subgroup(f)(a) :=
   begin
@@ -270,6 +257,28 @@ definition ab_group_kernel_factor {A B C: AbGroup} (f : A →g B)(g : A →g C){
      ... = i 1                : ap i p
      ... = 1                  : respect_one i
   end
+
+definition  ab_group_triv_kernel_factor {A B C: AbGroup} (f : A →g B)(g : A →g C){i : C →g B}(H : f = i ∘g g ) :
+ is_trivial_subgroup _ (kernel_subgroup(f)) → is_trivial_subgroup _ (kernel_subgroup(g)) :=
+ begin
+   intro p,
+   intro a,
+   intro q,
+   fapply p, 
+   exact ab_group_kernel_factor f g H a q 
+ end
+
+definition triv_kern_is_embedding {A B : AbGroup} (f : A →g B):
+is_trivial_subgroup _ (kernel_subgroup(f)) → is_embedding(f) :=
+  begin
+  intro p,
+  fapply is_embedding_homomorphism,
+  intro a q,
+  apply p,
+  exact q
+  end
+
+definition 
 
 definition ab_group_kernel_equivalent {A B : AbGroup} (C : AbGroup) (f : A →g B)(g : A →g C)(i : C →g B)(H : f = i ∘g g )(K : is_embedding i)
            : Π a:A , kernel_subgroup(g)(a) ↔ kernel_subgroup(f)(a) :=
@@ -295,19 +304,48 @@ definition ab_group_kernel_image_lift (A B : AbGroup) (f : A →g B)
 
 definition ab_group_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
            : quotient_ab_group (kernel_subgroup f) →g ab_image (f) :=
-begin
-fapply quotient_group_elim (image_lift f), intro a, intro p,
-apply iff.mpr (ab_group_kernel_image_lift _ _ f a) p
-end
+           begin
+           fapply quotient_group_elim (image_lift f), intro a, intro p,
+           apply iff.mpr (ab_group_kernel_image_lift _ _ f a) p
+           end
 
 definition is_surjective_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
-  : is_surjective (ab_group_kernel_quotient_to_image f) :=
+           : is_surjective (ab_group_kernel_quotient_to_image f) :=
   begin
     intro b, exact sorry
     -- have H : is_surjective (image_lift f)
   end
 
-print iff.mpr
+
+
+
+definition is_embedding_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
+           : is_embedding (ab_group_kernel_quotient_to_image f) :=
+  begin
+   
+  end
+
+
+
+
+definition ab_group_first_iso_thm (A B : AbGroup) (f : A →g B) : quotient_ab_group (kernel_subgroup f) ≃g ab_image f :=
+  begin
+    fapply isomorphism.mk,
+    fapply quotient_group_elim,
+    fapply image_lift,
+    intro a,
+    intro k,
+    fapply image_incl_eq_one,
+    exact k,
+    exact sorry,
+    -- show that the above map is injective and surjective.
+  end
+
+
+
+
+
+-- print iff.mpr
     /- set generating normal subgroup -/
 
   section
