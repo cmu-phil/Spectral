@@ -284,7 +284,7 @@ namespace group
   definition image_incl {G H : Group} (f : G →g H) : image f →g H :=
     incl_of_subgroup (image_subgroup f)
 
-  definition comm_image_incl {A B : CommGroup} (f : A →g B) : comm_image f →g B := incl_of_subgroup (image_subgroup f)
+  definition comm_image_incl {A B : AbGroup} (f : A →g B) : ab_image f →g B := incl_of_subgroup (image_subgroup f)
 
   definition hom_lift {G H : Group} (f : G →g H) (K : subgroup_rel H) (Hyp : Π (g : G), K (f g)) : G →g subgroup K :=
   begin
