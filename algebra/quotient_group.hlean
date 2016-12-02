@@ -149,6 +149,16 @@ namespace group
     exact λ g h, idp
   end
 
+  definition surjective_ab_gq_map {A : AbGroup} (N : subgroup_rel A) : is_surjective (ab_gq_map N) :=
+  begin
+    intro x,
+    induction x,
+    fapply image.mk,
+    exact a,
+    reflexivity,
+    sorry --Floris please help
+  end
+
   namespace quotient
     notation `⟦`:max a `⟧`:0 := qg_map a _
   end quotient
@@ -237,6 +247,28 @@ namespace group
       {fapply is_prop.elimo} }
   end
 
+------------------------------------------------
+  -- FIRST ISOMORPHISM THEOREM
+
+
+definition kernel_quotient_extension {A B : AbGroup} (f : A →g B) : quotient_ab_group (kernel_subgroup f) →g B := 
+  begin
+    fapply quotient_group_elim f, intro a, intro p, exact p
+  end
+
+definition kernel_quotient_extension_triangle {A B : AbGroup} (f : A →g B) : 
+  kernel_quotient_extension f ∘g ab_gq_map (kernel_subgroup f) ~ f :=
+  begin
+    intro a,
+    apply quotient_group_compute
+  end
+
+definition embedding_kernel_quotient_extension {A B : AbGroup} (f : A →g B) :
+  is_embedding (kernel_quotient_extension f) :=
+  begin
+    
+  end 
+
 definition ab_group_quotient_homomorphism (A B : AbGroup)(K : subgroup_rel A)(L : subgroup_rel B) (f : A →g B)
      (p : Π(a:A), K(a) → L(f a)) : quotient_ab_group K →g quotient_ab_group L :=
     begin
@@ -278,8 +310,6 @@ is_trivial_subgroup _ (kernel_subgroup(f)) → is_embedding(f) :=
   exact q
   end
 
-definition 
-
 definition ab_group_kernel_equivalent {A B : AbGroup} (C : AbGroup) (f : A →g B)(g : A →g C)(i : C →g B)(H : f = i ∘g g )(K : is_embedding i)
            : Π a:A , kernel_subgroup(g)(a) ↔ kernel_subgroup(f)(a) :=
 begin
@@ -307,7 +337,7 @@ definition ab_group_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
            begin
            fapply quotient_group_elim (image_lift f), intro a, intro p,
            apply iff.mpr (ab_group_kernel_image_lift _ _ f a) p
-           end
+end
 
 definition is_surjective_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
            : is_surjective (ab_group_kernel_quotient_to_image f) :=
