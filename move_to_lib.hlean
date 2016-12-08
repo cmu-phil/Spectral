@@ -130,3 +130,8 @@ namespace sphere
   -- end
 
 end sphere
+
+definition image_pathover {A B : Type} (f : A → B) {x y : B} (p : x = y) (u : image f x) (v : image f y) : u =[p] v := 
+  begin
+    apply is_prop.elimo
+  end

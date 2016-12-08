@@ -142,21 +142,19 @@ namespace group
   definition qg_map [constructor] : G →g quotient_group N :=
   homomorphism.mk class_of (λ g h, idp)
 
-  definition ab_gq_map {G : AbGroup} (N : subgroup_rel G) : G →g quotient_ab_group N :=
+  definition ab_qg_map {G : AbGroup} (N : subgroup_rel G) : G →g quotient_ab_group N :=
   begin
     fapply homomorphism.mk,
     exact class_of,
     exact λ g h, idp
   end
 
-  definition surjective_ab_gq_map {A : AbGroup} (N : subgroup_rel A) : is_surjective (ab_gq_map N) :=
+ definition surjective_ab_qg_map {A : AbGroup} (N : subgroup_rel A) : is_surjective (ab_qg_map N) :=
   begin
-    intro x,
-    induction x,
+    intro x, induction x,
     fapply image.mk,
-    exact a,
-    reflexivity,
-    sorry --Floris please help
+    exact a, reflexivity,
+    apply is_prop.elimo
   end
 
   namespace quotient
@@ -176,7 +174,7 @@ namespace group
     unfold quotient_rel, rewrite e, exact H
   end
 
-  definition ab_gq_map_eq_one {K : subgroup_rel A} (g :A) (H : K g) : ab_gq_map K g = 1 :=
+  definition ab_qg_map_eq_one {K : subgroup_rel A} (g :A) (H : K g) : ab_qg_map K g = 1 :=
   begin
     apply eq_of_rel,
       have e : (g * 1⁻¹ = g),
@@ -257,7 +255,7 @@ definition kernel_quotient_extension {A B : AbGroup} (f : A →g B) : quotient_a
   end
 
 definition kernel_quotient_extension_triangle {A B : AbGroup} (f : A →g B) : 
-  kernel_quotient_extension f ∘g ab_gq_map (kernel_subgroup f) ~ f :=
+  kernel_quotient_extension f ∘g ab_qg_map (kernel_subgroup f) ~ f :=
   begin
     intro a,
     apply quotient_group_compute
@@ -273,10 +271,10 @@ definition ab_group_quotient_homomorphism (A B : AbGroup)(K : subgroup_rel A)(L 
      (p : Π(a:A), K(a) → L(f a)) : quotient_ab_group K →g quotient_ab_group L :=
     begin
     fapply quotient_group_elim,
-    exact (ab_gq_map L) ∘g f,
+    exact (ab_qg_map L) ∘g f,
     intro a,
     intro k,
-    exact @ab_gq_map_eq_one B L (f a) (p a k),
+    exact @ab_qg_map_eq_one B L (f a) (p a k),
     end
 
 definition ab_group_kernel_factor {A B C: AbGroup} (f : A →g B)(g : A →g C){i : C →g B}(H : f = i ∘g g )
