@@ -6,7 +6,7 @@ Authors: Floris van Doorn, Egbert Rijke
 Constructions with groups
 -/
 
-import hit.set_quotient .subgroup
+import hit.set_quotient .subgroup ..move_to_lib
 
 open eq algebra is_trunc set_quotient relation sigma sigma.ops prod trunc function equiv
 
@@ -149,7 +149,7 @@ namespace group
     exact λ g h, idp
   end
 
- definition surjective_ab_qg_map {A : AbGroup} (N : subgroup_rel A) : is_surjective (ab_qg_map N) :=
+ definition is_surjective_ab_qg_map {A : AbGroup} (N : subgroup_rel A) : is_surjective (ab_qg_map N) :=
   begin
     intro x, induction x,
     fapply image.mk,
@@ -261,10 +261,18 @@ definition kernel_quotient_extension_triangle {A B : AbGroup} (f : A →g B) :
     apply quotient_group_compute
   end
 
-definition embedding_kernel_quotient_extension {A B : AbGroup} (f : A →g B) :
+definition is_embedding_kernel_quotient_extension {A B : AbGroup} (f : A →g B) :
   is_embedding (kernel_quotient_extension f) :=
   begin
-    
+    fapply is_embedding_homomorphism,
+    intro x,
+    note H := is_surjective_ab_qg_map (kernel_subgroup f) x,
+    induction H, induction p,
+    intro q,
+    apply qg_map_eq_one,
+    refine _ ⬝ q,
+    symmetry,
+    rexact kernel_quotient_extension_triangle f a
   end 
 
 definition ab_group_quotient_homomorphism (A B : AbGroup)(K : subgroup_rel A)(L : subgroup_rel B) (f : A →g B)
@@ -337,36 +345,39 @@ definition ab_group_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
            apply iff.mpr (ab_group_kernel_image_lift _ _ f a) p
 end
 
+definition ab_group_kernel_quotient_to_image_triangle {A B : AbGroup} (f : A →g B)
+           : image_incl f ∘g ab_group_kernel_quotient_to_image f ~ kernel_quotient_extension f :=
+  begin
+    intro x,
+    induction x,
+    reflexivity,
+    fapply is_prop.elimo
+  end
+
 definition is_surjective_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
            : is_surjective (ab_group_kernel_quotient_to_image f) :=
   begin
-    intro b, exact sorry
-    -- have H : is_surjective (image_lift f)
+    fapply @is_surjective_factor A _ (image f) _ _ _ (group_fun (ab_qg_map (kernel_subgroup f))),
+exact image_lift f,
+apply quotient_group_compute,
+exact is_surjective_image_lift f
   end
-
-
-
 
 definition is_embedding_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
            : is_embedding (ab_group_kernel_quotient_to_image f) :=
   begin
-   
+    fapply @is_embedding_factor _ (image f) B _ _ _ (ab_group_kernel_quotient_to_image f) (image_incl f) (kernel_quotient_extension f), 
+    exact ab_group_kernel_quotient_to_image_triangle f,
+    exact is_embedding_kernel_quotient_extension f
   end
-
-
-
 
 definition ab_group_first_iso_thm (A B : AbGroup) (f : A →g B) : quotient_ab_group (kernel_subgroup f) ≃g ab_image f :=
   begin
     fapply isomorphism.mk,
-    fapply quotient_group_elim,
-    fapply image_lift,
-    intro a,
-    intro k,
-    fapply image_incl_eq_one,
-    exact k,
-    exact sorry,
-    -- show that the above map is injective and surjective.
+    exact ab_group_kernel_quotient_to_image f,
+    fapply is_equiv_of_is_surjective_of_is_embedding,
+    exact is_embedding_kernel_quotient_to_image f,
+    exact is_surjective_kernel_quotient_to_image f
   end
 
 

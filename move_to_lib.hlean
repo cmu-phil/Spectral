@@ -135,3 +135,33 @@ definition image_pathover {A B : Type} (f : A → B) {x y : B} (p : x = y) (u : 
   begin
     apply is_prop.elimo
   end
+
+section injective_surjective
+open trunc fiber image
+
+variables {A B C : Type} [is_set A] [is_set B] [is_set C] (f : A → B) (g : B → C) (h : A → C) (H : g ∘ f ~ h)
+include H
+
+definition is_embedding_factor : is_embedding h → is_embedding f :=
+  begin
+    induction H using homotopy.rec_on_idp,
+    intro E,
+    fapply is_embedding_of_is_injective,
+    intro x y p,
+    fapply @is_injective_of_is_embedding _ _ _ E _ _ (ap g p)
+  end 
+
+definition is_surjective_factor : is_surjective h → is_surjective g :=
+  begin
+    induction H using homotopy.rec_on_idp,
+    intro S,
+    intro c,
+    note p := S c,
+    induction p,
+    apply tr,
+    fapply fiber.mk,
+    exact f a,
+    exact p
+  end
+
+end injective_surjective

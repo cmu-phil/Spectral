@@ -302,6 +302,14 @@ namespace group
     exact g, reflexivity
   end
 
+  definition is_surjective_image_lift {G H : Group} (f : G →g H) : is_surjective (image_lift f) :=
+  begin
+    intro h,
+    induction h with h p, induction p with x, induction x with g p,
+    fapply image.mk,
+    exact g, induction p, reflexivity
+  end
+
   definition image_factor {G H : Group} (f : G →g H) : f = (image_incl f) ∘g (image_lift f) :=
   begin
     fapply homomorphism_eq,
