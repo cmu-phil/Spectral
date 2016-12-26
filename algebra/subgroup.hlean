@@ -40,7 +40,7 @@ namespace group
   definition full_subgroup.{u} (G : Group.{u}) : subgroup_rel.{u 0} G :=
   begin
     fapply subgroup_rel.mk,
-    { intro g, fapply trunctype.mk, exact unit, exact _}, -- instead of the unit type, we take g = g, because the unit type is in Type₀ and not in Type.{u}
+    { intro g, fapply trunctype.mk, exact unit, exact _ },
     { esimp, constructor },
     { intros g h p q, esimp, constructor },
     { intros g p, esimp, constructor }

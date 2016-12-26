@@ -419,7 +419,7 @@ namespace seq_colim
   definition decode [unfold 4] (y : seq_colim g) (c : code y) : ι g x = y :=
   begin
     induction y,
-    { esimp at c, exact sorry},
+    { esimp at c, exact sorry },
     { exact sorry }
   end
 
