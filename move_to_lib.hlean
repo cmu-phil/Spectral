@@ -409,6 +409,12 @@ namespace fiber
 
 end fiber
 
+namespace is_trunc
+
+  definition center' {A : Type} (H : is_contr A) : A := center A
+
+end is_trunc
+
 namespace is_conn
 
   open unit trunc_index nat is_trunc pointed.ops
