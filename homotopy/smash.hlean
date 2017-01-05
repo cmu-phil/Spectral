@@ -1,8 +1,8 @@
 -- Authors: Floris van Doorn
 
-import homotopy.smash ..move_to_lib
+import homotopy.smash ..move_to_lib .pushout
 
-open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops wedge
+open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops wedge is_trunc function
 
   /- smash A (susp B) = susp (smash A B) <- this follows from associativity and smash with S¹ -/
 
@@ -13,9 +13,9 @@ open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops w
 
   /- smash A B ≃ pcofiber (pprod_of_pwedge A B) -/
 
-namespace smash
+variables {A B : Type*}
 
-  variables {A B : Type*}
+namespace smash
 
   definition prod_of_wedge [unfold 3] (v : pwedge A B) : A × B :=
   begin
@@ -25,7 +25,71 @@ namespace smash
     { reflexivity }
   end
 
+  definition wedge_of_sum [unfold 3] (v : A + B) : pwedge A B :=
+  begin
+    induction v with a b,
+    { exact pushout.inl a },
+    { exact pushout.inr b }
+  end
+
+
+  definition prod_of_wedge_of_sum [unfold 3] (v : A + B) : prod_of_wedge (wedge_of_sum v) = prod_of_sum v :=
+  begin
+    induction v with a b,
+    { reflexivity },
+    { reflexivity }
+  end
+
+end smash open smash
+
+namespace pushout
+
+  definition eq_inl_pushout_wedge_of_sum [unfold 3] (v : pwedge A B) :
+    inl pt = inl v :> pushout wedge_of_sum bool_of_sum :=
+  begin
+    induction v with a b,
+    { exact glue (sum.inl pt) ⬝ (glue (sum.inl a))⁻¹, },
+    { exact ap inl (glue ⋆) ⬝ glue (sum.inr pt) ⬝ (glue (sum.inr b))⁻¹, },
+    { apply eq_pathover_constant_left,
+      refine !con.right_inv ⬝pv _ ⬝vp !con_inv_cancel_right⁻¹, exact square_of_eq idp }
+  end
+
   variables (A B)
+  definition eq_inr_pushout_wedge_of_sum [unfold 3] (b : bool) :
+    inl pt = inr b :> pushout (@wedge_of_sum A B) bool_of_sum :=
+  begin
+    induction b,
+    { exact glue (sum.inl pt) },
+    { exact ap inl (glue ⋆) ⬝ glue (sum.inr pt) }
+  end
+
+  definition is_contr_pushout_wedge_of_sum : is_contr (pushout (@wedge_of_sum A B) bool_of_sum) :=
+  begin
+    apply is_contr.mk (pushout.inl pt),
+    intro x, induction x with v b w,
+    { apply eq_inl_pushout_wedge_of_sum },
+    { apply eq_inr_pushout_wedge_of_sum },
+    { apply eq_pathover_constant_left_id_right,
+      induction w with a b,
+      { apply whisker_rt, exact vrfl },
+      { apply whisker_rt, exact vrfl }}
+  end
+
+end pushout open pushout
+
+namespace smash
+
+  variables (A B)
+  definition smash_equiv_cofiber : smash A B ≃ cofiber (@prod_of_wedge A B) :=
+  begin
+    unfold [smash, cofiber, smash'], symmetry,
+    refine !pushout.symm ⬝e _,
+    fapply pushout_compose_equiv wedge_of_sum,
+    { symmetry, apply equiv_unit_of_is_contr, apply is_contr_pushout_wedge_of_sum },
+    { intro x, reflexivity },
+    { apply prod_of_wedge_of_sum }
+  end
+
   definition pprod_of_pwedge [constructor] : pwedge A B →* A ×* B :=
   begin
     fconstructor,
@@ -33,108 +97,10 @@ namespace smash
     { reflexivity }
   end
 
-  variables {A B}
-  attribute pcofiber [constructor]
-  definition pcofiber_of_smash [unfold 3] (x : smash A B) : pcofiber (@pprod_of_pwedge A B) :=
-  begin
-    induction x,
-    { exact pushout.inr (a, b) },
-    { exact pushout.inl ⋆ },
-    { exact pushout.inl ⋆ },
-    { symmetry, exact pushout.glue (pushout.inl a) },
-    { symmetry, exact pushout.glue (pushout.inr b) }
-  end
-
-  -- move
-  definition ap_eq_ap011 {A B C X : Type} (f : A → B → C) (g : X → A) (h : X → B) {x x' : X}
-    (p : x = x') : ap (λx, f (g x) (h x)) p = ap011 f (ap g p) (ap h p) :=
-  by induction p; reflexivity
-
-  definition smash_of_pcofiber_glue [unfold 3] (x : pwedge A B) :
-    Point (smash A B) = smash.mk (prod_of_wedge x).1 (prod_of_wedge x).2  :=
-  begin
-    induction x with a b: esimp,
-    { apply gluel' },
-    { apply gluer' },
-    { apply eq_pathover_constant_left, refine _ ⬝hp (ap_eq_ap011 smash.mk _ _ _)⁻¹,
-      rewrite [ap_compose' prod.pr1, ap_compose' prod.pr2],
-      -- TODO: define elim_glue for wedges and remove k in krewrite
-      krewrite [pushout.elim_glue], esimp, apply vdeg_square,
-      exact !con.right_inv ⬝ !con.right_inv⁻¹ }
-  end
-
-  definition smash_of_pcofiber [unfold 3] (x : pcofiber (pprod_of_pwedge A B)) : smash A B :=
-  begin
-    induction x with x x,
-    { exact smash.mk pt pt },
-    { exact smash.mk x.1 x.2 },
-    { exact smash_of_pcofiber_glue x }
-  end
-
-  set_option pp.binder_types true
-  -- maybe useful lemma:
-  open function pushout
-  definition pushout_glue_natural {A B C D E : Type} {f : A → B} {g : A → C} (a : A)
-    {h₁ : B → D} {k₁ : C → D} (p₁ : h₁ ∘ f ~ k₁ ∘ g)
-    {h₂ : B → E} {k₂ : C → E} (p₂ : h₂ ∘ f ~ k₂ ∘ g) :
-    @square (pushout (pushout.elim h₁ k₁ p₁) (pushout.elim h₂ k₂ p₂)) _ _ _ _
-      (pushout.glue (inl (f a))) (pushout.glue (inr (g a)))
-      (ap pushout.inl (p₁ a)) (ap pushout.inr (p₂ a)) :=
-  begin
-    apply square_of_eq, symmetry,
-    refine _ ⬝ (ap_con_eq_con_ap (pushout.glue) (pushout.glue a)) ⬝ _,
-    apply whisker_right, exact sorry,
-    apply whisker_left, exact sorry
-  end
-
-  definition pcofiber_of_smash_of_pcofiber (x : pcofiber (pprod_of_pwedge A B)) :
-    pcofiber_of_smash (smash_of_pcofiber x) = x :=
-  begin
-    induction x with x x,
-    { refine (pushout.glue pt)⁻¹ },
-    { induction x with a b, reflexivity },
-    { apply eq_pathover_id_right, esimp,
-      refine ap_compose' pcofiber_of_smash smash_of_pcofiber (cofiber.glue x) ⬝ph _,
-      refine ap02 _ !cofiber.elim_glue' ⬝ph _,
-      induction x,
-      { refine (!ap_con ⬝ !elim_gluel ◾ (!ap_inv ⬝ !elim_gluel⁻² ⬝ !inv_inv)) ⬝ph _,
-        apply whisker_tl, apply hrfl },
-      { esimp, refine (!ap_con ⬝ !elim_gluer ◾ (!ap_inv ⬝ !elim_gluer⁻² ⬝ !inv_inv)) ⬝ph _,
-        apply square_of_eq, esimp, apply whisker_right, apply inverse2,
-        refine _ ⬝ (ap_con_eq_con_ap (pushout.glue) (wedge.glue A B))⁻¹ ⬝ _,
-        { apply whisker_left, refine _ ⬝ (ap_compose' pushout.inr _ _)⁻¹,
-          exact ap02 _ !pushout.elim_glue⁻¹ },
-        { refine whisker_right _ _ ⬝ !idp_con, apply ap_constant }},
-      { exact sorry }}
-  end
-
-  definition smash_of_pcofiber_of_smash (x : smash A B) :
-    smash_of_pcofiber (pcofiber_of_smash x) = x :=
-  begin
-    induction x,
-    { reflexivity },
-    { apply gluel },
-    { apply gluer },
-    { apply eq_pathover_id_right, refine ap_compose smash_of_pcofiber _ _ ⬝ph _,
-      refine ap02 _ !elim_gluel ⬝ph _, refine !ap_inv ⬝ph _, refine !pushout.elim_glue⁻² ⬝ph _,
-      esimp, apply square_of_eq, refine !idp_con ⬝ _ ⬝ whisker_right _ !inv_con_inv_right⁻¹,
-      exact !inv_con_cancel_right⁻¹ },
-    { apply eq_pathover_id_right, refine ap_compose smash_of_pcofiber _ _ ⬝ph _,
-      refine ap02 _ !elim_gluer ⬝ph _, refine !ap_inv ⬝ph _, refine !pushout.elim_glue⁻² ⬝ph _,
-      esimp, apply square_of_eq, refine !idp_con ⬝ _ ⬝ whisker_right _ !inv_con_inv_right⁻¹,
-      exact !inv_con_cancel_right⁻¹ },
-  end
-
-  variables (A B)
   definition smash_pequiv_pcofiber [constructor] : smash A B ≃* pcofiber (pprod_of_pwedge A B) :=
   begin
-    fapply pequiv_of_equiv,
-    { fapply equiv.MK,
-      { apply pcofiber_of_smash },
-      { apply smash_of_pcofiber },
-      { exact pcofiber_of_smash_of_pcofiber },
-      { exact smash_of_pcofiber_of_smash }},
-    { symmetry, exact pushout.glue (Point (pwedge A B)) }
+    apply pequiv_of_equiv (smash_equiv_cofiber A B),
+    exact (cofiber.glue pt)⁻¹
   end
 
   variables {A B}

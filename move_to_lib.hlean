@@ -5,8 +5,11 @@ import homotopy.sphere2 homotopy.cofiber homotopy.wedge
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
      is_trunc function sphere
 
-attribute pwedge [constructor]
+attribute equiv_unit_of_is_contr [constructor]
+attribute pwedge pushout.symm pushout.equiv pushout.is_equiv_functor [constructor]
 attribute is_succ_add_right is_succ_add_left is_succ_bit0 [constructor]
+attribute pushout.functor [unfold 16]
+attribute pushout.transpose [unfold 6]
 
 namespace eq
 
@@ -15,6 +18,11 @@ namespace eq
 
   definition id_compose {A B : Type} (f : A → B) : id ∘ f ~ f :=
   by reflexivity
+
+  -- move
+  definition ap_eq_ap011 {A B C X : Type} (f : A → B → C) (g : X → A) (h : X → B) {x x' : X}
+    (p : x = x') : ap (λx, f (g x) (h x)) p = ap011 f (ap g p) (ap h p) :=
+  by induction p; reflexivity
 
 end eq
 

@@ -64,8 +64,6 @@ print apd10_ap_precompose_dependent
   definition is_pushout2_pushout : @is_pushout2 _ _ _ _ f g inl inr glue :=
   λX, to_is_equiv (pushout_arrow_equiv f g X ⬝e assoc_equiv_prod _)
 
-  -- set_option pp.implicit true
-  -- set_option pp.notation false
   definition is_equiv_of_is_pushout2_simple [constructor] {A B C D : Type.{u₁}}
             {f : A → B} {g : A → C} {h : B → D} {k : C → D} (p : h ∘ f ~ k ∘ g)
             {h' : B → D'} {k' : C → D'} (p' : h' ∘ f ~ k' ∘ g)
@@ -94,138 +92,110 @@ print apd10_ap_precompose_dependent
         refine apd10 !apd10_eq_of_homotopy (f a) ⬝ph _ ⬝hp apd10 !apd10_eq_of_homotopy⁻¹ (g a),
         refine ap_compose (pushout.elim h k p) _ _ ⬝pv _,
         refine aps (pushout.elim h k p) _ ⬝vp (!elim_glue ⬝ !ap_id⁻¹),
-esimp,   exact sorry
+        esimp,   exact sorry
         },
-
-      -- note q := @eq_of_is_contr _ H''
-      --   ⟨up ∘ pushout.elim h k p ∘ down ∘ (center' H').1,
-      --    (λb, ap (up ∘ pushout.elim h k p ∘ down) (prod.pr1 (center' H').2 b),
-      --     λc, ap (up ∘ pushout.elim h k p ∘ down) (prod.pr2 (center' H').2 c))⟩
-      --   ⟨up, (λx, idp, λx, idp)⟩,
-      -- exact ap down (ap10 q..1 d)
       }
   end
 
-  definition is_equiv_of_is_pushout2 [constructor] (H : is_pushout2 p) : D ≃ pushout f g :=
+
+--   definition is_equiv_of_is_pushout2 [constructor] (H : is_pushout2 p) : D ≃ pushout f g :=
+--   begin
+--     fapply equiv.MK,
+--     { exact down.{_ u₄} ∘ (cocone_of_map p _)⁻¹ᶠ ⟨(up ∘ inl, up ∘ inr), λa, ap up (glue a)⟩ },
+--     { exact pushout.elim h k p },
+--     { intro x, exact sorry
+
+-- },
+--     { intro d, apply eq_of_fn_eq_fn (equiv_lift D), esimp, revert d,
+--       apply ap10,
+--       apply eq_of_fn_eq_fn (equiv.mk _ (H (lift.{_ (max u₁ u₂ u₃)} D))),
+--       fapply sigma_eq,
+--       { esimp, fapply prod_eq,
+--           apply eq_of_homotopy, intro b, apply ap up, esimp,
+--         exact ap (pushout.elim h k p ∘ down.{_ u₄})
+--                    (pushout.inv_left p H ⟨(up ∘ inl, up ∘ inr), λa, ap up (glue a)⟩ b),
+
+--         exact sorry },
+--       { exact sorry },
+
+--       -- note q := @eq_of_is_contr _ H''
+--       --   ⟨up ∘ pushout.elim h k p ∘ down ∘ (center' H').1,
+--       --    (λb, ap (up ∘ pushout.elim h k p ∘ down) (prod.pr1 (center' H').2 b),
+--       --     λc, ap (up ∘ pushout.elim h k p ∘ down) (prod.pr2 (center' H').2 c))⟩
+--       --   ⟨up, (λx, idp, λx, idp)⟩,
+--       -- exact ap down (ap10 q..1 d)
+--       }
+--   end
+
+  definition pushout_compose_to [unfold 8] {A B C D : Type} {f : A → B} {g : A → C} {h : B → D}
+    (x : pushout h (@inl _ _ _ f g)) : pushout (h ∘ f) g :=
+  begin
+    induction x with d y b,
+    { exact inl d },
+    { induction y with b c a,
+      { exact inl (h b) },
+      { exact inr c },
+      { exact glue a }},
+    { reflexivity }
+  end
+
+  definition pushout_compose_from [unfold 8] {A B C D : Type} {f : A → B} {g : A → C} {h : B → D}
+    (x : pushout (h ∘ f) g) : pushout h (@inl _ _ _ f g) :=
+  begin
+    induction x with d c a,
+    { exact inl d },
+    { exact inr (inr c) },
+    { exact glue (f a) ⬝ ap inr (glue a) }
+  end
+
+  definition pushout_compose [constructor] {A B C D : Type} (f : A → B) (g : A → C) (h : B → D) :
+    pushout h (@inl _ _ _ f g) ≃ pushout (h ∘ f) g :=
   begin
     fapply equiv.MK,
-    { exact down.{_ u₄} ∘ (cocone_of_map p _)⁻¹ᶠ ⟨(up ∘ inl, up ∘ inr), λa, ap up (glue a)⟩ },
-    { exact pushout.elim h k p },
-    { intro x, exact sorry
-
-},
-    { intro d, apply eq_of_fn_eq_fn (equiv_lift D), esimp, revert d,
-      apply ap10,
-      apply eq_of_fn_eq_fn (equiv.mk _ (H (lift.{_ (max u₁ u₂ u₃)} D))),
-      fapply sigma_eq,
-      { esimp, fapply prod_eq,
-          apply eq_of_homotopy, intro b, apply ap up, esimp,
-        exact ap (pushout.elim h k p ∘ down.{_ u₄})
-                   (pushout.inv_left p H ⟨(up ∘ inl, up ∘ inr), λa, ap up (glue a)⟩ b),
-
-        exact sorry },
-      { exact sorry },
-
-      -- note q := @eq_of_is_contr _ H''
-      --   ⟨up ∘ pushout.elim h k p ∘ down ∘ (center' H').1,
-      --    (λb, ap (up ∘ pushout.elim h k p ∘ down) (prod.pr1 (center' H').2 b),
-      --     λc, ap (up ∘ pushout.elim h k p ∘ down) (prod.pr2 (center' H').2 c))⟩
-      --   ⟨up, (λx, idp, λx, idp)⟩,
-      -- exact ap down (ap10 q..1 d)
-      }
+    { exact pushout_compose_to },
+    { exact pushout_compose_from },
+    { intro x, induction x with d c a,
+      { reflexivity },
+      { reflexivity },
+      { apply eq_pathover_id_right, apply hdeg_square,
+        refine ap_compose pushout_compose_to _ _ ⬝ ap02 _ !elim_glue ⬝ _,
+        refine !ap_con ⬝ !elim_glue ◾ !ap_compose'⁻¹ ⬝ !idp_con ⬝ _, esimp, apply elim_glue }},
+    { intro x, induction x with d y b,
+      { reflexivity },
+      { induction y with b c a,
+        { exact glue b },
+        { reflexivity },
+        { apply eq_pathover, refine ap_compose pushout_compose_from _ _ ⬝ph _,
+          esimp, refine ap02 _ !elim_glue ⬝ !elim_glue ⬝ph _, apply square_of_eq, reflexivity }},
+      { apply eq_pathover_id_right, esimp,
+        refine ap_compose pushout_compose_from _ _ ⬝ ap02 _ !elim_glue ⬝ph _, apply square_of_eq, reflexivity }}
   end
 
-
-  -- definition is_equiv_of_is_pushout2 [constructor] (H : is_pushout2 p) : D ≃ pushout f g :=
-  -- begin
-  --   note H' := H (lift.{_ u₄} (pushout f g)),
-  --   note bla := equiv.mk _ H',
-  --   fapply equiv.MK,
-  --   { exact down ∘ (center' H').1 },
-  --   { exact pushout.elim h k p },
-  --   { intro x, induction x with b c a,
-  --     { exact ap down (prod.pr1 (center' H').2 b) },
-  --     { exact ap down (prod.pr2 (center' H').2 c) },
-  --     { apply eq_pathover_id_right,
-  --       refine ap_compose (down ∘ (center' H').1) _ _ ⬝ ap02 _ !elim_glue ⬝ph _,
-  --       refine ap_compose down _ _ ⬝ph _ ⬝hp ((ap_compose' down up _)⁻¹ ⬝ !ap_id),
-  --       refine aps down _, }},
-  --   { intro d,
-  --     note H'' := H (up ∘ h) (up ∘ k) (λa, ap up.{_ (max u₁ u₂ u₃)} (p a)),
-  --     note q := @eq_of_is_contr _ H''
-  --       ⟨up ∘ pushout.elim h k p ∘ down ∘ (center' H').1,
-  --        (λb, ap (up ∘ pushout.elim h k p ∘ down) (prod.pr1 (center' H').2 b),
-  --         λc, ap (up ∘ pushout.elim h k p ∘ down) (prod.pr2 (center' H').2 c))⟩
-  --       ⟨up, (λx, idp, λx, idp)⟩,
-  --     exact ap down (ap10 q..1 d)
-  --     }
-  -- end
+  definition pushout_compose' {A B C D : Type} (f : A → B) (g : A → C) (h : B → D) :
+    pushout (@inl _ _ _ f g) h ≃ pushout g (h ∘ f) :=
+  calc
+    pushout (@inl _ _ _ f g) h ≃ pushout h (@inl _ _ _ f g) : pushout.symm
+      ... ≃ pushout (h ∘ f) g : pushout_compose
+      ... ≃ pushout g (h ∘ f) : pushout.symm
 
 
-  -- definition is_pushout_pushout : @is_pushout _ _ _ _ f g inl inr glue :=
-  -- begin
-  --   intro X h k p,
-  --   fapply is_contr.mk,
-  --   { refine ⟨pushout.elim h k p, (λb, idp, λc, idp), λa, hdeg_square (elim_glue h k p a)⟩ },
-  --   { intro v, induction v with l v, induction v with v s, induction v with q r,
-  --     fapply sigma_eq,
-  --     esimp, apply eq_of_homotopy, intro x, induction x with b c a,
-  --     { exact (q b)⁻¹ },
-  --     { exact (r c)⁻¹ },
-  --     { apply eq_pathover, exact !elim_glue ⬝ph (s a)⁻¹ʰ },
-  --   }
-  -- end
-  -- definition is_pushout_of_is_equiv (e : D ≃ pushout f g)
-  --   : is_pushout
-
-  -- variables {f g}
-  -- definition is_equiv_of_is_pushout [constructor] (H : is_pushout p) : D ≃ pushout f g :=
-  -- begin
-  --   note H' := H (up ∘ inl) (up ∘ inr) (λa, ap up.{_ u₄} (@glue _ _ _ f g a)),
-  --   fapply equiv.MK,
-  --   { exact down ∘ (center' H').1 },
-  --   { exact pushout.elim h k p },
-  --   { intro x, induction x with b c a,
-  --     { exact ap down (prod.pr1 (center' H').2 b) },
-  --     { exact ap down (prod.pr2 (center' H').2 c) },
-  --     { apply eq_pathover_id_right,
-  --       refine ap_compose (down ∘ (center' H').1) _ _ ⬝ ap02 _ !elim_glue ⬝ph _,
-  --       refine ap_compose down _ _ ⬝ph _ ⬝hp ((ap_compose' down up _)⁻¹ ⬝ !ap_id),
-  --       refine aps down _, }},
-  --   { intro d,
-  --     note H'' := H (up ∘ h) (up ∘ k) (λa, ap up.{_ (max u₁ u₂ u₃)} (p a)),
-  --     note q := @eq_of_is_contr _ H''
-  --       ⟨up ∘ pushout.elim h k p ∘ down ∘ (center' H').1,
-  --        (λb, ap (up ∘ pushout.elim h k p ∘ down) (prod.pr1 (center' H').2 b),
-  --         λc, ap (up ∘ pushout.elim h k p ∘ down) (prod.pr2 (center' H').2 c))⟩
-  --       ⟨up, (λx, idp, λx, idp)⟩,
-  --     exact ap down (ap10 q..1 d)
-  --     }
-  -- end
-
-  -- set_option pp.universes true
-  -- set_option pp.abbreviations false
-  -- definition is_equiv_of_is_pushout [constructor] (H : is_pushout p) (H : is_pushout p') : D ≃ D' :=
-  -- begin
-  --   note H' := H (up ∘ inl) (up ∘ inr) (λa, ap up.{_ u₄} (@glue _ _ _ f g a)),
-  --   fapply equiv.MK,
-  --   { exact down ∘ (center' H').1 },
-  --   { exact pushout.elim h k p },
-  --   { intro x, induction x with b c a,
-  --     { exact ap down (prod.pr1 (center' H').2 b) },
-  --     { exact ap down (prod.pr2 (center' H').2 c) },
-  --     { -- apply eq_pathover_id_right,
-  --       -- refine ap_compose (center' H').1 _ _ ⬝ ap02 _ !elim_glue ⬝ph _,
-  --       exact sorry }},
-  --   { intro d,
-  --     note H'' := H (up ∘ h) (up ∘ k) (λa, ap up.{_ (max u₁ u₂ u₃)} (p a)),
-  --     note q := @eq_of_is_contr _ H''
-  --       ⟨up ∘ pushout.elim h k p ∘ down ∘ (center' H').1,
-  --        (λb, ap (up ∘ pushout.elim h k p ∘ down) (prod.pr1 (center' H').2 b),
-  --         λc, ap (up ∘ pushout.elim h k p ∘ down) (prod.pr2 (center' H').2 c))⟩
-  --       ⟨up, (λx, idp, λx, idp)⟩,
-  --     exact ap down (ap10 q..1 d)
-  --     }
-  -- end
+  definition pushout_compose_equiv {A B C D E : Type} (f : A → B) {g : A → C} {h : B → D} {hf : A → D}
+    {k : B → E} (e : E ≃ pushout f g) (p : k ~ e⁻¹ᵉ ∘ inl) (q : h ∘ f ~ hf) :
+    pushout h k ≃ pushout hf g :=
+  begin
+    refine _ ⬝e pushout_compose f g h ⬝e _,
+    { fapply pushout.equiv,
+        reflexivity,
+        reflexivity,
+        exact e,
+        reflexivity,
+        exact homotopy_of_homotopy_inv_post e _ _ p },
+    { fapply pushout.equiv,
+        reflexivity,
+        reflexivity,
+        reflexivity,
+        exact q,
+        reflexivity },
+  end
 
 end pushout
