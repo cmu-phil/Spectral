@@ -192,6 +192,11 @@ end is_equiv
 
 namespace prod
 
+  definition ap_prod_elim {A B C : Type} {a a' : A} {b b' : B} (m : A → B → C)
+    (p : a = a') (q : b = b') : ap (prod.rec m) (prod_eq p q)
+    = (ap (m a) q) ⬝ (ap (λx : A, m x b') p) :=
+  by cases p; cases q; constructor
+
   open prod.ops
   definition prod_pathover_equiv {A : Type} {B C : A → Type} {a a' : A} (p : a = a')
     (x : B a × C a) (x' : B a' × C a') : x =[p] x' ≃ x.1 =[p] x'.1 × x.2 =[p] x'.2 :=

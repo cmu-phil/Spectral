@@ -1,8 +1,9 @@
 -- Authors: Floris van Doorn
 
-import homotopy.smash ..move_to_lib .pushout
+import homotopy.smash ..move_to_lib .pushout homotopy.red_susp
 
-open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops wedge is_trunc function
+open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops wedge is_trunc
+     function red_susp
 
   /- smash A (susp B) = susp (smash A B) <- this follows from associativity and smash with S¹ -/
 
@@ -16,6 +17,16 @@ open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops w
 variables {A B : Type*}
 
 namespace smash
+
+  theorem elim_gluel' {P : Type} {Pmk : Πa b, P} {Pl Pr : P}
+    (Pgl : Πa : A, Pmk a pt = Pl) (Pgr : Πb : B, Pmk pt b = Pr) (a a' : A) :
+    ap (smash.elim Pmk Pl Pr Pgl Pgr) (gluel' a a') = Pgl a ⬝ (Pgl a')⁻¹ :=
+  !ap_con ⬝ !elim_gluel ◾ (!ap_inv ⬝ !elim_gluel⁻²)
+
+  theorem elim_gluer' {P : Type} {Pmk : Πa b, P} {Pl Pr : P}
+    (Pgl : Πa : A, Pmk a pt = Pl) (Pgr : Πb : B, Pmk pt b = Pr) (b b' : B) :
+    ap (smash.elim Pmk Pl Pr Pgl Pgr) (gluer' b b') = Pgr b ⬝ (Pgr b')⁻¹ :=
+  !ap_con ⬝ !elim_gluer ◾ (!ap_inv ⬝ !elim_gluer⁻²)
 
   definition prod_of_wedge [unfold 3] (v : pwedge A B) : A × B :=
   begin
@@ -75,6 +86,21 @@ namespace pushout
       { apply whisker_rt, exact vrfl }}
   end
 
+  definition bool_of_sum_of_bool {A B : Type*} (b : bool) : bool_of_sum (sum_of_bool A B b) = b :=
+  by induction b: reflexivity
+
+  /- a different proof, using pushout lemmas, and the fact that the wedge is the pushout of
+     A + B <-- 2 --> 1 -/
+  definition pushout_wedge_of_sum_equiv_unit : pushout (@wedge_of_sum A B) bool_of_sum ≃ unit :=
+  begin
+    refine pushout_hcompose_equiv (sum_of_bool A B) (wedge_equiv_pushout_sum A B ⬝e !pushout.symm)
+             _ _ ⬝e _,
+      exact erfl,
+      reflexivity,
+      exact bool_of_sum_of_bool,
+    apply pushout_of_equiv_right
+  end
+
 end pushout open pushout
 
 namespace smash
@@ -84,7 +110,7 @@ namespace smash
   begin
     unfold [smash, cofiber, smash'], symmetry,
     refine !pushout.symm ⬝e _,
-    fapply pushout_compose_equiv wedge_of_sum,
+    fapply pushout_vcompose_equiv wedge_of_sum,
     { symmetry, apply equiv_unit_of_is_contr, apply is_contr_pushout_wedge_of_sum },
     { intro x, reflexivity },
     { apply prod_of_wedge_of_sum }
@@ -138,8 +164,112 @@ namespace smash
     { reflexivity }
   end
 
+  /- smash A S¹ = red_susp A -/
+
+  definition circle_elim_constant [unfold 5] {A : Type} {a : A} {p : a = a} (r : p = idp) (x : S¹) :
+    circle.elim a p x = a :=
+  begin
+    induction x,
+    { reflexivity },
+    { apply eq_pathover_constant_right, apply hdeg_square, exact !elim_loop ⬝ r }
+  end
+
+
+  definition red_susp_of_smash_pcircle [unfold 2] (x : smash A S¹*) : red_susp A :=
+  begin
+    induction x using smash.elim,
+    { induction b, exact base, exact equator a },
+    { exact base },
+    { exact base },
+    { reflexivity },
+    { exact circle_elim_constant equator_pt b }
+  end
+
+  definition smash_pcircle_of_red_susp [unfold 2] (x : red_susp A) : smash A S¹* :=
+  begin
+    induction x,
+    { exact pt },
+    { exact gluel' pt a ⬝ ap (smash.mk a) loop ⬝ gluel' a pt },
+    { refine !con.right_inv ◾ _ ◾ !con.right_inv,
+      exact ap_is_constant gluer loop ⬝ !con.right_inv }
+  end
+
+  definition smash_pcircle_of_psusp_of_smash_pcircle_pt [unfold 3] (a : A) (x : S¹*) :
+    smash_pcircle_of_red_susp (red_susp_of_smash_pcircle (smash.mk a x)) = smash.mk a x :=
+  begin
+    induction x,
+    { exact gluel' pt a },
+    { exact abstract begin apply eq_pathover,
+      refine ap_compose smash_pcircle_of_red_susp _ _ ⬝ph _,
+      refine ap02 _ (elim_loop pt (equator a)) ⬝ !elim_equator ⬝ph _,
+      -- make everything below this a lemma defined by path induction?
+      refine !con_idp⁻¹ ⬝pv _, refine !con.assoc⁻¹ ⬝ph _, apply whisker_bl, apply whisker_lb,
+      apply whisker_tl, apply hrfl end end }
+  end
+
+  definition concat2o [unfold 10] {A B : Type} {f g h : A → B} {q : f ~ g} {r : g ~ h} {a a' : A}
+    {p : a = a'} (s : q a =[p] q a') (t : r a =[p] r a') : q a ⬝ r a =[p] q a' ⬝ r a' :=
+  by induction p; exact idpo
+
+  definition apd_con_fn [unfold 10] {A B : Type} {f g h : A → B} {q : f ~ g} {r : g ~ h} {a a' : A}
+    (p : a = a') : apd (λa, q a ⬝ r a) p = concat2o (apd q p) (apd r p) :=
+  by induction p; reflexivity
+
+  -- definition apd_con_fn_constant [unfold 10] {A B : Type} {f : A → B} {b b' : B} {q : Πa, f a = b}
+  --   {r : b = b'} {a a' : A} (p : a = a') :
+  --   apd (λa, q a ⬝ r) p = concat2o (apd q p) (pathover_of_eq _ idp) :=
+  -- by induction p; reflexivity
+
+  theorem apd_constant' {A A' : Type} {B : A' → Type} {a₁ a₂ : A} {a' : A'} (b : B a')
+    (p : a₁ = a₂) : apd (λx, b) p = pathover_of_eq p idp :=
+  by induction p; reflexivity
+
+  definition smash_pcircle_pequiv_red [constructor] (A : Type*) : smash A S¹* ≃* red_susp A :=
+  begin
+    fapply pequiv_of_equiv,
+    { fapply equiv.MK,
+      { exact red_susp_of_smash_pcircle },
+      { exact smash_pcircle_of_red_susp },
+      { exact abstract begin intro x, induction x,
+        { reflexivity },
+        { apply eq_pathover, apply hdeg_square,
+          refine ap_compose red_susp_of_smash_pcircle _ _ ⬝ ap02 _ !elim_equator ⬝ _ ⬝ !ap_id⁻¹,
+          refine !ap_con ⬝ (!ap_con ⬝ !elim_gluel' ◾ !ap_compose'⁻¹) ◾ !elim_gluel' ⬝ _,
+          esimp, exact !idp_con ⬝ !elim_loop },
+        { exact sorry } end end },
+      { intro x, induction x,
+        { exact smash_pcircle_of_psusp_of_smash_pcircle_pt a b },
+        { exact gluel pt },
+        { exact gluer pt },
+        { apply eq_pathover_id_right,
+          refine ap_compose smash_pcircle_of_red_susp _ _ ⬝ph _,
+          unfold [red_susp_of_smash_pcircle],
+          refine ap02 _ !elim_gluel ⬝ph _,
+          esimp, apply whisker_rt, exact vrfl },
+        { apply eq_pathover_id_right,
+          refine ap_compose smash_pcircle_of_red_susp _ _ ⬝ph _,
+          unfold [red_susp_of_smash_pcircle],
+          -- not sure why so many implicit arguments are needed here...
+          refine ap02 _ (@smash.elim_gluer A S¹* _ (λa, circle.elim red_susp.base (equator a)) red_susp.base red_susp.base (λa, refl red_susp.base) (circle_elim_constant equator_pt) b) ⬝ph _,
+          apply square_of_eq, induction b,
+          { exact whisker_right _ !con.right_inv },
+          { apply eq_pathover_dep, refine !apd_con_fn ⬝pho _ ⬝hop !apd_con_fn⁻¹,
+            refine ap (λx, concat2o x _) !rec_loop ⬝pho _ ⬝hop (ap011 concat2o (apd_compose1 (λa b, ap smash_pcircle_of_red_susp b) (circle_elim_constant equator_pt) loop) !apd_constant')⁻¹,
+            }
+
+          }}},
+    { reflexivity }
+  end
+print apd_constant
+print apd_compose2
+print apd_compose1
+print apd_con
+print eq_pathover_dep
+--set_option pp.all true
+print smash.elim_gluer
   /- smash A S¹ = susp A -/
   open susp
+
 
   definition psusp_of_smash_pcircle [unfold 2] (x : smash A S¹*) : psusp A :=
   begin
@@ -157,7 +287,7 @@ namespace smash
     induction x,
     { exact pt },
     { exact pt },
-    { exact gluel' pt a ⬝ ap (smash.mk a) loop ⬝ gluel' a pt },
+    { exact gluel' pt a ⬝ (ap (smash.mk a) loop ⬝ gluel' a pt) },
   end
 
  -- the definitions below compile, but take a long time to do so and have sorry's in them
@@ -171,6 +301,11 @@ namespace smash
       refine ap02 _ (elim_loop north (merid a ⬝ (merid pt)⁻¹)) ⬝ph _,
       refine !ap_con ⬝ (!elim_merid ◾ (!ap_inv ⬝ !elim_merid⁻²)) ⬝ph _,
       -- make everything below this a lemma defined by path induction?
+      refine !con_idp⁻¹ ⬝pv _, apply whisker_tl, refine !con.assoc⁻¹ ⬝ph _,
+      apply whisker_bl, apply whisker_lb,
+      refine !con_idp⁻¹ ⬝pv _, apply whisker_tl, apply hrfl
+      refine !con_idp⁻¹ ⬝pv _, apply whisker_tl,
+      refine !con.assoc⁻¹ ⬝ph _, apply whisker_bl, apply whisker_lb, apply hrfl
       apply square_of_eq, rewrite [+con.assoc], apply whisker_left, apply whisker_left,
       symmetry, apply con_eq_of_eq_inv_con, esimp, apply con_eq_of_eq_con_inv,
       refine _⁻² ⬝ !con_inv, refine _ ⬝ !con.assoc,
