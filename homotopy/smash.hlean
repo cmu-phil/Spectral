@@ -3,20 +3,19 @@
 import homotopy.smash ..move_to_lib .pushout homotopy.red_susp
 
 open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops wedge is_trunc
-     function red_susp
+     function red_susp unit
 
-  /- smash A (susp B) = susp (smash A B) <- this follows from associativity and smash with S¹ -/
+  /- To prove: Σ(X × Y) ≃ ΣX ∨ ΣY ∨ Σ(X ∧ Y) (?) (notation means suspension, wedge, smash) -/
 
-  /- To prove: Σ(X × Y) ≃ ΣX ∨ ΣY ∨ Σ(X ∧ Y) (notation means suspension, wedge, smash),
-     and both are equivalent to the reduced join -/
+  /- To prove: Σ(X ∧ Y) ≃ X ★ Y (?) (notation means suspension, smash, join) -/
 
-  /- To prove: associative -/
-
-  /- smash A B ≃ pcofiber (pprod_of_pwedge A B) -/
+  /- To prove: associative, A ∧ S¹ ≃ ΣA -/
 
 variables {A B : Type*}
 
 namespace smash
+
+  /- smash A B ≃ pcofiber (pprod_of_pwedge A B) -/
 
   theorem elim_gluel' {P : Type} {Pmk : Πa b, P} {Pl Pr : P}
     (Pgl : Πa : A, Pmk a pt = Pl) (Pgr : Πb : B, Pmk pt b = Pr) (a a' : A) :
@@ -93,10 +92,10 @@ namespace pushout
      A + B <-- 2 --> 1 -/
   definition pushout_wedge_of_sum_equiv_unit : pushout (@wedge_of_sum A B) bool_of_sum ≃ unit :=
   begin
-    refine pushout_hcompose_equiv (sum_of_bool A B) (wedge_equiv_pushout_sum A B ⬝e !pushout.symm)
+    refine pushout_hcompose_equiv (sum_of_bool A B) (wedge_equiv_pushout_sum A B)
              _ _ ⬝e _,
       exact erfl,
-      reflexivity,
+      intro x, induction x: esimp,
       exact bool_of_sum_of_bool,
     apply pushout_of_equiv_right
   end
@@ -106,6 +105,25 @@ end pushout open pushout
 namespace smash
 
   variables (A B)
+
+  definition smash_punit_pequiv [constructor] : smash A punit ≃* punit :=
+  begin
+    fapply pequiv_of_equiv,
+    { fapply equiv.MK,
+      { exact λx, ⋆ },
+      { exact λx, pt },
+      { intro x, induction x, reflexivity },
+      { exact abstract begin intro x, induction x,
+        { induction b, exact gluel' pt a },
+        { exact gluel pt },
+        { exact gluer pt },
+        { apply eq_pathover_constant_left_id_right, apply square_of_eq_top,
+          exact whisker_right _ !idp_con⁻¹ },
+        { apply eq_pathover_constant_left_id_right, induction b,
+          refine !con.right_inv ⬝pv _, exact square_of_eq idp } end end }},
+    { reflexivity }
+  end
+
   definition smash_equiv_cofiber : smash A B ≃ cofiber (@prod_of_wedge A B) :=
   begin
     unfold [smash, cofiber, smash'], symmetry,
@@ -133,7 +151,7 @@ namespace smash
 
   /- commutativity -/
 
-  definition smash_flip (x : smash A B) : smash B A :=
+  definition smash_flip [unfold 3] (x : smash A B) : smash B A :=
   begin
     induction x,
     { exact smash.mk b a },
@@ -143,7 +161,7 @@ namespace smash
     { exact gluel b }
   end
 
-  definition smash_flip_smash_flip (x : smash A B) : smash_flip (smash_flip x) = x :=
+  definition smash_flip_smash_flip [unfold 3] (x : smash A B) : smash_flip (smash_flip x) = x :=
   begin
     induction x,
     { reflexivity },
@@ -157,7 +175,7 @@ namespace smash
       apply hrfl }
   end
 
-  definition smash_comm : smash A B ≃* smash B A :=
+  definition smash_comm [constructor] : smash A B ≃* smash B A :=
   begin
     fapply pequiv_of_equiv,
     { apply equiv.MK, do 2 exact smash_flip_smash_flip },
@@ -194,7 +212,7 @@ namespace smash
       exact ap_is_constant gluer loop ⬝ !con.right_inv }
   end
 
-  definition smash_pcircle_of_psusp_of_smash_pcircle_pt [unfold 3] (a : A) (x : S¹*) :
+  definition smash_pcircle_of_red_susp_of_smash_pcircle_pt [unfold 3] (a : A) (x : S¹*) :
     smash_pcircle_of_red_susp (red_susp_of_smash_pcircle (smash.mk a x)) = smash.mk a x :=
   begin
     induction x,
@@ -238,7 +256,7 @@ namespace smash
           esimp, exact !idp_con ⬝ !elim_loop },
         { exact sorry } end end },
       { intro x, induction x,
-        { exact smash_pcircle_of_psusp_of_smash_pcircle_pt a b },
+        { exact smash_pcircle_of_red_susp_of_smash_pcircle_pt a b },
         { exact gluel pt },
         { exact gluer pt },
         { apply eq_pathover_id_right,
@@ -255,18 +273,12 @@ namespace smash
           { exact whisker_right _ !con.right_inv },
           { apply eq_pathover_dep, refine !apd_con_fn ⬝pho _ ⬝hop !apd_con_fn⁻¹,
             refine ap (λx, concat2o x _) !rec_loop ⬝pho _ ⬝hop (ap011 concat2o (apd_compose1 (λa b, ap smash_pcircle_of_red_susp b) (circle_elim_constant equator_pt) loop) !apd_constant')⁻¹,
-            }
+            exact sorry }
 
           }}},
     { reflexivity }
   end
-print apd_constant
-print apd_compose2
-print apd_compose1
-print apd_con
-print eq_pathover_dep
---set_option pp.all true
-print smash.elim_gluer
+
   /- smash A S¹ = susp A -/
   open susp
 
@@ -301,17 +313,19 @@ print smash.elim_gluer
       refine ap02 _ (elim_loop north (merid a ⬝ (merid pt)⁻¹)) ⬝ph _,
       refine !ap_con ⬝ (!elim_merid ◾ (!ap_inv ⬝ !elim_merid⁻²)) ⬝ph _,
       -- make everything below this a lemma defined by path induction?
-      refine !con_idp⁻¹ ⬝pv _, apply whisker_tl, refine !con.assoc⁻¹ ⬝ph _,
-      apply whisker_bl, apply whisker_lb,
-      refine !con_idp⁻¹ ⬝pv _, apply whisker_tl, apply hrfl
-      refine !con_idp⁻¹ ⬝pv _, apply whisker_tl,
-      refine !con.assoc⁻¹ ⬝ph _, apply whisker_bl, apply whisker_lb, apply hrfl
-      apply square_of_eq, rewrite [+con.assoc], apply whisker_left, apply whisker_left,
-      symmetry, apply con_eq_of_eq_inv_con, esimp, apply con_eq_of_eq_con_inv,
-      refine _⁻² ⬝ !con_inv, refine _ ⬝ !con.assoc,
-      refine _ ⬝ whisker_right _ !inv_con_cancel_right⁻¹, refine _ ⬝ !con.right_inv⁻¹,
-      refine !con.right_inv ◾ _, refine _ ◾ !con.right_inv,
-      refine !ap_mk_right ⬝ !con.right_inv end end }
+      exact sorry,
+      -- refine !con_idp⁻¹ ⬝pv _, apply whisker_tl, refine !con.assoc⁻¹ ⬝ph _,
+      -- apply whisker_bl, apply whisker_lb,
+      -- refine !con_idp⁻¹ ⬝pv _, apply whisker_tl, apply hrfl
+      -- refine !con_idp⁻¹ ⬝pv _, apply whisker_tl,
+      -- refine !con.assoc⁻¹ ⬝ph _, apply whisker_bl, apply whisker_lb, apply hrfl
+      -- apply square_of_eq, rewrite [+con.assoc], apply whisker_left, apply whisker_left,
+      -- symmetry, apply con_eq_of_eq_inv_con, esimp, apply con_eq_of_eq_con_inv,
+      -- refine _⁻² ⬝ !con_inv, refine _ ⬝ !con.assoc,
+      -- refine _ ⬝ whisker_right _ !inv_con_cancel_right⁻¹, refine _ ⬝ !con.right_inv⁻¹,
+      -- refine !con.right_inv ◾ _, refine _ ◾ !con.right_inv,
+      -- refine !ap_mk_right ⬝ !con.right_inv
+      end end }
   end
 
   -- definition smash_pcircle_of_psusp_of_smash_pcircle_gluer_base (b : S¹*)
@@ -366,4 +380,3 @@ exit
   end
 
 end smash
--- (X × A) → Y ≃ X → A → Y
