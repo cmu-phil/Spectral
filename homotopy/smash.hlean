@@ -11,9 +11,33 @@ open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops w
 
   /- To prove: associative, A ∧ S¹ ≃ ΣA -/
 
-variables {A B : Type*}
+variables {A B C D : Type*}
 
 namespace smash
+
+  section
+  open pushout
+  definition smash_pequiv_smash [constructor] (f : A ≃* C) (g : B ≃* D) : A ∧ B ≃* C ∧ D :=
+  begin
+    fapply pequiv_of_equiv,
+    { fapply pushout.equiv,
+      { exact sum_equiv_sum f g },
+      { exact prod_equiv_prod f g },
+      { reflexivity },
+      { intro v, induction v with a b, exact prod_eq idp (respect_pt g), exact prod_eq (respect_pt f) idp },
+      { intro v, induction v with a b: reflexivity }},
+    { exact ap inl (prod_eq (respect_pt f) (respect_pt g)) },
+  end
+
+  end
+
+  definition smash_pequiv_smash_left [constructor] (B : Type*) (f : A ≃* C) : A ∧ B ≃* C ∧ B :=
+  smash_pequiv_smash f pequiv.rfl
+
+  definition smash_pequiv_smash_right [constructor] (A : Type*) (g : B ≃* D) : A ∧ B ≃* A ∧ D :=
+  smash_pequiv_smash pequiv.rfl g
+
+
 
   /- smash A B ≃ pcofiber (pprod_of_pwedge A B) -/
 
@@ -26,6 +50,18 @@ namespace smash
     (Pgl : Πa : A, Pmk a pt = Pl) (Pgr : Πb : B, Pmk pt b = Pr) (b b' : B) :
     ap (smash.elim Pmk Pl Pr Pgl Pgr) (gluer' b b') = Pgr b ⬝ (Pgr b')⁻¹ :=
   !ap_con ⬝ !elim_gluer ◾ (!ap_inv ⬝ !elim_gluer⁻²)
+
+  theorem elim'_gluel'_pt {P : Type} {Pmk : Πa b, P}
+    (Pgl : Πa : A, Pmk a pt = Pmk pt pt) (Pgr : Πb : B, Pmk pt b = Pmk pt pt)
+    (a : A) (ql : Pgl pt = idp) (qr : Pgr pt = idp) :
+    ap (smash.elim' Pmk Pgl Pgr ql qr) (gluel' a pt) = Pgl a :=
+  !elim_gluel' ⬝ whisker_left _ ql⁻²
+
+  theorem elim'_gluer'_pt {P : Type} {Pmk : Πa b, P}
+    (Pgl : Πa : A, Pmk a pt = Pmk pt pt) (Pgr : Πb : B, Pmk pt b = Pmk pt pt)
+    (b : B) (ql : Pgl pt = idp) (qr : Pgr pt = idp) :
+    ap (smash.elim' Pmk Pgl Pgr ql qr) (gluer' b pt) = Pgr b :=
+  !elim_gluer' ⬝ whisker_left _ qr⁻²
 
   definition prod_of_wedge [unfold 3] (v : pwedge A B) : A × B :=
   begin
@@ -175,12 +211,14 @@ namespace smash
       apply hrfl }
   end
 
+  variables (A B)
   definition smash_comm [constructor] : smash A B ≃* smash B A :=
   begin
     fapply pequiv_of_equiv,
     { apply equiv.MK, do 2 exact smash_flip_smash_flip },
     { reflexivity }
   end
+  variables {A B}
 
   /- smash A S¹ = red_susp A -/
 
@@ -191,7 +229,6 @@ namespace smash
     { reflexivity },
     { apply eq_pathover_constant_right, apply hdeg_square, exact !elim_loop ⬝ r }
   end
-
 
   definition red_susp_of_smash_pcircle [unfold 2] (x : smash A S¹*) : red_susp A :=
   begin
@@ -211,7 +248,7 @@ namespace smash
     { refine !con.right_inv ◾ _ ◾ !con.right_inv,
       exact ap_is_constant gluer loop ⬝ !con.right_inv }
   end
-
+exit
   definition smash_pcircle_of_red_susp_of_smash_pcircle_pt [unfold 3] (a : A) (x : S¹*) :
     smash_pcircle_of_red_susp (red_susp_of_smash_pcircle (smash.mk a x)) = smash.mk a x :=
   begin

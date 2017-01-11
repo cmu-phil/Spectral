@@ -24,6 +24,14 @@ namespace eq
     (p : x = x') : ap (λx, f (g x) (h x)) p = ap011 f (ap g p) (ap h p) :=
   by induction p; reflexivity
 
+  definition ap_is_weakly_constant {A B : Type} {f : A → B}
+    (h : is_weakly_constant f) {a a' : A} (p : a = a') : ap f p = (h a a)⁻¹ ⬝ h a a' :=
+  by induction p; exact !con.left_inv⁻¹
+
+  definition ap_is_constant_idp {A B : Type} {f : A → B} {b : B} (p : Πa, f a = b) {a : A} (q : a = a)
+    (r : q = idp) : ap_is_constant p q = ap02 f r ⬝ (con.right_inv (p a))⁻¹ :=
+  by cases r; exact !idp_con⁻¹
+
 end eq
 
 namespace cofiber

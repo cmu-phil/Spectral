@@ -1,10 +1,22 @@
 
-
 import ..move_to_lib
 
 open eq function is_trunc sigma prod lift is_equiv equiv pointed sum unit bool
 
 namespace pushout
+
+  section
+    variables {TL BL TR : Type*} {f : TL →* BL} {g : TL →* TR}
+              {TL' BL' TR' : Type*} {f' : TL' →* BL'} {g' : TL' →* TR'}
+              (tl : TL ≃ TL') (bl : BL ≃* BL') (tr : TR ≃ TR')
+              (fh : bl ∘ f ~ f' ∘ tl) (gh : tr ∘ g ~ g' ∘ tl)
+    include fh gh
+
+    definition ppushout_pequiv : ppushout f g ≃* ppushout f' g' :=
+    pequiv_of_equiv (pushout.equiv _ _ _ _ tl bl tr fh gh) (ap inl (respect_pt bl))
+
+  end
+
 
   /-
     WIP: proving that satisfying the universal property of the pushout is equivalent to
