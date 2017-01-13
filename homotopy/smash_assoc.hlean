@@ -73,6 +73,8 @@ namespace smash
   -- end
 
 
+  /- attempt 1, direct proof that A ∧ (B ∧ C) ≃ smash3 A B C -/
+
   definition glue1 (a : A) (b : B) : inl (a, (b, pt)) = inr (inr (inl b)) :> smash3 A B C :=
   pushout.glue (inr (inl (a, b)))
 
@@ -173,6 +175,7 @@ namespace smash
       exact sorry }
   end
 
+  -- the commented out is a slow but correct proof
   definition smash_smash_equiv_smash3 (A B C : Type*) : A ∧ (B ∧ C) ≃* smash3 A B C :=
   begin
     fapply pequiv_of_equiv,
@@ -214,8 +217,8 @@ exact sorry
           { refine !ap_con ⬝ (!ap_con ⬝ !pushout.elim_glue ◾ (!ap_inv ⬝ _⁻²)) ◾ (!ap_con ⬝ !pushout.elim_glue ◾ (!ap_inv ⬝ _⁻²)) ⬝ph _, rotate 2, do 2 apply !pushout.elim_glue, exact sorry },
           { exact sorry },
           { exact sorry },
-          { },
-          { }}}},
+          { exact sorry },
+          { exact sorry }}}},
     { reflexivity }
   end
 
@@ -231,17 +234,55 @@ exact sorry
 
 end smash
 
+  /- attempt 2: proving the induction principle of smash3 A B C for A ∧ (B ∧ C) -/
+
 namespace smash
 
   variables {A B C : Type*}
 
-  definition glue12 (a : A) (b : B) : smash.mk a (smash.mk b (pt : C)) = pt :=
+  /- an induction principle which has only 1 point constructor, but which has bad computation properties -/
+  protected definition rec' {P : smash A B → Type} (Pmk : Πa b, P (smash.mk a b))
+    (Pgl : Πa, Pmk a pt =[gluel' a pt] Pmk pt pt)
+    (Pgr : Πb, Pmk pt b =[gluer' b pt] Pmk pt pt) (x : smash' A B) : P x :=
+  begin
+    induction x using smash.rec,
+    { apply Pmk },
+    { exact gluel pt ▸ Pmk pt pt },
+    { exact gluer pt ▸ Pmk pt pt },
+    { refine change_path _ (Pgl a ⬝o !pathover_tr), apply inv_con_cancel_right },
+    { refine change_path _ (Pgr b ⬝o !pathover_tr), apply inv_con_cancel_right }
+  end
+
+--   protected definition rec'_gluel' {P : smash A B → Type} (Pmk : Πa b, P (smash.mk a b))
+--     (Pgl : Πa, Pmk a pt =[gluel' a pt] Pmk pt pt)
+--     (Pgr : Πb, Pmk pt b =[gluer' b pt] Pmk pt pt) (a : A) : apd (smash.rec' Pmk Pgl Pgr) (gluel' a pt) = Pgl a :=
+--   begin
+--     refine !apd_con ⬝ _,
+--     refine ap011 concato !rec_gluel (!apd_inv ⬝ ap inverseo !rec_gluel ⬝ !change_path_invo⁻¹) ⬝ _,
+--     refine !change_path_cono⁻¹ ⬝ _,
+--     -- refine cono_invo
+-- --      refine change_path_invo
+--   end
+
+--   protected definition rec'_gluer' {P : smash A B → Type} (Pmk : Πa b, P (smash.mk a b))
+--     (Pgl : Πa, Pmk a pt =[gluel' a pt] Pmk pt pt)
+--     (Pgr : Πb, Pmk pt b =[gluer' b pt] Pmk pt pt) (b : B) : apd (smash.rec' Pmk Pgl Pgr) (gluer' b pt) = Pgr b :=
+--   sorry
+
+  definition inl3 (a : A) (b : B) (c : C) : A ∧ (B ∧ C) :=
+  smash.mk a (smash.mk b c)
+
+  definition aux1 (a : A) : A ∧ (B ∧ C) := pt
+  definition aux2 (b : B) : A ∧ (B ∧ C) := pt
+  definition aux3 (c : C) : A ∧ (B ∧ C) := pt
+
+  definition glue12 (a : A) (b : B) : inl3 a b (pt : C) = aux1 a :=
   ap (smash.mk a) (gluel' b pt) ⬝ gluel' a pt
 
-  definition glue23 (b : B) (c : C) : smash.mk (pt : A) (smash.mk b c) = pt :> (A ∧ (B ∧ C)) :=
+  definition glue23 (b : B) (c : C) : inl3 (pt : A) b c = aux2 b :=
   gluer' (smash.mk b c) pt
 
-  definition glue31 (c : C) (a : A) : smash.mk a (smash.mk (pt : B) c) = pt :=
+  definition glue31 (c : C) (a : A) : inl3 a (pt : B) c = aux3 c :=
   ap (smash.mk a) (gluer' c pt) ⬝ gluel' a pt
 
   definition glue1_eq (a : A) : glue12 a pt = glue31 pt a :> (_ = _ :> (A ∧ (B ∧ C))) :=
@@ -281,87 +322,165 @@ local attribute ap_mk_right [reducible]
     constructor, exact gluer
   end
 
-  -- definition glue12' (a : A) (b : B) : smash.mk a (smash.mk b (pt : C)) = smash.mk a (pt : B ∧ C) :=
-  -- ap (smash.mk a) (gluel' b pt)
-
-  -- definition glue23' (b : B) (c : C) : smash.mk (pt : A) (smash.mk b c) = smash.mk (pt : A) (smash.mk b (pt : C)) :=
-  -- gluer' (smash.mk b c) (smash.mk b pt)
-print glue12
-print gluel'
-
-  protected definition rec' {P : smash A B → Type} (Pmk : Πa b, P (smash.mk a b))
-    (Pgl : Πa, Pmk a pt =[gluel' a pt] Pmk pt pt)
-    (Pgr : Πb, Pmk pt b =[gluer' b pt] Pmk pt pt) (x : smash' A B) : P x :=
+  definition glue12_cancel (a : A) (b : B) : @glue12 A B C a b ⬝ (glue12 a pt)⁻¹ ⬝ ap (smash.mk a) (gluel pt) = ap (smash.mk a) (gluel b) :=
   begin
-    induction x using smash.rec,
-    { apply Pmk },
-    { exact gluel pt ▸ Pmk pt pt },
-    { exact gluer pt ▸ Pmk pt pt },
-    { refine change_path _ (Pgl a ⬝o !pathover_tr), apply inv_con_cancel_right },
-    { refine change_path _ (Pgr b ⬝o !pathover_tr), apply inv_con_cancel_right }
+    unfold [glue12],
+    refine whisker_right _ (whisker_left _ !con_inv ⬝ whisker_left _ (whisker_left _ (ap02 _ !con.right_inv)⁻² ⬝ !con_idp) ⬝ !con_inv_cancel_right) ⬝ _,
+    refine !ap_con⁻¹ ⬝ ap02 _ !inv_con_cancel_right,
   end
 
---   protected definition rec'_gluel' {P : smash A B → Type} (Pmk : Πa b, P (smash.mk a b))
---     (Pgl : Πa, Pmk a pt =[gluel' a pt] Pmk pt pt)
---     (Pgr : Πb, Pmk pt b =[gluer' b pt] Pmk pt pt) (a : A) : apd (smash.rec' Pmk Pgl Pgr) (gluel' a pt) = Pgl a :=
---   begin
---     refine !apd_con ⬝ _,
---     refine ap011 concato !rec_gluel (!apd_inv ⬝ ap inverseo !rec_gluel ⬝ !change_path_invo⁻¹) ⬝ _,
---     refine !change_path_cono⁻¹ ⬝ _,
---     -- refine cono_invo
--- --      refine change_path_invo
---   end
+  definition glue12_cancel_pt_pt : @glue12_cancel A B C pt pt = whisker_right _ !con.right_inv ⬝ !idp_con :=
+  sorry
 
---   protected definition rec'_gluer' {P : smash A B → Type} (Pmk : Πa b, P (smash.mk a b))
---     (Pgl : Πa, Pmk a pt =[gluel' a pt] Pmk pt pt)
---     (Pgr : Πb, Pmk pt b =[gluer' b pt] Pmk pt pt) (b : B) : apd (smash.rec' Pmk Pgl Pgr) (gluer' b pt) = Pgr b :=
---   sorry
+  definition glue12_over {P : A ∧ (B ∧ C) → Type} (Ppt : Πa b c, P (inl3 a b c))
+    (P1 : Πa, P (aux1 a))
+    (P12 : Πa b, Ppt a b pt =[glue12 a b] P1 a)
+    (a : A) (b : B) : pathover P (Ppt a b pt) (ap (smash.mk a) (gluel b)) (transport P (ap (smash.mk a) (gluel pt)) (Ppt a pt pt)) :=
+  begin
+    exact change_path (glue12_cancel a b) (P12 a b ⬝o (P12 a pt)⁻¹ᵒ ⬝o pathover_tr (ap (smash.mk a) (gluel pt)) (Ppt a pt pt))
+  end
 
-  definition smash3_rec_mk [unfold 10] {P : A ∧ (B ∧ C) → Type} (Ppt : Πa b c, P (smash.mk a (smash.mk b c)))
-    (P12 : Πa b, Ppt a b pt =[glue12 a b] Ppt pt pt pt)
-    (P23 : Πb c, Ppt pt b c =[glue23 b c] Ppt pt pt pt)
-    (P31 : Πc a, Ppt a pt c =[glue31 c a] Ppt pt pt pt)
+  definition glue12_over_pt_pt {P : A ∧ (B ∧ C) → Type} (Ppt : Πa b c, P (inl3 a b c))
+    (P1 : Πa, P (aux1 a))
+    (P12 : Πa b, Ppt a b pt =[glue12 a b] P1 a) :
+    glue12_over Ppt P1 P12 pt pt = pathover_tr (ap (smash.mk pt) (gluel pt)) (Ppt pt pt pt) :=
+  sorry
+
+  definition smash3_rec_mk [unfold 13] {P : A ∧ (B ∧ C) → Type} (Ppt : Πa b c, P (inl3 a b c))
+    (P1 : Πa, P (aux1 a)) (P2 : Πb, P (aux2 b)) (P3 : Πc, P (aux3 c))
+    (P12 : Πa b, Ppt a b pt =[glue12 a b] P1 a)
+    (P23 : Πb c, Ppt pt b c =[glue23 b c] P2 b)
+    (P31 : Πc a, Ppt a pt c =[glue31 c a] P3 c)
     (a : A) (bc : B ∧ C) : P (smash.mk a bc) :=
   begin
     induction bc with b c b c,
     { exact Ppt a b c },
-    { exact sorry }, --refine transport P _ (Ppt pt pt pt),
-    { exact sorry },
-    { exact sorry },
+    { refine transport P _ (Ppt a pt pt), exact ap (smash.mk a) (gluel pt) }, --refine transport P _ (Ppt pt pt pt),
+    { refine transport P _ (Ppt a pt pt), exact ap (smash.mk a) (gluer pt) },
+    { exact pathover_of_pathover_ap P (smash.mk a) (glue12_over Ppt P1 P12 a b) },
     { exact sorry }
-
   end
-
-print glue12
-print glue23
-print glue31
 
   definition apd_constant' {A : Type} {B : Type} {a a' : A} (p : a = a') {b : B} : apd (λa, b) p = pathover_of_eq p idp :=
   by induction p; reflexivity
 
-  definition smash3_rec {P : A ∧ (B ∧ C) → Type} (Ppt : Πa b c, P (smash.mk a (smash.mk b c)))
-    (P12 : Πa b, Ppt a b pt =[glue12 a b] Ppt pt pt pt)
-    (P23 : Πb c, Ppt pt b c =[glue23 b c] Ppt pt pt pt)
-    (P31 : Πc a, Ppt a pt c =[glue31 c a] Ppt pt pt pt)
+definition change_path_eq_of_eq_change_path' {A : Type} {B : A → Type} {a a₂ : A} {p p' : a = a₂} {b : B a} {b₂ : B a₂}
+  {r : p = p'} {q : b =[p] b₂} {q' : b =[p'] b₂} : change_path r q = q' → q = change_path r⁻¹ q' :=
+begin
+  induction r, intro s, exact s
+end
+
+definition change_path_eq_of_eq_change_path {A : Type} {B : A → Type} {a a₂ : A} {p p' : a = a₂} {b : B a} {b₂ : B a₂}
+  {r : p = p'} {q : b =[p] b₂} {q' : b =[p'] b₂} : change_path r⁻¹ q' = q → q' = change_path r q :=
+begin
+  induction r, intro s, exact s
+end
+
+  definition pathover_hconcato' {A : Type} {B : A → Type} {a₀₀ a₂₀ a₀₂ a₂₂ : A}
+            /-a₀₀-/ {p₁₀ : a₀₀ = a₂₀} /-a₂₀-/
+       {p₀₁ : a₀₀ = a₀₂} /-s₁₁-/ {p₂₁ : a₂₀ = a₂₂}
+            /-a₀₂-/ {p₁₂ : a₀₂ = a₂₂} /-a₂₂-/
+            {s₁₁ : square p₁₀ p₁₂ p₀₁ p₂₁}
+            {b₀₀ : B a₀₀} {b₂₀ : B a₂₀}
+            {b₀₂ : B a₀₂} {b₂₂ : B a₂₂}
+            /-b₀₀-/ {q₁₀ : b₀₀ =[p₁₀] b₂₀} /-b₂₀-/
+   {q₀₁ : b₀₀ =[p₀₁] b₀₂} /-t₁₁-/ {q₂₁ : b₂₀ =[p₂₁] b₂₂}
+            /-b₀₂-/ {q₁₂ : b₀₂ =[p₁₂] b₂₂} /-b₂₂-/ {p : a₀₀ = a₀₂} {sp : p = p₀₁} {q : b₀₀ =[p] b₀₂}
+    (r : change_path sp q = q₀₁) (t₁₁ : squareover B (sp ⬝ph s₁₁) q₁₀ q₁₂ q q₂₁) :
+    squareover B s₁₁ q₁₀ q₁₂ q₀₁ q₂₁ :=
+  by induction sp; induction r; exact t₁₁
+
+  definition pathover_hconcato_right_inv {A : Type} {B : A → Type} {a₀₀ a₂₀ a₀₂ a₀₄ a₂₂ : A}
+            /-a₀₀-/ {p₁₀ : a₀₀ = a₂₀} /-a₂₀-/
+       {p₀₁ : a₀₀ = a₀₂} {p₀₃ : a₀₂ = a₀₄} /-s₁₁-/ {p₂₁ : a₂₀ = a₂₂}
+            /-a₀₂-/ {p₁₂ : a₀₂ = a₂₂} /-a₂₂-/
+            {s₁₁ : square p₁₀ p₁₂ (p₀₁ ⬝ p₀₃ ⬝ p₀₃⁻¹) p₂₁}
+            {b₀₀ : B a₀₀} {b₂₀ : B a₂₀}
+            {b₀₂ : B a₀₂} {b₂₂ : B a₂₂} {b₀₄ : B a₀₄}
+            /-b₀₀-/ {q₁₀ : b₀₀ =[p₁₀] b₂₀} /-b₂₀-/
+   {q₀₁ : b₀₀ =[p₀₁] b₀₂} {q₀₃ : b₀₂ =[p₀₃] b₀₄} /-t₁₁-/ {q₂₁ : b₂₀ =[p₂₁] b₂₂}
+            /-b₀₂-/ {q₁₂ : b₀₂ =[p₁₂] b₂₂} /-b₂₂-/ --{p : a₀₀ = a₀₂} {sp : p = p₀₁} {q : b₀₀ =[p] b₀₂}
+    (t₁₁ : squareover B (!con_inv_cancel_right⁻¹ ⬝ph s₁₁) q₁₀ q₁₂ q₀₁ q₂₁) :
+    squareover B s₁₁ q₁₀ q₁₂ (q₀₁ ⬝o q₀₃ ⬝o q₀₃⁻¹ᵒ) q₂₁ :=
+  begin
+    exact sorry
+  end
+
+
+  definition smash3_rec_23 {P : A ∧ (B ∧ C) → Type} (Ppt : Πa b c, P (inl3 a b c))
+    (P1 : Πa, P (aux1 a)) (P2 : Πb, P (aux2 b)) (P3 : Πc, P (aux3 c))
+    (P12 : Πa b, Ppt a b pt =[glue12 a b] P1 a)
+    (P23 : Πb c, Ppt pt b c =[glue23 b c] P2 b)
+    (P31 : Πc a, Ppt a pt c =[glue31 c a] P3 c) (b : B) (c : C) :
+      pathover P (Ppt pt b c) (gluer' (smash.mk b c) (smash.mk' pt pt)) (Ppt pt pt pt) :=
+  begin
+    refine change_path _ (P23 b c ⬝o ((P23 b pt)⁻¹ᵒ ⬝o P12 pt b) ⬝o (P12 pt pt)⁻¹ᵒ),
+    refine whisker_left _ (whisker_right _ !glue2_eq⁻² ⬝ !con.left_inv) ◾ (ap02 _ !con.right_inv ◾ !con.right_inv)⁻² ⬝ _,
+    reflexivity
+  end
+
+  definition smash3_rec {P : A ∧ (B ∧ C) → Type} (Ppt : Πa b c, P (inl3 a b c))
+    (P1 : Πa, P (aux1 a)) (P2 : Πb, P (aux2 b)) (P3 : Πc, P (aux3 c))
+    (P12 : Πa b, Ppt a b pt =[glue12 a b] P1 a)
+    (P23 : Πb c, Ppt pt b c =[glue23 b c] P2 b)
+    (P31 : Πc a, Ppt a pt c =[glue31 c a] P3 c)
     (x : A ∧ (B ∧ C)) : P x :=
   begin
     induction x using smash.rec' with a bc a bc,
-    { exact smash3_rec_mk Ppt P12 P23 P31 a bc },
-    { esimp, exact sorry },
+    { exact smash3_rec_mk Ppt P1 P2 P3 P12 P23 P31 a bc },
+    { refine change_path _ (P31 pt a ⬝o (P31 pt pt)⁻¹ᵒ),
+      refine (whisker_right _ (ap02 _ !con.right_inv)) ◾ (ap02 _ !con.right_inv ◾ !con.right_inv)⁻² ⬝ _, apply idp_con },
     { induction bc using smash.rec' with b c b c,
-      { refine P23 b c },
+      { exact smash3_rec_23 Ppt P1 P2 P3 P12 P23 P31 b c },
       { apply pathover_pathover,
-        refine ap (pathover_ap _ _) (!apd_con ⬝ ap011 concato !rec_gluel (!apd_inv ⬝ ap inverseo !rec_gluel)) ⬝pho _,
---        refine _ ⬝hop (ap (pathover_ap _ _) (!apd_con))⁻¹,
-
-},
---!rec_gluel (!apd_inv ⬝ ap inverseo !rec_gluel)
-      { }}
-
+        refine ap (pathover_ap _ _) (!apd_con ⬝ ap011 concato !rec_gluel
+          (!apd_inv ⬝ ap inverseo !rec_gluel ⬝ !pathover_of_pathover_ap_invo⁻¹) ⬝ !pathover_of_pathover_ap_cono⁻¹) ⬝pho _,
+        refine _ ⬝hop (ap (pathover_ap _ _) !apd_constant')⁻¹,
+        refine to_right_inv (pathover_compose P (smash.mk pt) _ _ _) _ ⬝pho _,
+        apply squareover_change_path_left,
+        refine !change_path_cono⁻¹ ⬝pho _,
+        apply squareover_change_path_left,
+        refine ap (λx, _ ⬝o x⁻¹ᵒ) !glue12_over_pt_pt ⬝pho _,
+        apply pathover_hconcato_right_inv,
+        exact sorry },
+      { exact sorry }}
   end
-print natural_square
-print apd_con
-print pathover_pathover
-print pathover_ap
+
+/- 3rd attempt, proving an induction principle without the aux-points induction principle for the smash -/
+
+--   definition smash3_rec_mk [unfold 10] {P : A ∧ (B ∧ C) → Type} (Ppt : Πa b c, P (smash.mk a (smash.mk b c)))
+--     (P12 : Πa b, Ppt a b pt =[glue12 a b] Ppt pt pt pt)
+--     (P23 : Πb c, Ppt pt b c =[glue23 b c] Ppt pt pt pt)
+--     (P31 : Πc a, Ppt a pt c =[glue31 c a] Ppt pt pt pt)
+--     (a : A) (bc : B ∧ C) : P (smash.mk a bc) :=
+--   begin
+--     induction bc with b c b c,
+--     { exact Ppt a b c },
+--     { refine transport P _ (Ppt a pt pt), exact ap (smash.mk a) (gluel pt) }, --refine transport P _ (Ppt pt pt pt),
+--     { refine transport P _ (Ppt a pt pt), exact ap (smash.mk a) (gluer pt) },
+--     { },
+--     { exact sorry }
+--   end
+
+--   definition smash3_rec {P : A ∧ (B ∧ C) → Type} (Ppt : Πa b c, P (smash.mk a (smash.mk b c)))
+--     (P12 : Πa b, Ppt a b pt =[glue12 a b] Ppt pt pt pt)
+--     (P23 : Πb c, Ppt pt b c =[glue23 b c] Ppt pt pt pt)
+--     (P31 : Πc a, Ppt a pt c =[glue31 c a] Ppt pt pt pt)
+--     (x : A ∧ (B ∧ C)) : P x :=
+--   begin
+--     induction x using smash.rec' with a bc a bc,
+--     { exact smash3_rec_mk Ppt P12 P23 P31 a bc },
+--     { esimp, exact sorry },
+--     { induction bc using smash.rec' with b c b c,
+--       { refine P23 b c },
+--       { apply pathover_pathover,
+--         refine ap (pathover_ap _ _) (!apd_con ⬝ ap011 concato !rec_gluel (!apd_inv ⬝ ap inverseo !rec_gluel)) ⬝pho _,
+--        refine _ ⬝hop (ap (pathover_ap _ _) !apd_constant')⁻¹,
+-- check_expr (natural_square (λ a, gluer' a pt) (gluel' b pt)),
+-- },
+-- --!rec_gluel (!apd_inv ⬝ ap inverseo !rec_gluel)
+--       { }}
+
+--   end
 
 end smash
