@@ -5,7 +5,7 @@ open fin eq equiv group algebra sphere.ops pointed nat int trunc is_equiv functi
   definition eq_one_or_eq_neg_one_of_mul_eq_one {n : ℤ} (m : ℤ) (p : n * m = 1) : n = 1 ⊎ n = -1 :=
   sorry
 
-  definition endomorphism_int_unbundled (f : ℤ → ℤ) [is_add_homomorphism f] (n : ℤ) :
+  definition endomorphism_int_unbundled (f : ℤ → ℤ) [is_add_hom f] (n : ℤ) :
     f n = f 1 * n :=
   begin
     induction n using rec_nat_on with n IH n IH,

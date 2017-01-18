@@ -1,4 +1,5 @@
 -- Authors: Floris van Doorn
+-- In collaboration with Stefano, Robin
 
 import .smash
 

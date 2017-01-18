@@ -10,8 +10,14 @@ attribute pwedge pushout.symm pushout.equiv pushout.is_equiv_functor [constructo
 attribute is_succ_add_right is_succ_add_left is_succ_bit0 [constructor]
 attribute pushout.functor [unfold 16]
 attribute pushout.transpose [unfold 6]
+attribute ap_eq_apd10 [unfold 5]
+attribute eq_equiv_eq_symm [constructor]
+
 
 namespace eq
+
+  protected definition homotopy.rfl [reducible] [unfold_full] {A B : Type} {f : A → B} : f ~ f :=
+  homotopy.refl f
 
   definition compose_id {A B : Type} (f : A → B) : f ∘ id ~ f :=
   by reflexivity
@@ -32,7 +38,15 @@ namespace eq
     (r : q = idp) : ap_is_constant p q = ap02 f r ⬝ (con.right_inv (p a))⁻¹ :=
   by cases r; exact !idp_con⁻¹
 
-end eq
+  definition con_right_inv_natural {A : Type} {a a' : A} {p p' : a = a'} (q : p = p') :
+    con.right_inv p = q ◾ q⁻² ⬝ con.right_inv p' :=
+  by induction q; induction p; reflexivity
+
+  definition whisker_right_ap {A B : Type} {a a' : A}{b₁ b₂ b₃ : B} (q : b₂ = b₃) (f : A → b₁ = b₂)
+    (p : a = a') : whisker_right q (ap f p) = ap (λa, f a ⬝ q) p :=
+  by induction p; reflexivity
+
+end eq open eq
 
 namespace cofiber
 
@@ -53,9 +67,13 @@ end wedge
 
 namespace pointed
 
+  definition phomotopy_of_eq_idp {A B : Type*} (f : A →* B) : phomotopy_of_eq idp = phomotopy.refl f :=
+  idp
+
   definition to_fun_pequiv_trans {X Y Z : Type*} (f : X ≃* Y) (g :Y ≃* Z) : f ⬝e* g ~ g ∘ f :=
   λx, idp
 
+  -- replace pcompose2 with this
   definition pcompose2' {A B C : Type*} {g g' : B →* C} {f f' : A →* B} (q : g ~* g') (p : f ~* f') :
     g ∘* f ~* g' ∘* f' :=
   pwhisker_right f q ⬝* pwhisker_left g' p
@@ -147,6 +165,207 @@ namespace pointed
     (p : k ∘ f ~ g ∘ h) : h ∘ f⁻¹ᵉ ~ g⁻¹ᵉ ∘ k :=
   λb, eq_inv_of_eq ((p (f⁻¹ᵉ b))⁻¹ ⬝ ap k (to_right_inv f b))
 
+  definition phomotopy_of_eq_of_phomotopy {A B : Type*} {f g : A →* B} (p : f ~* g) :
+    phomotopy_of_eq (eq_of_phomotopy p) = p :=
+  to_right_inv (pmap_eq_equiv f g) p
+
+  definition ap_eq_of_phomotopy {A B : Type*} {f g : A →* B} (p : f ~* g) (a : A) :
+    ap (λf : A →* B, f a) (eq_of_phomotopy p) = p a :=
+  ap010 to_homotopy (phomotopy_of_eq_of_phomotopy p) a
+
+  definition phomotopy_rec_on_eq [recursor] {A B : Type*} {f g : A →* B}
+    {Q : (f ~* g) → Type} (p : f ~* g) (H : Π(q : f = g), Q (phomotopy_of_eq q)) : Q p :=
+  phomotopy_of_eq_of_phomotopy p ▸ H (eq_of_phomotopy p)
+
+  definition phomotopy_rec_on_idp [recursor] {A B : Type*} {f : A →* B}
+    {Q : Π{g}, (f ~* g) → Type} {g : A →* B} (p : f ~* g) (H : Q (phomotopy.refl f)) : Q p :=
+  begin
+    induction p using phomotopy_rec_on_eq,
+    induction q, exact H
+  end
+
+  definition phomotopy_rec_on_eq_phomotopy_of_eq {A B : Type*} {f g: A →* B}
+    {Q : (f ~* g) → Type} (p : f = g) (H : Π(q : f = g), Q (phomotopy_of_eq q)) :
+    phomotopy_rec_on_eq (phomotopy_of_eq p) H = H p :=
+  begin
+    unfold phomotopy_rec_on_eq,
+    refine ap (λp, p ▸ _) !adj ⬝ _,
+    refine !tr_compose⁻¹ ⬝ _,
+    apply apdt
+  end
+
+  definition phomotopy_rec_on_idp_refl {A B : Type*} (f : A →* B)
+    {Q : Π{g}, (f ~* g) → Type} (H : Q (phomotopy.refl f)) :
+    phomotopy_rec_on_idp phomotopy.rfl H = H :=
+  !phomotopy_rec_on_eq_phomotopy_of_eq
+
+  definition phomotopy_eq_equiv {A B : Type*} {f g : A →* B} (h k : f ~* g) :
+    (h = k) ≃ Σ(p : to_homotopy h ~ to_homotopy k),
+      whisker_right (respect_pt g) (p pt) ⬝ to_homotopy_pt k = to_homotopy_pt h :=
+  calc
+    h = k ≃ phomotopy.sigma_char _ _ h = phomotopy.sigma_char _ _ k
+      : eq_equiv_fn_eq (phomotopy.sigma_char f g) h k
+      ... ≃ Σ(p : to_homotopy h = to_homotopy k),
+              pathover (λp, p pt ⬝ respect_pt g = respect_pt f) (to_homotopy_pt h) p (to_homotopy_pt k)
+      : sigma_eq_equiv _ _
+      ... ≃ Σ(p : to_homotopy h = to_homotopy k),
+              to_homotopy_pt h = ap (λq, q pt ⬝ respect_pt g) p ⬝ to_homotopy_pt k
+      : sigma_equiv_sigma_right (λp, eq_pathover_equiv_Fl p (to_homotopy_pt h) (to_homotopy_pt k))
+      ... ≃ Σ(p : to_homotopy h = to_homotopy k),
+              ap (λq, q pt ⬝ respect_pt g) p ⬝ to_homotopy_pt k = to_homotopy_pt h
+      : sigma_equiv_sigma_right (λp, eq_equiv_eq_symm _ _)
+      ... ≃ Σ(p : to_homotopy h = to_homotopy k),
+      whisker_right (respect_pt g) (apd10 p pt) ⬝ to_homotopy_pt k = to_homotopy_pt h
+      : sigma_equiv_sigma_right (λp, equiv_eq_closed_left _ (whisker_right _ !whisker_right_ap⁻¹))
+      ... ≃ Σ(p : to_homotopy h ~ to_homotopy k),
+      whisker_right (respect_pt g) (p pt) ⬝ to_homotopy_pt k = to_homotopy_pt h
+      : sigma_equiv_sigma_left' eq_equiv_homotopy
+
+  definition phomotopy_eq {A B : Type*} {f g : A →* B} {h k : f ~* g} (p : to_homotopy h ~ to_homotopy k)
+    (q : whisker_right (respect_pt g) (p pt) ⬝ to_homotopy_pt k = to_homotopy_pt h) : h = k :=
+  to_inv (phomotopy_eq_equiv h k) ⟨p, q⟩
+
+  definition phomotopy_eq' {A B : Type*} {f g : A →* B} {h k : f ~* g} (p : to_homotopy h ~ to_homotopy k)
+    (q : square (to_homotopy_pt h) (to_homotopy_pt k) (whisker_right (respect_pt g) (p pt)) idp) : h = k :=
+  phomotopy_eq p (eq_of_square q)⁻¹
+
+  definition eq_of_phomotopy_refl {X Y : Type*} (f : X →* Y) :
+    eq_of_phomotopy (phomotopy.refl f) = idpath f :=
+  begin
+    apply to_inv_eq_of_eq, reflexivity
+  end
+
+  definition pwhisker_left_refl {A B C : Type*} (g : B →* C) (f : A →* B) :
+    pwhisker_left g (phomotopy.refl f) = phomotopy.refl (g ∘* f) :=
+  begin
+    induction A with A a₀, induction B with B b₀, induction C with C c₀,
+    induction f with f f₀, induction g with g g₀,
+    esimp at *, induction g₀, induction f₀, reflexivity
+  end
+
+  definition pwhisker_right_refl {A B C : Type*} (f : A →* B) (g : B →* C) :
+    pwhisker_right f (phomotopy.refl g) = phomotopy.refl (g ∘* f) :=
+  begin
+    induction A with A a₀, induction B with B b₀, induction C with C c₀,
+    induction f with f f₀, induction g with g g₀,
+    esimp at *, induction g₀, induction f₀, reflexivity
+  end
+
+  definition trans_refl {A B : Type*} {f g : A →* B} (p : f ~* g) : p ⬝* phomotopy.refl g = p :=
+  begin
+    induction A with A a₀, induction B with B b₀,
+    induction f with f f₀, induction g with g g₀, induction p with p p₀,
+    esimp at *, induction g₀, induction p₀,
+    reflexivity
+  end
+
+  definition refl_trans {A B : Type*} {f g : A →* B} (p : f ~* g) : phomotopy.refl f ⬝* p = p :=
+  begin
+    induction p using phomotopy_rec_on_idp,
+    induction A with A a₀, induction B with B b₀,
+    induction f with f f₀, esimp at *, induction f₀,
+    reflexivity
+  end
+
+  definition trans_assoc {A B : Type*} {f g h i : A →* B} (p : f ~* g) (q : g ~* h)
+    (r : h ~* i) : p ⬝* q ⬝* r = p ⬝* (q ⬝* r) :=
+  begin
+    induction r using phomotopy_rec_on_idp,
+    induction q using phomotopy_rec_on_idp,
+    induction p using phomotopy_rec_on_idp,
+    induction A with A a₀, induction B with B b₀,
+    induction f with f f₀, esimp at *, induction f₀,
+    reflexivity
+  end
+
+  definition trans2 {A B : Type*} {f g h : A →* B} {p p' : f ~* g} {q q' : g ~* h}
+    (r : p = p') (s : q = q') : p ⬝* q = p' ⬝* q' :=
+  ap011 phomotopy.trans r s
+
+  infixl ` ◾** `:80 := pointed.trans2
+
+  definition phwhisker_left {A B : Type*} {f g h : A →* B} (p : f ~* g) {q q' : g ~* h}
+    (s : q = q') : p ⬝* q = p ⬝* q' :=
+  idp ◾** s
+
+  definition phwhisker_right {A B : Type*} {f g h : A →* B} {p p' : f ~* g} (q : g ~* h)
+    (r : p = p') : p ⬝* q = p' ⬝* q :=
+  r ◾** idp
+
+  definition phomotopy_of_eq_con {A B : Type*} {f g h : A →* B} (p : f = g) (q : g = h) :
+    phomotopy_of_eq (p ⬝ q) = phomotopy_of_eq p ⬝* phomotopy_of_eq q :=
+  begin induction q, induction p, exact !trans_refl⁻¹ end
+
+  definition pcompose_eq_of_phomotopy {A B C : Type*} (g : B →* C) {f f' : A →* B} (H : f ~* f') :
+    ap (λf, g ∘* f) (eq_of_phomotopy H) = eq_of_phomotopy (pwhisker_left g H) :=
+  begin
+    induction H using phomotopy_rec_on_idp,
+    refine ap02 _ !eq_of_phomotopy_refl ⬝ !eq_of_phomotopy_refl⁻¹ ⬝ ap eq_of_phomotopy _,
+    exact !pwhisker_left_refl⁻¹
+  end
+
+  definition respect_pt_pcompose {A B C : Type*} (g : B →* C) (f : A →* B)
+    : respect_pt (g ∘* f) = ap g (respect_pt f) ⬝ respect_pt g :=
+  idp
+
+  definition phomotopy_mk_ppmap [constructor] {A B C : Type*} {f g : A →* ppmap B C} (p : Πa, f a ~* g a)
+    (q : p pt ⬝* phomotopy_of_eq (respect_pt g) = phomotopy_of_eq (respect_pt f))
+    : f ~* g :=
+  begin
+    apply phomotopy.mk (λa, eq_of_phomotopy (p a)),
+    apply eq_of_fn_eq_fn (pmap_eq_equiv _ _), esimp [pmap_eq_equiv],
+    refine !phomotopy_of_eq_con ⬝ _,
+    refine ap (λx, x ⬝* _) !phomotopy_of_eq_of_phomotopy ⬝ q,
+  end
+
+  definition pcompose_pconst_pcompose {A B C D : Type*} (h : C →* D) (g : B →* C) :
+    pcompose_pconst (h ∘* g) =
+    passoc h g (pconst A B) ⬝* (pwhisker_left h (pcompose_pconst g) ⬝* pcompose_pconst h) :=
+  begin
+    fapply phomotopy_eq,
+    { intro a, exact !idp_con⁻¹ },
+    { induction h with h h₀, induction g with g g₀, induction D with D d₀, induction C with C c₀,
+      esimp at *, induction g₀, induction h₀, reflexivity }
+  end
+
+  definition ppcompose_left_pcompose [constructor] {A B C D : Type*} (h : C →* D) (g : B →* C) :
+    @ppcompose_left A _ _ (h ∘* g) ~* ppcompose_left h ∘* ppcompose_left g :=
+  begin
+    fapply phomotopy_mk_ppmap,
+    { exact passoc h g },
+    { esimp,
+      refine ap (λx, _ ⬝* x) (!phomotopy_of_eq_con ⬝ ap011 phomotopy.trans
+        (ap phomotopy_of_eq !pcompose_eq_of_phomotopy ⬝ !phomotopy_of_eq_of_phomotopy)
+        !phomotopy_of_eq_of_phomotopy) ⬝ _ ⬝ !phomotopy_of_eq_of_phomotopy⁻¹,
+      exact (pcompose_pconst_pcompose h g)⁻¹ }
+  end
+
+  definition pcompose_pconst_phomotopy {A B C : Type*} {f f' : B →* C} (p : f ~* f') :
+    pwhisker_right (pconst A B) p ⬝* pcompose_pconst f' = pcompose_pconst f :=
+  begin
+    fapply phomotopy_eq,
+    { intro a, exact to_homotopy_pt p },
+    { induction p using phomotopy_rec_on_idp, induction C with C c₀, induction f with f f₀,
+      esimp at *, induction f₀, reflexivity }
+  end
+
+  definition ppcompose_left_phomotopy [constructor] {A B C : Type*} {g g' : B →* C} (p : g ~* g') :
+    @ppcompose_left A _ _ g ~* ppcompose_left g' :=
+  begin
+    induction p using phomotopy_rec_on_idp,
+    reflexivity
+  end
+    /- a more explicit proof of ppcompose_left_phomotopy, which might be useful if we need to prove properties about it
+    -/
+    -- fapply phomotopy_mk_ppmap,
+    -- { intro f, exact pwhisker_right f p },
+    -- { refine ap (λx, _ ⬝* x) !phomotopy_of_eq_of_phomotopy ⬝ _ ⬝ !phomotopy_of_eq_of_phomotopy⁻¹,
+    --   exact pcompose_pconst_phomotopy p }
+
+  definition ppcompose_left_phomotopy_refl {A B C : Type*} (g : B →* C) :
+    ppcompose_left_phomotopy (phomotopy.refl g) = phomotopy.refl (@ppcompose_left A _ _ g) :=
+  !phomotopy_rec_on_idp_refl
+
 end pointed open pointed
 
 namespace trunc
@@ -199,6 +418,9 @@ namespace is_equiv
 end is_equiv
 
 namespace prod
+
+  definition pprod_functor [constructor] {A B C D : Type*} (f : A →* C) (g : B →* D) : A ×* B →* C ×* D :=
+  pmap.mk (prod_functor f g) (prod_eq (respect_pt f) (respect_pt g))
 
   open prod.ops
   definition prod_pathover_equiv {A : Type} {B C : A → Type} {a a' : A} (p : a = a')
@@ -317,44 +539,40 @@ namespace group
 
 
   -- some extra instances for type class inference
-  -- definition is_homomorphism_comm_homomorphism [instance] {G G' : AbGroup} (φ : G →g G')
-  --   : @is_homomorphism G G' (@ab_group.to_group _ (AbGroup.struct G))
+  -- definition is_mul_hom_comm_homomorphism [instance] {G G' : AbGroup} (φ : G →g G')
+  --   : @is_mul_hom G G' (@ab_group.to_group _ (AbGroup.struct G))
   --                           (@ab_group.to_group _ (AbGroup.struct G')) φ :=
   -- homomorphism.struct φ
 
-  -- definition is_homomorphism_comm_homomorphism1 [instance] {G G' : AbGroup} (φ : G →g G')
-  --   : @is_homomorphism G G' _
+  -- definition is_mul_hom_comm_homomorphism1 [instance] {G G' : AbGroup} (φ : G →g G')
+  --   : @is_mul_hom G G' _
   --                           (@ab_group.to_group _ (AbGroup.struct G')) φ :=
   -- homomorphism.struct φ
 
-  -- definition is_homomorphism_comm_homomorphism2 [instance] {G G' : AbGroup} (φ : G →g G')
-  --   : @is_homomorphism G G' (@ab_group.to_group _ (AbGroup.struct G)) _ φ :=
+  -- definition is_mul_hom_comm_homomorphism2 [instance] {G G' : AbGroup} (φ : G →g G')
+  --   : @is_mul_hom G G' (@ab_group.to_group _ (AbGroup.struct G)) _ φ :=
   -- homomorphism.struct φ
 
 end group open group
 
 
-namespace pi -- move to types.arrow
+namespace pointed -- move to types.pointed
 
-  definition pmap_eq_equiv {X Y : Type*} (f g : X →* Y) : (f = g) ≃ (f ~* g) :=
-  begin
-    refine eq_equiv_fn_eq_of_equiv (@pmap.sigma_char X Y) f g ⬝e _,
-    refine !sigma_eq_equiv ⬝e _,
-    refine _ ⬝e (phomotopy.sigma_char f g)⁻¹ᵉ,
-    fapply sigma_equiv_sigma,
-    { esimp, apply eq_equiv_homotopy },
-    { induction g with g gp, induction Y with Y y0, esimp, intro p, induction p, esimp at *,
-      refine !pathover_idp ⬝e _, refine _ ⬝e !eq_equiv_eq_symm,
-      apply equiv_eq_closed_right, exact !idp_con⁻¹ }
-  end
+  -- definition pmap_eq_equiv {X Y : Type*} (f g : X →* Y) : (f = g) ≃ (f ~* g) :=
+  -- begin
+  --   refine eq_equiv_fn_eq_of_equiv (@pmap.sigma_char X Y) f g ⬝e _,
+  --   refine !sigma_eq_equiv ⬝e _,
+  --   refine _ ⬝e (phomotopy.sigma_char f g)⁻¹ᵉ,
+  --   fapply sigma_equiv_sigma,
+  --   { esimp, apply eq_equiv_homotopy },
+  --   { induction g with g gp, induction Y with Y y0, esimp, intro p, induction p, esimp at *,
+  --     refine !pathover_idp ⬝e _, refine _ ⬝e !eq_equiv_eq_symm,
+  --     apply equiv_eq_closed_right, exact !idp_con⁻¹ }
+  -- end
 
   definition pmap_eq_idp {X Y : Type*} (f : X →* Y) :
     pmap_eq (λx, idpath (f x)) !idp_con⁻¹ = idpath f :=
-  begin
-    cases f with f p, esimp [pmap_eq],
-    refine apd011 (apd011 pmap.mk) !eq_of_homotopy_idp _,
-    induction Y with Y y0, esimp at *, induction p, esimp, exact sorry
-  end
+  ap (λx, eq_of_phomotopy (phomotopy.mk _ x)) !inv_inv ⬝ eq_of_phomotopy_refl f
 
   definition pfunext [constructor] (X Y : Type*) : ppmap X (Ω Y) ≃* Ω (ppmap X Y) :=
   begin
@@ -373,7 +591,7 @@ namespace pi -- move to types.arrow
     { apply pmap_eq_idp}
   end
 
-end pi open pi
+end pointed open pointed
 
 namespace eq
 
@@ -686,7 +904,7 @@ namespace category
   theorem Group_eq_equiv_lemma {G H : Group}
     (p : (Group.sigma_char2 G).1 = (Group.sigma_char2 H).1) :
     ((Group.sigma_char2 G).2 =[p] (Group.sigma_char2 H).2) ≃
-    (is_homomorphism (equiv_of_eq (proof p qed : Group.carrier G = Group.carrier H))) :=
+    (is_mul_hom (equiv_of_eq (proof p qed : Group.carrier G = Group.carrier H))) :=
   begin
     refine !sigma_pathover_equiv_of_is_prop ⬝e _,
     induction G with G g, induction H with H h,
@@ -697,7 +915,7 @@ namespace category
                                 (Group.sigma_char2 (Group.mk G (group.mk μ σ μa ε εμ με ι μι))).2.2
   end
 
-  definition isomorphism.sigma_char (G H : Group) : (G ≃g H) ≃ Σ(e : G ≃ H), is_homomorphism e :=
+  definition isomorphism.sigma_char (G H : Group) : (G ≃g H) ≃ Σ(e : G ≃ H), is_mul_hom e :=
   begin
     fapply equiv.MK,
     { intro φ, exact ⟨equiv_of_isomorphism φ, to_respect_mul φ⟩ },
@@ -712,7 +930,7 @@ namespace category
     refine !sigma_eq_equiv ⬝e _,
     refine sigma_equiv_sigma_right Group_eq_equiv_lemma ⬝e _,
     transitivity (Σ(e : (Group.sigma_char2 G).1 ≃ (Group.sigma_char2 H).1),
-      @is_homomorphism _ _ _ _ (to_fun e)), apply sigma_ua,
+      @is_mul_hom _ _ _ _ (to_fun e)), apply sigma_ua,
     exact !isomorphism.sigma_char⁻¹ᵉ
   end
 

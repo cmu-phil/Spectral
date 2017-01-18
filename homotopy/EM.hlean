@@ -262,7 +262,7 @@ namespace EM
              (ptrunc_elim_ptrunc_functor ((succ n).+1) _ _)⁻¹*,
       apply ptrunc_elim_phomotopy,
       refine _ ⬝* !psusp_elim_psusp_functor⁻¹*,
-      refine _ ⬝* psusp_elim_phomotopy (IH _ _ _ _ _ (is_homomorphism_EM_up eX rX) _ (@is_conn_loop _ _ H1)
+      refine _ ⬝* psusp_elim_phomotopy (IH _ _ _ _ _ (is_mul_hom_EM_up eX rX) _ (@is_conn_loop _ _ H1)
                                            (@is_trunc_loop _ _ H2) _ _ (EM_up_natural φ f eX eY p)),
       apply psusp_elim_natural }
   end
@@ -347,7 +347,7 @@ namespace EM
   --   { exact EM1_pmap e⁻¹ᵉ* (equiv.inv_preserve_binary e concat mul r) },
   --   rewrite [EMadd1_succ],
   --   exact ptrunc.elim ((succ n).+1)
-  --           (psusp.elim (f _ (EM_up e) (is_homomorphism_EM_up e r) _ _)),
+  --           (psusp.elim (f _ (EM_up e) (is_mul_hom_EM_up e r) _ _)),
   -- end
 
   -- definition is_set_pmap_ptruncconntype {n : ℕ₋₂} (X Y : (n.+1)-Type*[n]) : is_set (X →* Y) :=

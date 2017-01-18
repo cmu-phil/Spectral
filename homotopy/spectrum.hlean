@@ -320,8 +320,8 @@ namespace spectrum
   | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
   local attribute ab_group_LES_of_shomotopy_groups [instance]
 
-  definition is_homomorphism_LES_of_shomotopy_groups :
-    Π(v : +3ℤ), is_homomorphism (cc_to_fn LES_of_shomotopy_groups v)
+  definition is_mul_hom_LES_of_shomotopy_groups :
+    Π(v : +3ℤ), is_mul_hom (cc_to_fn LES_of_shomotopy_groups v)
   | (n, fin.mk 0 H) := proof homomorphism.struct (πₛ→[n] f) qed
   | (n, fin.mk 1 H) := proof homomorphism.struct (πₛ→[n] (spoint f)) qed
   | (n, fin.mk 2 H) := proof homomorphism.struct

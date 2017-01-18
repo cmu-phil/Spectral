@@ -10,9 +10,17 @@ namespace pushout
               {TL' BL' TR' : Type*} {f' : TL' →* BL'} {g' : TL' →* TR'}
               (tl : TL ≃ TL') (bl : BL ≃* BL') (tr : TR ≃ TR')
               (fh : bl ∘ f ~ f' ∘ tl) (gh : tr ∘ g ~ g' ∘ tl)
-    include fh gh
 
-    definition ppushout_pequiv : ppushout f g ≃* ppushout f' g' :=
+    definition ppushout_functor [constructor] (tl : TL → TL') (bl : BL →* BL') (tr : TR → TR')
+      (fh : bl ∘ f ~ f' ∘ tl) (gh : tr ∘ g ~ g' ∘ tl) : ppushout f g →* ppushout f' g' :=
+    begin
+      fconstructor,
+      { exact pushout.functor tl bl tr fh gh },
+      { exact ap inl (respect_pt bl) },
+    end
+
+    definition ppushout_pequiv (tl : TL ≃ TL') (bl : BL ≃* BL') (tr : TR ≃ TR')
+      (fh : bl ∘ f ~ f' ∘ tl) (gh : tr ∘ g ~ g' ∘ tl) : ppushout f g ≃* ppushout f' g' :=
     pequiv_of_equiv (pushout.equiv _ _ _ _ tl bl tr fh gh) (ap inl (respect_pt bl))
 
   end

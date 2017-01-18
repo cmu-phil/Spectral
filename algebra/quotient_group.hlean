@@ -249,12 +249,12 @@ namespace group
   -- FIRST ISOMORPHISM THEOREM
 
 
-definition kernel_quotient_extension {A B : AbGroup} (f : A →g B) : quotient_ab_group (kernel_subgroup f) →g B := 
+definition kernel_quotient_extension {A B : AbGroup} (f : A →g B) : quotient_ab_group (kernel_subgroup f) →g B :=
   begin
     fapply quotient_group_elim f, intro a, intro p, exact p
   end
 
-definition kernel_quotient_extension_triangle {A B : AbGroup} (f : A →g B) : 
+definition kernel_quotient_extension_triangle {A B : AbGroup} (f : A →g B) :
   kernel_quotient_extension f ∘g ab_qg_map (kernel_subgroup f) ~ f :=
   begin
     intro a,
@@ -264,7 +264,7 @@ definition kernel_quotient_extension_triangle {A B : AbGroup} (f : A →g B) :
 definition is_embedding_kernel_quotient_extension {A B : AbGroup} (f : A →g B) :
   is_embedding (kernel_quotient_extension f) :=
   begin
-    fapply is_embedding_homomorphism,
+    fapply is_embedding_of_is_mul_hom,
     intro x,
     note H := is_surjective_ab_qg_map (kernel_subgroup f) x,
     induction H, induction p,
@@ -273,7 +273,7 @@ definition is_embedding_kernel_quotient_extension {A B : AbGroup} (f : A →g B)
     refine _ ⬝ q,
     symmetry,
     rexact kernel_quotient_extension_triangle f a
-  end 
+  end
 
 definition ab_group_quotient_homomorphism (A B : AbGroup)(K : subgroup_rel A)(L : subgroup_rel B) (f : A →g B)
      (p : Π(a:A), K(a) → L(f a)) : quotient_ab_group K →g quotient_ab_group L :=
@@ -302,15 +302,15 @@ definition  ab_group_triv_kernel_factor {A B C: AbGroup} (f : A →g B)(g : A �
    intro p,
    intro a,
    intro q,
-   fapply p, 
-   exact ab_group_kernel_factor f g H a q 
+   fapply p,
+   exact ab_group_kernel_factor f g H a q
  end
 
 definition triv_kern_is_embedding {A B : AbGroup} (f : A →g B):
 is_trivial_subgroup _ (kernel_subgroup(f)) → is_embedding(f) :=
   begin
   intro p,
-  fapply is_embedding_homomorphism,
+  fapply is_embedding_of_is_mul_hom,
   intro a q,
   apply p,
   exact q
@@ -366,7 +366,7 @@ exact is_surjective_image_lift f
 definition is_embedding_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
            : is_embedding (ab_group_kernel_quotient_to_image f) :=
   begin
-    fapply @is_embedding_factor _ (image f) B _ _ _ (ab_group_kernel_quotient_to_image f) (image_incl f) (kernel_quotient_extension f), 
+    fapply @is_embedding_factor _ (image f) B _ _ _ (ab_group_kernel_quotient_to_image f) (image_incl f) (kernel_quotient_extension f),
     exact ab_group_kernel_quotient_to_image_triangle f,
     exact is_embedding_kernel_quotient_extension f
   end
