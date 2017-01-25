@@ -1,5 +1,5 @@
 -- Authors: Floris van Doorn
--- in collaboration with Egbert, Stefano, Robin
+-- in collaboration with Egbert, Stefano, Robin, Ulrik
 
 
 import .smash
@@ -479,6 +479,12 @@ namespace smash
     refine !smash_adjoint_pmap_natural_pt
   end
 
+  definition smash_assoc_elim_inv_natural_pt {A B C X X' : Type*} (f : X →* X') (g : (A ∧ B) ∧ C →* X) :
+    f ∘* (smash_assoc_elim_equiv A B C X)⁻¹ᵉ* g ~* (smash_assoc_elim_equiv A B C X')⁻¹ᵉ* (f ∘* g) :=
+  begin
+    exact sorry
+  end
+
   definition smash_assoc_elim_natural {A B C X X' : Type*} (f : X →* X') :
     ppcompose_left f ∘* smash_assoc_elim_equiv A B C X ~*
     smash_assoc_elim_equiv A B C X' ∘* ppcompose_left f :=
@@ -495,14 +501,25 @@ namespace smash
     -- refine !smash_adjoint_pmap_natural_pt
   end
 
-  -- definition smash_assoc (A B C : Type*) : A ∧ (B ∧ C) ≃* (A ∧ B) ∧ C :=
+  -- definition smash_assoc_to (A B C : Type*) : A ∧ (B ∧ C) →* (A ∧ B) ∧ C :=
   -- begin
-  --   fapply pequiv.MK,
-  --   { exact !smash_assoc_elim_equiv⁻¹ᵉ* !pid },
-  --   { exact !smash_assoc_elim_equiv !pid },
-  --   { },
-  --   { }
+
   -- end
+
+
+  -- TODO: remove pap
+  definition smash_assoc (A B C : Type*) : A ∧ (B ∧ C) ≃* (A ∧ B) ∧ C :=
+  begin
+    fapply pequiv.MK2,
+    { exact !smash_assoc_elim_equiv⁻¹ᵉ* !pid },
+    { exact !smash_assoc_elim_equiv !pid },
+    { refine !smash_assoc_elim_inv_natural_pt ⬝* _,
+      refine pap !smash_assoc_elim_equiv⁻¹ᵉ* !pcompose_pid ⬝* _,
+      apply phomotopy_of_eq, apply to_left_inv !smash_assoc_elim_equiv },
+    { refine !smash_assoc_elim_natural_pt ⬝* _,
+      refine pap !smash_assoc_elim_equiv !pcompose_pid ⬝* _,
+      apply phomotopy_of_eq, apply to_right_inv !smash_assoc_elim_equiv }
+  end
 
 
 end smash
