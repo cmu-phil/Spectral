@@ -262,7 +262,7 @@ namespace EM
              (ptrunc_elim_ptrunc_functor ((succ n).+1) _ _)⁻¹*,
       apply ptrunc_elim_phomotopy,
       refine _ ⬝* !psusp_elim_psusp_functor⁻¹*,
-      refine _ ⬝* psusp_elim_phomotopy (IH _ _ _ _ _ (is_mul_hom_EM_up eX rX) _ (@is_conn_loop _ _ H1)
+      refine _ ⬝* psusp_elim_phomotopy (IH _ _ _ _ _ (is_homomorphism_EM_up eX rX) _ (@is_conn_loop _ _ H1)
                                            (@is_trunc_loop _ _ H2) _ _ (EM_up_natural φ f eX eY p)),
       apply psusp_elim_natural }
   end
