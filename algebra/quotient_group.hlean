@@ -372,7 +372,7 @@ definition is_embedding_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
     exact is_embedding_kernel_quotient_extension f
   end
 
-definition ab_group_first_iso_thm (A B : AbGroup) (f : A →g B) 
+definition ab_group_first_iso_thm {A B : AbGroup} (f : A →g B) 
            : quotient_ab_group (kernel_subgroup f) ≃g ab_image f :=
   begin
     fapply isomorphism.mk,
@@ -382,8 +382,11 @@ definition ab_group_first_iso_thm (A B : AbGroup) (f : A →g B)
     exact is_surjective_kernel_quotient_to_image f
   end
 
-
-
+definition codomain_surjection_is_quotient (A B : AbGroup) (f : A →g B)( H : is_surjective f)
+           : quotient_ab_group (kernel_subgroup f) ≃g B :=
+    begin
+     exact (ab_group_first_iso_thm f) ⬝g (iso_surjection_ab_image_incl f H)
+   end
 
 
 -- print iff.mpr
