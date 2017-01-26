@@ -13,7 +13,7 @@ open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum
 
 structure is_exact {A B C : AbGroup} (f : A →g B) (g : B →g C) :=
   ( im_in_ker : Π(a:A), g (f a) = 1)
-  ( ker_in_im : Π(b:B), (g b = 1) → ∃(a:A), f a = b)
+  ( ker_in_im : Π(b:B), (g b = 1) → image_subgroup f b)
 
 structure SES (A B C : AbGroup) :=
   ( f : A →g B)
@@ -29,16 +29,26 @@ structure hom_SES {A B C A' B' C' : AbGroup} (ses : SES A B C) (ses' : SES A' B'
   ( htpy1 : hB ∘g (SES.f ses) ~ (SES.f ses') ∘g hA)
   ( htpy2 : hC ∘g (SES.g ses) ~ (SES.g ses') ∘g hB)
 
-definition quotient_SES {A B C : AbGroup} (ses : SES A B C) : C ≃g quotient_ab_group (image_subgroup (SES.f ses)) :=
-  begin
-    fapply ab_group_first_iso_thm B C (SES.g ses), 
-  end
+--definition quotient_SES {A B C : AbGroup} (ses : SES A B C) : 
+--  quotient_ab_group (image_subgroup (SES.f ses)) ≃g C :=
+--  begin
+--    fapply ab_group_first_iso_thm B C (SES.g ses), 
+--  end
 
 definition right_extend_SES {A B C A' B' C' : AbGroup} 
   (ses : SES A B C) (ses' : SES A' B' C')  
   (hA : A →g A') (hB : B →g B') (htpy1 : hB ∘g (SES.f ses) ~ (SES.f ses') ∘g hA) : C →g C' :=
   begin
-    
+    refine _ ∘g (codomain_surjection_is_quotient (SES.g ses) (SES.Hg ses))⁻¹ᵍ,
+    refine (codomain_surjection_is_quotient (SES.g ses') (SES.Hg ses')) ∘g _,
+    fapply ab_group_quotient_homomorphism B B' (kernel_subgroup (SES.g ses)) (kernel_subgroup (SES.g ses')) hB,
+    intro b,
+    intro K,
+    have k : trunctype.carrier (image_subgroup (SES.f ses) b), from is_exact.ker_in_im (SES.ex ses) b K,
+    induction k, induction a with a p,
+    rewrite [p⁻¹],
+    rewrite [htpy1 a],
+    fapply is_exact.im_in_ker (SES.ex ses') (hA a), 
   end
 
 definition is_differential {B : AbGroup} (d : B →g B) := Π(b:B), d (d b) = 1
