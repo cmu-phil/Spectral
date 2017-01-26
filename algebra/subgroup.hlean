@@ -281,7 +281,28 @@ namespace group
   definition image_incl {G H : Group} (f : G →g H) : image f →g H :=
     incl_of_subgroup (image_subgroup f)
 
-  definition comm_image_incl {A B : AbGroup} (f : A →g B) : ab_image f →g B := incl_of_subgroup (image_subgroup f)
+  definition ab_image_incl {A B : AbGroup} (f : A →g B) : ab_image f →g B := incl_of_subgroup (image_subgroup f)
+
+  definition is_equiv_surjection_ab_image_incl {A B : AbGroup} (f : A →g B) (H : is_surjective f) : is_equiv (ab_image_incl f ) :=
+  begin
+    fapply is_equiv.adjointify (ab_image_incl f),
+    intro b,
+    fapply sigma.mk,
+    exact b,
+    exact H b,
+    intro b,
+    reflexivity,
+    intro x,
+    apply subtype_eq,
+    reflexivity
+  end
+
+  definition iso_surjection_ab_image_incl {A B : AbGroup} (f : A →g B) (H : is_surjective f) : ab_image f ≃g B :=
+  begin
+    fapply isomorphism.mk,
+    exact (ab_image_incl f),
+    exact is_equiv_surjection_ab_image_incl f H
+  end
 
   definition hom_lift {G H : Group} (f : G →g H) (K : subgroup_rel H) (Hyp : Π (g : G), K (f g)) : G →g subgroup K :=
   begin
