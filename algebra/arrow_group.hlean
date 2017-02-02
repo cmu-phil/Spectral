@@ -8,8 +8,8 @@ namespace group
   definition group_arrow [instance] (A B : Type) [group B] : group (A → B) :=
   begin
     fapply group.mk,
-    { intro f g a, exact f a * g a },
     { apply is_trunc_arrow },
+    { intro f g a, exact f a * g a },
     { intros, apply eq_of_homotopy, intro a, apply mul.assoc },
     { intro a, exact 1 },
     { intros, apply eq_of_homotopy, intro a, apply one_mul },
@@ -31,9 +31,9 @@ namespace group
   definition pgroup_ppmap [instance] (A B : Type*) [pgroup B] : pgroup (ppmap A B) :=
   begin
     fapply pgroup.mk,
+    { apply is_trunc_pmap },
     { intro f g, apply pmap.mk (λa, f a * g a),
       exact ap011 mul (respect_pt f) (respect_pt g) ⬝ !one_mul },
-    { apply is_trunc_pmap },
     { intros, apply pmap_eq_of_homotopy, intro a, apply mul.assoc },
     { intro f, apply pmap.mk (λa, (f a)⁻¹), apply inv_eq_one, apply respect_pt },
     { intros, apply pmap_eq_of_homotopy, intro a, apply one_mul },

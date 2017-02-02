@@ -125,7 +125,7 @@ namespace group
 
   variable (N)
   definition group_qg [constructor] : group (qg N) :=
-  group.mk quotient_mul _ quotient_mul_assoc quotient_one quotient_one_mul quotient_mul_one
+  group.mk _ quotient_mul quotient_mul_assoc quotient_one quotient_one_mul quotient_mul_one
            quotient_inv quotient_mul_left_inv
 
   definition quotient_group [constructor] : Group :=

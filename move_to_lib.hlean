@@ -858,8 +858,8 @@ namespace category
   begin
     have foo : Π(g : A), @inv A G g = (@inv A G g * g) * @inv A H g,
       from λg, !mul_inv_cancel_right⁻¹,
-    cases G with Gm Gs Gh1 G1 Gh2 Gh3 Gi Gh4,
-    cases H with Hm Hs Hh1 H1 Hh2 Hh3 Hi Hh4,
+    cases G with Gs Gm Gh1 G1 Gh2 Gh3 Gi Gh4,
+    cases H with Hs Hm Hh1 H1 Hh2 Hh3 Hi Hh4,
     change Gi ~ Hi, intro g, have p' : Gm ~2 Hm, from p,
     calc
       Gi g = Hm (Hm (Gi g) g) (Hi g) : foo
@@ -910,9 +910,9 @@ namespace category
     induction G with G g, induction H with H h,
     esimp [Group.sigma_char2] at p, induction p,
     refine !pathover_idp ⬝e _,
-    induction g with m s ma o om mo i mi, induction h with μ σ μa ε εμ με ι μι,
-    exact Group_eq_equiv_lemma2 (Group.sigma_char2 (Group.mk G (group.mk m s ma o om mo i mi))).2.2
-                                (Group.sigma_char2 (Group.mk G (group.mk μ σ μa ε εμ με ι μι))).2.2
+    induction g with s m ma o om mo i mi, induction h with σ μ μa ε εμ με ι μι,
+    exact Group_eq_equiv_lemma2 (Group.sigma_char2 (Group.mk G (group.mk s m ma o om mo i mi))).2.2
+                                (Group.sigma_char2 (Group.mk G (group.mk σ μ μa ε εμ με ι μι))).2.2
   end
 
   definition isomorphism.sigma_char (G H : Group) : (G ≃g H) ≃ Σ(e : G ≃ H), is_mul_hom e :=

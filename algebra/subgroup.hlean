@@ -214,7 +214,7 @@ namespace group
 
   variable (H)
   definition group_sg [constructor] : group (sg H) :=
-  group.mk subgroup_mul _ subgroup_mul_assoc subgroup_one subgroup_one_mul subgroup_mul_one
+  group.mk _ subgroup_mul subgroup_mul_assoc subgroup_one subgroup_one_mul subgroup_mul_one
            subgroup_inv subgroup_mul_left_inv
 
   definition subgroup [constructor] : Group :=

@@ -137,7 +137,7 @@ namespace group
 
   variables (X)
   definition group_free_ab_group [constructor] : ab_group (fcg_carrier X) :=
-  ab_group.mk fcg_mul _ fcg_mul_assoc fcg_one fcg_one_mul fcg_mul_one
+  ab_group.mk _ fcg_mul fcg_mul_assoc fcg_one fcg_one_mul fcg_mul_one
            fcg_inv fcg_mul_left_inv fcg_mul_comm
 
   definition free_ab_group [constructor] : AbGroup :=

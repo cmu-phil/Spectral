@@ -46,7 +46,7 @@ namespace group
 
   variables (G G')
   definition group_prod [constructor] : group (G × G') :=
-  group.mk product_mul _ product_mul_assoc product_one product_one_mul product_mul_one
+  group.mk _ product_mul product_mul_assoc product_one product_one_mul product_mul_one
            product_inv product_mul_left_inv
 
   definition product [constructor] : Group :=

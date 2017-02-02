@@ -112,8 +112,8 @@ namespace group
 --  export [reduce_hints] free_group
   variables (X)
   definition group_free_group [constructor] : group (free_group_carrier X) :=
-  group.mk free_group_mul _ free_group_mul_assoc free_group_one free_group_one_mul free_group_mul_one
-           free_group_inv free_group_mul_left_inv
+  group.mk _ free_group_mul free_group_mul_assoc free_group_one free_group_one_mul
+           free_group_mul_one free_group_inv free_group_mul_left_inv
 
   definition free_group [constructor] : Group :=
   Group.mk _ (group_free_group X)

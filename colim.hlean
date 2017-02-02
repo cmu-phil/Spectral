@@ -188,12 +188,12 @@ namespace seq_colim
     seq_diagram (λn, Πx, A x n) :=
   λn f x, g (f x)
 
-  namespace seq_colim.ops
+  namespace ops
   abbreviation ι  [constructor] := @inclusion
   abbreviation pι  [constructor] {A} (f) {n} := @pinclusion A f n
   abbreviation pι'  [constructor] [parsing_only] := @pinclusion
   abbreviation ι' [constructor] [parsing_only] {A} (f n) := @inclusion A f n
-  end seq_colim.ops
+  end ops
   open seq_colim.ops
 
   definition rep0_glue (k : ℕ) (a : A 0) : ι f (rep0 f k a) = ι f a :=
