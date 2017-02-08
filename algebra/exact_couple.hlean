@@ -35,6 +35,8 @@ structure hom_SES {A B C A' B' C' : AbGroup} (ses : SES A B C) (ses' : SES A' B'
 --    fapply ab_group_first_iso_thm B C (SES.g ses), 
 --  end
 
+-- definition pre_right_extend_SES (to separate the following definition and replace C with B/A)
+
 definition right_extend_SES {A B C A' B' C' : AbGroup} 
   (ses : SES A B C) (ses' : SES A' B' C')  
   (hA : A →g A') (hB : B →g B') (htpy1 : hB ∘g (SES.f ses) ~ (SES.f ses') ∘g hA) : C →g C' :=
@@ -49,6 +51,18 @@ definition right_extend_SES {A B C A' B' C' : AbGroup}
     rewrite [p⁻¹],
     rewrite [htpy1 a],
     fapply is_exact.im_in_ker (SES.ex ses') (hA a), 
+  end
+
+definition right_extend_hom_SES {A B C A' B' C' : AbGroup}
+  (ses : SES A B C) (ses' : SES A' B' C')
+  (hA : A →g A') (hB : B →g B') (htpy1 : hB ∘g (SES.f ses) ~ (SES.f ses') ∘g hA) : hom_SES ses ses' :=
+  begin
+    fapply hom_SES.mk,
+    exact hA,
+    exact hB,
+    exact right_extend_SES ses ses' hA hB htpy1,
+    exact htpy1,
+    exact sorry -- fapply quotient_group_compute,
   end
 
 definition is_differential {B : AbGroup} (d : B →g B) := Π(b:B), d (d b) = 1
