@@ -341,12 +341,19 @@ definition ab_group_kernel_image_lift (A B : AbGroup) (f : A →g B)
 
 definition ab_group_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
            : quotient_ab_group (kernel_subgroup f) →g ab_image (f) :=
-           begin
+  begin
            fapply quotient_group_elim (image_lift f), intro a, intro p,
            apply iff.mpr (ab_group_kernel_image_lift _ _ f a) p
-end
+  end
 
-definition ab_group_kernel_quotient_to_image_triangle {A B : AbGroup} (f : A →g B)
+definition ab_group_kernel_quotient_to_image_domain_triangle {A B : AbGroup} (f : A →g B)
+           :  ab_group_kernel_quotient_to_image (f) ∘g ab_qg_map (kernel_subgroup (f)) ~ image_lift(f) :=
+  begin
+    intros a,
+    esimp,
+  end
+
+definition ab_group_kernel_quotient_to_image_codomain_triangle {A B : AbGroup} (f : A →g B)
            : image_incl f ∘g ab_group_kernel_quotient_to_image f ~ kernel_quotient_extension f :=
   begin
     intro x,
@@ -368,7 +375,7 @@ definition is_embedding_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
            : is_embedding (ab_group_kernel_quotient_to_image f) :=
   begin
     fapply @is_embedding_factor _ (image f) B _ _ _ (ab_group_kernel_quotient_to_image f) (image_incl f) (kernel_quotient_extension f),
-    exact ab_group_kernel_quotient_to_image_triangle f,
+    exact ab_group_kernel_quotient_to_image_codomain_triangle f,
     exact is_embedding_kernel_quotient_extension f
   end
 
@@ -388,6 +395,12 @@ definition codomain_surjection_is_quotient {A B : AbGroup} (f : A →g B)( H : i
      exact (ab_group_first_iso_thm f) ⬝g (iso_surjection_ab_image_incl f H)
    end
 
+definition codomain_surjection_is_quotient_triangle {A B : AbGroup} (f : A →g B)( H : is_surjective f)
+           : codomain_surjection_is_quotient (f)(H) ∘g ab_qg_map (kernel_subgroup f) ~ f :=
+     begin
+    intro a,
+    esimp
+     end
 
 -- print iff.mpr
     /- set generating normal subgroup -/
