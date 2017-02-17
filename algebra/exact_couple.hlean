@@ -63,7 +63,7 @@ definition right_extend_hom_SES {A B C A' B' C' : AbGroup}
     exact right_extend_SES ses ses' hA hB htpy1,
     exact htpy1,
     exact sorry -- fapply quotient_group_compute,
-  end
+ 
 
 definition is_differential {B : AbGroup} (d : B →g B) := Π(b:B), d (d b) = 1
 
