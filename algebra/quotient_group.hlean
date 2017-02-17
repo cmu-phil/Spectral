@@ -195,6 +195,16 @@ namespace group
     apply rel_of_eq _ H
   end
 
+  definition rel_of_ab_qg_map_eq_one {K : subgroup_rel A} (a :A) (H : ab_qg_map K a = 1) : K a := 
+  begin
+    have e : (a * 1⁻¹ = a),
+    from calc
+      a * 1⁻¹ = a * 1 : one_inv
+        ...   = a : mul_one,
+    rewrite (inverse e),
+    apply rel_of_eq _ H
+  end
+
   definition quotient_group_elim_fun [unfold 6] (f : G →g G') (H : Π⦃g⦄, N g → f g = 1)
     (g : quotient_group N) : G' :=
   begin

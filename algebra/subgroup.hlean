@@ -241,6 +241,23 @@ namespace group
     intro g h, reflexivity
   end
 
+  definition is_embedding_incl_of_subgroup {G : Group} (H : subgroup_rel G) : is_embedding (incl_of_subgroup H) :=
+  begin
+    fapply function.is_embedding_of_is_injective,
+    intro h h', 
+    fapply subtype_eq
+  end
+
+  definition ab_kernel_incl {G H : AbGroup} (f : G →g H) : ab_kernel f →g G :=
+  begin
+    fapply incl_of_subgroup,
+  end
+
+  definition is_embedding_ab_kernel_incl {G H : AbGroup} (f : G →g H) : is_embedding (ab_kernel_incl f) :=
+  begin
+    fapply is_embedding_incl_of_subgroup,
+  end 
+
   definition subgroup_rel_of_subgroup {G : Group} (H1 H2 : subgroup_rel G) (hyp : Π (g : G), subgroup_rel.R H1 g → subgroup_rel.R H2 g) : subgroup_rel (subgroup H2) :=
   subgroup_rel.mk
       -- definition of the subset
