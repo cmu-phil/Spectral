@@ -10,7 +10,11 @@ namespace seq_colim
 
   definition inclusion_pt [constructor] {X : ℕ → Type*} (f : Πn, X n →* X (n+1)) (n : ℕ)
     : inclusion f (Point (X n)) = Point (pseq_colim f) :=
-  by induction n with n p; reflexivity; exact (ap (sι f) !respect_pt)⁻¹ ⬝ !glue ⬝ p
+  begin
+    induction n with n p,
+      reflexivity,
+      exact (ap (sι f) (respect_pt _))⁻¹ᵖ ⬝ !glue ⬝ p
+  end
 
   definition pinclusion [constructor] {X : ℕ → Type*} (f : Πn, X n →* X (n+1)) (n : ℕ)
     : X n →* pseq_colim f :=
@@ -390,7 +394,7 @@ namespace seq_colim
     apply whisker_left,
     rewrite [- +con.assoc], apply whisker_right, rewrite [- +ap_compose'],
     note s := (eq_top_of_square (natural_square_tr
-      (λx, fn_tr_eq_tr_fn (succ_add n k) f x ⬝ (tr_ap A succ (succ_add n k) (f x))⁻¹) p))⁻¹,
+      (λx, fn_tr_eq_tr_fn (succ_add n k) f x ⬝ (tr_ap A succ (succ_add n k) (f x))⁻¹) p))⁻¹ᵖ,
     rewrite [inv_con_inv_right at s, -con.assoc at s], exact s
   end
 

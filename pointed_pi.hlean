@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ulrik Buchholtz
 -/
 
-import move_to_lib
+import .move_to_lib
 
 open eq pointed equiv sigma
 

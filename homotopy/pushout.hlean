@@ -1,7 +1,7 @@
 
 import ..move_to_lib
 
-open eq function is_trunc sigma prod lift is_equiv equiv pointed sum unit bool
+open eq function is_trunc sigma prod lift is_equiv equiv pointed sum unit bool cofiber
 
 namespace pushout
 
@@ -268,43 +268,43 @@ namespace pushout
   /- pushout where one map is constant is a cofiber -/
 
   definition pushout_const_equiv_to [unfold 6] {A B C : Type} {f : A → B} {c₀ : C}
-    (x : pushout (const A c₀) f) : cofiber (sum_functor f (const unit c₀)) :=
+    (x : pushout f (const A c₀)) : cofiber (sum_functor f (const unit c₀)) :=
   begin
-    induction x with c b a,
-    { exact inr (sum.inr c) },
-    { exact inr (sum.inl b) },
-    { exact (glue (sum.inr ⋆))⁻¹ ⬝ glue (sum.inl a) }
+    induction x with b c a,
+    { exact !cod (sum.inl b) },
+    { exact !cod (sum.inr c) },
+    { exact glue (sum.inl a) ⬝ (glue (sum.inr ⋆))⁻¹ }
   end
 
   definition pushout_const_equiv_from [unfold 6] {A B C : Type} {f : A → B} {c₀ : C}
-    (x : cofiber (sum_functor f (const unit c₀))) : pushout (const A c₀) f :=
+    (x : cofiber (sum_functor f (const unit c₀))) : pushout f (const A c₀) :=
   begin
     induction x with v v,
-    { exact inl c₀ },
-    { induction v with b c, exact inr b, exact inl c },
+    { induction v with b c, exact inl b, exact inr c },
+    { exact inr c₀ },
     { induction v with a u, exact glue a, reflexivity }
   end
 
   definition pushout_const_equiv [constructor] {A B C : Type} (f : A → B) (c₀ : C) :
-    pushout (const A c₀) f ≃ cofiber (sum_functor f (const unit c₀)) :=
+    pushout f (const A c₀) ≃ cofiber (sum_functor f (const unit c₀)) :=
   begin
     fapply equiv.MK,
     { exact pushout_const_equiv_to },
     { exact pushout_const_equiv_from },
     { intro x, induction x with v v,
-      { exact (glue (sum.inr ⋆))⁻¹ },
       { induction v with b c, reflexivity, reflexivity },
+      { exact glue (sum.inr ⋆) },
       { apply eq_pathover_id_right,
         refine ap_compose pushout_const_equiv_to _ _ ⬝ ap02 _ !elim_glue ⬝ph _,
         induction v with a u,
-        { refine !elim_glue ⬝ph _, esimp, apply whisker_tl, exact hrfl },
-        { induction u, exact square_of_eq !con.left_inv }}},
+        { refine !elim_glue ⬝ph _, apply whisker_bl, exact hrfl },
+        { induction u, exact square_of_eq idp }}},
     { intro x, induction x with c b a,
       { reflexivity },
       { reflexivity },
       { apply eq_pathover_id_right, apply hdeg_square,
         refine ap_compose pushout_const_equiv_from _ _ ⬝ ap02 _ !elim_glue ⬝ _,
-        refine !ap_con ⬝ (!ap_inv ⬝ !elim_glue⁻²) ◾ !elim_glue ⬝ !idp_con }}
+        refine !ap_con ⬝ !elim_glue ◾ (!ap_inv ⬝ !elim_glue⁻²) }}
   end
 
   /- wedge is the cofiber of the map 2 -> A + B -/
@@ -320,7 +320,6 @@ namespace pushout
   definition wedge_equiv_pushout_sum [constructor] (A B : Type*) :
     wedge A B ≃ cofiber (sum_of_bool A B) :=
   begin
-    refine !pushout.symm ⬝e _,
     refine pushout_const_equiv _ _ ⬝e _,
     fapply pushout.equiv,
       exact bool_equiv_unit_sum_unit⁻¹ᵉ,
@@ -425,9 +424,9 @@ namespace pushout
   open sigma.ops
   definition cofiber_pushout_helper' {A : Type} {B : A → Type} {a₀₀ a₀₂ a₂₀ a₂₂ : A} {p₀₁ : a₀₀ = a₀₂}
     {p₁₀ : a₀₀ = a₂₀} {p₂₁ : a₂₀ = a₂₂} {p₁₂ : a₀₂ = a₂₂} {s : square p₀₁ p₂₁ p₁₀ p₁₂}
-    {b₀₀ : B a₀₀} {b₂₀ b₂₀' : B a₂₀} {b₀₂ : B a₀₂} {b₂₂ : B a₂₂} {q₁₀ : b₀₀ =[p₁₀] b₂₀}
-    {q₀₁ : b₀₀ =[p₀₁] b₀₂} {q₂₁ : b₂₀' =[p₂₁] b₂₂} {q₁₂ : b₀₂ =[p₁₂] b₂₂} :
-    Σ(r : b₂₀' = b₂₀), squareover B s q₀₁ (r ▸ q₂₁) q₁₀ q₁₂ :=
+    {b₀₀ : B a₀₀} {b₂₀ : B a₂₀} {b₀₂ : B a₀₂} {b₂₂ b₂₂' : B a₂₂} {q₁₀ : b₀₀ =[p₁₀] b₂₀}
+    {q₀₁ : b₀₀ =[p₀₁] b₀₂} {q₂₁ : b₂₀ =[p₂₁] b₂₂'} {q₁₂ : b₀₂ =[p₁₂] b₂₂} :
+    Σ(r : b₂₂' = b₂₂), squareover B s q₀₁ (r ▸ q₂₁) q₁₀ q₁₂ :=
   begin
     induction s,
     induction q₀₁ using idp_rec_on,
@@ -438,29 +437,66 @@ namespace pushout
   end
 
   definition cofiber_pushout_helper {A B C D : Type} {f : A → B} {g : A → C} {h : pushout f g → D}
-    {P : cofiber h → Type} {Pbase : P (cofiber.base h)} {Pcod : Πd, P (cofiber.cod h d)}
-    (Pgluel : Π(b : B), Pbase =[cofiber.glue (inl b)] Pcod (h (inl b)))
-    (Pgluer : Π(c : C), Pbase =[cofiber.glue (inr c)] Pcod (h (inr c)))
+    {P : cofiber h → Type} {Pcod : Πd, P (cofiber.cod h d)} {Pbase : P (cofiber.base h)}
+    (Pgluel : Π(b : B), Pcod (h (inl b)) =[cofiber.glue (inl b)] Pbase)
+    (Pgluer : Π(c : C), Pcod (h (inr c)) =[cofiber.glue (inr c)] Pbase)
     (a : A) : Σ(p : Pbase = Pbase), squareover P (natural_square cofiber.glue (glue a))
-    (Pgluel (f a)) (p ▸ Pgluer (g a))
-    (pathover_ap P (λa, cofiber.base h) (apd (λa, Pbase) (glue a)))
-    (pathover_ap P (λa, cofiber.cod h (h a)) (apd (λa, Pcod (h a)) (glue a))) :=
+      (Pgluel (f a)) (p ▸ Pgluer (g a))
+      (pathover_ap P (λa, cofiber.cod h (h a)) (apd (λa, Pcod (h a)) (glue a)))
+      (pathover_ap P (λa, cofiber.base h) (apd (λa, Pbase) (glue a))) :=
   !cofiber_pushout_helper'
 
   definition cofiber_pushout_rec {A B C D : Type} {f : A → B} {g : A → C} {h : pushout f g → D}
-    {P : cofiber h → Type} (Pbase : P (cofiber.base h)) (Pcod : Πd, P (cofiber.cod h d))
-    (Pgluel : Π(b : B), Pbase =[cofiber.glue (inl b)] Pcod (h (inl b)))
-    (Pgluer : Π(c : C), Pbase =[cofiber.glue (inr c)] Pcod (h (inr c)))
+    {P : cofiber h → Type} (Pcod : Πd, P (cofiber.cod h d)) (Pbase : P (cofiber.base h))
+    (Pgluel : Π(b : B), Pcod (h (inl b)) =[cofiber.glue (inl b)] Pbase)
+    (Pgluer : Π(c : C), Pcod (h (inr c)) =[cofiber.glue (inr c)] Pbase)
     (r : C → A) (p : Πa, r (g a) = a)
     (x : cofiber h) : P x :=
   begin
     induction x with d x,
-    { exact Pbase },
     { exact Pcod d },
+    { exact Pbase },
     { induction x with b c a,
       { exact Pgluel b },
       { exact (cofiber_pushout_helper Pgluel Pgluer (r c)).1 ▸ Pgluer c },
       { apply pathover_pathover, rewrite [p a], exact (cofiber_pushout_helper Pgluel Pgluer a).2 }}
+  end
+
+  /- universal property of cofiber -/
+
+  structure is_exact_t {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
+  ( im_in_ker : Π(a:A), g (f a) = pt)
+  ( ker_in_im : Π(b:B), (g b = pt) → fiber f b)
+
+  definition cofiber_exact_1 {X Y Z : Type*} (f : X →* Y) (g : pcofiber f →* Z) :
+    (g ∘* pcod f) ∘* f ~* pconst X Z :=
+  !passoc ⬝* pwhisker_left _ !pcod_pcompose ⬝* !pcompose_pconst
+
+  protected definition pcofiber.elim [constructor] {X Y Z : Type*} {f : X →* Y} (g : Y →* Z)
+    (p : g ∘* f ~* pconst X Z) : pcofiber f →* Z :=
+  begin
+    fapply pmap.mk,
+    { intro w, induction w with y x, exact g y, exact pt, exact p x },
+    { reflexivity }
+  end
+
+  protected definition pcofiber.elim_pcod {X Y Z : Type*} {f : X →* Y} {g : Y →* Z}
+    (p : g ∘* f ~* pconst X Z) : pcofiber.elim g p ∘* pcod f ~* g :=
+  begin
+    fapply phomotopy.mk,
+    { intro y, reflexivity },
+    { esimp, refine !idp_con ⬝ _,
+      refine _ ⬝ (!ap_con ⬝ (!ap_compose'⁻¹ ⬝ !ap_inv) ◾ !elim_glue)⁻¹,
+      apply eq_inv_con_of_con_eq, exact (to_homotopy_pt p)⁻¹ }
+  end
+
+  definition cofiber_exact {X Y Z : Type*} (f : X →* Y) :
+    is_exact_t (@ppcompose_right _ _ Z (pcod f)) (ppcompose_right f) :=
+  begin
+    constructor,
+    { intro g, apply eq_of_phomotopy, apply cofiber_exact_1 },
+    { intro g p, note q := phomotopy_of_eq p,
+      exact fiber.mk (pcofiber.elim g q) (eq_of_phomotopy (pcofiber.elim_pcod q)) }
   end
 
 end pushout

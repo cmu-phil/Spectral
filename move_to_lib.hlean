@@ -3,7 +3,7 @@
 import homotopy.sphere2 homotopy.cofiber homotopy.wedge
 
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
-     is_trunc function sphere
+     is_trunc function sphere unit sum prod
 
 attribute equiv_unit_of_is_contr [constructor]
 attribute pwedge pushout.symm pushout.equiv pushout.is_equiv_functor [constructor]
@@ -13,8 +13,32 @@ attribute pushout.transpose [unfold 6]
 attribute ap_eq_apd10 [unfold 5]
 attribute eq_equiv_eq_symm [constructor]
 
+definition add_comm_right {A : Type} [add_comm_semigroup A] (n m k : A) : n + m + k = n + k + m :=
+!add.assoc ⬝ ap (add n) !add.comm ⬝ !add.assoc⁻¹
+
+namespace algebra
+  definition inf_group_loopn (n : ℕ) (A : Type*) [H : is_succ n] : inf_group (Ω[n] A) :=
+  by induction H; exact _
+end algebra
 
 namespace eq
+
+  definition con2_assoc {A : Type} {x y z t : A} {p p' : x = y} {q q' : y = z} {r r' : z = t}
+    (h : p = p') (h' : q = q') (h'' : r = r') :
+    square ((h ◾ h') ◾ h'') (h ◾ (h' ◾ h'')) (con.assoc p q r) (con.assoc p' q' r') :=
+  by induction h; induction h'; induction h''; exact hrfl
+
+  definition con_left_inv_idp {A : Type} {x : A} {p : x = x} (q : p = idp)
+    : con.left_inv p = q⁻² ◾ q :=
+  by cases q; reflexivity
+
+  definition eckmann_hilton_con2 {A : Type} {x : A} {p p' q q': idp = idp :> x = x}
+    (h : p = p') (h' : q = q') : square (h ◾ h') (h' ◾ h) (eckmann_hilton p q) (eckmann_hilton p' q') :=
+  by induction h; induction h'; exact hrfl
+
+  definition ap_con_fn {A B : Type} {a a' : A} {b : B} (g h : A → b = b) (p : a = a') :
+    ap (λa, g a ⬝ h a) p = ap g p ◾ ap h p :=
+  by induction p; reflexivity
 
   protected definition homotopy.rfl [reducible] [unfold_full] {A B : Type} {f : A → B} : f ~ f :=
   homotopy.refl f
@@ -48,16 +72,6 @@ namespace eq
 
 end eq open eq
 
-namespace cofiber
-
-  -- replace the one in homotopy.cofiber, which has an superfluous argument
-  protected theorem elim_glue' {A B : Type} {f : A → B} {P : Type} (Pbase : P) (Pcod : B → P)
-    (Pglue : Π (x : A), Pbase = Pcod (f x)) (a : A)
-    : ap (cofiber.elim Pbase Pcod Pglue) (cofiber.glue a) = Pglue a :=
-  !pushout.elim_glue
-
-end cofiber
-
 namespace wedge
   open pushout unit
   protected definition glue (A B : Type*) : inl pt = inr pt :> wedge A B :=
@@ -86,6 +100,48 @@ namespace pointed
     { exact h },
     { apply is_set.elim }
   end
+
+  definition ap1_gen {A B : Type} (f : A → B) {a a' : A} (p : a = a')
+    {b b' : B} (q : f a = b) (q' : f a' = b') : b = b' :=
+  q⁻¹ ⬝ ap f p ⬝ q'
+
+  definition ap1_gen_con {A B : Type} (f : A → B) {a₁ a₂ a₃ : A} (p₁ : a₁ = a₂) (p₂ : a₂ = a₃)
+    {b₁ b₂ b₃ : B} (q₁ : f a₁ = b₁) (q₂ : f a₂ = b₂) (q₃ : f a₃ = b₃) :
+    ap1_gen f (p₁ ⬝ p₂) q₁ q₃ = ap1_gen f p₁ q₁ q₂ ⬝ ap1_gen f p₂ q₂ q₃ :=
+  begin induction p₂, induction q₃, induction q₂, reflexivity end
+
+  definition ap1_gen_con_natural {A B : Type} (f : A → B) {a₁ a₂ a₃ : A} {p₁ p₁' : a₁ = a₂}
+    {p₂ p₂' : a₂ = a₃}
+    {b₁ b₂ b₃ : B} (q₁ : f a₁ = b₁) (q₂ : f a₂ = b₂) (q₃ : f a₃ = b₃)
+    (r₁ : p₁ = p₁') (r₂ : p₂ = p₂') :
+      square (ap1_gen_con f p₁ p₂ q₁ q₂ q₃)
+             (ap1_gen_con f p₁' p₂' q₁ q₂ q₃)
+             (ap (λp, ap1_gen f p q₁ q₃) (r₁ ◾ r₂))
+             (ap (λp, ap1_gen f p q₁ q₂) r₁ ◾ ap (λp, ap1_gen f p q₂ q₃) r₂) :=
+  begin induction r₁, induction r₂, exact vrfl end
+
+  definition ap1_gen_con_idp {A B : Type} (f : A → B) {a : A} {b : B} (q : f a = b) :
+    ap1_gen_con f idp idp q q q ⬝ con.left_inv q ◾ con.left_inv q = con.left_inv q :=
+  by induction q; reflexivity
+
+  -- TODO: replace with ap1_con
+  definition ap1_con2 {A B : Type*} (f : A →* B) (p q : Ω A) : ap1 f (p ⬝ q) = ap1 f p ⬝ ap1 f q :=
+  ap1_gen_con f p q (respect_pt f) (respect_pt f) (respect_pt f)
+
+
+  definition ap1_gen_con_left {A B : Type} {a a' : A} {b₀ b₁ b₂ : B}
+    {f : A → b₀ = b₁} {f' : A → b₁ = b₂} (p : a = a') {q₀ q₁ : b₀ = b₁} {q₀' q₁' : b₁ = b₂}
+    (r₀ : f a = q₀) (r₁ : f a' = q₁) (r₀' : f' a = q₀') (r₁' : f' a' = q₁') :
+      ap1_gen (λa, f a ⬝ f' a) p (r₀ ◾ r₀') (r₁ ◾ r₁') =
+      whisker_right q₀' (ap1_gen f p r₀ r₁) ⬝ whisker_left q₁ (ap1_gen f' p r₀' r₁') :=
+  begin induction r₀, induction r₁, induction r₀', induction r₁', induction p, reflexivity end
+
+  definition ap1_gen_con_left_idp {A B : Type} {a : A} {b₀ b₁ b₂ : B}
+    {f : A → b₀ = b₁} {f' : A → b₁ = b₂} {q₀ : b₀ = b₁} {q₁ : b₁ = b₂}
+    (r₀ : f a = q₀) (r₁ : f' a = q₁) :
+      ap1_gen_con_left idp r₀ r₀ r₁ r₁ =
+      !con.left_inv ⬝ (ap (whisker_right q₁) !con.left_inv ◾ ap (whisker_left _) !con.left_inv)⁻¹ :=
+  begin induction r₀, induction r₁, reflexivity end
 
   -- /- the pointed type of (unpointed) dependent maps -/
   -- definition pupi [constructor] {A : Type} (P : A → Type*) : Type* :=
@@ -712,6 +768,11 @@ namespace circle
 end circle
 
 namespace susp
+
+  definition loop_psusp_intro_natural {X Y Z : Type*} (g : psusp Y →* Z) (f : X →* Y) :
+    loop_psusp_intro (g ∘* psusp_functor f) ~* loop_psusp_intro g ∘* f :=
+  pwhisker_right _ !ap1_pcompose ⬝* !passoc ⬝* pwhisker_left _ !loop_psusp_unit_natural⁻¹* ⬝*
+  !passoc⁻¹*
 
   definition psusp_functor_phomotopy {A B : Type*} {f g : A →* B} (p : f ~* g) :
     psusp_functor f ~* psusp_functor g :=

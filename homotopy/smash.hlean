@@ -314,7 +314,7 @@ namespace pushout
      A + B <-- 2 --> 1 -/
   definition pushout_wedge_of_sum_equiv_unit : pushout (@wedge_of_sum A B) bool_of_sum ≃ unit :=
   begin
-    refine pushout_hcompose_equiv (sum_of_bool A B) (wedge_equiv_pushout_sum A B)
+    refine pushout_hcompose_equiv (sum_of_bool A B) (wedge_equiv_pushout_sum A B ⬝e !pushout.symm)
              _ _ ⬝e _,
       exact erfl,
       intro x, induction x,
@@ -350,7 +350,6 @@ namespace smash
   definition smash_equiv_cofiber : smash A B ≃ cofiber (@prod_of_wedge A B) :=
   begin
     unfold [smash, cofiber, smash'], symmetry,
-    refine !pushout.symm ⬝e _,
     fapply pushout_vcompose_equiv wedge_of_sum,
     { symmetry, apply equiv_unit_of_is_contr, apply is_contr_pushout_wedge_of_sum },
     { intro x, reflexivity },
@@ -367,7 +366,7 @@ namespace smash
   definition smash_pequiv_pcofiber [constructor] : smash A B ≃* pcofiber (pprod_of_pwedge A B) :=
   begin
     apply pequiv_of_equiv (smash_equiv_cofiber A B),
-    exact (cofiber.glue pt)⁻¹
+    exact cofiber.glue pt
   end
 
   variables {A B}

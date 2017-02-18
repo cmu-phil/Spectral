@@ -29,7 +29,7 @@ So far, the splicing seems to be only needed for k = 3, so it seems to be suffic
 
 -/
 
-import homotopy.chain_complex ..move_to_lib
+import homotopy.chain_complex
 
 open prod prod.ops succ_str fin pointed nat algebra eq is_trunc equiv is_equiv
 
