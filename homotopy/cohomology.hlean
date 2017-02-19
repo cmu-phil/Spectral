@@ -74,7 +74,7 @@ definition pcompose_pmap_mul {A B C : Type*} (h : B →* C) (f g : A →* Ω B) 
   Ω→ h ∘* pmap_mul f g ~* pmap_mul (Ω→ h ∘* f) (Ω→ h ∘* g) :=
 begin
   fconstructor,
-  { intro p, exact ap1_con2 h (f p) (g p) },
+  { intro p, exact ap1_con h (f p) (g p) },
   { refine whisker_left _ !con2_con_con2⁻¹ ⬝ _, refine !con.assoc⁻¹ ⬝ _,
     refine whisker_right _ (eq_of_square !ap1_gen_con_natural) ⬝ _,
     refine !con.assoc ⬝ whisker_left _ _, apply ap1_gen_con_idp }
@@ -83,6 +83,13 @@ end
 definition loop_psusp_intro_pmap_mul {X Y : Type*} (f g : psusp X →* Ω Y) :
   loop_psusp_intro (pmap_mul f g) ~* pmap_mul (loop_psusp_intro f) (loop_psusp_intro g) :=
 pwhisker_right _ !ap1_pmap_mul ⬝* !pmap_mul_pcompose
+
+definition equiv_glue2 (Y : spectrum) (n : ℤ) : Ω (Ω (Y (n+2))) ≃* Y n :=
+begin
+  refine (!equiv_glue ⬝e* loop_pequiv_loop (!equiv_glue ⬝e* loop_pequiv_loop _))⁻¹ᵉ*,
+  refine pequiv_of_eq (ap Y _),
+  exact add.assoc n 1 1
+end
 
 namespace cohomology
 
@@ -129,6 +136,10 @@ Group_trunc_pmap_phomotopy p
 definition cohomology_functor_pconst {X X' : Type*} (Y : spectrum) (n : ℤ) (f : H^n[X, Y]) :
   cohomology_functor (pconst X' X) Y n f = 1 :=
 !Group_trunc_pmap_pconst
+
+definition cohomology_isomorphism {X X' : Type*} (f : X' ≃* X) (Y : spectrum) (n : ℤ) :
+  H^n[X, Y] ≃g H^n[X', Y] :=
+Group_trunc_pmap_isomorphism f
 
 /- suspension axiom -/
 
@@ -193,9 +204,30 @@ definition additive_equiv.{u} {I : Type.{u}} (H : has_choice 0 I) (X : I → Typ
   (n : ℤ) : H^n[⋁X, Y] ≃ Πᵍ i, H^n[X i, Y] :=
 trunc_fwedge_pmap_equiv H X (Ω[2] (Y (n+2)))
 
-definition additive {I : Type} (H : has_choice 0 I) (X : I → Type*) (Y : spectrum) (n : ℤ) :
-  is_equiv (additive_hom X Y n) :=
+definition spectrum_additive {I : Type} (H : has_choice 0 I) (X : I → Type*) (Y : spectrum)
+  (n : ℤ) : is_equiv (additive_hom X Y n) :=
 is_equiv_of_equiv_of_homotopy (additive_equiv H X Y n) begin intro f, induction f, reflexivity end
+
+/- dimension axiom for ordinary cohomology -/
+open is_conn trunc_index
+theorem EM_dimension' (G : AbGroup) (n : ℤ) (H : n ≠ 0) :
+  is_contr (ordinary_cohomology pbool G n) :=
+begin
+  apply is_conn_equiv_closed 0 !pmap_pbool_equiv⁻¹ᵉ,
+  apply is_conn_equiv_closed 0 !equiv_glue2⁻¹ᵉ,
+  cases n with n n,
+  { cases n with n,
+    { exfalso, apply H, reflexivity },
+    { apply is_conn_of_le, apply zero_le_of_nat n, exact is_conn_EMadd1 G n, }},
+  { apply is_trunc_trunc_of_is_trunc, apply @is_contr_loop_of_is_trunc (n+1) (K G 0),
+    apply is_trunc_of_le _ (zero_le_of_nat n) }
+end
+
+theorem EM_dimension (G : AbGroup) (n : ℤ) (H : n ≠ 0) :
+  is_contr (ordinary_cohomology (plift pbool) G n) :=
+@(is_trunc_equiv_closed_rev -2
+  (equiv_of_isomorphism (cohomology_isomorphism (pequiv_plift pbool) _ _)))
+  (EM_dimension' G n H)
 
 /- cohomology theory -/
 
@@ -224,6 +256,9 @@ cohomology_theory.mk
   (λn A, cohomology_psusp A Y n)
   (λn A B f, cohomology_psusp_natural f Y n)
   (λn A B f, cohomology_exact f Y n)
-  (λn I A H, additive H A Y n)
+  (λn I A H, spectrum_additive H A Y n)
+
+definition ordinary_cohomology_theory_EM [constructor] (G : AbGroup) : ordinary_theory :=
+⦃ordinary_theory, cohomology_theory_spectrum (EM_spectrum G), Hdimension := EM_dimension G ⦄
 
 end cohomology

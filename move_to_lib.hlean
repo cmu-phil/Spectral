@@ -101,34 +101,6 @@ namespace pointed
     { apply is_set.elim }
   end
 
-  definition ap1_gen {A B : Type} (f : A → B) {a a' : A} (p : a = a')
-    {b b' : B} (q : f a = b) (q' : f a' = b') : b = b' :=
-  q⁻¹ ⬝ ap f p ⬝ q'
-
-  definition ap1_gen_con {A B : Type} (f : A → B) {a₁ a₂ a₃ : A} (p₁ : a₁ = a₂) (p₂ : a₂ = a₃)
-    {b₁ b₂ b₃ : B} (q₁ : f a₁ = b₁) (q₂ : f a₂ = b₂) (q₃ : f a₃ = b₃) :
-    ap1_gen f (p₁ ⬝ p₂) q₁ q₃ = ap1_gen f p₁ q₁ q₂ ⬝ ap1_gen f p₂ q₂ q₃ :=
-  begin induction p₂, induction q₃, induction q₂, reflexivity end
-
-  definition ap1_gen_con_natural {A B : Type} (f : A → B) {a₁ a₂ a₃ : A} {p₁ p₁' : a₁ = a₂}
-    {p₂ p₂' : a₂ = a₃}
-    {b₁ b₂ b₃ : B} (q₁ : f a₁ = b₁) (q₂ : f a₂ = b₂) (q₃ : f a₃ = b₃)
-    (r₁ : p₁ = p₁') (r₂ : p₂ = p₂') :
-      square (ap1_gen_con f p₁ p₂ q₁ q₂ q₃)
-             (ap1_gen_con f p₁' p₂' q₁ q₂ q₃)
-             (ap (λp, ap1_gen f p q₁ q₃) (r₁ ◾ r₂))
-             (ap (λp, ap1_gen f p q₁ q₂) r₁ ◾ ap (λp, ap1_gen f p q₂ q₃) r₂) :=
-  begin induction r₁, induction r₂, exact vrfl end
-
-  definition ap1_gen_con_idp {A B : Type} (f : A → B) {a : A} {b : B} (q : f a = b) :
-    ap1_gen_con f idp idp q q q ⬝ con.left_inv q ◾ con.left_inv q = con.left_inv q :=
-  by induction q; reflexivity
-
-  -- TODO: replace with ap1_con
-  definition ap1_con2 {A B : Type*} (f : A →* B) (p q : Ω A) : ap1 f (p ⬝ q) = ap1 f p ⬝ ap1 f q :=
-  ap1_gen_con f p q (respect_pt f) (respect_pt f) (respect_pt f)
-
-
   definition ap1_gen_con_left {A B : Type} {a a' : A} {b₀ b₁ b₂ : B}
     {f : A → b₀ = b₁} {f' : A → b₁ = b₂} (p : a = a') {q₀ q₁ : b₀ = b₁} {q₀' q₁' : b₁ = b₂}
     (r₀ : f a = q₀) (r₁ : f a' = q₁) (r₀' : f' a = q₀') (r₁' : f' a' = q₁') :
@@ -746,7 +718,6 @@ namespace is_conn
 end is_conn
 
 namespace circle
-
 
 /-
   Suppose for `f, g : A -> B` I prove a homotopy `H : f ~ g` by induction on the element in `A`.

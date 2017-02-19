@@ -1,4 +1,3 @@
-
 import algebra.group_theory ..move_to_lib eq2
 open pi pointed algebra group eq equiv is_trunc trunc
 
@@ -52,6 +51,14 @@ namespace group
       { intro a, reflexivity },
       { refine _ ⬝ !idp_con⁻¹,
         refine whisker_right _ !ap_con_fn ⬝ _, apply con2_con_con2 }}
+  end
+
+  definition Group_trunc_pmap_isomorphism [constructor] {A A' B : Type*} (f : A' ≃* A) :
+    Group_trunc_pmap A B ≃g Group_trunc_pmap A' B :=
+  begin
+    apply isomorphism.mk (Group_trunc_pmap_homomorphism f),
+    apply @is_equiv_trunc_functor,
+    exact to_is_equiv (pequiv_ppcompose_right f),
   end
 
   definition Group_trunc_pmap_pid [constructor] {A B : Type*} (f : Group_trunc_pmap A B) :
