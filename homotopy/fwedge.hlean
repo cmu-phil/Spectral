@@ -7,7 +7,7 @@ The Wedge Sum of a family of Pointed Types
 -/
 import homotopy.wedge ..move_to_lib ..choice
 
-open eq pushout pointed unit trunc_index sigma bool equiv trunc choice
+open eq pushout pointed unit trunc_index sigma bool equiv trunc choice unit is_trunc
 
 definition fwedge' {I : Type} (F : I → Type*) : Type := pushout (λi, ⟨i, Point (F i)⟩) (λi, ⋆)
 definition pt' [constructor] {I : Type} {F : I → Type*} : fwedge' F := inr ⋆
@@ -84,6 +84,11 @@ namespace fwedge
           refine ap_compose pwedge_of_fwedge _ _ ⬝ ap02 _ !elim_glue ⬝ !ap_con ⬝
                  !elim_glue ◾ (!ap_inv ⬝ !elim_glue⁻²) ⬝ph _, exact hrfl } end end}},
     { exact glue ff }
+  end
+
+  definition is_contr_fwedge_empty : is_contr (⋁(empty.rec _)) :=
+  begin
+    apply is_contr.mk pt, intro x, induction x, contradiction, reflexivity, contradiction
   end
 
   definition fwedge_pmap [constructor] {I : Type} {F : I → Type*} {X : Type*} (f : Πi, F i →* X) : ⋁F →* X :=

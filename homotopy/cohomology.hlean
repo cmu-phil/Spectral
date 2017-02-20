@@ -3,13 +3,13 @@ Copyright (c) 2016 Floris van Doorn. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Floris van Doorn
 
-Reduced cohomology
+Reduced cohomology of spectra and cohomology theories
 -/
 
 import .spectrum .EM ..algebra.arrow_group .fwedge ..choice .pushout ..move_to_lib
 
 open eq spectrum int trunc pointed EM group algebra circle sphere nat EM.ops equiv susp is_trunc
-     function fwedge cofiber bool lift sigma is_equiv choice pushout algebra
+     function fwedge cofiber bool lift sigma is_equiv choice pushout algebra unit
 
 -- TODO: move
 structure is_exact {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
@@ -133,6 +133,10 @@ definition cohomology_functor_phomotopy {X X' : Type*} {f g : X' →* X} (p : f 
   (Y : spectrum) (n : ℤ) : cohomology_functor f Y n ~ cohomology_functor g Y n :=
 Group_trunc_pmap_phomotopy p
 
+definition cohomology_functor_phomotopy_refl {X X' : Type*} (f : X' →* X) (Y : spectrum) (n : ℤ)
+  (x : H^n[X, Y]) : cohomology_functor_phomotopy (phomotopy.refl f) Y n x = idp :=
+Group_trunc_pmap_phomotopy_refl f x
+
 definition cohomology_functor_pconst {X X' : Type*} (Y : spectrum) (n : ℤ) (f : H^n[X, Y]) :
   cohomology_functor (pconst X' X) Y n f = 1 :=
 !Group_trunc_pmap_pconst
@@ -140,6 +144,10 @@ definition cohomology_functor_pconst {X X' : Type*} (Y : spectrum) (n : ℤ) (f 
 definition cohomology_isomorphism {X X' : Type*} (f : X' ≃* X) (Y : spectrum) (n : ℤ) :
   H^n[X, Y] ≃g H^n[X', Y] :=
 Group_trunc_pmap_isomorphism f
+
+definition cohomology_isomorphism_refl (X : Type*) (Y : spectrum) (n : ℤ) (x : H^n[X,Y]) :
+  cohomology_isomorphism (pequiv.refl X) Y n x = x :=
+!Group_trunc_pmap_isomorphism_refl
 
 /- suspension axiom -/
 
@@ -232,25 +240,69 @@ theorem EM_dimension (G : AbGroup) (n : ℤ) (H : n ≠ 0) :
 /- cohomology theory -/
 
 structure cohomology_theory.{u} : Type.{u+1} :=
-  (H : ℤ → pType.{u} → AbGroup.{u})
-  (Hh : Π(n : ℤ) {X Y : Type*} (f : X →* Y), H n Y →g H n X)
-  (Hh_id : Π(n : ℤ) {X : Type*} (x : H n X), Hh n (pid X) x = x)
-  (Hh_compose : Π(n : ℤ) {X Y Z : Type*} (g : Y →* Z) (f : X →* Y) (z : H n Z),
+  (HH : ℤ → pType.{u} → AbGroup.{u})
+  (Hiso : Π(n : ℤ) {X Y : Type*} (f : X ≃* Y), HH n Y ≃g HH n X)
+  (Hiso_refl : Π(n : ℤ) (X : Type*) (x : HH n X), Hiso n pequiv.rfl x = x)
+  (Hh : Π(n : ℤ) {X Y : Type*} (f : X →* Y), HH n Y →g HH n X)
+  (Hhomotopy : Π(n : ℤ) {X Y : Type*} {f g : X →* Y} (p : f ~* g), Hh n f ~ Hh n g)
+  (Hhomotopy_refl : Π(n : ℤ) {X Y : Type*} (f : X →* Y) (x : HH n Y),
+    Hhomotopy n (phomotopy.refl f) x = idp)
+  (Hid : Π(n : ℤ) {X : Type*} (x : HH n X), Hh n (pid X) x = x)
+  (Hcompose : Π(n : ℤ) {X Y Z : Type*} (g : Y →* Z) (f : X →* Y) (z : HH n Z),
     Hh n (g ∘* f) z = Hh n f (Hh n g z))
-  (Hsusp : Π(n : ℤ) (X : Type*), H (succ n) (psusp X) ≃g H n X)
+  (Hsusp : Π(n : ℤ) (X : Type*), HH (succ n) (psusp X) ≃g HH n X)
   (Hsusp_natural : Π(n : ℤ) {X Y : Type*} (f : X →* Y),
     Hsusp n X ∘ Hh (succ n) (psusp_functor f) ~ Hh n f ∘ Hsusp n Y)
   (Hexact : Π(n : ℤ) {X Y : Type*} (f : X →* Y), is_exact_g (Hh n (pcod f)) (Hh n f))
   (Hadditive : Π(n : ℤ) {I : Type.{u}} (X : I → Type*), has_choice 0 I →
-    is_equiv (Group_pi_intro (λi, Hh n (pinl i)) : H n (⋁ X) → Πᵍ i, H n (X i)))
+    is_equiv (Group_pi_intro (λi, Hh n (pinl i)) : HH n (⋁ X) → Πᵍ i, HH n (X i)))
 
 structure ordinary_theory.{u} extends cohomology_theory.{u} : Type.{u+1} :=
- (Hdimension : Π(n : ℤ), n ≠ 0 → is_contr (H n (plift pbool)))
+ (Hdimension : Π(n : ℤ), n ≠ 0 → is_contr (HH n (plift pbool)))
+
+attribute cohomology_theory.HH [coercion]
+postfix `^→`:90 := cohomology_theory.Hh
+open cohomology_theory
+
+definition Hsusp_neg (H : cohomology_theory) (n : ℤ) (X : Type*) : H n (psusp X) ≃g H (pred n) X :=
+isomorphism_of_eq (ap (λn, H n _) proof (sub_add_cancel n 1)⁻¹ qed) ⬝g cohomology_theory.Hsusp H (pred n) X
+
+definition Hsusp_neg_natural (H : cohomology_theory) (n : ℤ) {X Y : Type*} (f : X →* Y) :
+  Hsusp_neg H n X ∘ H ^→ n (psusp_functor f) ~ H ^→ (pred n) f ∘ Hsusp_neg H n Y :=
+sorry
+
+definition Hsusp_inv_natural (H : cohomology_theory) (n : ℤ) {X Y : Type*} (f : X →* Y) :
+  H ^→ (succ n) (psusp_functor f) ∘g (Hsusp H n Y)⁻¹ᵍ ~ (Hsusp H n X)⁻¹ᵍ ∘ H ^→ n f :=
+sorry
+
+definition Hsusp_neg_inv_natural (H : cohomology_theory) (n : ℤ) {X Y : Type*} (f : X →* Y) :
+  H ^→ n (psusp_functor f) ∘g (Hsusp_neg H n Y)⁻¹ᵍ ~ (Hsusp_neg H n X)⁻¹ᵍ ∘ H ^→ (pred n) f :=
+sorry
+
+definition Hadditive0 (H : cohomology_theory) (n : ℤ) :
+  is_contr (H n (plift punit)) :=
+let P : lift empty → Type* := lift.rec empty.elim in
+let x := Hadditive H n P _ in
+begin
+  note z := equiv.mk _ x,
+  refine @(is_trunc_equiv_closed_rev -2 (_ ⬝e z ⬝e _)) !is_contr_unit,
+  repeat exact sorry
+--  refine equiv_of_isomorphism (Hiso H n (_ ⬝e* _)),
+end
+
+definition Hconst (H : cohomology_theory) (n : ℤ) {X Y : Type*} (y : H n Y) : H ^→ n (pconst X Y) y = 1 :=
+begin
+  refine !one_mul⁻¹ ⬝ _, exact sorry
+end
 
 definition cohomology_theory_spectrum [constructor] (Y : spectrum) : cohomology_theory :=
 cohomology_theory.mk
   (λn A, H^n[A, Y])
+  (λn A B f, cohomology_isomorphism f Y n)
+  (λn A, cohomology_isomorphism_refl A Y n)
   (λn A B f, cohomology_functor f Y n)
+  (λn A B f g p, cohomology_functor_phomotopy p Y n)
+  (λn A B f x, cohomology_functor_phomotopy_refl f Y n x)
   (λn A x, cohomology_functor_pid A Y n x)
   (λn A B C g f x, cohomology_functor_pcompose g f Y n x)
   (λn A, cohomology_psusp A Y n)
@@ -258,7 +310,7 @@ cohomology_theory.mk
   (λn A B f, cohomology_exact f Y n)
   (λn I A H, spectrum_additive H A Y n)
 
-definition ordinary_cohomology_theory_EM [constructor] (G : AbGroup) : ordinary_theory :=
+definition ordinary_theory_EM [constructor] (G : AbGroup) : ordinary_theory :=
 ⦃ordinary_theory, cohomology_theory_spectrum (EM_spectrum G), Hdimension := EM_dimension G ⦄
 
 end cohomology

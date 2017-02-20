@@ -19,6 +19,9 @@ definition add_comm_right {A : Type} [add_comm_semigroup A] (n m k : A) : n + m 
 namespace algebra
   definition inf_group_loopn (n : ℕ) (A : Type*) [H : is_succ n] : inf_group (Ω[n] A) :=
   by induction H; exact _
+
+  definition one_unique {A : Type} [group A] {a : A} (H : Πb, a * b = b) : a = 1 :=
+  !mul_one⁻¹ ⬝ H 1
 end algebra
 
 namespace eq
@@ -674,6 +677,23 @@ end fiber
 namespace is_trunc
 
   definition center' {A : Type} (H : is_contr A) : A := center A
+
+  definition pequiv_punit_of_is_contr [constructor] (A : Type*) (H : is_contr A) : A ≃* punit :=
+  pequiv_of_equiv (equiv_unit_of_is_contr A) (@is_prop.elim unit _ _ _)
+
+  definition pequiv_punit_of_is_contr' [constructor] (A : Type) (H : is_contr A)
+    : pointed.MK A (center A) ≃* punit :=
+  pequiv_punit_of_is_contr (pointed.MK A (center A)) H
+
+
+definition is_trunc_is_contr_fiber [instance] [priority 900] (n : ℕ₋₂) {A B : Type} (f : A → B)
+  (b : B) [is_trunc n A] [is_trunc n B] : is_trunc n (is_contr (fiber f b)) :=
+begin
+  cases n,
+  { apply is_contr_of_inhabited_prop, apply is_contr_fun_of_is_equiv,
+    apply is_equiv_of_is_contr },
+  { apply is_trunc_succ_of_is_prop }
+end
 
 end is_trunc
 

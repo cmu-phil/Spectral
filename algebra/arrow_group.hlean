@@ -61,6 +61,12 @@ namespace group
     exact to_is_equiv (pequiv_ppcompose_right f),
   end
 
+  definition Group_trunc_pmap_isomorphism_refl (A B : Type*) (x : Group_trunc_pmap A B) :
+    Group_trunc_pmap_isomorphism (pequiv.refl A) x = x :=
+  begin
+    induction x, apply ap tr, apply eq_of_phomotopy, apply pcompose_pid
+  end
+
   definition Group_trunc_pmap_pid [constructor] {A B : Type*} (f : Group_trunc_pmap A B) :
     Group_trunc_pmap_homomorphism (pid A) f = f :=
   begin
@@ -83,7 +89,16 @@ namespace group
   definition Group_trunc_pmap_phomotopy [constructor] {A A' B : Type*} {f f' : A' →* A} (p : f ~* f') :
     @Group_trunc_pmap_homomorphism _ _ B f ~ Group_trunc_pmap_homomorphism f' :=
   begin
-    intro f, induction f, exact ap tr (eq_of_phomotopy (pwhisker_left a p))
+    intro g, induction g, exact ap tr (eq_of_phomotopy (pwhisker_left a p))
+  end
+
+  definition Group_trunc_pmap_phomotopy_refl {A A' B : Type*} (f : A' →* A)
+    (x : Group_trunc_pmap A B) : Group_trunc_pmap_phomotopy (phomotopy.refl f) x = idp :=
+  begin
+    induction x,
+    refine ap02 tr _,
+    refine ap eq_of_phomotopy _ ⬝ !eq_of_phomotopy_refl,
+    apply pwhisker_left_refl
   end
 
   definition ab_inf_group_pmap [constructor] [instance] (A B : Type*) : ab_inf_group (A →* Ω (Ω B)) :=

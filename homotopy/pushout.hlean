@@ -499,4 +499,24 @@ namespace pushout
       exact fiber.mk (pcofiber.elim g q) (eq_of_phomotopy (pcofiber.elim_pcod q)) }
   end
 
+  /- cofiber of pcod is suspension -/
+
+  definition pcofiber_pcod {A B : Type*} (f : A →* B) : pcofiber (pcod f) ≃* psusp A :=
+  begin
+    fapply pequiv_of_equiv,
+    { refine !pushout.symm ⬝e _,
+      exact pushout_vcompose_equiv f equiv.rfl homotopy.rfl homotopy.rfl },
+    reflexivity
+  end
+
+  -- definition pushout_vcompose [constructor] {A B C D : Type} (f : A → B) (g : A → C) (h : B → D) :
+  --   pushout h (@inl _ _ _ f g) ≃ pushout (h ∘ f) g :=
+  -- definition pushout_hcompose {A B C D : Type} (f : A → B) (g : A → C) (h : C → D) :
+  --   pushout (@inr _ _ _ f g) h ≃ pushout f (h ∘ g) :=
+
+  -- definition pushout_vcompose_equiv {A B C D E : Type} (f : A → B) {g : A → C} {h : B → D}
+  --   {hf : A → D} {k : B → E} (e : E ≃ pushout f g) (p : k ~ e⁻¹ᵉ ∘ inl) (q : h ∘ f ~ hf) :
+  --   pushout h k ≃ pushout hf g :=
+
+
 end pushout
