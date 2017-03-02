@@ -48,12 +48,6 @@ namespace smash
     { apply eq_of_phomotopy, exact smash_pmap_unit_pt A B }
   end
 
-  definition smash_functor_pid_gluer' (A : Type*) {B C : Type*} (b : B) (f : B →* C) :
-    ap (smash_functor (pid A) f) (gluer' b pt) = gluer' (f b) (f pt) :=
-  begin
-    rexact functor_gluer'2 (@id A) f b pt
-  end
-
   definition smash_functor_pid_pinl' [constructor] {A B C : Type*} (b : B) (f : B →* C) :
     pinl A (f b) ~* smash_functor (pid A) f ∘* pinl A b :=
   begin
@@ -61,7 +55,7 @@ namespace smash
     { intro a, reflexivity },
     { refine !idp_con ⬝ _,
       induction C with C c₀, induction f with f f₀, esimp at *,
-      induction f₀, rexact smash_functor_pid_gluer' A b (pmap_of_map f pt) }
+      induction f₀, rexact functor_gluer'2 (@id A) f b pt }
   end
 
   definition smash_pmap_unit_pt_natural [constructor] (f : B →* C) :
@@ -79,7 +73,6 @@ namespace smash
     { refine whisker_right_idp _ ⬝ph _,
       refine ap (λx, _ ⬝ x) _ ⬝ph _,
       rotate 1, rexact (functor_gluel'2_same (pid A) f pt),
-      -- refine whisker_left _ (!con.assoc ⬝ whisker_left _ !con.left_inv ⬝ !con_idp) ⬝ph _,
       refine whisker_right _ !idp_con ⬝pv _,
       refine !con.assoc⁻¹ ⬝ph _, apply whisker_bl,
       refine !con.assoc⁻¹ ⬝ whisker_right _ _ ⬝pv _,
@@ -91,7 +84,6 @@ namespace smash
       apply whisker_tl,
       apply vdeg_square,
       refine whisker_right _ !ap_inv ⬝ _, apply inv_con_eq_of_eq_con,
-      unfold [smash_functor_pid_gluer'],
       rexact functor_gluer'2_same (pmap_of_map id (Point A)) (pmap_of_map f pt) pt }
   end
 
@@ -481,5 +473,6 @@ namespace smash
       apply phomotopy_of_eq, apply to_right_inv !smash_assoc_elim_equiv }
   end
 
-print axioms smash_assoc
+  print axioms smash_assoc
+
 end smash

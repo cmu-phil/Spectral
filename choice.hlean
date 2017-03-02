@@ -64,9 +64,9 @@ end
 definition has_choice_bool [instance] (n : ℕ₋₂) : has_choice n bool :=
 has_choice_equiv_closed n bool_equiv_unit_sum_unit _
 
-definition has_choice_lift [instance] (n : ℕ₋₂) (A : Type) [has_choice n A] :
-  has_choice n (lift A) :=
-has_choice_equiv_closed n !equiv_lift⁻¹ᵉ _
+definition has_choice_lift.{u v} [instance] (n : ℕ₋₂) (A : Type) [has_choice n A] :
+  has_choice n (lift.{u v} A) :=
+sorry --has_choice_equiv_closed n !equiv_lift⁻¹ᵉ _
 
 definition has_choice_punit [instance] (n : ℕ₋₂) : has_choice n punit := has_choice_unit n
 definition has_choice_pbool [instance] (n : ℕ₋₂) : has_choice n pbool := has_choice_bool n

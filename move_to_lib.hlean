@@ -26,6 +26,145 @@ end algebra
 
 namespace eq
 
+section -- squares
+  variables {A B : Type} {a a' a'' a₀₀ a₂₀ a₄₀ a₀₂ a₂₂ a₂₄ a₀₄ a₄₂ a₄₄ a₁ a₂ a₃ a₄ : A}
+            /-a₀₀-/ {p₁₀ p₁₀' : a₀₀ = a₂₀} /-a₂₀-/ {p₃₀ : a₂₀ = a₄₀} /-a₄₀-/
+       {p₀₁ p₀₁' : a₀₀ = a₀₂} /-s₁₁-/ {p₂₁ p₂₁' : a₂₀ = a₂₂} /-s₃₁-/ {p₄₁ : a₄₀ = a₄₂}
+            /-a₀₂-/ {p₁₂ p₁₂' : a₀₂ = a₂₂} /-a₂₂-/ {p₃₂ : a₂₂ = a₄₂} /-a₄₂-/
+       {p₀₃ : a₀₂ = a₀₄} /-s₁₃-/ {p₂₃ : a₂₂ = a₂₄} /-s₃₃-/ {p₄₃ : a₄₂ = a₄₄}
+            /-a₀₄-/ {p₁₄ : a₀₄ = a₂₄} /-a₂₄-/ {p₃₄ : a₂₄ = a₄₄} /-a₄₄-/
+
+  variables {s₁₁ : square p₁₀ p₁₂ p₀₁ p₂₁} {s₃₁ : square p₃₀ p₃₂ p₂₁ p₄₁}
+            {s₁₃ : square p₁₂ p₁₄ p₀₃ p₂₃} {s₃₃ : square p₃₂ p₃₄ p₂₃ p₄₃}
+
+  definition natural_square_eq {A B : Type} {a a' : A} {f g : A → B} (p : f ~ g) (q : a = a')
+    : natural_square p q = square_of_pathover (apd p q) :=
+  idp
+
+  definition eq_of_square_hrfl_hconcat_eq {A : Type} {a a' : A} {p p' : a = a'} (q : p = p')
+    : eq_of_square (hrfl ⬝hp q⁻¹) = !idp_con ⬝ q :=
+  by induction q; induction p; reflexivity
+
+  definition aps_vrfl {A B : Type} {a a' : A} (f : A → B) (p : a = a') :
+    aps f (vrefl p) = vrefl (ap f p) :=
+  by induction p; reflexivity
+
+  definition aps_hrfl {A B : Type} {a a' : A} (f : A → B) (p : a = a') :
+    aps f (hrefl p) = hrefl (ap f p) :=
+  by induction p; reflexivity
+
+  definition natural_square_ap_fn {A B C : Type} {a a' : A} {g h : A → B} (f : B → C) (p : g ~ h) (q : a = a') :
+    natural_square (λa, ap f (p a)) q =
+      ap_compose f g q ⬝ph (aps f (natural_square p q) ⬝hp (ap_compose f h q)⁻¹) :=
+  begin
+    induction q, exact !aps_vrfl⁻¹
+  end
+
+  definition natural_square_refl {A B : Type} {a a' : A} (f : A → B) (q : a = a')
+    : natural_square (homotopy.refl f) q = hrfl :=
+  by induction q; reflexivity
+
+  definition aps_eq_hconcat {p₀₁'} (f : A → B) (q : p₀₁' = p₀₁) (s₁₁ : square p₁₀ p₁₂ p₀₁ p₂₁) :
+    aps f (q ⬝ph s₁₁) = ap02 f q ⬝ph aps f s₁₁ :=
+  by induction q; reflexivity
+
+  definition aps_hconcat_eq {p₂₁'} (f : A → B) (s₁₁ : square p₁₀ p₁₂ p₀₁ p₂₁) (r : p₂₁' = p₂₁) :
+    aps f (s₁₁ ⬝hp r⁻¹) = aps f s₁₁ ⬝hp (ap02 f r)⁻¹ :=
+  by induction r; reflexivity
+
+  definition aps_hconcat_eq' {p₂₁'} (f : A → B) (s₁₁ : square p₁₀ p₁₂ p₀₁ p₂₁) (r : p₂₁ = p₂₁') :
+    aps f (s₁₁ ⬝hp r) = aps f s₁₁ ⬝hp ap02 f r :=
+  by induction r; reflexivity
+
+  definition aps_square_of_eq (f : A → B) (s : p₁₀ ⬝ p₂₁ = p₀₁ ⬝ p₁₂) :
+    aps f (square_of_eq s) = square_of_eq ((ap_con f p₁₀ p₂₁)⁻¹ ⬝ ap02 f s ⬝ ap_con f p₀₁ p₁₂) :=
+  by induction p₁₂; esimp at *; induction s; induction p₂₁; induction p₁₀; reflexivity
+
+  definition aps_eq_hconcat_eq {p₀₁' p₂₁'} (f : A → B) (q : p₀₁' = p₀₁) (s₁₁ : square p₁₀ p₁₂ p₀₁ p₂₁)
+    (r : p₂₁' = p₂₁) : aps f (q ⬝ph s₁₁ ⬝hp r⁻¹) = ap02 f q ⬝ph aps f s₁₁ ⬝hp (ap02 f r)⁻¹ :=
+  by induction q; induction r; reflexivity
+
+end
+
+infix ` ⬝p2 `:75 := eq_concat2
+section -- cubes
+
+  variables {A B : Type} {a₀₀₀ a₂₀₀ a₀₂₀ a₂₂₀ a₀₀₂ a₂₀₂ a₀₂₂ a₂₂₂ a a' : A}
+            {p₁₀₀ : a₀₀₀ = a₂₀₀} {p₀₁₀ : a₀₀₀ = a₀₂₀} {p₀₀₁ : a₀₀₀ = a₀₀₂}
+            {p₁₂₀ : a₀₂₀ = a₂₂₀} {p₂₁₀ : a₂₀₀ = a₂₂₀} {p₂₀₁ : a₂₀₀ = a₂₀₂}
+            {p₁₀₂ : a₀₀₂ = a₂₀₂} {p₀₁₂ : a₀₀₂ = a₀₂₂} {p₀₂₁ : a₀₂₀ = a₀₂₂}
+            {p₁₂₂ : a₀₂₂ = a₂₂₂} {p₂₁₂ : a₂₀₂ = a₂₂₂} {p₂₂₁ : a₂₂₀ = a₂₂₂}
+            {s₀₁₁ : square p₀₁₀ p₀₁₂ p₀₀₁ p₀₂₁}
+            {s₂₁₁ : square p₂₁₀ p₂₁₂ p₂₀₁ p₂₂₁}
+            {s₁₀₁ : square p₁₀₀ p₁₀₂ p₀₀₁ p₂₀₁}
+            {s₁₂₁ : square p₁₂₀ p₁₂₂ p₀₂₁ p₂₂₁}
+            {s₁₁₀ : square p₀₁₀ p₂₁₀ p₁₀₀ p₁₂₀}
+            {s₁₁₂ : square p₀₁₂ p₂₁₂ p₁₀₂ p₁₂₂}
+            {b₁ b₂ b₃ b₄ : B}
+            (c : cube s₀₁₁ s₂₁₁ s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂)
+
+  definition whisker001 {p₀₀₁' : a₀₀₀ = a₀₀₂} (q : p₀₀₁' = p₀₀₁)
+    (c : cube s₀₁₁ s₂₁₁ s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂) : cube (q ⬝ph s₀₁₁) s₂₁₁ (q ⬝ph s₁₀₁) s₁₂₁ s₁₁₀ s₁₁₂ :=
+  by induction q; exact c
+
+  definition whisker021 {p₀₂₁' : a₀₂₀ = a₀₂₂} (q : p₀₂₁' = p₀₂₁)
+    (c : cube s₀₁₁ s₂₁₁ s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂) :
+    cube (s₀₁₁ ⬝hp q⁻¹) s₂₁₁ s₁₀₁ (q ⬝ph s₁₂₁) s₁₁₀ s₁₁₂ :=
+  by induction q; exact c
+
+  definition whisker021' {p₀₂₁' : a₀₂₀ = a₀₂₂} (q : p₀₂₁ = p₀₂₁')
+    (c : cube s₀₁₁ s₂₁₁ s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂) :
+    cube (s₀₁₁ ⬝hp q) s₂₁₁ s₁₀₁ (q⁻¹ ⬝ph s₁₂₁) s₁₁₀ s₁₁₂ :=
+  by induction q; exact c
+
+  definition whisker201 {p₂₀₁' : a₂₀₀ = a₂₀₂} (q : p₂₀₁' = p₂₀₁)
+    (c : cube s₀₁₁ s₂₁₁ s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂) :
+    cube s₀₁₁ (q ⬝ph s₂₁₁) (s₁₀₁ ⬝hp q⁻¹) s₁₂₁ s₁₁₀ s₁₁₂ :=
+  by induction q; exact c
+
+  definition whisker201' {p₂₀₁' : a₂₀₀ = a₂₀₂} (q : p₂₀₁ = p₂₀₁')
+    (c : cube s₀₁₁ s₂₁₁ s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂) :
+    cube s₀₁₁ (q⁻¹ ⬝ph s₂₁₁) (s₁₀₁ ⬝hp q) s₁₂₁ s₁₁₀ s₁₁₂ :=
+  by induction q; exact c
+
+  definition whisker221 {p₂₂₁' : a₂₂₀ = a₂₂₂} (q : p₂₂₁ = p₂₂₁')
+    (c : cube s₀₁₁ s₂₁₁ s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂) : cube s₀₁₁ (s₂₁₁ ⬝hp q) s₁₀₁ (s₁₂₁ ⬝hp q) s₁₁₀ s₁₁₂ :=
+  by induction q; exact c
+
+  definition move221 {p₂₂₁' : a₂₂₀ = a₂₂₂} {s₁₂₁ : square p₁₂₀ p₁₂₂ p₀₂₁ p₂₂₁'} (q : p₂₂₁ = p₂₂₁')
+    (c : cube s₀₁₁ (s₂₁₁ ⬝hp q) s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂) :
+    cube s₀₁₁ s₂₁₁ s₁₀₁ (s₁₂₁ ⬝hp q⁻¹) s₁₁₀ s₁₁₂ :=
+  by induction q; exact c
+
+  definition move201 {p₂₀₁' : a₂₀₀ = a₂₀₂} {s₁₀₁ : square p₁₀₀ p₁₀₂ p₀₀₁ p₂₀₁'}  (q : p₂₀₁' = p₂₀₁)
+    (c : cube s₀₁₁ (q ⬝ph s₂₁₁) s₁₀₁ s₁₂₁ s₁₁₀ s₁₁₂) :
+    cube s₀₁₁ s₂₁₁ (s₁₀₁ ⬝hp q) s₁₂₁ s₁₁₀ s₁₁₂ :=
+  by induction q; exact c
+
+end
+
+
+  definition apo011 {A : Type} {B C D : A → Type} {a a' : A} {p : a = a'} {b : B a} {b' : B a'}
+    {c : C a} {c' : C a'} (f : Π⦃a⦄, B a → C a → D a) (q : b =[p] b') (r : c =[p] c') :
+    f b c =[p] f b' c' :=
+  begin induction q, induction r using idp_rec_on, exact idpo end
+
+  definition ap011_ap_square_right {A B C : Type} (f : A → B → C) {a a' : A} (p : a = a')
+    {b₁ b₂ b₃ : B} {q₁₂ : b₁ = b₂} {q₂₃ : b₂ = b₃} {q₁₃ : b₁ = b₃} (r : q₁₂ ⬝ q₂₃ = q₁₃) :
+    square (ap011 f p q₁₂) (ap (λx, f x b₃) p) (ap (f a) q₁₃) (ap (f a') q₂₃) :=
+  by induction r; induction q₂₃; induction q₁₂; induction p; exact ids
+
+  definition ap011_ap_square_left {A B C : Type} (f : B → A → C) {a a' : A} (p : a = a')
+    {b₁ b₂ b₃ : B} {q₁₂ : b₁ = b₂} {q₂₃ : b₂ = b₃} {q₁₃ : b₁ = b₃} (r : q₁₂ ⬝ q₂₃ = q₁₃) :
+    square (ap011 f q₁₂ p) (ap (f b₃) p) (ap (λx, f x a) q₁₃) (ap (λx, f x a') q₂₃) :=
+  by induction r; induction q₂₃; induction q₁₂; induction p; exact ids
+
+  definition ap_ap011 {A B C D : Type} (g : C → D) (f : A → B → C) {a a' : A} {b b' : B}
+    (p : a = a') (q : b = b') : ap g (ap011 f p q) = ap011 (λa b, g (f a b)) p q :=
+  begin
+    induction p, exact (ap_compose g (f a) q)⁻¹
+  end
+
   definition con2_assoc {A : Type} {x y z t : A} {p p' : x = y} {q q' : y = z} {r r' : z = t}
     (h : p = p') (h' : q = q') (h'' : r = r') :
     square ((h ◾ h') ◾ h'') (h ◾ (h' ◾ h'')) (con.assoc p q r) (con.assoc p' q' r') :=
@@ -144,6 +283,18 @@ namespace eq
   postfix `⁻¹ʰᵗʸᵛ`:(max+1) := hvinverse
 
   end hsquare
+  -- move to init.funext
+  protected definition homotopy.rec_on_idp_left [recursor] {A : Type} {P : A → Type} {g : Πa, P a}
+    {Q : Πf, (f ~ g) → Type} {f : Π x, P x}
+    (p : f ~ g) (H : Q g (homotopy.refl g)) : Q f p :=
+  begin
+    induction p using homotopy.rec_on, induction q, exact H
+  end
+
+  --eq2
+  definition ap02_ap_constant {A B C : Type} {a a' : A} (f : B → C) (b : B) (p : a = a') :
+    square (ap_constant p (f b)) (ap02 f (ap_constant p b)) (ap_compose f (λx, b) p) idp :=
+  by induction p; exact ids
 
 end eq open eq
 
@@ -154,13 +305,43 @@ namespace wedge
 
 end wedge
 
+namespace pi
+
+  definition is_contr_pi_of_neg {A : Type} (B : A → Type) (H : ¬ A) : is_contr (Πa, B a) :=
+  begin
+    apply is_contr.mk (λa, empty.elim (H a)), intro f, apply eq_of_homotopy, intro x, contradiction
+  end
+end pi
+
 namespace pointed
+
+  -- FALSE
+  -- definition phomotopy_pconst {A B : Type*} {f : A →* B} (p q : f ~* pconst A B) : p = q :=
+  -- begin
+  --   induction f with f f₀,
+  --   induction p with p p₀, induction q with q q₀,
+  --   esimp at *, induction q₀,
+  -- end
+
+  definition punit_pmap_phomotopy [constructor] {A : Type*} (f : punit →* A) : f ~* pconst punit A :=
+  begin
+    fapply phomotopy.mk,
+    { intro u, induction u, exact respect_pt f },
+    { reflexivity }
+  end
+
+  definition is_contr_punit_pmap (A : Type*) : is_contr (punit →* A) :=
+    is_contr.mk (pconst punit A) (λf, eq_of_phomotopy (punit_pmap_phomotopy f)⁻¹*)
 
   definition phomotopy_of_eq_idp {A B : Type*} (f : A →* B) : phomotopy_of_eq idp = phomotopy.refl f :=
   idp
 
   definition to_fun_pequiv_trans {X Y Z : Type*} (f : X ≃* Y) (g :Y ≃* Z) : f ⬝e* g ~ g ∘ f :=
   λx, idp
+
+  definition pr1_phomotopy_eq {A B : Type*} {f g : A →* B} {p q : f ~* g} (r : p = q) (a : A) :
+    p a = q a :=
+  ap010 to_homotopy r a
 
   -- replace pcompose2 with this
   definition pcompose2' {A B C : Type*} {g g' : B →* C} {f f' : A →* B} (q : g ~* g') (p : f ~* f') :

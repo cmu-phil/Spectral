@@ -6,36 +6,36 @@ Authors: Floris van Doorn
 Reduced cohomology of spectra and cohomology theories
 -/
 
-import .spectrum .EM ..algebra.arrow_group .fwedge ..choice .pushout ..move_to_lib
+import .spectrum .EM ..algebra.arrow_group .fwedge ..choice .pushout ..move_to_lib ..algebra.product_group
 
 open eq spectrum int trunc pointed EM group algebra circle sphere nat EM.ops equiv susp is_trunc
-     function fwedge cofiber bool lift sigma is_equiv choice pushout algebra unit
+     function fwedge cofiber bool lift sigma is_equiv choice pushout algebra unit pi
 
 -- TODO: move
-structure is_exact {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
+structure is_short_exact {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
   ( im_in_ker : Π(a:A), g (f a) = pt)
   ( ker_in_im : Π(b:B), (g b = pt) → image f b)
 
-definition is_exact_g {A B C : Group} (f : A →g B) (g : B →g C) :=
-is_exact f g
+definition is_short_exact_g {A B C : Group} (f : A →g B) (g : B →g C) :=
+is_short_exact f g
 
-definition is_exact_g.mk {A B C : Group} {f : A →g B} {g : B →g C}
-  (H₁ : Πa, g (f a) = 1) (H₂ : Πb, g b = 1 → image f b) : is_exact_g f g :=
-is_exact.mk H₁ H₂
+definition is_short_exact_g.mk {A B C : Group} {f : A →g B} {g : B →g C}
+  (H₁ : Πa, g (f a) = 1) (H₂ : Πb, g b = 1 → image f b) : is_short_exact_g f g :=
+is_short_exact.mk H₁ H₂
 
-definition is_exact_trunc_functor {A B : Type} {C : Type*} {f : A → B} {g : B → C}
-  (H : is_exact_t f g) : @is_exact _ _ (ptrunc 0 C) (trunc_functor 0 f) (trunc_functor 0 g) :=
+definition is_short_exact_trunc_functor {A B : Type} {C : Type*} {f : A → B} {g : B → C}
+  (H : is_short_exact_t f g) : @is_short_exact _ _ (ptrunc 0 C) (trunc_functor 0 f) (trunc_functor 0 g) :=
 begin
   constructor,
   { intro a, esimp, induction a with a,
-    exact ap tr (is_exact_t.im_in_ker H a) },
+    exact ap tr (is_short_exact_t.im_in_ker H a) },
   { intro b p, induction b with b, note q := !tr_eq_tr_equiv p, induction q with q,
-    induction is_exact_t.ker_in_im H b q with a r,
+    induction is_short_exact_t.ker_in_im H b q with a r,
     exact image.mk (tr a) (ap tr r) }
 end
 
-definition is_exact_homotopy {A B C : Type*} {f f' : A → B} {g g' : B → C}
-  (p : f ~ f') (q : g ~ g') (H : is_exact f g) : is_exact f' g' :=
+definition is_short_exact_homotopy {A B C : Type*} {f f' : A → B} {g g' : B → C}
+  (p : f ~ f') (q : g ~ g') (H : is_short_exact f g) : is_short_exact f' g' :=
 begin
   induction p using homotopy.rec_on_idp,
   induction q using homotopy.rec_on_idp,
@@ -199,8 +199,8 @@ end
 /- exactness -/
 
 definition cohomology_exact {X X' : Type*} (f : X →* X') (Y : spectrum) (n : ℤ) :
-  is_exact_g (cohomology_functor (pcod f) Y n) (cohomology_functor f Y n) :=
-is_exact_trunc_functor (cofiber_exact f)
+  is_short_exact_g (cohomology_functor (pcod f) Y n) (cohomology_functor f Y n) :=
+is_short_exact_trunc_functor (cofiber_exact f)
 
 /- additivity -/
 
@@ -253,7 +253,7 @@ structure cohomology_theory.{u} : Type.{u+1} :=
   (Hsusp : Π(n : ℤ) (X : Type*), HH (succ n) (psusp X) ≃g HH n X)
   (Hsusp_natural : Π(n : ℤ) {X Y : Type*} (f : X →* Y),
     Hsusp n X ∘ Hh (succ n) (psusp_functor f) ~ Hh n f ∘ Hsusp n Y)
-  (Hexact : Π(n : ℤ) {X Y : Type*} (f : X →* Y), is_exact_g (Hh n (pcod f)) (Hh n f))
+  (Hexact : Π(n : ℤ) {X Y : Type*} (f : X →* Y), is_short_exact_g (Hh n (pcod f)) (Hh n f))
   (Hadditive : Π(n : ℤ) {I : Type.{u}} (X : I → Type*), has_choice 0 I →
     is_equiv (Group_pi_intro (λi, Hh n (pinl i)) : HH n (⋁ X) → Πᵍ i, HH n (X i)))
 
@@ -263,6 +263,9 @@ structure ordinary_theory.{u} extends cohomology_theory.{u} : Type.{u+1} :=
 attribute cohomology_theory.HH [coercion]
 postfix `^→`:90 := cohomology_theory.Hh
 open cohomology_theory
+
+definition Hequiv (H : cohomology_theory) (n : ℤ) {X Y : Type*} (f : X ≃* Y) : H n Y ≃ H n X :=
+equiv_of_isomorphism (Hiso H n f)
 
 definition Hsusp_neg (H : cohomology_theory) (n : ℤ) (X : Type*) : H n (psusp X) ≃g H (pred n) X :=
 isomorphism_of_eq (ap (λn, H n _) proof (sub_add_cancel n 1)⁻¹ qed) ⬝g cohomology_theory.Hsusp H (pred n) X
@@ -279,23 +282,41 @@ definition Hsusp_neg_inv_natural (H : cohomology_theory) (n : ℤ) {X Y : Type*}
   H ^→ n (psusp_functor f) ∘g (Hsusp_neg H n Y)⁻¹ᵍ ~ (Hsusp_neg H n X)⁻¹ᵍ ∘ H ^→ (pred n) f :=
 sorry
 
-definition Hadditive0 (H : cohomology_theory) (n : ℤ) :
+definition Hadditive_equiv (H : cohomology_theory) (n : ℤ) {I : Type} (X : I → Type*) (H2 : has_choice 0 I)
+  : H n (⋁ X) ≃g Πᵍ i, H n (X i) :=
+isomorphism.mk _ (Hadditive H n X H2)
+
+definition Hlift_empty.{u} (H : cohomology_theory.{u}) (n : ℤ) :
   is_contr (H n (plift punit)) :=
 let P : lift empty → Type* := lift.rec empty.elim in
 let x := Hadditive H n P _ in
 begin
   note z := equiv.mk _ x,
   refine @(is_trunc_equiv_closed_rev -2 (_ ⬝e z ⬝e _)) !is_contr_unit,
-  repeat exact sorry
---  refine equiv_of_isomorphism (Hiso H n (_ ⬝e* _)),
+    refine Hequiv H n (pequiv_punit_of_is_contr _ _ ⬝e* !pequiv_plift),
+    apply is_contr_fwedge_of_neg, intro y, induction y with y, exact y,
+  apply equiv_unit_of_is_contr, apply is_contr_pi_of_neg, intro y, induction y with y, exact y
 end
+
+definition Hempty (H : cohomology_theory.{0}) (n : ℤ) :
+  is_contr (H n punit) :=
+@(is_trunc_equiv_closed _ (Hequiv H n !pequiv_plift)) (Hlift_empty H n)
 
 definition Hconst (H : cohomology_theory) (n : ℤ) {X Y : Type*} (y : H n Y) : H ^→ n (pconst X Y) y = 1 :=
 begin
-  refine !one_mul⁻¹ ⬝ _, exact sorry
+  refine Hhomotopy H n (pconst_pcompose (pconst X (plift punit)))⁻¹* y ⬝ _,
+  refine Hcompose H n _ _ y ⬝ _,
+  refine ap (H ^→ n _) (@eq_of_is_contr _ (Hlift_empty H n) _ 1) ⬝ _,
+  apply respect_one
 end
 
-definition cohomology_theory_spectrum [constructor] (Y : spectrum) : cohomology_theory :=
+-- definition Hwedge (H : cohomology_theory) (n : ℤ) (A B : Type*) : H n (A ∨ B) ≃g H n A ×ag H n B :=
+-- begin
+--   refine Hiso H n (pwedge_pequiv_fwedge A B)⁻¹ᵉ* ⬝g _,
+--   refine Hadditive_equiv H n _ _ ⬝g _
+-- end
+
+definition cohomology_theory_spectrum.{u} [constructor] (Y : spectrum.{u}) : cohomology_theory.{u} :=
 cohomology_theory.mk
   (λn A, H^n[A, Y])
   (λn A B f, cohomology_isomorphism f Y n)
@@ -310,6 +331,13 @@ cohomology_theory.mk
   (λn A B f, cohomology_exact f Y n)
   (λn I A H, spectrum_additive H A Y n)
 
+-- set_option pp.universes true
+-- set_option pp.abbreviations false
+-- print cohomology_theory_spectrum
+-- print EM_spectrum
+-- print has_choice_lift
+-- print equiv_lift
+-- print has_choice_equiv_closed
 definition ordinary_theory_EM [constructor] (G : AbGroup) : ordinary_theory :=
 ⦃ordinary_theory, cohomology_theory_spectrum (EM_spectrum G), Hdimension := EM_dimension G ⦄
 

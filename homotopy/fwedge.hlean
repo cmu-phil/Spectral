@@ -86,10 +86,13 @@ namespace fwedge
     { exact glue ff }
   end
 
-  definition is_contr_fwedge_empty : is_contr (⋁(empty.rec _)) :=
+  definition is_contr_fwedge_of_neg {I : Type} (P : I → Type*) (H : ¬ I) : is_contr (⋁P) :=
   begin
     apply is_contr.mk pt, intro x, induction x, contradiction, reflexivity, contradiction
   end
+
+  definition is_contr_fwedge_empty [instance] : is_contr (⋁empty.elim) :=
+  is_contr_fwedge_of_neg _ id
 
   definition fwedge_pmap [constructor] {I : Type} {F : I → Type*} {X : Type*} (f : Πi, F i →* X) : ⋁F →* X :=
   begin
@@ -132,6 +135,6 @@ namespace fwedge
 
   definition trunc_fwedge_pmap_equiv.{u} {n : ℕ₋₂} {I : Type.{u}} (H : has_choice n I)
     (F : I → pType.{u}) (X : pType.{u}) : trunc n (⋁F →* X) ≃ Πi, trunc n (F i →* X) :=
-  trunc_equiv_trunc n (fwedge_pmap_equiv F X) ⬝e choice_equiv H (λi, F i →* X)
+  trunc_equiv_trunc n (fwedge_pmap_equiv F X) ⬝e choice_equiv (λi, F i →* X)
 
 end fwedge

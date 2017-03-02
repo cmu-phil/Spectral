@@ -59,5 +59,6 @@ namespace group
   AbGroup.mk _ (ab_group_prod G G')
 
   infix ` ×g `:30 := group.product
+  infix ` ×ag `:30 := group.ab_product
 
 end group
