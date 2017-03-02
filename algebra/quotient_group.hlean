@@ -243,16 +243,29 @@ namespace group
     exact K g
   end
 
+  definition ab_gelim_unique {K : subgroup_rel A} (f : A →g B) (H : Π (a :A), K a → f a = 1) (k : quotient_ab_group K →g B)
+    : ( k ∘g ab_qg_map K ~ f) → k ~ quotient_group_elim f H :=
+  begin
+    fapply gelim_unique,
+  end
+
   definition qg_universal_property (f : G →g G') (H : Π⦃g⦄, N g → f g = 1)  :
-    is_contr (Σ(g : quotient_group N →g G'), g ∘g qg_map N = f) :=
+    is_contr (Σ(g : quotient_group N →g G'), g ∘g qg_map N ~ f) :=
   begin
     fapply is_contr.mk,
       -- give center of contraction
-    { fapply sigma.mk, exact quotient_group_elim f H, apply homomorphism_eq, exact quotient_group_compute f H },
+    { fapply sigma.mk, exact quotient_group_elim f H, exact quotient_group_compute f H },
       -- give contraction
     { intro pair, induction pair with g p, fapply sigma_eq,
-      {esimp, apply homomorphism_eq, symmetry, exact gelim_unique f H g (homotopy_of_homomorphism_eq p)},
+      {esimp, apply homomorphism_eq, symmetry, exact gelim_unique f H g p},
       {fapply is_prop.elimo} }
+  end
+
+  definition ab_qg_universal_property {K : subgroup_rel A} (f : A →g B) (H : Π (a :A), K a → f a = 1) :
+  is_contr ((Σ(g : quotient_ab_group K →g B), g ∘g ab_qg_map K ~ f) ) :=
+  begin
+    fapply qg_universal_property,
+    exact H
   end
 
 ------------------------------------------------
