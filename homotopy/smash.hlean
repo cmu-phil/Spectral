@@ -15,7 +15,6 @@ variables {A B C D E F : Type*}
 
 namespace smash
 
-  section
   open pushout
 
   definition smash_functor' [unfold 7] (f : A →* C) (g : B →* D) : A ∧ B → C ∧ D :=
@@ -114,7 +113,6 @@ namespace smash
     apply con_right_inv_natural
   end
 
-
   definition smash_functor_pcompose_homotopy (f' : C →* E) (f : A →* C) (g' : D →* F) (g : B →* D) :
     smash_functor (f' ∘* f) (g' ∘* g) ~ smash_functor f' g' ∘* smash_functor f g :=
   begin
@@ -184,13 +182,65 @@ namespace smash
     : smash_functor (f' ∘* f) (pid B) ~* smash_functor f' (pid B) ∘* smash_functor f (pid B) :=
   smash_functor_phomotopy phomotopy.rfl !pid_pcompose⁻¹* ⬝* !smash_functor_pcompose
 
+  definition smash_functor_pconst_right_homotopy [unfold 6] (f : A →* C) (x : A ∧ B) :
+    smash_functor f (pconst B D) x = pt :=
+  begin
+    induction x with a b a b,
+    { exact gluel' (f a) pt },
+    { exact (gluel pt)⁻¹ },
+    { exact (gluer pt)⁻¹ },
+    { apply eq_pathover_constant_right, refine !functor_gluel ⬝ !idp_con ⬝ph _,
+      apply square_of_eq, reflexivity },
+    { apply eq_pathover_constant_right, refine !functor_gluer ⬝ph _,
+      apply whisker_lb, apply square_of_eq, exact !ap_mk_left⁻¹ }
+  end
+
+  definition smash_functor_pconst_right [constructor] (f : A →* C) :
+    smash_functor f (pconst B D) ~* pconst (A ∧ B) (C ∧ D) :=
+  begin
+    fapply phomotopy.mk,
+    { exact smash_functor_pconst_right_homotopy f },
+    { refine (ap_mk_left (respect_pt f))⁻¹ ⬝ _,
+      induction C with C c₀, induction f with f f₀, esimp at *, induction f₀, reflexivity }
+  end
+
+  definition smash_functor_pconst_right_pcompose (f' : C →* E) (f : A →* C) (g : D →* F) :
+    phsquare (smash_functor_pcompose f' f g (pconst B D))
+             (smash_functor_pconst_right (f' ∘* f))
+             (smash_functor_phomotopy phomotopy.rfl (pcompose_pconst g))
+             (pwhisker_left (smash_functor f' g) (smash_functor_pconst_right f) ⬝*
+               pcompose_pconst (smash_functor f' g)) :=
+  begin
+    exact sorry
+  end
+
+  definition smash_functor_pconst_right_pid_pcompose (g : D →* F) :
+    phsquare (smash_functor_pid_pcompose A g (pconst B D))
+             (smash_functor_pconst_right (pid A))
+             (smash_functor_phomotopy phomotopy.rfl (pcompose_pconst g))
+             (pwhisker_left (smash_functor (pid A) g) (smash_functor_pconst_right (pid A)) ⬝*
+               pcompose_pconst (smash_functor (pid A) g)) :=
+  begin
+    refine (_ ◾** idp ⬝ !refl_trans) ⬝pv** smash_functor_pconst_right_pcompose (pid A) (pid A) g,
+    apply smash_functor_phomotopy_refl,
+  end
+
+  definition smash_functor_pconst_right_pid_pcompose' (g : D →* F) :
+    pwhisker_left (smash_functor (pid A) g) (smash_functor_pconst_right (pid A)) ⬝*
+    pcompose_pconst (smash_functor (pid A) g) =
+    (smash_functor_pid_pcompose A g (pconst B D))⁻¹* ⬝*
+    (smash_functor_phomotopy phomotopy.rfl (pcompose_pconst g) ⬝*
+    smash_functor_pconst_right (pid A)) :=
+  begin
+    apply eq_symm_trans_of_trans_eq,
+    exact smash_functor_pconst_right_pid_pcompose g
+  end
+
   definition smash_pequiv_smash [constructor] (f : A ≃* C) (g : B ≃* D) : A ∧ B ≃* C ∧ D :=
   begin
     fapply pequiv_of_pmap (smash_functor f g),
     apply pushout.is_equiv_functor,
     exact to_is_equiv (sum_equiv_sum f g)
-  end
-
   end
 
   definition smash_pequiv_smash_left [constructor] (B : Type*) (f : A ≃* C) : A ∧ B ≃* C ∧ B :=

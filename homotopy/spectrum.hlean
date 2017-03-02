@@ -7,13 +7,11 @@ Authors: Michael Shulman, Floris van Doorn
 
 import homotopy.LES_of_homotopy_groups .splice homotopy.susp ..move_to_lib ..colim ..pointed_pi
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
-     seq_colim
+     seq_colim succ_str
 
 /---------------------
   Basic definitions
   ---------------------/
-
-open succ_str
 
 /- The basic definitions of spectra and prespectra make sense for any successor-structure. -/
 
@@ -210,13 +208,13 @@ namespace spectrum
   -- read off the homotopy groups without any tedious case-analysis of
   -- n.  We increment by 2 in order to ensure that they are all
   -- automatically abelian groups.
-  definition shomotopy_group [constructor] (n : ℤ) (E : spectrum) : AbGroup := πag[0+2] (E (2 - n))
+  definition shomotopy_group [constructor] (n : ℤ) (E : spectrum) : AbGroup := πag[2] (E (2 - n))
 
   notation `πₛ[`:95 n:0 `]`:0 := shomotopy_group n
 
   definition shomotopy_group_fun [constructor] (n : ℤ) {E F : spectrum} (f : E →ₛ F) :
     πₛ[n] E →g πₛ[n] F :=
-  π→g[1+1] (f (2 - n))
+  π→g[2] (f (2 - n))
 
   notation `πₛ→[`:95 n:0 `]`:0 := shomotopy_group_fun n
 
@@ -257,41 +255,34 @@ namespace spectrum
       rexact (pfiber_equiv_of_square_ppoint (equiv_glue X n) (equiv_glue Y n) (sglue_square f n))⁻¹*
     end
 
-  definition π_glue (X : spectrum) (n : ℤ) : π[2] (X (2 - succ n)) ≃* π[3] (X (2 - n)) :=
+  definition scompose_spoint {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y)
+    : f ∘ₛ spoint f ~ₛ szero (sfiber f) Y :=
   begin
-    refine homotopy_group_pequiv 2 (equiv_glue X (2 - succ n)) ⬝e* _,
-    assert H : succ (2 - succ n) = 2 - n, exact ap succ !sub_sub⁻¹ ⬝ sub_add_cancel (2-n) 1,
-    exact pequiv_of_eq (ap (λn, π[2] (Ω (X n))) H),
+    fapply shomotopy.mk,
+    { intro n, exact pcompose_ppoint (f n) },
+    { intro n, exact sorry }
   end
 
-  definition πg_glue (X : spectrum) (n : ℤ) : πg[1+1] (X (2 - succ n)) ≃g πg[2+1] (X (2 - n)) :=
-  begin
-    refine homotopy_group_isomorphism_of_pequiv 1 (equiv_glue X (2 - succ n)) ⬝g _,
-    assert H : succ (2 - succ n) = 2 - n, exact ap succ !sub_sub⁻¹ ⬝ sub_add_cancel (2-n) 1,
-    exact isomorphism_of_eq (ap (λn, πg[1+1] (Ω (X n))) H),
-  end
+  definition equiv_glue_neg (X : spectrum) (n : ℤ) : X (2 - succ n) ≃* Ω (X (2 - n)) :=
+  have H : succ (2 - succ n) = 2 - n, from ap succ !sub_sub⁻¹ ⬝ sub_add_cancel (2-n) 1,
+  equiv_glue X (2 - succ n) ⬝e* loop_pequiv_loop (pequiv_of_eq (ap X H))
+
+  definition π_glue (X : spectrum) (n : ℤ) : π[2] (X (2 - succ n)) ≃* π[3] (X (2 - n)) :=
+  homotopy_group_pequiv 2 (equiv_glue_neg X n)
+
+  definition πg_glue (X : spectrum) (n : ℤ) : πg[2] (X (2 - succ n)) ≃g πg[3] (X (2 - n)) :=
+  by rexact homotopy_group_isomorphism_of_pequiv _ (equiv_glue_neg X n)
 
   definition πg_glue_homotopy_π_glue (X : spectrum) (n : ℤ) : πg_glue X n ~ π_glue X n :=
-  begin
-    intro x,
-    esimp [πg_glue, π_glue],
-    apply ap (λp, cast p _),
-    refine !ap_compose'⁻¹ ⬝ !ap_compose'
-  end
+  by reflexivity
 
   definition π_glue_square {X Y : spectrum} (f : X →ₛ Y) (n : ℤ) :
     π_glue Y n ∘* π→[2] (f (2 - succ n)) ~* π→[3] (f (2 - n)) ∘* π_glue X n :=
   begin
-    refine !passoc ⬝* _,
-    assert H1 : homotopy_group_pequiv 2 (equiv_glue Y (2 - succ n)) ∘* π→[2] (f (2 - succ n))
-     ~* π→[2] (Ω→ (f (succ (2 - succ n)))) ∘* homotopy_group_pequiv 2 (equiv_glue X (2 - succ n)),
-    { refine !homotopy_group_functor_compose⁻¹* ⬝* _,
-      refine homotopy_group_functor_phomotopy 2 !sglue_square ⬝* _,
-      apply homotopy_group_functor_compose },
-    refine pwhisker_left _ H1 ⬝* _, clear H1,
-    refine !passoc⁻¹* ⬝* _ ⬝* !passoc,
-    apply pwhisker_right,
-    refine !pequiv_of_eq_commute ⬝* by reflexivity
+    change π→[2] (equiv_glue_neg Y n) ∘* π→[2] (f (2 - succ n)) ~*
+           π→[2] (Ω→ (f (2 - n))) ∘* π→[2] (equiv_glue_neg X n),
+    refine homotopy_group_functor_psquare 2 _,
+    refine !sglue_square ⬝v* ap1_psquare !pequiv_of_eq_commute
   end
 
   section
@@ -324,8 +315,7 @@ namespace spectrum
   | (n, fin.mk 0 H) := proof homomorphism.struct (πₛ→[n] f) qed
   | (n, fin.mk 1 H) := proof homomorphism.struct (πₛ→[n] (spoint f)) qed
   | (n, fin.mk 2 H) := proof homomorphism.struct
-        (homomorphism_LES_of_homotopy_groups_fun (f (2 - n)) (1, 2) ∘g
-         homomorphism_change_fun (πg_glue Y n) _ (πg_glue_homotopy_π_glue Y n)) qed
+        (homomorphism_LES_of_homotopy_groups_fun (f (2 - n)) (1, 2) ∘g πg_glue Y n) qed
   | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
 
   -- In the comments below is a start on an explicit description of the LES for spectra
@@ -433,8 +423,8 @@ namespace spectrum
     (f : X →ₛ Y) : X →ₛ spectrify X :=
   begin
     fapply smap.mk,
-    { intro n, exact pinclusion _ 0},
-    { intro n, exact sorry}
+    { intro n, exact pinclusion _ 0 },
+    { intro n, exact sorry }
   end
 
   definition spectrify.elim {N : succ_str} {X : gen_prespectrum N} {Y : gen_spectrum N}

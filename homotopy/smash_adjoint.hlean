@@ -241,18 +241,19 @@ namespace smash
   definition smash_elim_pconst (A B C : Type*) :
     smash_elim (pconst B (ppmap A C)) ~* pconst (A ∧ B) C :=
   begin
-    fconstructor,
-    { intro x, induction x with a b a b,
-      { reflexivity },
-      { reflexivity },
-      { reflexivity },
-      { apply eq_pathover_constant_right, apply hdeg_square,
-        refine ap_compose smash_pmap_counit_map _ _ ⬝ ap02 _ !functor_gluel ⬝ !ap_con ⬝
-          !ap_compose'⁻¹ ◾ !elim_gluel},
-      { apply eq_pathover_constant_right, apply hdeg_square,
-        refine ap_compose smash_pmap_counit_map _ _ ⬝ ap02 _ !functor_gluer ⬝ !ap_con ⬝
-          !ap_compose'⁻¹ ◾ !elim_gluer }},
-    { reflexivity }
+    refine pwhisker_left _ (smash_functor_pconst_right (pid A)) ⬝* !pcompose_pconst
+    -- fconstructor,
+    -- { intro x, induction x with a b a b,
+    --   { reflexivity },
+    --   { reflexivity },
+    --   { reflexivity },
+    --   { apply eq_pathover_constant_right, apply hdeg_square,
+    --     refine ap_compose smash_pmap_counit_map _ _ ⬝ ap02 _ !functor_gluel ⬝ !ap_con ⬝
+    --       !ap_compose'⁻¹ ◾ !elim_gluel},
+    --   { apply eq_pathover_constant_right, apply hdeg_square,
+    --     refine ap_compose smash_pmap_counit_map _ _ ⬝ ap02 _ !functor_gluer ⬝ !ap_con ⬝
+    --       !ap_compose'⁻¹ ◾ !elim_gluer }},
+    -- { reflexivity }
   end
 
   definition pconst_pcompose_pconst (A B C : Type*) :
@@ -302,18 +303,18 @@ namespace smash
   end
 
   definition smash_elim_phomotopy {A B C : Type*} {f f' : A →* ppmap B C}
-    (p : f ~* f'): smash_elim f ~* smash_elim f' :=
+    (p : f ~* f') : smash_elim f ~* smash_elim f' :=
   begin
     apply pwhisker_left,
     exact smash_functor_phomotopy phomotopy.rfl p
   end
 
   definition smash_elim_inv_phomotopy {A B C : Type*} {f f' : A ∧ B →* C}
-    (p : f ~* f'): smash_elim_inv f ~* smash_elim_inv f' :=
+    (p : f ~* f') : smash_elim_inv f ~* smash_elim_inv f' :=
   pwhisker_right _ (ppcompose_left_phomotopy p)
 
   definition smash_elim_eq_of_phomotopy {A B C : Type*} {f f' : A →* ppmap B C}
-    (p : f ~* f'): ap smash_elim (eq_of_phomotopy p) = eq_of_phomotopy (smash_elim_phomotopy p) :=
+    (p : f ~* f') : ap smash_elim (eq_of_phomotopy p) = eq_of_phomotopy (smash_elim_phomotopy p) :=
   begin
     induction p using phomotopy_rec_on_idp,
     refine ap02 _ !eq_of_phomotopy_refl ⬝ _,
@@ -323,8 +324,8 @@ namespace smash
     refine !pwhisker_left_refl⁻¹
   end
 
-  definition smash_elim_inv_eq_of_phomotopy {A B C : Type*} {f f' : A ∧ B →* C}
-    (p : f ~* f'): ap smash_elim_inv (eq_of_phomotopy p) = eq_of_phomotopy (smash_elim_inv_phomotopy p) :=
+  definition smash_elim_inv_eq_of_phomotopy {A B C : Type*} {f f' : A ∧ B →* C} (p : f ~* f') :
+    ap smash_elim_inv (eq_of_phomotopy p) = eq_of_phomotopy (smash_elim_inv_phomotopy p) :=
   begin
     induction p using phomotopy_rec_on_idp,
     refine ap02 _ !eq_of_phomotopy_refl ⬝ _,
@@ -337,8 +338,30 @@ namespace smash
   definition smash_pelim [constructor] (A B C : Type*) : ppmap A (ppmap B C) →* ppmap (B ∧ A) C :=
   pmap.mk smash_elim (eq_of_phomotopy !smash_elim_pconst)
 
-  definition smash_pelim_inv [constructor] (A B C : Type*) : ppmap (B ∧ A) C →* ppmap A (ppmap B C) :=
+  definition smash_pelim_inv [constructor] (A B C : Type*) :
+    ppmap (B ∧ A) C →* ppmap A (ppmap B C) :=
   pmap.mk smash_elim_inv (eq_of_phomotopy !smash_elim_inv_pconst)
+
+  theorem smash_elim_natural_pconst {A B C C' : Type*} (f : C →* C') :
+    smash_elim_natural f (pconst A (ppmap B C)) ⬝*
+   (smash_elim_phomotopy (pcompose_pconst (ppcompose_left f)) ⬝*
+    smash_elim_pconst B A C') =
+    pwhisker_left f (smash_elim_pconst B A C) ⬝*
+    pcompose_pconst f :=
+  begin
+    refine idp ◾** (!trans_assoc⁻¹ ⬝ (!pwhisker_left_trans⁻¹ ◾** idp)) ⬝ _,
+    refine !trans_assoc⁻¹ ⬝ _,
+    refine (!trans_assoc ⬝ (idp ◾** (!pwhisker_left_trans⁻¹ ⬝
+      ap (pwhisker_left _) (smash_functor_pconst_right_pid_pcompose' (ppcompose_left f))⁻¹ ⬝
+      !pwhisker_left_trans))) ◾** idp ⬝ _,
+    refine (!trans_assoc⁻¹ ⬝ (!passoc_phomotopy_right⁻¹ʰ** ⬝h**
+      !pwhisker_right_pwhisker_left ⬝h** !passoc_phomotopy_right) ◾** idp) ◾** idp ⬝ _,
+    refine !trans_assoc ⬝ !trans_assoc ⬝ idp ◾**_ ⬝ !trans_assoc⁻¹ ⬝ !pwhisker_left_trans⁻¹ ◾** idp,
+    refine !trans_assoc ⬝ !trans_assoc ⬝ (eq_symm_trans_of_trans_eq _)⁻¹,
+    refine !pcompose_pconst_pcompose⁻¹ ⬝ _,
+    refine _ ⬝ idp ◾** (!pcompose_pconst_pcompose),
+    refine !pcompose_pconst_phomotopy⁻¹
+  end
 
   definition smash_pelim_natural {A B C C' : Type*} (f : C →* C') :
     ppcompose_left f ∘* smash_pelim A B C ~*
@@ -351,54 +374,8 @@ namespace smash
         !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy) ⬝ _ ,
       refine _ ⬝ (!phomotopy_of_eq_con ⬝ (ap phomotopy_of_eq !pcompose_eq_of_phomotopy ⬝
         !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy)⁻¹,
-      exact sorry }
+      exact smash_elim_natural_pconst f }
   end
-
-  definition smash_pelim_inv_natural {A B C C' : Type*} (f : C →* C') :
-    ppcompose_left (ppcompose_left f) ∘* smash_pelim_inv A B C ~*
-    smash_pelim_inv A B C' ∘* ppcompose_left f :=
-  begin
-    fapply phomotopy_mk_ppmap,
-    { exact smash_elim_inv_natural f },
-    { esimp,
-      refine idp ◾** (!phomotopy_of_eq_con ⬝ (ap phomotopy_of_eq !smash_elim_inv_eq_of_phomotopy ⬝
-        !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy) ⬝ _,
-      refine _ ⬝ (!phomotopy_of_eq_con ⬝ (ap phomotopy_of_eq !pcompose_eq_of_phomotopy ⬝
-        !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy)⁻¹,
-      exact sorry
-       }
-  end
-
-
-  -- definition smash_adjoint_pmap_2 [constructor] (A B C : Type*) : (A ∧ B →* C) ≃ B →* ppmap A C :=
-  -- begin
-  --   fapply equiv.MK,
-  --   { exact smash_elim_inv },
-  --   { exact smash_elim },
-  --   { intro f, apply eq_of_phomotopy, exact smash_elim_left_inv f },
-  --   { intro g, apply eq_of_phomotopy, exact smash_elim_right_inv g }
-  -- end
-
-  -- definition smash_adjoint_pmap_1 [constructor] (A B C : Type*) : (A ∧ B →* C) ≃ A →* ppmap B C :=
-  -- pequiv_ppcompose_right (smash_comm B A) ⬝e smash_adjoint_pmap_2 B A C
-
-  -- definition smash_elim_inv_pconst {A B C : Type*} :
-  --   smash_elim_inv (pconst (A ∧ B) C) ~* pconst B (ppmap A C) :=
-  -- begin
-  --   fapply phomotopy_mk_ppmap,
-  --   { intro b, exact pconst_pcompose (pinl A b) },
-  --   { refine !trans_refl ⬝ _ ⬝ !phomotopy_of_eq_con⁻¹,
-  --     refine _ ⬝ ap011 phomotopy.trans (!phomotopy_of_eq_of_phomotopy⁻¹ ⬝
-  --                  ap phomotopy_of_eq !pcompose_eq_of_phomotopy⁻¹) !phomotopy_of_eq_of_phomotopy⁻¹,
-  --     fapply phomotopy_eq,
-  --     { intro a, exact !ap_constant⁻¹ },
-  --     { refine whisker_right _ !whisker_right_idp ⬝ _, esimp, }
-  --     }
-  -- end
-
-  -- definition smash_adjoint_pmap' [constructor] (A B C : Type*) : ppmap (A ∧ B) C ≃* ppmap B (ppmap A C) :=
-  -- pequiv_of_equiv (smash_adjoint_pmap_2 A B C) (eq_of_phomotopy begin esimp end)
-
 
   definition smash_adjoint_pmap' [constructor] (A B C : Type*) : B →* ppmap A C ≃ A ∧ B →* C :=
   begin
@@ -409,24 +386,19 @@ namespace smash
     { intro f, apply eq_of_phomotopy, exact smash_elim_left_inv f }
   end
 
+  definition smash_adjoint_pmap_inv [constructor] (A B C : Type*) :
+    ppmap B (ppmap A C) ≃* ppmap (A ∧ B) C :=
+  pequiv_of_equiv (smash_adjoint_pmap' A B C) (eq_of_phomotopy (smash_elim_pconst A B C))
+
   definition smash_adjoint_pmap [constructor] (A B C : Type*) :
     ppmap (A ∧ B) C ≃* ppmap B (ppmap A C) :=
-  (pequiv_of_equiv (smash_adjoint_pmap' A B C) (eq_of_phomotopy (smash_elim_pconst A B C)))⁻¹ᵉ*
+  (smash_adjoint_pmap_inv A B C)⁻¹ᵉ*
 
   definition smash_adjoint_pmap_natural_pt {A B C C' : Type*} (f : C →* C') (g : A ∧ B →* C) :
     ppcompose_left f ∘* smash_adjoint_pmap A B C g ~* smash_adjoint_pmap A B C' (f ∘* g) :=
   begin
     refine !passoc⁻¹* ⬝* pwhisker_right _ _,
     exact !ppcompose_left_pcompose⁻¹*
-  end
-
-  definition smash_adjoint_pmap_natural [constructor] {A B C C' : Type*} (f : C →* C') :
-    ppcompose_left (ppcompose_left f) ∘* smash_adjoint_pmap A B C ~*
-    smash_adjoint_pmap A B C' ∘* ppcompose_left f :=
-  begin
-    fapply phomotopy_mk_ppmap,
-    { exact smash_adjoint_pmap_natural_pt f },
-    { exact sorry }
   end
 
   definition smash_adjoint_pmap_inv_natural_pt {A B C C' : Type*} (f : C →* C')
@@ -439,17 +411,14 @@ namespace smash
   end
 
   definition smash_adjoint_pmap_inv_natural [constructor] {A B C C' : Type*} (f : C →* C') :
-    ppcompose_left f ∘* (smash_adjoint_pmap A B C)⁻¹ᵉ* ~*
-    (smash_adjoint_pmap A B C')⁻¹ᵉ* ∘* ppcompose_left (ppcompose_left f) :=
-  begin
-    exact sorry
-  end
-  -- begin
-  --   refine _ ⬝* pwhisker_left _ !smash_functor_pid_pcompose⁻¹*,
-  --   refine !passoc⁻¹* ⬝* pwhisker_right _ _ ⬝* !passoc,
-  --   apply smash_pmap_counit_natural
-  -- end
+    ppcompose_left f ∘* smash_adjoint_pmap_inv A B C ~*
+    smash_adjoint_pmap_inv A B C' ∘* ppcompose_left (ppcompose_left f) :=
+  smash_pelim_natural f
 
+  definition smash_adjoint_pmap_natural [constructor] {A B C C' : Type*} (f : C →* C') :
+    ppcompose_left (ppcompose_left f) ∘* smash_adjoint_pmap A B C ~*
+    smash_adjoint_pmap A B C' ∘* ppcompose_left f :=
+  (smash_adjoint_pmap_inv_natural f)⁻¹ʰ*
 
   /- associativity of smash -/
 
@@ -458,8 +427,8 @@ namespace smash
   calc
     ppmap (A ∧ (B ∧ C)) X ≃* ppmap (B ∧ C) (ppmap A X) : smash_adjoint_pmap A (B ∧ C) X
     ... ≃* ppmap C (ppmap B (ppmap A X)) : smash_adjoint_pmap B C (ppmap A X)
-    ... ≃* ppmap C (ppmap (A ∧ B) X) : pequiv_ppcompose_left (smash_adjoint_pmap A B X)⁻¹ᵉ*
-    ... ≃* ppmap ((A ∧ B) ∧ C) X : (smash_adjoint_pmap (A ∧ B) C X)⁻¹ᵉ*
+    ... ≃* ppmap C (ppmap (A ∧ B) X) : pequiv_ppcompose_left (smash_adjoint_pmap_inv A B X)
+    ... ≃* ppmap ((A ∧ B) ∧ C) X : smash_adjoint_pmap_inv (A ∧ B) C X
 
   definition smash_assoc_elim_equiv_fn (A B C X : Type*) (f : A ∧ (B ∧ C) →* X) :
     (A ∧ B) ∧ C →* X :=
@@ -479,35 +448,26 @@ namespace smash
     refine !smash_adjoint_pmap_natural_pt
   end
 
-  definition smash_assoc_elim_inv_natural_pt {A B C X X' : Type*} (f : X →* X') (g : (A ∧ B) ∧ C →* X) :
+  definition smash_assoc_elim_inv_natural_pt {A B C X X' : Type*} (f : X →* X')
+    (g : (A ∧ B) ∧ C →* X) :
     f ∘* (smash_assoc_elim_equiv A B C X)⁻¹ᵉ* g ~* (smash_assoc_elim_equiv A B C X')⁻¹ᵉ* (f ∘* g) :=
   begin
-    exact sorry
+    refine !smash_adjoint_pmap_inv_natural_pt ⬝* _,
+    apply smash_elim_phomotopy,
+    refine !passoc⁻¹* ⬝* _,
+    refine pwhisker_right _ !smash_pmap_counit_natural ⬝* _,
+    refine !passoc ⬝* _,
+    apply pwhisker_left,
+    refine !smash_functor_pid_pcompose⁻¹* ⬝* _,
+    apply smash_functor_phomotopy phomotopy.rfl,
+    refine !passoc⁻¹* ⬝* _,
+    refine pwhisker_right _ !smash_adjoint_pmap_natural ⬝* _,
+    refine !passoc ⬝* _,
+    apply pwhisker_left,
+    apply smash_elim_inv_natural
   end
 
-  definition smash_assoc_elim_natural {A B C X X' : Type*} (f : X →* X') :
-    ppcompose_left f ∘* smash_assoc_elim_equiv A B C X ~*
-    smash_assoc_elim_equiv A B C X' ∘* ppcompose_left f :=
-  begin
-    exact sorry
-    -- refine !smash_adjoint_pmap_inv_natural_pt ⬝* _,
-    -- apply smash_elim_phomotopy,
-    -- refine !passoc⁻¹* ⬝* _,
-    -- refine pwhisker_right _ !smash_adjoint_pmap_inv_natural ⬝* _,
-    -- refine !passoc ⬝* _,
-    -- apply pwhisker_left,
-    -- refine !smash_adjoint_pmap_natural_pt ⬝* _,
-    -- apply smash_elim_inv_phomotopy,
-    -- refine !smash_adjoint_pmap_natural_pt
-  end
-
-  -- definition smash_assoc_to (A B C : Type*) : A ∧ (B ∧ C) →* (A ∧ B) ∧ C :=
-  -- begin
-
-  -- end
-
-
-  -- TODO: remove pap
+  -- TODO: maybe do it without pap / phomotopy_of_eq
   definition smash_assoc (A B C : Type*) : A ∧ (B ∧ C) ≃* (A ∧ B) ∧ C :=
   begin
     fapply pequiv.MK2,
@@ -521,5 +481,5 @@ namespace smash
       apply phomotopy_of_eq, apply to_right_inv !smash_assoc_elim_equiv }
   end
 
-
+print axioms smash_assoc
 end smash
