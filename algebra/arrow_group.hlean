@@ -1,4 +1,4 @@
-import algebra.group_theory ..move_to_lib eq2
+import algebra.group_theory ..pointed eq2
 open pi pointed algebra group eq equiv is_trunc trunc
 
 namespace group

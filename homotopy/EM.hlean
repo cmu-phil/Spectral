@@ -1,6 +1,6 @@
 -- Authors: Floris van Doorn
 
-import homotopy.EM ..move_to_lib algebra.category.functor.equivalence ..pointed_pi
+import homotopy.EM algebra.category.functor.equivalence ..pointed ..pointed_pi
 
 open eq equiv is_equiv algebra group nat pointed EM.ops is_trunc trunc susp function is_conn
 
@@ -233,7 +233,7 @@ namespace EM
     begin
       assert p' : ptrunc_functor 0 (Ω→ f) ∘* pequiv_of_isomorphism eX ~*
                   pequiv_of_isomorphism eY ∘* pmap_of_homomorphism φ, exact phomotopy_of_homotopy p,
-      exact phcompose p' (ptrunc_pequiv_natural 0 (Ω→ f)),
+      exact p' ⬝h* (ptrunc_pequiv_natural 0 (Ω→ f)),
     end
 
   definition EM1_pequiv_type_natural {X Y : Type*} (f : X →* Y) [H1 : is_conn 0 X] [H2 : is_trunc 1 X]
@@ -286,7 +286,7 @@ namespace EM
   EMadd1_pequiv'_natural f n
     ((ptrunc_pequiv 0 (Ω[succ n] X))⁻¹ᵉ* ⬝e* pequiv_of_isomorphism eX)
     ((ptrunc_pequiv 0 (Ω[succ n] Y))⁻¹ᵉ* ⬝e* pequiv_of_isomorphism eY)
-    _ _ φ (hhcompose (to_homotopy (phinverse (ptrunc_pequiv_natural 0 (Ω→[succ n] f)))) p)
+    _ _ φ (hhconcat (to_homotopy (phinverse (ptrunc_pequiv_natural 0 (Ω→[succ n] f)))) p)
 
   definition EMadd1_pequiv_succ_natural {G H : AbGroup} {X Y : Type*} (f : X →* Y) (n : ℕ)
     (eX : πag[n+2] X ≃g G) (eY : πag[n+2] Y ≃g H) [is_conn (n.+1) X] [is_trunc (n.+2) X]
@@ -383,7 +383,7 @@ namespace EM
   begin
     cases n with n, { exact _ },
     cases Y with Y H1 H2, cases Y with Y y₀,
-    exact is_trunc_pmap X n -1 (ptrunctype.mk Y _ y₀),
+    exact is_trunc_pmap_of_is_conn X n -1 (ptrunctype.mk Y _ y₀),
   end
 
   open category

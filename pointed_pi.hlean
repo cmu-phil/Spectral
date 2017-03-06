@@ -12,7 +12,7 @@ open eq pointed equiv sigma
   The goal of this file is to give the truncation level
   of the type of pointed maps, giving the connectivity of
   the domain and the truncation level of the codomain.
-  This is is_trunc_pmap at the end.
+  This is is_trunc_pmap_of_is_conn at the end.
 
   First we define the type of dependent pointed maps
   as a tool, because these appear in the more general
@@ -164,7 +164,7 @@ section
       { exact pt } }
   end
 
-  definition is_trunc_pmap (k : ℕ₋₂) (B : (n.+1+2+k)-Type*)
+  definition is_trunc_pmap_of_is_conn (k : ℕ₋₂) (B : (n.+1+2+k)-Type*)
     : is_trunc k.+1 (A →* B) :=
   @is_trunc_equiv_closed _ _ k.+1 (ppi_equiv_pmap A B)
     (is_trunc_ppi A n k (λ a, B))

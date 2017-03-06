@@ -464,7 +464,7 @@ namespace pushout
 
   /- universal property of cofiber -/
 
-  structure is_short_exact_t {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
+  structure is_exact_t {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
   ( im_in_ker : Π(a:A), g (f a) = pt)
   ( ker_in_im : Π(b:B), (g b = pt) → fiber f b)
 
@@ -491,7 +491,7 @@ namespace pushout
   end
 
   definition cofiber_exact {X Y Z : Type*} (f : X →* Y) :
-    is_short_exact_t (@ppcompose_right _ _ Z (pcod f)) (ppcompose_right f) :=
+    is_exact_t (@ppcompose_right _ _ Z (pcod f)) (ppcompose_right f) :=
   begin
     constructor,
     { intro g, apply eq_of_phomotopy, apply cofiber_exact_1 },

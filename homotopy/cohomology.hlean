@@ -12,30 +12,30 @@ open eq spectrum int trunc pointed EM group algebra circle sphere nat EM.ops equ
      function fwedge cofiber bool lift sigma is_equiv choice pushout algebra unit pi
 
 -- TODO: move
-structure is_short_exact {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
+structure is_exact {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
   ( im_in_ker : Π(a:A), g (f a) = pt)
   ( ker_in_im : Π(b:B), (g b = pt) → image f b)
 
-definition is_short_exact_g {A B C : Group} (f : A →g B) (g : B →g C) :=
-is_short_exact f g
+definition is_exact_g {A B C : Group} (f : A →g B) (g : B →g C) :=
+is_exact f g
 
-definition is_short_exact_g.mk {A B C : Group} {f : A →g B} {g : B →g C}
-  (H₁ : Πa, g (f a) = 1) (H₂ : Πb, g b = 1 → image f b) : is_short_exact_g f g :=
-is_short_exact.mk H₁ H₂
+definition is_exact_g.mk {A B C : Group} {f : A →g B} {g : B →g C}
+  (H₁ : Πa, g (f a) = 1) (H₂ : Πb, g b = 1 → image f b) : is_exact_g f g :=
+is_exact.mk H₁ H₂
 
-definition is_short_exact_trunc_functor {A B : Type} {C : Type*} {f : A → B} {g : B → C}
-  (H : is_short_exact_t f g) : @is_short_exact _ _ (ptrunc 0 C) (trunc_functor 0 f) (trunc_functor 0 g) :=
+definition is_exact_trunc_functor {A B : Type} {C : Type*} {f : A → B} {g : B → C}
+  (H : is_exact_t f g) : @is_exact _ _ (ptrunc 0 C) (trunc_functor 0 f) (trunc_functor 0 g) :=
 begin
   constructor,
   { intro a, esimp, induction a with a,
-    exact ap tr (is_short_exact_t.im_in_ker H a) },
+    exact ap tr (is_exact_t.im_in_ker H a) },
   { intro b p, induction b with b, note q := !tr_eq_tr_equiv p, induction q with q,
-    induction is_short_exact_t.ker_in_im H b q with a r,
+    induction is_exact_t.ker_in_im H b q with a r,
     exact image.mk (tr a) (ap tr r) }
 end
 
-definition is_short_exact_homotopy {A B C : Type*} {f f' : A → B} {g g' : B → C}
-  (p : f ~ f') (q : g ~ g') (H : is_short_exact f g) : is_short_exact f' g' :=
+definition is_exact_homotopy {A B C : Type*} {f f' : A → B} {g g' : B → C}
+  (p : f ~ f') (q : g ~ g') (H : is_exact f g) : is_exact f' g' :=
 begin
   induction p using homotopy.rec_on_idp,
   induction q using homotopy.rec_on_idp,
@@ -199,8 +199,8 @@ end
 /- exactness -/
 
 definition cohomology_exact {X X' : Type*} (f : X →* X') (Y : spectrum) (n : ℤ) :
-  is_short_exact_g (cohomology_functor (pcod f) Y n) (cohomology_functor f Y n) :=
-is_short_exact_trunc_functor (cofiber_exact f)
+  is_exact_g (cohomology_functor (pcod f) Y n) (cohomology_functor f Y n) :=
+is_exact_trunc_functor (cofiber_exact f)
 
 /- additivity -/
 
@@ -253,7 +253,7 @@ structure cohomology_theory.{u} : Type.{u+1} :=
   (Hsusp : Π(n : ℤ) (X : Type*), HH (succ n) (psusp X) ≃g HH n X)
   (Hsusp_natural : Π(n : ℤ) {X Y : Type*} (f : X →* Y),
     Hsusp n X ∘ Hh (succ n) (psusp_functor f) ~ Hh n f ∘ Hsusp n Y)
-  (Hexact : Π(n : ℤ) {X Y : Type*} (f : X →* Y), is_short_exact_g (Hh n (pcod f)) (Hh n f))
+  (Hexact : Π(n : ℤ) {X Y : Type*} (f : X →* Y), is_exact_g (Hh n (pcod f)) (Hh n f))
   (Hadditive : Π(n : ℤ) {I : Type.{u}} (X : I → Type*), has_choice 0 I →
     is_equiv (Group_pi_intro (λi, Hh n (pinl i)) : HH n (⋁ X) → Πᵍ i, HH n (X i)))
 

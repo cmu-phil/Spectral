@@ -5,7 +5,7 @@ Authors: Michael Shulman, Floris van Doorn
 
 -/
 
-import homotopy.LES_of_homotopy_groups .splice homotopy.susp ..move_to_lib ..colim ..pointed_pi
+import homotopy.LES_of_homotopy_groups .splice homotopy.susp ..colim ..pointed
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
      seq_colim succ_str
 
