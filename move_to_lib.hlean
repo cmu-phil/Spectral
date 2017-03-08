@@ -5,14 +5,6 @@ import homotopy.sphere2 homotopy.cofiber homotopy.wedge
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
      is_trunc function sphere unit sum prod
 
-attribute equiv_unit_of_is_contr [constructor]
-attribute pwedge pushout.symm pushout.equiv pushout.is_equiv_functor [constructor]
-attribute is_succ_add_right is_succ_add_left is_succ_bit0 [constructor]
-attribute pushout.functor [unfold 16]
-attribute pushout.transpose [unfold 6]
-attribute ap_eq_apd10 [unfold 5]
-attribute eq_equiv_eq_symm [constructor]
-
 definition add_comm_right {A : Type} [add_comm_semigroup A] (n m k : A) : n + m + k = n + k + m :=
 !add.assoc ⬝ ap (add n) !add.comm ⬝ !add.assoc⁻¹
 
@@ -96,7 +88,6 @@ section -- squares
 
 end
 
-infix ` ⬝p2 `:75 := eq_concat2
 section -- cubes
 
   variables {A B : Type} {a₀₀₀ a₂₀₀ a₀₂₀ a₂₂₀ a₀₀₂ a₂₀₂ a₀₂₂ a₂₂₂ a a' : A}
@@ -216,7 +207,7 @@ end
   definition id_compose {A B : Type} (f : A → B) : id ∘ f ~ f :=
   by reflexivity
 
-  -- move
+  -- move to eq2
   definition ap_eq_ap011 {A B C X : Type} (f : A → B → C) (g : X → A) (h : X → B) {x x' : X}
     (p : x = x') : ap (λx, f (g x) (h x)) p = ap011 f (ap g p) (ap h p) :=
   by induction p; reflexivity

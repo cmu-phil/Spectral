@@ -548,5 +548,4 @@ namespace smash
     rexact phomotopy_of_eq ((smash_assoc_elim_equiv_natural_left _ f g h)⁻¹ʰ* !pid)⁻¹
   end
 
-
 end smash
