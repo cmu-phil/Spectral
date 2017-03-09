@@ -64,6 +64,39 @@ definition SES_of_surjective_map {B C : AbGroup} (g : B →g C) (Hg : is_surject
     intro b p, fapply tr, fapply fiber.mk, fapply sigma.mk, exact b, exact p, reflexivity,
   end
 
+definition SES_of_homomorphism {A B : AbGroup} (f : A →g B) : SES (ab_kernel f) A (ab_image f) :=
+  begin
+    fapply SES.mk,
+    exact ab_kernel_incl f,
+    exact image_lift f,
+    exact is_embedding_ab_kernel_incl f,
+    exact is_surjective_image_lift f,
+    fapply is_exact.mk,
+    intro a, induction a with a p, fapply subtype_eq, exact p,
+    intro a p, fapply tr, fapply fiber.mk, fapply sigma.mk, exact a, 
+    exact calc
+      f a = image_incl f (image_lift f a) : by exact homotopy_of_eq (ap group_fun (image_factor f)) a
+      ... = image_incl f 1 : ap (image_incl f) p
+      ... = 1 : by exact respect_one (image_incl f),
+    reflexivity
+  end
+
+definition SES_of_isomorphism_right {B C : AbGroup} (g : B ≃g C) : SES trivial_ab_group B C :=
+  begin
+    fapply SES.mk,
+    exact from_trivial_ab_group B,
+    exact g,
+    exact is_embedding_from_trivial_ab_group B,
+    fapply is_surjective_of_is_equiv,
+    fapply is_exact.mk,
+    intro a, induction a, fapply respect_one,
+    intro b p, 
+    have q : g b = g 1,
+    from p ⬝ (respect_one g)⁻¹, 
+    note r := eq_of_fn_eq_fn (equiv_of_isomorphism g) q, 
+    fapply tr, fapply fiber.mk, exact unit.star, rewrite r,
+  end
+
 structure hom_SES {A B C A' B' C' : AbGroup} (ses : SES A B C) (ses' : SES A' B' C') :=
   ( hA : A →g A')
   ( hB : B →g B')

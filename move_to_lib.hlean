@@ -959,3 +959,36 @@ definition is_surjective_factor : is_surjective h → is_surjective g :=
   end
 
 end injective_surjective
+
+definition AbGroup_of_Group.{u} (G : Group.{u}) (H : Π x y : G, x * y = y * x) : AbGroup.{u} :=
+begin
+  induction G,
+  fapply AbGroup.mk,
+  assumption,
+  exact ⦃ab_group, struct, mul_comm := H⦄
+end
+
+definition trivial_ab_group : AbGroup.{0} := 
+begin
+  fapply AbGroup_of_Group Trivial_group, intro x y, reflexivity
+end
+
+definition trivial_homomorphism (A B : AbGroup) : A →g B :=
+begin
+  fapply homomorphism.mk, 
+  exact λ a, 1,
+  intros, symmetry, exact one_mul 1,
+end
+
+definition from_trivial_ab_group (A : AbGroup) :  trivial_ab_group →g A :=
+  trivial_homomorphism trivial_ab_group A
+
+definition is_embedding_from_trivial_ab_group (A : AbGroup) : is_embedding (from_trivial_ab_group A) :=
+  begin
+    fapply is_embedding_of_is_injective,
+    intro x y p,
+    induction x, induction y, reflexivity
+  end
+
+definition to_trivial_ab_group (A : AbGroup) : A →g trivial_ab_group :=
+  trivial_homomorphism A trivial_ab_group
