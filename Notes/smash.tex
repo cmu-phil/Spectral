@@ -1,0 +1,175 @@
+\documentclass{article}
+
+\input{preamble-articles}
+
+\title{Notes on the smash product}
+\date{\today}
+\usepackage{fullpage}
+\newcommand{\pmap}{\to}
+\newcommand{\lpmap}{\xrightarrow}
+\renewcommand{\smash}{\wedge}
+\renewcommand{\phi}{\varphi}
+\renewcommand{\epsilon}{\varepsilon}
+\newcommand{\tr}{\cdot}
+\renewcommand{\o}{\ensuremath{\circ}}
+
+\begin{document}
+
+\maketitle
+
+\section{Pointed Types}
+
+\begin{defn}
+  We work in the $(\infty,1)$-category of pointed types.
+  \begin{itemize}
+  \item The objects are pointed types $A$, types together with a basepoint $a_0:A$.
+\item 1-cells are pointed maps $f:A\to B$ which are maps with a chosen path $f_0:f(a_0)=b_0$. We
+  write $A\pmap B$ for pointed maps and $A\pmap B\pmap C$ means $A\pmap (B\pmap C)$.
+\item 2-cells pointed homotopies. A pointed homotopy $h:f\sim g$ is a homotopy with a chosen 2-path
+  $h(a_0) \tr g_0 = f_0$.
+\item As 3-cells (and higher cells) we take equalities between pointed homotopies.
+\end{itemize}
+\end{defn}
+
+\begin{rmk}
+\item All types, maps and homotopies in these notes are pointed, unless explicitly mentioned
+  otherwise. Whenever we say that a diagram of $n$-cells commutes we mean it in the sense that there
+  is an $(n+1)$-cell witnessing it.
+\item Pointed homotopies are equivalent to equalities of pointed types: $(f\sim g)\equiv (f=g)$. So
+  we could have chosen to define our 2-cells as equalities between 1-cells, but since the
+  aforementioned equivalence requires function extensionality, it is better to define the type of
+  pointed homotopies manually in a type theory where function extensionality doesn't compute (like
+  Lean). In diagrams, we will denote pointed homotopies by equalities, but we always mean pointed
+  homotopies.
+\item The type $A\to B$ of pointed maps from $A$ to $B$ is itself pointed, with as basepoint the
+  constant map $0\equiv0_{A,B}:A\to B$ which has as underlying function $\lam{a:A}b_0$. In these
+  notes we will not use $0$ for the empty type (since that is not pointed, we will not use the empty
+  type).
+\end{rmk}
+
+\begin{lem}
+  Given maps $f:A'\pmap A$ and $g:B\pmap B'$. Then there are maps
+  $(f\pmap C):(A\pmap C)\pmap(A'\pmap C)$ and $(C\pmap g):(C\pmap B)\pmap(C\pmap B')$ given by
+  precomposition with $f$, resp. postcomposition with $g$. The map $\lam{g}C\pmap g$ preserves the basepoint, giving rise to a map $$(C\pmap ({-})):(B\pmap B')\pmap(C\pmap B)\pmap(C\pmap B').$$
+  Also, the following square commutes
+\begin{center}
+\begin{tikzcd}
+(A\pmap B) \arrow[r,"A\pmap g"]\arrow[d,"f\pmap B"] & (A\pmap B')\arrow[d,"f\pmap B'"] \\
+(A'\pmap B) \arrow[r,"A'\pmap g"] & (A'\pmap B')
+\end{tikzcd}
+\end{center}
+
+\end{lem}
+
+
+\section{Smash Product}
+
+
+\begin{lem}\mbox{}
+  \begin{itemize}
+  \item The smash is functorial: if $f:A\pmap A'$ and $g:B\pmap B'$ then
+    $f\smash g:A\smash B\pmap A'\smash B'$. We write $A\smash g$ or $f\smash B$ if one of the
+    functions is the identity function.
+  \item Smash preserves composition, which gives rise to the interchange law:
+    $(f' \o f)\smash (g' \o g) \sim f' \smash g' \o f \smash g$
+  \item If $p:f\sim f'$ and $q:g\sim g'$ then $p\smash q:f\smash g\sim f'\smash g'$. This operation
+    preserves reflexivities, symmetries and transitivies.
+  \item $f\smash0\sim0$ and $0\smash g\sim 0$.
+  \end{itemize}
+\end{lem}
+
+\begin{lem}
+  Suppose that we have maps $A_1\lpmap{f_1}A_2\lpmap{f_2}A_3$ and $B_1\lpmap{g_1}B_2\lpmap{g_2}B_3$
+  and suppose that either $g_1$ or $g_2$ is constant. Then there are two homotopies
+  $(f_2 \o f_1)\smash (g_2 \o g_1)\sim 0$, one which uses interchange and one which doesn't. These two
+  homotopies are equal.
+\end{lem}
+\begin{proof}
+We will only do the case where $g_1\jdeq 0$, the other case is similar (but slightly easier). In this case, we need to show that the following diagram commutes.
+\begin{center}
+\begin{tikzcd}
+(f_2 \o f_1)\smash (g_2 \o 0) \arrow[r, equals]\arrow[dd,equals] &
+(f_2 \smash g_1)\o (f_1 \o 0)\arrow[d,equals] \\
+& (f_2 \smash g_1)\o 0\arrow[d,equals] \\
+(f_2 \o f_1)\smash 0 \arrow[r,equals] &
+0
+\end{tikzcd}
+\end{center}
+Proof to do.
+\end{proof}
+
+\begin{thm}\label{thm:smash-functor-right}
+Given pointed types $A$, $A'$ and $B$, the functorial action of the smash product induces a map
+$$({-})\smash B:(A\pmap A')\pmap(A\smash B\pmap A'\smash B)$$
+which is natural in $A$, $A'$ and $B$. (note: it's both covariant and contravariant in $B$).
+\end{thm}
+\begin{proof}
+First note that $\lam{f}f\smash B$ preserves the basepoint so that the map is indeed pointed.
+\end{proof}
+
+\section{Adjunction}
+
+\begin{defn}
+There is a unit $\eta:A\pmap B\pmap A\smash B$ and counit $\epsilon : (B\pmap C)\smash B \pmap C$
+\end{defn}
+
+
+\begin{defn}
+The function $e\jdeq e_{A,B,C}:(A\pmap B\pmap C)\pmap(A\smash B\pmap C)$ is defined as the composite
+$$(A\pmap B\pmap C)\lpmap{({-})\smash B}(A\smash B\pmap (B\pmap C)\smash B)\lpmap{A\smash B \pmap\epsilon}(A\smash B\pmap C)).$$
+
+\begin{lem}
+$e$ has an inverse $\inv e\jdeq \inv{e}_{A,B,C}:(A\smash B\pmap C)\pmap(A\pmap B\pmap C)$ which is defined as
+$$(A\smash B\pmap C)\lpmap{B\pmap({-})}((B\pmap A\smash B)\pmap (B\pmap C))\lpmap{\eta\pmap(B\pmap C)}(A\pmap B\pmap C).$$
+\begin{proof}
+We do not actually use that $\inv{e}_{A,B,C}$ has this form in later proofs, we only use that $e$ is invertible (the former fact is also not formalized). Proof to do.
+\end{proof}
+\end{lem}
+\end{defn}
+\begin{lem}
+$e$ is natural in $A$, $B$ and $C$.
+\end{lem}
+\begin{proof}
+\textbf{$e$ is natural in $A$}. Suppose that $f:A'\pmap A$. Then the following diagram commutes. The left square commutes by naturality of $({-})\smash B$ in the first argument and the right square commutes because composition on the left commutes with composition on the right.
+\begin{center}
+\begin{tikzcd}
+(A\pmap B\pmap C) \arrow[r,"({-})\smash B"]\arrow[d,"f\pmap B\pmap C"] &
+(A\smash B\pmap (B\pmap C)\smash B) \arrow[r,"A\smash B\pmap\epsilon"]\arrow[d,"f\smash B\pmap\cdots"]  &
+(A\smash B\pmap C)\arrow[d,"f\smash B\pmap C"] \\
+(A'\pmap B\pmap C) \arrow[r,"({-})\smash B"] &
+(A'\smash B\pmap (B\pmap C)\smash B) \arrow[r,"A\smash B\pmap\epsilon"] &
+(A'\smash B\pmap C)
+\end{tikzcd}
+\end{center}
+
+\textbf{$e$ is natural in $C$}. Suppose that $f:C\pmap C'$. Then in the following diagram the left square commutes by naturality of $({-})\smash B$ in the second argument (applied to $B\pmap f$) and the right square commutes by applying the functor $A\smash B \pmap({-})$ to the naturality of $\epsilon$ in the second argument.
+\begin{center}
+\begin{tikzcd}
+(A\pmap B\pmap C) \arrow[r]\arrow[d] &
+(A\smash B\pmap (B\pmap C)\smash B) \arrow[r]\arrow[d] &
+(A\smash B\pmap C)\arrow[d] \\
+(A\pmap B\pmap C') \arrow[r] &
+(A\smash B\pmap (B\pmap C')\smash B) \arrow[r] &
+(A\smash B\pmap C')
+\end{tikzcd}
+\end{center}
+
+\textbf{$e$ is natural in $B$}. Suppose that $f:B'\pmap B$. The diagram looks weird since $({-})\smash B$ is both contravariant and covariant in $B$. Then we get the following diagram. The front square commutes by naturality of $({-})\smash B$ in the second argument (applied to $f\pmap C$). The top square commutes by naturality of $({-})\smash B$ in the third argument, the back square commutes because composition on the left commutes with composition on the right, and finally the right square commutes by applying the functor $A\smash B' \pmap({-})$ to the naturality of $\epsilon$ in the first argument.
+\begin{center}
+\begin{tikzcd}[row sep=scriptsize, column sep=-4em]
+& (A\smash B\pmap (B\pmap C)\smash B) \arrow[rr] \arrow[dd] & & (A\smash B'\pmap (B\pmap C)\smash B)\arrow[dd] \\
+(A\pmap B\pmap C) \arrow[ur] \arrow[rr, crossing over] \arrow[dd] & & (A\smash B'\pmap (B\pmap C)\smash B') \arrow[ur] \\
+& (A\smash B\pmap C)\arrow[rr] &  & (A\smash B'\pmap C) \\
+(A\pmap B'\pmap C) \arrow[rr] & & (A\smash B'\pmap (B'\pmap C)\smash B') \arrow[ur] \arrow[from=uu, crossing over]\\
+\end{tikzcd}
+\end{center}
+
+\end{proof}
+
+
+\section{Notes on the formalization}
+
+The order of arguments are different in the formalization here and there.
+Also, some smashes are commuted. This is because some unfortunate choices have been made in the formalization. Reversing these choices is possible, but probably more work than it's worth (the final result is exactly the same).
+
+\end{document}

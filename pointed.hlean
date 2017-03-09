@@ -138,6 +138,10 @@ namespace pointed
   postfix `⁻¹ʰ*`:(max+1) := phinverse
   postfix `⁻¹ᵛ*`:(max+1) := pvinverse
 
+  definition pwhisker_tl (f : A →* A₀₀) (q : psquare f₁₀ f₁₂ f₀₁ f₂₁) :
+    psquare (f₁₀ ∘* f) f₁₂ (f₀₁ ∘* f) f₂₁ :=
+  !passoc⁻¹* ⬝* pwhisker_right f q ⬝* !passoc
+
   definition ap1_psquare (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) :
     psquare (Ω→ f₁₀) (Ω→ f₁₂) (Ω→ f₀₁) (Ω→ f₂₁) :=
   !ap1_pcompose⁻¹* ⬝* ap1_phomotopy p ⬝* !ap1_pcompose
@@ -606,8 +610,18 @@ namespace pointed
     pwhisker_right f (pcompose_pconst g) ⬝* pconst_pcompose f :=
   begin
     fapply phomotopy_eq,
-    { intro a, esimp, exact !idp_con ⬝ !idp_con },
+    { intro a, exact !idp_con ⬝ !idp_con },
     { induction g with g g₀, induction f with f f₀, induction B' with D d₀, induction A with C c₀,
+      esimp at *, induction g₀, induction f₀, reflexivity }
+  end
+
+  definition passoc_pconst_left {A B C D : Type*} (g : B →* C) (f : A →* B) :
+    phsquare (passoc (pconst C D) g f) (pconst_pcompose f)
+             (pwhisker_right f (pconst_pcompose g)) (pconst_pcompose (g ∘* f)) :=
+  begin
+    fapply phomotopy_eq,
+    { intro a, exact !idp_con },
+    { induction g with g g₀, induction f with f f₀, induction C with C c₀, induction B with B b₀,
       esimp at *, induction g₀, induction f₀, reflexivity }
   end
 
@@ -616,11 +630,21 @@ namespace pointed
   begin
     fapply phomotopy_mk_ppmap,
     { exact passoc h g },
-    { esimp,
-      refine idp ◾** (!phomotopy_of_eq_con ⬝
+    { refine idp ◾** (!phomotopy_of_eq_con ⬝
         (ap phomotopy_of_eq !pcompose_left_eq_of_phomotopy ⬝ !phomotopy_of_eq_of_phomotopy) ◾**
         !phomotopy_of_eq_of_phomotopy) ⬝ _ ⬝ !phomotopy_of_eq_of_phomotopy⁻¹,
       exact passoc_pconst_right h g }
+  end
+
+  definition ppcompose_right_pcompose [constructor] {A B C D : Type*} (g : B →* C) (f : A →* B) :
+    @ppcompose_right _ _ D (g ∘* f) ~* ppcompose_right f ∘* ppcompose_right g :=
+  begin
+    symmetry,
+    fapply phomotopy_mk_ppmap,
+    { intro h, exact passoc h g f },
+    { refine idp ◾** !phomotopy_of_eq_of_phomotopy ⬝ _ ⬝ (!phomotopy_of_eq_con ⬝
+        (ap phomotopy_of_eq !pcompose_right_eq_of_phomotopy ⬝ !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy)⁻¹,
+      exact passoc_pconst_left g f }
   end
 
   definition ppcompose_left_ppcompose_right {A A' B B' : Type*} (g : B →* B') (f : A' →* A) :
@@ -673,6 +697,16 @@ namespace pointed
     induction p using phomotopy_rec_on_idp,
     reflexivity
   end
+
+  definition ppcompose_right_phomotopy [constructor] {A B C : Type*} {f f' : A →* B} (p : f ~* f') :
+    @ppcompose_right _ _ C f ~* ppcompose_right f' :=
+  begin
+    induction p using phomotopy_rec_on_idp,
+    reflexivity
+  end
+
+  definition pppcompose [constructor] (A B C : Type*) : ppmap B C →* ppmap (ppmap A B) (ppmap A C) :=
+  pmap.mk ppcompose_left (eq_of_phomotopy !ppcompose_left_pconst)
 
   section psquare
 

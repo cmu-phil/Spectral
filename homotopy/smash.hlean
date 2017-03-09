@@ -306,6 +306,17 @@ namespace smash
   !smash_functor_phomotopy_trans⁻¹ ⬝ ap011 smash_functor_phomotopy p q ⬝
   !smash_functor_phomotopy_trans
 
+  definition smash_functor_eq_of_phomotopy (f : A →* C) {g g' : B →* D}
+    (p : g ~* g') : ap (smash_functor f) (eq_of_phomotopy p) =
+    eq_of_phomotopy (smash_functor_phomotopy phomotopy.rfl p) :=
+  begin
+    induction p using phomotopy_rec_on_idp,
+    refine ap02 _ !eq_of_phomotopy_refl ⬝ _,
+    refine !eq_of_phomotopy_refl⁻¹ ⬝ _,
+    apply ap eq_of_phomotopy,
+    exact !smash_functor_phomotopy_refl⁻¹
+  end
+
   /- the functorial action preserves compositions, the interchange law -/
   definition smash_functor_pcompose_homotopy [unfold 11] {C D E F : Type}
     (f' : C → E) (f : A → C) (g' : D → F) (g : B → D) :
@@ -446,10 +457,18 @@ namespace smash
     exact !smash_functor_phomotopy_refl ◾** idp ⬝ !refl_trans
   end
 
-  /- We need two coherence rules for the naturality of the smash-pmap adjunction. Given the function
-     h := (f' ∘ f) ∧→ (g' ∘ g) and suppose that either g' or g is constant. There are two ways to
-     show that h is constant: either by using exchange, or directly. We need to show that these two
-     proofs result in the same pointed homotopy. First we do the case where g is constant -/
+  /- This makes smash_functor into a pointed map (B →* B') →* (A ∧ B →* A ∧ B') -/
+
+  definition smash_functor_right [constructor] (A B C : Type*) :
+    ppmap B C →* ppmap (A ∧ B) (A ∧ C) :=
+  pmap.mk (smash_functor (pid A)) (eq_of_phomotopy (smash_functor_pconst_right (pid A)))
+
+  /- We want to show that smash_functor_right is natural in A, B and C.
+
+     For this we need two coherence rules. Given the function h := (f' ∘ f) ∧→ (g' ∘ g) and suppose
+     that either g' or g is constant. There are two ways to show that h is constant: either by using
+     exchange, or directly. We need to show that these two proofs result in the same pointed
+     homotopy. First we do the case where g is constant -/
 
   private definition my_squarel {A : Type} {a₁ a₂ a₃ : A} (p₁ : a₁ = a₃) (p₂ : a₂ = a₃) :
     square (p₁ ⬝ p₂⁻¹) p₂⁻¹ p₁ idp :=
@@ -548,10 +567,8 @@ namespace smash
              (smash_functor_phomotopy phomotopy.rfl (pcompose_pconst g))
              (pwhisker_left (pid A ∧→ g) (smash_functor_pconst_right (pid A)) ⬝*
                pcompose_pconst (pid A ∧→ g)) :=
-  begin
-    refine (_ ◾** idp ⬝ !refl_trans) ⬝pv** smash_functor_pcompose_pconst (pid A) (pid A) g,
-    apply smash_functor_phomotopy_refl,
-  end
+  (!smash_functor_phomotopy_refl ◾** idp ⬝ !refl_trans) ⬝pv**
+  smash_functor_pcompose_pconst (pid A) (pid A) g
 
   /- a small rewrite of the previous -/
   definition smash_functor_pid_pcompose_pconst' (g : D →* F) :
@@ -631,6 +648,30 @@ namespace smash
                whisker_left idp (idp ⬝ (idp ⬝ proof whisker_right idp (idp_con (p ⬝ p⁻¹ᵖ))⁻¹ᵖ qed ⬝
                  whisker_left idp (con.right_inv p))), by intros; induction p; reflexivity,
       rexact H (gluel (f' (f a₀))) }
+  end
+
+  /- a version where the left maps are identities -/
+  definition smash_functor_pid_pconst_pcompose (g : B →* D) :
+    phsquare (smash_functor_pid_pcompose A (pconst D F) g)
+             (smash_functor_pconst_right (pid A))
+             (smash_functor_phomotopy phomotopy.rfl (pconst_pcompose g))
+             (pwhisker_right (pid A ∧→ g) (smash_functor_pconst_right (pid A)) ⬝*
+               pconst_pcompose (pid A ∧→ g)) :=
+  (!smash_functor_phomotopy_refl ◾** idp ⬝ !refl_trans) ⬝pv**
+  smash_functor_pconst_pcompose (pid A) (pid A) g
+
+  definition smash_functor_right_natural_right (f : C →* C') :
+    psquare (smash_functor_right A B C) (smash_functor_right A B C')
+            (ppcompose_left f) (ppcompose_left (pid A ∧→ f)) :=
+  begin
+    refine _⁻¹*,
+    fapply phomotopy_mk_ppmap,
+    { exact smash_functor_pid_pcompose A f },
+    { refine idp ◾** (!phomotopy_of_eq_con ⬝ (ap phomotopy_of_eq !pcompose_left_eq_of_phomotopy ⬝
+        !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy) ⬝ _ ,
+      refine _ ⬝ (!phomotopy_of_eq_con ⬝ (ap phomotopy_of_eq !smash_functor_eq_of_phomotopy ⬝
+        !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy)⁻¹,
+      apply smash_functor_pid_pcompose_pconst }
   end
 
   /- a lemma using both these rules -/
