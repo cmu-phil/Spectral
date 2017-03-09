@@ -499,6 +499,10 @@ namespace pointed
     (q : phsquare p₁₀ p₁₂ (p ⬝* p₀₁) p₂₁) : phsquare (p⁻¹* ⬝* p₁₀) p₁₂ p₀₁ p₂₁ :=
   !trans_assoc ⬝ (eq_symm_trans_of_trans_eq (q ⬝ !trans_assoc)⁻¹)⁻¹
 
+  definition phmove_bot_of_left {p₀₁ : f₀₀ ~* f} (p : f ~* f₀₂)
+    (q : phsquare p₁₀ p₁₂ (p₀₁ ⬝* p) p₂₁) : phsquare p₁₀ (p ⬝* p₁₂) p₀₁ p₂₁ :=
+  q ⬝ !trans_assoc
+
   definition passoc_phomotopy_right {A B C D : Type*} (h : C →* D) (g : B →* C) {f f' : A →* B}
     (p : f ~* f') : phsquare (passoc h g f) (passoc h g f')
       (pwhisker_left (h ∘* g) p) (pwhisker_left h (pwhisker_left g p)) :=
