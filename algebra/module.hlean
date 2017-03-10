@@ -7,8 +7,10 @@ Modules prod vector spaces over a ring.
 
 (We use "left_module," which is more precise, because "module" is a keyword.)
 -/
-import algebra.field
-open algebra
+import algebra.field ..move_to_lib
+open is_trunc pointed function sigma eq
+
+namespace algebra
 
 structure has_scalar [class] (F V : Type) :=
 (smul : F → V → V)
@@ -84,3 +86,139 @@ end left_module
 
 structure vector_space [class] (F V : Type) [fieldF : field F]
   extends left_module F V
+
+/- homomorphisms -/
+
+definition is_smul_hom [class] (R : Type) {M₁ M₂ : Type} [has_scalar R M₁] [has_scalar R M₂]
+  (f : M₁ → M₂) : Type :=
+∀ r : R, ∀ a : M₁, f (r • a) = r • f a
+
+definition is_prop_is_smul_hom [instance] (R : Type) {M₁ M₂ : Type} [is_set M₂]
+  [has_scalar R M₁] [has_scalar R M₂] (f : M₁ → M₂) : is_prop (is_smul_hom R f) :=
+begin unfold is_smul_hom, apply _ end
+
+definition respect_smul (R : Type) {M₁ M₂ : Type} [has_scalar R M₁] [has_scalar R M₂]
+    (f : M₁ → M₂) [H : is_smul_hom R f] :
+  ∀ r : R, ∀ a : M₁, f (r • a) = r • f a :=
+H
+
+definition is_module_hom [class] (R : Type) {M₁ M₂ : Type}
+  [has_scalar R M₁] [has_scalar R M₂] [add_group M₁] [add_group M₂]
+  (f : M₁ → M₂) :=
+is_add_hom f × is_smul_hom R f
+
+definition is_add_hom_of_is_module_hom [instance] (R : Type) {M₁ M₂ : Type}
+  [has_scalar R M₁] [has_scalar R M₂] [add_group M₁] [add_group M₂]
+  (f : M₁ → M₂) [H : is_module_hom R f] : is_add_hom f :=
+prod.pr1 H
+
+definition is_smul_hom_of_is_module_hom [instance] {R : Type} {M₁ M₂ : Type}
+  [has_scalar R M₁] [has_scalar R M₂] [add_group M₁] [add_group M₂]
+  (f : M₁ → M₂) [H : is_module_hom R f] : is_smul_hom R f :=
+prod.pr2 H
+
+-- Why do we have to give the instance explicitly?
+definition is_prop_is_module_hom [instance] (R : Type) {M₁ M₂ : Type}
+  [has_scalar R M₁] [has_scalar R M₂] [add_group M₁] [add_group M₂]
+  (f : M₁ → M₂) : is_prop (is_module_hom R f) :=
+have h₁ : is_prop (is_add_hom f), from is_prop_is_add_hom f,
+begin unfold is_module_hom, apply _ end
+
+section module_hom
+  variables {R : Type} {M₁ M₂ M₃ : Type}
+  variables [has_scalar R M₁] [has_scalar R M₂] [has_scalar R M₃]
+  variables [add_group M₁] [add_group M₂] [add_group M₃]
+  variables (g : M₂ → M₃) (f : M₁ → M₂) [is_module_hom R g] [is_module_hom R f]
+
+  proposition is_module_hom_id : is_module_hom R (@id M₁) :=
+  pair (λ a₁ a₂, rfl) (λ r a, rfl)
+
+  proposition is_module_hom_comp : is_module_hom R (g ∘ f) :=
+  pair
+    (take a₁ a₂, begin esimp, rewrite [respect_add f, respect_add g] end)
+    (take r a, by esimp; rewrite [respect_smul R f, respect_smul R g])
+
+  proposition respect_smul_add_smul (a b : R) (u v : M₁) : f (a • u + b • v) = a • f u + b • f v :=
+  by rewrite [respect_add f, +respect_smul R f]
+end module_hom
+
+structure LeftModule (R : Ring) :=
+(carrier : Type) (struct : left_module R carrier)
+
+local attribute LeftModule.carrier [coercion]
+attribute LeftModule.struct [instance]
+
+definition pointed_LeftModule_carrier [instance] {R : Ring} (M : LeftModule R) :
+  pointed (LeftModule.carrier M) :=
+pointed.mk zero
+
+definition pSet_of_LeftModule [coercion] {R : Ring} (M : LeftModule R) : Set* :=
+pSet.mk' (LeftModule.carrier M)
+
+namespace left_module
+  variable {R : Ring}
+
+  structure homomorphism (M₁ M₂ : LeftModule R) : Type :=
+    (fn : LeftModule.carrier M₁ → LeftModule.carrier M₂)
+    (p : is_module_hom R fn)
+
+  infix ` →lm `:55 := homomorphism
+
+  definition homomorphism_fn [unfold 4] [coercion] := @homomorphism.fn
+
+  definition is_module_hom_of_homomorphism [unfold 4] [instance] [priority 900]
+      {M₁ M₂ : LeftModule R} (φ : M₁ →lm M₂) : is_module_hom R φ :=
+  homomorphism.p φ
+
+  section
+    variables {M₁ M₂ : LeftModule R} (φ : M₁ →lm M₂)
+
+    definition to_respect_add (x y : M₁) : φ (x + y) = φ x + φ y :=
+    respect_add φ x y
+
+    definition to_respect_smul (a : R) (x : M₁) : φ (a • x) = a • (φ x) :=
+    respect_smul R φ a x
+
+    definition is_embedding_of_homomorphism /- φ -/ (H : Π{x}, φ x = 0 → x = 0) : is_embedding φ :=
+    is_embedding_of_is_add_hom φ @H
+
+    variables (M₁ M₂)
+    definition is_set_homomorphism [instance] : is_set (M₁ →lm M₂) :=
+    begin
+      have H : M₁ →lm M₂ ≃ Σ(f : LeftModule.carrier M₁ → LeftModule.carrier M₂),
+        is_module_hom (Ring.carrier R) f,
+      begin
+        fapply equiv.MK,
+        { intro φ, induction φ, constructor, exact p},
+        { intro v, induction v with f H, constructor, exact H},
+        { intro v, induction v, reflexivity},
+        { intro φ, induction φ, reflexivity}
+      end,
+    have ∀ f : LeftModule.carrier M₁ → LeftModule.carrier M₂,
+      is_set (is_module_hom (Ring.carrier R) f), from _,
+    apply is_trunc_equiv_closed_rev, exact H
+  end
+
+  variables {M₁ M₂}
+  definition pmap_of_homomorphism [constructor] /- φ -/ :
+    pSet_of_LeftModule M₁ →* pSet_of_LeftModule M₂ :=
+  have H : φ 0 = 0, from respect_zero φ,
+  pmap.mk φ begin esimp, exact H end
+
+  definition homomorphism_change_fun [constructor]
+    (φ : M₁ →lm M₂) (f : M₁ → M₂) (p : φ ~ f) : M₁ →lm M₂ :=
+  homomorphism.mk f
+    (prod.mk
+      (λx₁ x₂, (p (x₁ + x₂))⁻¹ ⬝ to_respect_add φ x₁ x₂ ⬝ ap011 _ (p x₁) (p x₂))
+      (λ a x, (p (a • x))⁻¹ ⬝ to_respect_smul φ a x ⬝ ap01 _ (p x)))
+
+  definition homomorphism_eq (φ₁ φ₂ : M₁ →lm M₂) (p : φ₁ ~ φ₂) : φ₁ = φ₂ :=
+  begin
+    induction φ₁ with φ₁ q₁, induction φ₂ with φ₂ q₂, esimp at p, induction p,
+    exact ap (homomorphism.mk φ₂) !is_prop.elim
+  end
+end
+
+end left_module
+
+end algebra
