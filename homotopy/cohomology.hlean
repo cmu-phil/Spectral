@@ -49,8 +49,8 @@ definition ap1_pmap_mul {X Y : Type*} (f g : X →* Ω Y) :
 begin
   fconstructor,
   { intro p, esimp,
-    refine ap1_gen_con_left p (respect_pt f) (respect_pt f)
-             (respect_pt g) (respect_pt g) ⬝ _,
+    refine ap1_gen_con_left (respect_pt f) (respect_pt f)
+             (respect_pt g) (respect_pt g) p ⬝ _,
     refine !whisker_right_idp ◾ !whisker_left_idp2, },
   { refine !con.assoc ⬝ _,
     refine _ ◾ idp ⬝ _, rotate 1,

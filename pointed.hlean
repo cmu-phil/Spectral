@@ -10,6 +10,10 @@ open pointed eq equiv function is_equiv unit is_trunc trunc nat algebra group si
 
 namespace pointed
 
+  definition loop_pequiv_eq_closed [constructor] {A : Type} {a a' : A} (p : a = a')
+    : pointed.MK (a = a) idp ≃* pointed.MK (a' = a') idp :=
+  pequiv_of_equiv (loop_equiv_eq_closed p) (con.left_inv p)
+
   definition punit_pmap_phomotopy [constructor] {A : Type*} (f : punit →* A) : f ~* pconst punit A :=
   begin
     fapply phomotopy.mk,
@@ -31,16 +35,16 @@ namespace pointed
   ap010 to_homotopy r a
 
   definition ap1_gen_con_left {A B : Type} {a a' : A} {b₀ b₁ b₂ : B}
-    {f : A → b₀ = b₁} {f' : A → b₁ = b₂} (p : a = a') {q₀ q₁ : b₀ = b₁} {q₀' q₁' : b₁ = b₂}
-    (r₀ : f a = q₀) (r₁ : f a' = q₁) (r₀' : f' a = q₀') (r₁' : f' a' = q₁') :
-      ap1_gen (λa, f a ⬝ f' a) p (r₀ ◾ r₀') (r₁ ◾ r₁') =
-      whisker_right q₀' (ap1_gen f p r₀ r₁) ⬝ whisker_left q₁ (ap1_gen f' p r₀' r₁') :=
+    {f : A → b₀ = b₁} {f' : A → b₁ = b₂} {q₀ q₁ : b₀ = b₁} {q₀' q₁' : b₁ = b₂}
+    (r₀ : f a = q₀) (r₁ : f a' = q₁) (r₀' : f' a = q₀') (r₁' : f' a' = q₁') (p : a = a') :
+      ap1_gen (λa, f a ⬝ f' a) (r₀ ◾ r₀') (r₁ ◾ r₁') p =
+      whisker_right q₀' (ap1_gen f r₀ r₁ p) ⬝ whisker_left q₁ (ap1_gen f' r₀' r₁' p) :=
   begin induction r₀, induction r₁, induction r₀', induction r₁', induction p, reflexivity end
 
   definition ap1_gen_con_left_idp {A B : Type} {a : A} {b₀ b₁ b₂ : B}
     {f : A → b₀ = b₁} {f' : A → b₁ = b₂} {q₀ : b₀ = b₁} {q₁ : b₁ = b₂}
     (r₀ : f a = q₀) (r₁ : f' a = q₁) :
-      ap1_gen_con_left idp r₀ r₀ r₁ r₁ =
+      ap1_gen_con_left r₀ r₀ r₁ r₁ idp =
       !con.left_inv ⬝ (ap (whisker_right q₁) !con.left_inv ◾ ap (whisker_left _) !con.left_inv)⁻¹ :=
   begin induction r₀, induction r₁, reflexivity end
 
@@ -406,6 +410,22 @@ namespace pointed
     {r : f ~* h} (s : p ⬝* q = r) : p = r ⬝* q⁻¹* :=
   !trans_refl⁻¹ ⬝ idp ◾** !trans_right_inv⁻¹ ⬝ !trans_assoc⁻¹ ⬝ s ◾** idp
 
+  definition eq_trans_of_symm_trans_eq {A B : Type*} {f g h : A →* B} {p : f ~* g} {q : g ~* h}
+    {r : f ~* h} (s : p⁻¹* ⬝* r = q) : r = p ⬝* q :=
+  !refl_trans⁻¹ ⬝ !trans_right_inv⁻¹ ◾** idp ⬝ !trans_assoc ⬝ idp ◾** s
+
+  definition symm_trans_eq_of_eq_trans {A B : Type*} {f g h : A →* B} {p : f ~* g} {q : g ~* h}
+    {r : f ~* h} (s : r = p ⬝* q) : p⁻¹* ⬝* r = q :=
+  idp ◾** s ⬝ !trans_assoc⁻¹ ⬝ trans_left_inv p ◾** idp ⬝ !refl_trans
+
+  definition eq_trans_of_trans_symm_eq {A B : Type*} {f g h : A →* B} {p : f ~* g} {q : g ~* h}
+    {r : f ~* h} (s : r ⬝* q⁻¹* = p) : r = p ⬝* q :=
+  !trans_refl⁻¹ ⬝ idp ◾** !trans_left_inv⁻¹ ⬝ !trans_assoc⁻¹ ⬝ s ◾** idp
+
+  definition trans_symm_eq_of_eq_trans {A B : Type*} {f g h : A →* B} {p : f ~* g} {q : g ~* h}
+    {r : f ~* h} (s : r = p ⬝* q) : r ⬝* q⁻¹* = p :=
+  s ◾** idp ⬝ !trans_assoc ⬝ idp ◾** trans_right_inv q ⬝ !trans_refl
+
   section phsquare
   /-
     Squares of pointed homotopies
@@ -424,6 +444,17 @@ namespace pointed
 
   definition phsquare_of_eq (p : p₁₀ ⬝* p₂₁ = p₀₁ ⬝* p₁₂) : phsquare p₁₀ p₁₂ p₀₁ p₂₁ := p
   definition eq_of_phsquare (p : phsquare p₁₀ p₁₂ p₀₁ p₂₁) : p₁₀ ⬝* p₂₁ = p₀₁ ⬝* p₁₂ := p
+
+  definition phsquare.mk (p : Πx, square (p₁₀ x) (p₁₂ x) (p₀₁ x) (p₂₁ x))
+    (q : cube (square_of_eq (to_homotopy_pt p₁₀)) (square_of_eq (to_homotopy_pt p₁₂))
+              (square_of_eq (to_homotopy_pt p₀₁)) (square_of_eq (to_homotopy_pt p₂₁))
+              (p pt) ids) : phsquare p₁₀ p₁₂ p₀₁ p₂₁ :=
+  begin
+    fapply phomotopy_eq,
+    { intro x, apply eq_of_square (p x) },
+    { generalize p pt, intro r, exact sorry }
+  end
+
 
   definition phhconcat (p : phsquare p₁₀ p₁₂ p₀₁ p₂₁) (q : phsquare p₃₀ p₃₂ p₂₁ p₄₁) :
     phsquare (p₁₀ ⬝* p₃₀) (p₁₂ ⬝* p₃₂) p₀₁ p₄₁ :=
@@ -565,6 +596,25 @@ namespace pointed
     exact !pwhisker_right_refl⁻¹
   end
 
+  definition ap1_phomotopy_refl {X Y : Type*} (f : X →* Y) :
+    ap1_phomotopy (phomotopy.refl f) = phomotopy.refl (Ω→ f) :=
+  begin
+    -- induction X with X x₀, induction Y with Y y₀, induction f with f f₀, esimp at *, induction f₀,
+    -- fapply phomotopy_eq,
+    -- { intro x, unfold [ap1_phomotopy], },
+    -- { }
+    exact sorry
+  end
+
+  definition ap1_eq_of_phomotopy {A B : Type*} {f g : A →* B} (p : f ~* g) :
+    ap Ω→ (eq_of_phomotopy p) = eq_of_phomotopy (ap1_phomotopy p) :=
+  begin
+    induction p using phomotopy_rec_on_idp,
+    refine ap02 _ !eq_of_phomotopy_refl ⬝ !eq_of_phomotopy_refl⁻¹ ⬝ ap eq_of_phomotopy _,
+    exact !ap1_phomotopy_refl⁻¹
+  end
+
+  -- duplicate of ap_eq_of_phomotopy
   definition to_fun_eq_of_phomotopy {A B : Type*} {f g : A →* B} (p : f ~* g) (a : A) :
     ap010 pmap.to_fun (eq_of_phomotopy p) a = p a :=
   begin
@@ -726,6 +776,11 @@ namespace pointed
             (ppcompose_left f₀₁) (ppcompose_left f₂₁) :=
   !ppcompose_left_pcompose⁻¹* ⬝* ppcompose_left_phomotopy p ⬝* !ppcompose_left_pcompose
 
+  definition ppcompose_right_psquare {A : Type*} (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) :
+    psquare (@ppcompose_right _ _ A f₁₂) (ppcompose_right f₁₀)
+            (ppcompose_right f₂₁) (ppcompose_right f₀₁) :=
+  !ppcompose_right_pcompose⁻¹* ⬝* ppcompose_right_phomotopy p⁻¹* ⬝* !ppcompose_right_pcompose
+
   definition trans_phomotopy_hconcat {f₀₁' f₀₁''}
     (q₂ : f₀₁'' ~* f₀₁') (q₁ : f₀₁' ~* f₀₁) (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) :
     (q₂ ⬝* q₁) ⬝ph* p = q₂ ⬝ph* q₁ ⬝ph* p :=
@@ -820,22 +875,8 @@ namespace pointed
     pmap_eq (λx, idpath (f x)) !idp_con⁻¹ = idpath f :=
   ap (λx, eq_of_phomotopy (phomotopy.mk _ x)) !inv_inv ⬝ eq_of_phomotopy_refl f
 
-  definition pfunext [constructor] (X Y : Type*) : ppmap X (Ω Y) ≃* Ω (ppmap X Y) :=
-  begin
-    fapply pequiv_of_equiv,
-    { fapply equiv.MK: esimp,
-      { intro f, fapply pmap_eq,
-        { intro x, exact f x },
-        { exact (respect_pt f)⁻¹ }},
-      { intro p, fapply pmap.mk,
-        { intro x, exact ap010 pmap.to_fun p x },
-        { note z := apd respect_pt p,
-          note z2 := square_of_pathover z,
-          refine eq_of_hdeg_square z2 ⬝ !ap_constant }},
-      { intro p, exact sorry },
-      { intro p, exact sorry }},
-    { apply pmap_eq_idp}
-  end
+  definition pfunext (X Y : Type*) : ppmap X (Ω Y) ≃* Ω (ppmap X Y) :=
+  (loop_pmap_commute X Y)⁻¹ᵉ*
 
   /-
     Do we want to use a structure of homotopies between pointed homotopies? Or are equalities fine?

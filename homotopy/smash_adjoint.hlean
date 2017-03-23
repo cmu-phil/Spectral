@@ -2,10 +2,10 @@
 -- in collaboration with Egbert, Stefano, Robin, Ulrik
 
 /- the adjunction between the smash product and pointed maps -/
-import .smash
+import .smash .susp
 
 open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops wedge is_trunc
-     function red_susp unit sigma
+     function red_susp unit sigma susp
 
 
 namespace smash
@@ -214,7 +214,7 @@ namespace smash
       refine _ ⬝ !phomotopy_of_eq_of_phomotopy⁻¹ ◾** !phomotopy_of_eq_of_phomotopy⁻¹,
       refine _ ⬝ !trans_refl⁻¹,
       fapply phomotopy_eq,
-      { intro a, refine !elim_gluel'⁻¹ },
+      { intro a, esimp, refine !elim_gluel'⁻¹ },
       { esimp, refine whisker_right _ !whisker_right_idp ⬝ _ ⬝ !idp_con⁻¹,
         refine whisker_right _ !elim_gluel'_same⁻² ⬝ _ ⬝ !elim_gluer'_same⁻¹⁻²,
         apply inv_con_eq_of_eq_con, refine !idp_con ⬝ _, esimp,
@@ -392,7 +392,7 @@ namespace smash
     apply smash_pmap_counit_natural_right
   end
 
-  definition smash_adjoint_pmap_inv_natural_right [constructor] {A B C C' : Type*} (f : C →* C') :
+   definition smash_adjoint_pmap_inv_natural_right [constructor] {A B C C' : Type*} (f : C →* C') :
     ppcompose_left f ∘* smash_adjoint_pmap_inv A B C ~*
     smash_adjoint_pmap_inv A B C' ∘* ppcompose_left (ppcompose_left f) :=
   smash_pelim_natural_right f
@@ -503,5 +503,30 @@ namespace smash
     refine pap !smash_assoc_elim_equiv⁻¹ᵉ* (!pcompose_pid ⬝* !pid_pcompose⁻¹*) ⬝* _,
     rexact phomotopy_of_eq ((smash_assoc_elim_equiv_natural_left _ f g h)⁻¹ʰ* !pid)⁻¹
   end
+
+  /- Corollary 2: smashing with a suspension -/
+  definition smash_psusp_elim_equiv (A B X : Type*) :
+    ppmap (A ∧ psusp B) X ≃* ppmap (psusp (A ∧ B)) X :=
+  calc
+    ppmap (A ∧ psusp B) X ≃* ppmap (psusp B) (ppmap A X) : smash_adjoint_pmap A (psusp B) X
+    ... ≃* ppmap B (Ω (ppmap A X)) : psusp_adjoint_loop' B (ppmap A X)
+    ... ≃* ppmap B (ppmap A (Ω X)) : pequiv_ppcompose_left (loop_pmap_commute A X)
+    ... ≃* ppmap (A ∧ B) (Ω X) : smash_adjoint_pmap A B (Ω X)
+    ... ≃* ppmap (psusp (A ∧ B)) X : psusp_adjoint_loop' (A ∧ B) X
+
+  definition loop_pmap_commute_natural_right (A : Type*) (f : X →* X') :
+    psquare (loop_pmap_commute A X) (loop_pmap_commute A X')
+            (Ω→ (ppcompose_left f)) (ppcompose_left (Ω→ f)) :=
+  sorry
+
+
+  definition smash_psusp_elim_equiv_natural_right (A B : Type*) (f : X →* X') :
+    psquare (smash_psusp_elim_equiv A B X) (smash_psusp_elim_equiv A B X')
+            (ppcompose_left f) (ppcompose_left f) :=
+  smash_adjoint_pmap_natural_right f ⬝h*
+  psusp_adjoint_loop_natural_right (ppcompose_left f) ⬝h*
+  ppcompose_left_psquare (loop_pmap_commute_natural_right A f) ⬝h*
+  (smash_adjoint_pmap_natural_right (Ω→ f))⁻¹ʰ* ⬝h*
+  (psusp_adjoint_loop_natural_right f)⁻¹ʰ*
 
 end smash

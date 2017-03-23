@@ -510,7 +510,7 @@ namespace smash
     idp
     (smash_functor_pconst_right_homotopy (λ a, f' (f a)) x)
     (ap (smash_functor' (pmap.mk f' (refl (f' (f a₀)))) (pmap.mk g (refl (g d₀))))
-       (smash_functor_pconst_right_homotopy f x)) :=
+      (smash_functor_pconst_right_homotopy f x)) :=
   begin
     induction x with a b a b,
     { refine _ ⬝hp (functor_gluel'2 f' g (f a) (f a₀))⁻¹, exact hrfl },
