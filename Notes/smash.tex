@@ -215,6 +215,8 @@ f'\smash 0\arrow[dl,equals] \\
   If $x$ varies over $\gluel_a$ the proof is very similar. Only in the end we need to fill the
   following cube instead (TODO).
 
+  To show that this homotopy is pointed, (TODO)
+
 \end{proof}
 
 \begin{thm}\label{thm:smash-functor-right}
@@ -357,6 +359,13 @@ $$(A\pmap B\pmap C)\lpmap{({-})\smash B}(A\smash B\pmap (B\pmap C)\smash B)\lpma
   $$\inv{e}_{A,B,C}:(A\smash B\pmap C)\lpmap{B\pmap({-})}((B\pmap A\smash B)\pmap (B\pmap
   C))\lpmap{\eta\pmap(B\pmap C)}(A\pmap B\pmap C).$$ It is easy to show that $e$ and $\inv{e}$ are
   inverses as unpointed maps from the unit-counit laws and naturality of $\eta$ and $\epsilon$.
+
+%   For $f : A\pmap B\pmap C$ we have
+%   \begin{align*}
+%     \inv{e}(e(f))&\equiv(\eta\pmap(B\pmap C))\o (B\pmap((A\smash B\pmap\epsilon)\of\smash B))\\
+%                  &= (\eta\pmap(B\pmap C))\o (B\pmap(A\smash B\pmap\epsilon))\o(B\pmapf\smash B)\\
+% %                 &= (\eta\pmap(B\pmap C))\o (B\pmap(A\smash B\pmap\epsilon))\o(B\pmapf\smash B)\\
+%   \end{align*}
 \end{proof}
 \begin{lem}\label{e-natural}
 $e$ is natural in $A$, $B$ and $C$.
