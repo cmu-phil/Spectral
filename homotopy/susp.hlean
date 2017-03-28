@@ -134,4 +134,25 @@ namespace susp
             (ppcompose_right (psusp_functor f)) (ppcompose_right f) :=
   loop_psusp_pintro_natural_left f
 
+  definition iterate_psusp_iterate_psusp_rev (n m : ℕ) (A : Type*) :
+    iterate_psusp n (iterate_psusp m A) ≃* iterate_psusp (m + n) A :=
+  begin
+    induction n with n e,
+    { reflexivity },
+    { exact psusp_pequiv e }
+  end
+
+  definition iterate_psusp_pequiv [constructor] (n : ℕ) {X Y : Type*} (f : X ≃* Y) :
+    iterate_psusp n X ≃* iterate_psusp n Y :=
+  begin
+    induction n with n e,
+    { exact f },
+    { exact psusp_pequiv e }
+  end
+
+  open algebra nat
+  definition iterate_psusp_iterate_psusp (n m : ℕ) (A : Type*) :
+    iterate_psusp n (iterate_psusp m A) ≃* iterate_psusp (n + m) A :=
+  iterate_psusp_iterate_psusp_rev n m A ⬝e* pequiv_of_eq (ap (λk, iterate_psusp k A) (add.comm m n))
+
 end susp

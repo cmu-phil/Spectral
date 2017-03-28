@@ -736,18 +736,18 @@ namespace smash
   end
 
   local attribute is_equiv_sum_functor [instance]
-  definition smash_pequiv_smash [constructor] (f : A ≃* C) (g : B ≃* D) : A ∧ B ≃* C ∧ D :=
+  definition smash_pequiv [constructor] (f : A ≃* C) (g : B ≃* D) : A ∧ B ≃* C ∧ D :=
   begin
     fapply pequiv_of_pmap (f ∧→ g),
     refine @homotopy_closed _ _ _ _ _ (smash_functor_homotopy_pushout_functor f g)⁻¹ʰᵗʸ,
     apply pushout.is_equiv_functor
   end
 
-  definition smash_pequiv_smash_left [constructor] (B : Type*) (f : A ≃* C) : A ∧ B ≃* C ∧ B :=
-  smash_pequiv_smash f pequiv.rfl
+  definition smash_pequiv_left [constructor] (B : Type*) (f : A ≃* C) : A ∧ B ≃* C ∧ B :=
+  smash_pequiv f pequiv.rfl
 
-  definition smash_pequiv_smash_right [constructor] (A : Type*) (g : B ≃* D) : A ∧ B ≃* A ∧ D :=
-  smash_pequiv_smash pequiv.rfl g
+  definition smash_pequiv_right [constructor] (A : Type*) (g : B ≃* D) : A ∧ B ≃* A ∧ D :=
+  smash_pequiv pequiv.rfl g
 
   /- A ∧ B ≃* pcofiber (pprod_of_pwedge A B) -/
 

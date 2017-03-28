@@ -5,8 +5,7 @@
 import .smash .susp
 
 open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops wedge is_trunc
-     function red_susp unit sigma susp
-
+     function unit sigma susp sphere
 
 namespace smash
 
@@ -430,10 +429,11 @@ namespace smash
   !smash_adjoint_pmap_inv_natural_right
 
   /-
-    We could prove the following two pointed homotopies by applying smash_assoc_elim_natural_right to g,
-    but we give a more explicit proof
+    We could prove the following two pointed homotopies by applying smash_assoc_elim_natural_right
+    to g, but we give a more explicit proof
   -/
-  definition smash_assoc_elim_natural_right_pt {A B C X X' : Type*} (f : X →* X') (g : A ∧ (B ∧ C) →* X) :
+  definition smash_assoc_elim_natural_right_pt {A B C X X' : Type*} (f : X →* X')
+    (g : A ∧ (B ∧ C) →* X) :
     f ∘* smash_assoc_elim_equiv A B C X g ~* smash_assoc_elim_equiv A B C X' (f ∘* g) :=
   begin
     refine !smash_adjoint_pmap_inv_natural_right_pt ⬝* _,
@@ -480,7 +480,7 @@ namespace smash
   end
 
   /- the associativity of smash is natural in all arguments -/
-  definition smash_assoc_elim_equiv_natural_left (X : Type*)
+  definition smash_assoc_elim_natural_left (X : Type*)
     (f : A →* A') (g : B →* B') (h : C →* C') :
     psquare (smash_assoc_elim_equiv A' B' C' X) (smash_assoc_elim_equiv A B C X)
             (ppcompose_right (f ∧→ g ∧→ h)) (ppcompose_right ((f ∧→ g) ∧→ h)) :=
@@ -501,7 +501,7 @@ namespace smash
   begin
     refine !smash_assoc_elim_inv_natural_right_pt ⬝* _,
     refine pap !smash_assoc_elim_equiv⁻¹ᵉ* (!pcompose_pid ⬝* !pid_pcompose⁻¹*) ⬝* _,
-    rexact phomotopy_of_eq ((smash_assoc_elim_equiv_natural_left _ f g h)⁻¹ʰ* !pid)⁻¹
+    rexact phomotopy_of_eq ((smash_assoc_elim_natural_left _ f g h)⁻¹ʰ* !pid)⁻¹
   end
 
   /- Corollary 2: smashing with a suspension -/
@@ -514,13 +514,7 @@ namespace smash
     ... ≃* ppmap (A ∧ B) (Ω X) : smash_adjoint_pmap A B (Ω X)
     ... ≃* ppmap (psusp (A ∧ B)) X : psusp_adjoint_loop' (A ∧ B) X
 
-  definition loop_pmap_commute_natural_right (A : Type*) (f : X →* X') :
-    psquare (loop_pmap_commute A X) (loop_pmap_commute A X')
-            (Ω→ (ppcompose_left f)) (ppcompose_left (Ω→ f)) :=
-  sorry
-
-
-  definition smash_psusp_elim_equiv_natural_right (A B : Type*) (f : X →* X') :
+  definition smash_psusp_elim_natural_right (A B : Type*) (f : X →* X') :
     psquare (smash_psusp_elim_equiv A B X) (smash_psusp_elim_equiv A B X')
             (ppcompose_left f) (ppcompose_left f) :=
   smash_adjoint_pmap_natural_right f ⬝h*
@@ -528,5 +522,57 @@ namespace smash
   ppcompose_left_psquare (loop_pmap_commute_natural_right A f) ⬝h*
   (smash_adjoint_pmap_natural_right (Ω→ f))⁻¹ʰ* ⬝h*
   (psusp_adjoint_loop_natural_right f)⁻¹ʰ*
+
+  definition smash_psusp_elim_natural_left (X : Type*) (f : A' →* A) (g : B' →* B) :
+    psquare (smash_psusp_elim_equiv A B X) (smash_psusp_elim_equiv A' B' X)
+            (ppcompose_right (f ∧→ psusp_functor g)) (ppcompose_right (psusp_functor (f ∧→ g))) :=
+  begin
+    refine smash_adjoint_pmap_natural_lm X f (psusp_functor g) ⬝h*
+           _ ⬝h* _ ⬝h*
+           (smash_adjoint_pmap_natural_lm (Ω X) f g)⁻¹ʰ* ⬝h*
+           (psusp_adjoint_loop_natural_left (f ∧→ g))⁻¹ʰ*,
+    rotate 2,
+    exact !ppcompose_left_ppcompose_right ⬝v* ppcompose_left_psquare (loop_pmap_commute_natural_left X f),
+    exact psusp_adjoint_loop_natural_left g ⬝v* psusp_adjoint_loop_natural_right (ppcompose_right f)
+  end
+
+  definition smash_psusp (A B : Type*) : A ∧ ⅀ B ≃* ⅀(A ∧ B) :=
+  begin
+    fapply pequiv.MK2,
+    { exact !smash_psusp_elim_equiv⁻¹ᵉ* !pid },
+    { exact !smash_psusp_elim_equiv !pid },
+    { refine phomotopy_of_eq (!smash_psusp_elim_natural_right⁻¹ʰ* _) ⬝* _,
+      refine pap !smash_psusp_elim_equiv⁻¹ᵉ* !pcompose_pid ⬝* _,
+      apply phomotopy_of_eq, apply to_left_inv !smash_psusp_elim_equiv },
+    { refine phomotopy_of_eq (!smash_psusp_elim_natural_right _) ⬝* _,
+      refine pap !smash_psusp_elim_equiv !pcompose_pid ⬝* _,
+      apply phomotopy_of_eq, apply to_right_inv !smash_psusp_elim_equiv }
+  end
+
+  definition smash_psusp_natural (f : A →* A') (g : B →* B') :
+    psquare (smash_psusp A B) (smash_psusp A' B') (f ∧→ (psusp_functor g)) (psusp_functor (f ∧→ g)) :=
+  begin
+    refine phomotopy_of_eq (!smash_psusp_elim_natural_right⁻¹ʰ* _) ⬝* _,
+    refine pap !smash_psusp_elim_equiv⁻¹ᵉ* (!pcompose_pid ⬝* !pid_pcompose⁻¹*) ⬝* _,
+    rexact phomotopy_of_eq ((smash_psusp_elim_natural_left _ f g)⁻¹ʰ* !pid)⁻¹
+  end
+
+  definition smash_iterate_psusp (n : ℕ) (A B : Type*) : A ∧ iterate_psusp n B ≃* iterate_psusp n (A ∧ B) :=
+  begin
+    induction n with n e,
+    { reflexivity },
+    { exact smash_psusp A (iterate_psusp n B) ⬝e* psusp_pequiv e }
+  end
+
+  definition smash_sphere (A : Type*) (n : ℕ) : A ∧ psphere n ≃* iterate_psusp n A :=
+  smash_pequiv pequiv.rfl (psphere_pequiv_iterate_psusp n) ⬝e*
+  smash_iterate_psusp n A pbool ⬝e*
+  iterate_psusp_pequiv n (smash_pbool_pequiv A)
+
+  definition sphere_smash_sphere (n m : ℕ) : psphere n ∧ psphere m ≃* psphere (n+m) :=
+  smash_sphere (psphere n) m ⬝e*
+  iterate_psusp_pequiv m (psphere_pequiv_iterate_psusp n) ⬝e*
+  iterate_psusp_iterate_psusp_rev m n pbool ⬝e*
+  (psphere_pequiv_iterate_psusp (n + m))⁻¹ᵉ*
 
 end smash

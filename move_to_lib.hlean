@@ -3,7 +3,7 @@
 import homotopy.sphere2 homotopy.cofiber homotopy.wedge
 
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
-     is_trunc function sphere unit sum prod
+     is_trunc function sphere unit sum prod bool
 
 definition add_comm_right {A : Type} [add_comm_semigroup A] (n m k : A) : n + m + k = n + k + m :=
 !add.assoc ⬝ ap (add n) !add.comm ⬝ !add.assoc⁻¹
@@ -912,6 +912,14 @@ namespace category
 end category
 
 namespace sphere
+
+  definition psphere_pequiv_iterate_psusp (n : ℕ) : psphere n ≃* iterate_psusp n pbool :=
+  begin
+    induction n with n e,
+    { exact psphere_pequiv_pbool },
+    { exact psusp_pequiv e }
+  end
+
 
   -- definition constant_sphere_map_sphere {n m : ℕ} (H : n < m) (f : S* n →* S* m) :
   --   f ~* pconst (S* n) (S* m) :=
