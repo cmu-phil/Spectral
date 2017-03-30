@@ -464,10 +464,6 @@ namespace pushout
 
   /- universal property of cofiber -/
 
-  structure is_exact_t {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
-  ( im_in_ker : Π(a:A), g (f a) = pt)
-  ( ker_in_im : Π(b:B), (g b = pt) → fiber f b)
-
   definition cofiber_exact_1 {X Y Z : Type*} (f : X →* Y) (g : pcofiber f →* Z) :
     (g ∘* pcod f) ∘* f ~* pconst X Z :=
   !passoc ⬝* pwhisker_left _ !pcod_pcompose ⬝* !pcompose_pconst

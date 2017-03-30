@@ -930,7 +930,7 @@ namespace pointed
             (ppcompose_left_loop_phomotopy' (pmap_of_map f x₀) !pconst) :=
   begin
     fapply phomotopy.mk,
-    { esimp, esimp [pmap_eq_equiv], intro p,
+    { esimp, intro p,
      refine _ ⬝ ap011 (λx y, phomotopy_of_eq (ap1_gen _ x y _))
                  proof !eq_of_phomotopy_refl⁻¹ qed proof !eq_of_phomotopy_refl⁻¹ qed,
      refine _ ⬝ ap phomotopy_of_eq !ap1_gen_idp_left⁻¹,

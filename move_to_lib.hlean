@@ -8,6 +8,24 @@ open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc
 definition add_comm_right {A : Type} [add_comm_semigroup A] (n m k : A) : n + m + k = n + k + m :=
 !add.assoc ⬝ ap (add n) !add.comm ⬝ !add.assoc⁻¹
 
+structure is_exact_t {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
+  ( im_in_ker : Π(a:A), g (f a) = pt)
+  ( ker_in_im : Π(b:B), (g b = pt) → fiber f b)
+
+structure is_exact {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
+  ( im_in_ker : Π(a:A), g (f a) = pt)
+  ( ker_in_im : Π(b:B), (g b = pt) → image f b)
+
+definition is_exact_g {A B C : Group} (f : A →g B) (g : B →g C) :=
+is_exact f g
+
+definition is_exact_ag {A B C : AbGroup} (f : A →g B) (g : B →g C) :=
+is_exact f g
+
+definition is_exact_g.mk {A B C : Group} {f : A →g B} {g : B →g C}
+  (H₁ : Πa, g (f a) = 1) (H₂ : Πb, g b = 1 → image f b) : is_exact_g f g :=
+is_exact.mk H₁ H₂
+
 namespace algebra
   definition inf_group_loopn (n : ℕ) (A : Type*) [H : is_succ n] : inf_group (Ω[n] A) :=
   by induction H; exact _

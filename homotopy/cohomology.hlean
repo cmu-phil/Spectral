@@ -11,18 +11,6 @@ import .spectrum .EM ..algebra.arrow_group .fwedge ..choice .pushout ..move_to_l
 open eq spectrum int trunc pointed EM group algebra circle sphere nat EM.ops equiv susp is_trunc
      function fwedge cofiber bool lift sigma is_equiv choice pushout algebra unit pi
 
--- TODO: move
-structure is_exact {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
-  ( im_in_ker : Π(a:A), g (f a) = pt)
-  ( ker_in_im : Π(b:B), (g b = pt) → image f b)
-
-definition is_exact_g {A B C : Group} (f : A →g B) (g : B →g C) :=
-is_exact f g
-
-definition is_exact_g.mk {A B C : Group} {f : A →g B} {g : B →g C}
-  (H₁ : Πa, g (f a) = 1) (H₂ : Πb, g b = 1 → image f b) : is_exact_g f g :=
-is_exact.mk H₁ H₂
-
 definition is_exact_trunc_functor {A B : Type} {C : Type*} {f : A → B} {g : B → C}
   (H : is_exact_t f g) : @is_exact _ _ (ptrunc 0 C) (trunc_functor 0 f) (trunc_functor 0 g) :=
 begin
