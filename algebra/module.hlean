@@ -8,7 +8,7 @@ Modules prod vector spaces over a ring.
 (We use "left_module," which is more precise, because "module" is a keyword.)
 -/
 import algebra.field ..move_to_lib
-open is_trunc pointed function sigma eq algebra
+open is_trunc pointed function sigma eq algebra prod is_equiv equiv
 
 structure has_scalar [class] (F V : Type) :=
 (smul : F → V → V)
@@ -218,6 +218,108 @@ section
     exact ap (homomorphism.mk φ₂) !is_prop.elim
   end
 end
+
+  section
+  variables {M M₁ M₂ M₃ : LeftModule R}
+  definition to_respect_zero (φ : M₁ →lm M₂) : φ 0 = 0 :=
+  respect_zero φ
+
+  definition is_exact_mod (f : M₁ →lm M₂) (f' : M₂ →lm M₃) : Type :=
+  @is_exact M₁ M₂ M₃ (homomorphism_fn f) (homomorphism_fn f')
+
+  definition homomorphism_compose (f' : M₂ →lm M₃) (f : M₁ →lm M₂) : M₁ →lm M₃ :=
+  homomorphism.mk (f' ∘ f) !is_module_hom_comp
+
+  variable (M)
+  definition homomorphism_id [constructor] [refl] : M →lm M :=
+  homomorphism.mk (@id M) !is_module_hom_id
+  variable {M}
+
+  abbreviation lmid [constructor] := homomorphism_id M
+  infixr ` ∘lm `:75 := homomorphism_compose
+
+  structure isomorphism (M₁ M₂ : LeftModule R) :=
+    (to_hom : M₁ →lm M₂)
+    (is_equiv_to_hom : is_equiv to_hom)
+
+  infix ` ≃lm `:25 := isomorphism
+  attribute isomorphism.to_hom [coercion]
+  attribute isomorphism.is_equiv_to_hom [instance]
+  attribute isomorphism._trans_of_to_hom [unfold 4]
+
+  definition equiv_of_isomorphism [constructor] (φ : M₁ ≃lm M₂) : M₁ ≃ M₂ :=
+  equiv.mk φ !isomorphism.is_equiv_to_hom
+
+  definition pequiv_of_isomorphism [constructor] (φ : M₁ ≃lm M₂) : M₁ ≃* M₂ :=
+  pequiv_of_equiv (equiv_of_isomorphism φ) (to_respect_zero φ)
+
+  definition LeftModule.struct2 [instance] (M : LeftModule R) : left_module R M :=
+  LeftModule.struct M
+
+  definition homomorphism.mk' (φ : M₁ → M₂) (p : Π(g₁ g₂ : M₁), φ (g₁ + g₂) = φ g₁ + φ g₂)
+    (q : Π(r : R) x, φ (r • x) = r • φ x) : M₁ →lm M₂ :=
+  homomorphism.mk φ (p, q)
+
+  definition isomorphism_of_equiv [constructor] (φ : M₁ ≃ M₂)
+    (p : Π(g₁ g₂ : M₁), φ (g₁ + g₂) = φ g₁ + φ g₂)
+    (q : Πr x, φ (r • x) = r • φ x) : M₁ ≃lm M₂ :=
+  isomorphism.mk (homomorphism.mk φ (p, q)) !to_is_equiv
+
+  definition isomorphism_of_eq [constructor] {M₁ M₂ : LeftModule R} (p : M₁ = M₂ :> LeftModule R)
+    : M₁ ≃lm M₂ :=
+  isomorphism_of_equiv (equiv_of_eq (ap LeftModule.carrier p))
+    begin intros, induction p, reflexivity end
+    begin intros, induction p, reflexivity end
+
+  -- definition pequiv_of_isomorphism_of_eq {M₁ M₂ : LeftModule R} (p : M₁ = M₂ :> LeftModule R) :
+  --   pequiv_of_isomorphism (isomorphism_of_eq p) = pequiv_of_eq (ap pType_of_LeftModule p) :=
+  -- begin
+  --   induction p,
+  --   apply pequiv_eq,
+  --   fapply pmap_eq,
+  --   { intro g, reflexivity},
+  --   { apply is_prop.elim}
+  -- end
+
+  definition to_ginv [constructor] (φ : M₁ ≃lm M₂) : M₂ →lm M₁ :=
+  homomorphism.mk φ⁻¹
+    abstract begin
+    split,
+      intro g₁ g₂, apply eq_of_fn_eq_fn' φ,
+      rewrite [respect_add φ, +right_inv φ],
+      intro r x, apply eq_of_fn_eq_fn' φ,
+      rewrite [to_respect_smul φ, +right_inv φ],
+    end end
+
+  variable (M)
+  definition isomorphism.refl [refl] [constructor] : M ≃lm M :=
+  isomorphism.mk lmid !is_equiv_id
+  variable {M}
+
+  definition isomorphism.symm [symm] [constructor] (φ : M₁ ≃lm M₂) : M₂ ≃lm M₁ :=
+  isomorphism.mk (to_ginv φ) !is_equiv_inv
+
+  definition isomorphism.trans [trans] [constructor] (φ : M₁ ≃lm M₂) (ψ : M₂ ≃lm M₃) : M₁ ≃lm M₃ :=
+  isomorphism.mk (ψ ∘lm φ) !is_equiv_compose
+
+  definition isomorphism.eq_trans [trans] [constructor]
+     {M₁ M₂ : LeftModule R} {M₃ : LeftModule R} (φ : M₁ = M₂) (ψ : M₂ ≃lm M₃) : M₁ ≃lm M₃ :=
+  proof isomorphism.trans (isomorphism_of_eq φ) ψ qed
+
+  definition isomorphism.trans_eq [trans] [constructor]
+    {M₁ : LeftModule R} {M₂ M₃ : LeftModule R} (φ : M₁ ≃lm M₂) (ψ : M₂ = M₃) : M₁ ≃lm M₃ :=
+  isomorphism.trans φ (isomorphism_of_eq ψ)
+
+  postfix `⁻¹ˡᵐ`:(max + 1) := isomorphism.symm
+  infixl ` ⬝lm `:75 := isomorphism.trans
+  infixl ` ⬝lmp `:75 := isomorphism.trans_eq
+  infixl ` ⬝plm `:75 := isomorphism.eq_trans
+
+  definition homomorphism_of_eq [constructor] {M₁ M₂ : LeftModule R} (p : M₁ = M₂ :> LeftModule R)
+    : M₁ →lm M₂ :=
+  isomorphism_of_eq p
+
+  end
 
 end
 
