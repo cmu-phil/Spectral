@@ -1,7 +1,7 @@
 /-
 Author: Jeremy Avigad
 -/
-import homotopy.chain_complex ..algebra.module ..algebra.is_short_exact ..move_to_lib
+import homotopy.chain_complex .left_module .is_short_exact ..move_to_lib
 open eq pointed sigma fiber equiv is_equiv sigma.ops is_trunc nat trunc
 open algebra function
 open chain_complex

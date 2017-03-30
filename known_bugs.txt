@@ -6,6 +6,7 @@ instead of
 
 - When using the calc mode for homotopies, you have to give the proofs using a tactic (e.g. `by exact foo` instead of `foo`)
 
+- A file named "module.hlean" cannot be imported using `import .module` because `module` is a keyword (but it can be imported using `import ..foo.module`)
 
 Issues which are not bugs, but still good to know
 

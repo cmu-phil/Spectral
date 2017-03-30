@@ -1,8 +1,8 @@
-/- Graded modules -/
+/- Graded (left-) R-modules for a ring R. -/
 
 -- Author: Floris van Doorn
 
-import ..algebra.module
+import .left_module
 
 open algebra eq left_module pointed function equiv is_equiv is_trunc prod
 
