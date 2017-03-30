@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2015 Nathaniel Thomas. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Nathaniel Thomas, Jeremy Avigad
+Authors: Nathaniel Thomas, Jeremy Avigad, Floris van Doorn
 
 Modules prod vector spaces over a ring.
 
@@ -221,13 +221,19 @@ end
 
   section
   variables {M M₁ M₂ M₃ : LeftModule R}
+
+  definition LeftModule.struct2 [instance] (M : LeftModule R) : left_module R M :=
+  LeftModule.struct M
+
+  definition homomorphism.mk' [constructor] (φ : M₁ → M₂)
+    (p : Π(g₁ g₂ : M₁), φ (g₁ + g₂) = φ g₁ + φ g₂)
+    (q : Π(r : R) x, φ (r • x) = r • φ x) : M₁ →lm M₂ :=
+  homomorphism.mk φ (p, q)
+
   definition to_respect_zero (φ : M₁ →lm M₂) : φ 0 = 0 :=
   respect_zero φ
 
-  definition is_exact_mod (f : M₁ →lm M₂) (f' : M₂ →lm M₃) : Type :=
-  @is_exact M₁ M₂ M₃ (homomorphism_fn f) (homomorphism_fn f')
-
-  definition homomorphism_compose (f' : M₂ →lm M₃) (f : M₁ →lm M₂) : M₁ →lm M₃ :=
+  definition homomorphism_compose [constructor] (f' : M₂ →lm M₃) (f : M₁ →lm M₂) : M₁ →lm M₃ :=
   homomorphism.mk (f' ∘ f) !is_module_hom_comp
 
   variable (M)
@@ -253,13 +259,6 @@ end
   definition pequiv_of_isomorphism [constructor] (φ : M₁ ≃lm M₂) : M₁ ≃* M₂ :=
   pequiv_of_equiv (equiv_of_isomorphism φ) (to_respect_zero φ)
 
-  definition LeftModule.struct2 [instance] (M : LeftModule R) : left_module R M :=
-  LeftModule.struct M
-
-  definition homomorphism.mk' (φ : M₁ → M₂) (p : Π(g₁ g₂ : M₁), φ (g₁ + g₂) = φ g₁ + φ g₂)
-    (q : Π(r : R) x, φ (r • x) = r • φ x) : M₁ →lm M₂ :=
-  homomorphism.mk φ (p, q)
-
   definition isomorphism_of_equiv [constructor] (φ : M₁ ≃ M₂)
     (p : Π(g₁ g₂ : M₁), φ (g₁ + g₂) = φ g₁ + φ g₂)
     (q : Πr x, φ (r • x) = r • φ x) : M₁ ≃lm M₂ :=
@@ -281,7 +280,7 @@ end
   --   { apply is_prop.elim}
   -- end
 
-  definition to_ginv [constructor] (φ : M₁ ≃lm M₂) : M₂ →lm M₁ :=
+  definition to_lminv [constructor] (φ : M₁ ≃lm M₂) : M₂ →lm M₁ :=
   homomorphism.mk φ⁻¹
     abstract begin
     split,
@@ -296,8 +295,10 @@ end
   isomorphism.mk lmid !is_equiv_id
   variable {M}
 
+  definition isomorphism.rfl [refl] [constructor] : M ≃lm M := isomorphism.refl M
+
   definition isomorphism.symm [symm] [constructor] (φ : M₁ ≃lm M₂) : M₂ ≃lm M₁ :=
-  isomorphism.mk (to_ginv φ) !is_equiv_inv
+  isomorphism.mk (to_lminv φ) !is_equiv_inv
 
   definition isomorphism.trans [trans] [constructor] (φ : M₁ ≃lm M₂) (ψ : M₂ ≃lm M₃) : M₁ ≃lm M₃ :=
   isomorphism.mk (ψ ∘lm φ) !is_equiv_compose
@@ -318,6 +319,9 @@ end
   definition homomorphism_of_eq [constructor] {M₁ M₂ : LeftModule R} (p : M₁ = M₂ :> LeftModule R)
     : M₁ →lm M₂ :=
   isomorphism_of_eq p
+
+  definition is_exact_mod (f : M₁ →lm M₂) (f' : M₂ →lm M₃) : Type :=
+  @is_exact M₁ M₂ M₃ (homomorphism_fn f) (homomorphism_fn f')
 
   end
 
