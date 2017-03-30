@@ -6,7 +6,7 @@ open eq pointed sigma fiber equiv is_equiv sigma.ops is_trunc nat trunc
 open algebra function
 open chain_complex
 open succ_str
-open algebra.left_module
+open left_module
 
 structure module_chain_complex (R : Ring) (N : succ_str) : Type :=
 (mod : N → LeftModule R)

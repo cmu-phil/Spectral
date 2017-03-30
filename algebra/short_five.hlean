@@ -4,10 +4,7 @@ Author: Jeremy Avigad
 import .module_chain_complex
 open eq pointed sigma fiber equiv is_equiv sigma.ops is_trunc nat trunc
 open algebra function succ_str
-
--- TODO: reconcile these
-open algebra.left_module    -- name in left_module
-open left_module            -- namespace in hott library
+open left_module
 
 section short_five
   variable  {R : Ring}

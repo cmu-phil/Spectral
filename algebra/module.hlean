@@ -8,9 +8,7 @@ Modules prod vector spaces over a ring.
 (We use "left_module," which is more precise, because "module" is a keyword.)
 -/
 import algebra.field ..move_to_lib
-open is_trunc pointed function sigma eq
-
-namespace algebra
+open is_trunc pointed function sigma eq algebra
 
 structure has_scalar [class] (F V : Type) :=
 (smul : F → V → V)
@@ -18,6 +16,8 @@ structure has_scalar [class] (F V : Type) :=
 infixl ` • `:73 := has_scalar.smul
 
 /- modules over a ring -/
+
+namespace left_module
 
 structure left_module (R M : Type) [ringR : ring R] extends has_scalar R M, ab_group M renaming
   mul→add mul_assoc→add_assoc one→zero one_mul→zero_add mul_one→add_zero inv→neg
@@ -155,7 +155,7 @@ pointed.mk zero
 definition pSet_of_LeftModule [coercion] {R : Ring} (M : LeftModule R) : Set* :=
 pSet.mk' (LeftModule.carrier M)
 
-namespace left_module
+section
   variable {R : Ring}
 
   structure homomorphism (M₁ M₂ : LeftModule R) : Type :=
@@ -219,6 +219,6 @@ namespace left_module
   end
 end
 
-end left_module
+end
 
-end algebra
+end left_module
