@@ -3,20 +3,10 @@ Copyright (c) 2017 Jeremy Avigad. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jeremy Avigad
 -/
-import types.trunc
-open funext eq trunc is_trunc
+import types.trunc .logic
+open funext eq trunc is_trunc logic
 
 definition set (X : Type) := X → Prop
-
-section
-open trunc_index
-
-definition propext {p q : Prop} (h : p ↔ q) : p = q :=
-tua (equiv_of_iff_of_is_prop h)
-
-end
-
-definition tempty {n : trunc_index} : (n.+1)-Type := trunctype.mk empty _
 
 namespace set
 
@@ -54,25 +44,24 @@ assume h₁ h₂, h₁ _ h₂
 
 /- empty set -/
 
-definition empty : set X := λx, tempty
+definition empty : set X := λx, false
 notation `∅` := empty
 
 theorem not_mem_empty (x : X) : ¬ (x ∈ ∅) :=
 assume H : x ∈ ∅, H
 
-theorem mem_empty_eq (x : X) : x ∈ ∅ = tempty := rfl
+theorem mem_empty_eq (x : X) : x ∈ ∅ = false := rfl
 
-/-
 theorem eq_empty_of_forall_not_mem {s : set X} (H : ∀ x, x ∉ s) : s = ∅ :=
 ext (take x, iff.intro
   (assume xs, absurd xs (H x))
-  (assume xe, absurd xe (not_mem_empty _)))
+  (assume xe, absurd xe (not_mem_empty x)))
 
 theorem ne_empty_of_mem {s : set X} {x : X} (H : x ∈ s) : s ≠ ∅ :=
-  begin intro Hs, rewrite Hs at H, apply not_mem_empty _ H end
+  begin intro Hs, rewrite Hs at H, apply not_mem_empty x H end
 
 theorem empty_subset (s : set X) : ∅ ⊆ s :=
-take x, assume H, false.elim H
+take x, assume H, empty.elim H
 
 theorem eq_empty_of_subset_empty {s : set X} (H : s ⊆ ∅) : s = ∅ :=
 subset.antisymm H (empty_subset s)
@@ -80,9 +69,55 @@ subset.antisymm H (empty_subset s)
 theorem subset_empty_iff (s : set X) : s ⊆ ∅ ↔ s = ∅ :=
 iff.intro eq_empty_of_subset_empty (take xeq, by rewrite xeq; apply subset.refl ∅)
 
-lemma bounded_forall_empty_iff {P : X → Prop} :
-  (∀₀x∈∅, P x) ↔ true :=
-iff.intro (take H, true.intro) (take H, by contradiction)
--/
+/- universal set -/
+
+definition univ : set X := λx, true
+
+theorem mem_univ (x : X) : x ∈ univ := trivial
+
+theorem mem_univ_eq (x : X) : x ∈ univ = true := rfl
+
+theorem empty_ne_univ [h : inhabited X] : (empty : set X) ≠ univ :=
+assume H : empty = univ,
+absurd (mem_univ (inhabited.value h)) (eq.rec_on H (not_mem_empty (arbitrary X)))
+
+theorem subset_univ (s : set X) : s ⊆ univ := λ x H, unit.star
+
+theorem eq_univ_of_univ_subset {s : set X} (H : univ ⊆ s) : s = univ :=
+eq_of_subset_of_subset (subset_univ s) H
+
+theorem eq_univ_of_forall {s : set X} (H : ∀ x, x ∈ s) : s = univ :=
+ext (take x, iff.intro (assume H', unit.star) (assume H', H x))
+
+
+
+/- set-builder notation -/
+
+-- {x : X | P}
+definition set_of (P : X → Prop) : set X := P
+notation `{` binder ` | ` r:(scoped:1 P, set_of P) `}` := r
+
+-- {x ∈ s | P}
+definition sep (P : X → Prop) (s : set X) : set X := λx, x ∈ s ∧ P x
+notation `{` binder ` ∈ ` s ` | ` r:(scoped:1 p, sep p s) `}` := r
+
+/- insert -/
+
+definition insert (x : X) (a : set X) : set X := {y : X | y = x ∨ y ∈ a}
+
+-- '{x, y, z}
+notation `'{`:max a:(foldr `, ` (x b, insert x b) ∅) `}`:0 := a
+
+theorem subset_insert (x : X) (a : set X) : a ⊆ insert x a :=
+take y, assume ys, or.inr ys
+
+theorem mem_insert (x : X) (s : set X) : x ∈ insert x s :=
+or.inl rfl
+
+theorem mem_insert_of_mem {x : X} {s : set X} (y : X) : x ∈ s → x ∈ insert y s :=
+assume h, or.inr h
+
+theorem eq_or_mem_of_mem_insert {x a : X} {s : set X} : x ∈ insert a s → x = a ∨ x ∈ s :=
+assume h, h
 
 end set
