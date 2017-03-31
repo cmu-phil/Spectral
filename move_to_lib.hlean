@@ -490,6 +490,16 @@ namespace group
     φ ⬝g ψ ~ ψ ∘ φ :=
   by reflexivity
 
+  definition add_homomorphism.mk [constructor] {G H : AddGroup} (φ : G → H) (h : is_add_hom φ) : G →g H :=
+  homomorphism.mk φ h
+
+  definition homomorphism_add [constructor] {G H : AddAbGroup} (φ ψ : G →g H) : G →g H :=
+  add_homomorphism.mk (λg, φ g + ψ g)
+    abstract begin
+      intro g g', refine ap011 add !to_respect_add !to_respect_add ⬝ _,
+      refine !add.assoc ⬝ ap (add _) (!add.assoc⁻¹ ⬝ ap (λx, x * _) !add.comm ⬝ !add.assoc) ⬝ !add.assoc⁻¹
+    end end
+
   definition pmap_of_homomorphism_gid (G : Group) : pmap_of_homomorphism (gid G) ~* pid G :=
   begin
     fapply phomotopy_of_homotopy, reflexivity

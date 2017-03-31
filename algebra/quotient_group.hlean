@@ -13,6 +13,7 @@ open eq algebra is_trunc set_quotient relation sigma sigma.ops prod trunc functi
 namespace group
 
   variables {G G' : Group} (H : subgroup_rel G) (N : normal_subgroup_rel G) {g g' h h' k : G}
+            {N' : normal_subgroup_rel G'}
   variables {A B : AbGroup}
 
   /- Quotient Group -/
@@ -195,7 +196,7 @@ namespace group
     apply rel_of_eq _ H
   end
 
-  definition rel_of_ab_qg_map_eq_one {K : subgroup_rel A} (a :A) (H : ab_qg_map K a = 1) : K a := 
+  definition rel_of_ab_qg_map_eq_one {K : subgroup_rel A} (a :A) (H : ab_qg_map K a = 1) : K a :=
   begin
     have e : (a * 1⁻¹ = a),
     from calc
@@ -266,6 +267,14 @@ namespace group
   begin
     fapply qg_universal_property,
     exact H
+  end
+
+  definition quotient_group_functor [constructor] (φ : G →g G') (h : Πg, N g → N' (φ g)) :
+    quotient_group N →g quotient_group N' :=
+  begin
+    apply quotient_group_elim (qg_map N' ∘g φ),
+    intro g Ng, esimp,
+    refine qg_map_eq_one (φ g) (h g Ng)
   end
 
 ------------------------------------------------
@@ -402,7 +411,7 @@ definition is_embedding_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
     exact is_embedding_kernel_quotient_extension f
   end
 
-definition ab_group_first_iso_thm {A B : AbGroup} (f : A →g B) 
+definition ab_group_first_iso_thm {A B : AbGroup} (f : A →g B)
            : quotient_ab_group (kernel_subgroup f) ≃g ab_image f :=
   begin
     fapply isomorphism.mk,
@@ -463,6 +472,10 @@ definition codomain_surjection_is_quotient_triangle {A B : AbGroup} (f : A →g 
     parameter {A₁}
     definition gqg_eq_of_rel {g h : A₁} (H : S (g * h⁻¹)) : gqg_map g = gqg_map h :=
     eq_of_rel (tr (rincl H))
+
+    -- this one might work if the previous one doesn't (maybe make this the default one?)
+    definition gqg_eq_of_rel' {g h : A₁} (H : S (g * h⁻¹)) : class_of g = class_of h :> quotient_ab_group_gen :=
+    gqg_eq_of_rel H
 
     definition gqg_elim [constructor] (f : A₁ →g A₂) (H : Π⦃g⦄, S g → f g = 1)
       : quotient_ab_group_gen →g A₂ :=

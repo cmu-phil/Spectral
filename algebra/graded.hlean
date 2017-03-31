@@ -2,14 +2,14 @@
 
 -- Author: Floris van Doorn
 
-import .left_module
+import .left_module .direct_sum
 
-open algebra eq left_module pointed function equiv is_equiv is_trunc prod
+open algebra eq left_module pointed function equiv is_equiv is_trunc prod group
 
 namespace left_module
 
-definition graded (str : Type) (I : Type) : Type := I → str
-definition graded_module (R : Ring) : Type → Type := graded (LeftModule R)
+definition graded [reducible] (str : Type) (I : Type) : Type := I → str
+definition graded_module [reducible] (R : Ring) : Type → Type := graded (LeftModule R)
 
 variables {R : Ring} {I : Type} {M M₁ M₂ M₃ : graded_module R I}
 
@@ -148,6 +148,41 @@ infixl ` ⬝pgm `:75 := graded_iso.eq_trans
 definition graded_hom_of_eq [constructor] {M₁ M₂ : graded_module R I} (p : M₁ ~ M₂)
   : M₁ →gm M₂ :=
 graded_iso_of_eq p
+
+/- direct sum of graded R-modules -/
+
+variables {J : Set} (N : graded_module R J)
+definition dirsum' : AddAbGroup :=
+group.dirsum (λj, AddAbGroup_of_LeftModule (N j))
+variable {N}
+definition dirsum_smul [constructor] (r : R) : dirsum' N →g dirsum' N :=
+dirsum_functor (λi, smul_homomorphism (N i) r)
+
+definition dirsum_smul_right_distrib (r s : R) (n : dirsum' N) :
+  dirsum_smul (r + s) n = dirsum_smul r n + dirsum_smul s n :=
+begin
+  refine dirsum_functor_homotopy _ n ⬝ !dirsum_functor_add⁻¹,
+  intro i ni, exact to_smul_right_distrib r s ni
+end
+
+definition dirsum_mul_smul (r s : R) (n : dirsum' N) :
+  dirsum_smul (r * s) n = dirsum_smul r (dirsum_smul s n) :=
+begin
+  refine dirsum_functor_homotopy _ n ⬝ !dirsum_functor_compose⁻¹,
+  intro i ni, exact to_mul_smul r s ni
+end
+
+definition dirsum_one_smul (n : dirsum' N) : dirsum_smul 1 n = n :=
+begin
+  refine dirsum_functor_homotopy _ n ⬝ !dirsum_functor_gid,
+  intro i ni, exact to_one_smul ni
+end
+
+definition dirsum : LeftModule R :=
+LeftModule_of_AddAbGroup (dirsum' N) (λr n, dirsum_smul r n) (λr, homomorphism.addstruct (dirsum_smul r))
+  dirsum_smul_right_distrib
+  dirsum_mul_smul
+  dirsum_one_smul
 
 /- exact couples -/
 

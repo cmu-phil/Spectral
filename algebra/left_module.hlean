@@ -8,7 +8,7 @@ Modules prod vector spaces over a ring.
 (We use "left_module," which is more precise, because "module" is a keyword.)
 -/
 import algebra.field ..move_to_lib
-open is_trunc pointed function sigma eq algebra prod is_equiv equiv
+open is_trunc pointed function sigma eq algebra prod is_equiv equiv group
 
 structure has_scalar [class] (F V : Type) :=
 (smul : F → V → V)
@@ -80,6 +80,7 @@ section left_module
 
   proposition sub_smul_right_distrib (a b : R) (v : M) : (a - b) • v = a • v - b • v :=
   by rewrite [sub_eq_add_neg, smul_right_distrib, neg_smul]
+
 end left_module
 
 /- vector spaces -/
@@ -145,18 +146,56 @@ end module_hom
 structure LeftModule (R : Ring) :=
 (carrier : Type) (struct : left_module R carrier)
 
-local attribute LeftModule.carrier [coercion]
+attribute LeftModule.carrier [coercion]
 attribute LeftModule.struct [instance]
 
 definition pointed_LeftModule_carrier [instance] {R : Ring} (M : LeftModule R) :
   pointed (LeftModule.carrier M) :=
 pointed.mk zero
 
-definition pSet_of_LeftModule [coercion] {R : Ring} (M : LeftModule R) : Set* :=
+definition pSet_of_LeftModule {R : Ring} (M : LeftModule R) : Set* :=
 pSet.mk' (LeftModule.carrier M)
 
+definition AddAbGroup_of_LeftModule [coercion] {R : Ring} (M : LeftModule R) : AddAbGroup :=
+AddAbGroup.mk M _
+
+definition left_module_AddAbGroup_of_LeftModule [instance] {R : Ring} (M : LeftModule R) :
+  left_module R (AddAbGroup_of_LeftModule M) :=
+LeftModule.struct M
+
+definition left_module_of_ab_group (G : Type) [gG : add_ab_group G] (R : Type) [ring R]
+  (smul : R → G → G)
+  (h1 : Π (r : R) (x y : G), smul r (x + y) = (smul r x + smul r y))
+  (h2 : Π (r s : R) (x : G), smul (r + s) x = (smul r x + smul s x))
+  (h3 : Π r s x, smul (r * s) x = smul r (smul s x))
+  (h4 : Π x, smul 1 x = x) : left_module R G  :=
+begin
+  cases gG with Gs Gm Gh1 G1 Gh2 Gh3 Gi Gh4 Gh5,
+  exact left_module.mk smul Gs Gm Gh1 G1 Gh2 Gh3 Gi Gh4 Gh5 h1 h2 h3 h4
+end
+
+definition LeftModule_of_AddAbGroup {R : Ring} (G : AddAbGroup) (smul : R → G → G)
+  (h1 h2 h3 h4) : LeftModule R :=
+LeftModule.mk G (left_module_of_ab_group G R smul h1 h2 h3 h4)
+
+
 section
-  variable {R : Ring}
+  variables {R : Ring} {M M₁ M₂ M₃ : LeftModule R}
+
+  definition smul_homomorphism [constructor] (M : LeftModule R) (r : R) :
+    AddAbGroup_of_LeftModule M →g AddAbGroup_of_LeftModule M :=
+  add_homomorphism.mk (λg, r • g) (smul_left_distrib r)
+
+  proposition to_smul_left_distrib (a : R) (u v : M) : a • (u + v) = a • u + a • v :=
+  !smul_left_distrib
+
+  proposition to_smul_right_distrib (a b : R) (u : M) : (a + b) • u = a • u + b • u :=
+  !smul_right_distrib
+
+  proposition to_mul_smul (a : R) (b : R) (u : M) : (a * b) • u = a • (b • u) :=
+  !mul_smul
+
+  proposition to_one_smul (u : M) : (1 : R) • u = u := !one_smul
 
   structure homomorphism (M₁ M₂ : LeftModule R) : Type :=
     (fn : LeftModule.carrier M₁ → LeftModule.carrier M₂)
@@ -171,7 +210,8 @@ section
   homomorphism.p φ
 
   section
-    variables {M₁ M₂ : LeftModule R} (φ : M₁ →lm M₂)
+
+    variable (φ : M₁ →lm M₂)
 
     definition to_respect_add (x y : M₁) : φ (x + y) = φ x + φ y :=
     respect_add φ x y
@@ -220,7 +260,6 @@ section
 end
 
   section
-  variables {M M₁ M₂ M₃ : LeftModule R}
 
   definition LeftModule.struct2 [instance] (M : LeftModule R) : left_module R M :=
   LeftModule.struct M
@@ -256,8 +295,11 @@ end
   definition equiv_of_isomorphism [constructor] (φ : M₁ ≃lm M₂) : M₁ ≃ M₂ :=
   equiv.mk φ !isomorphism.is_equiv_to_hom
 
+  section
+  local attribute pSet_of_LeftModule [coercion]
   definition pequiv_of_isomorphism [constructor] (φ : M₁ ≃lm M₂) : M₁ ≃* M₂ :=
   pequiv_of_equiv (equiv_of_isomorphism φ) (to_respect_zero φ)
+  end
 
   definition isomorphism_of_equiv [constructor] (φ : M₁ ≃ M₂)
     (p : Π(g₁ g₂ : M₁), φ (g₁ + g₂) = φ g₁ + φ g₂)
@@ -320,8 +362,11 @@ end
     : M₁ →lm M₂ :=
   isomorphism_of_eq p
 
+  section
+  local attribute pSet_of_LeftModule [coercion]
   definition is_exact_mod (f : M₁ →lm M₂) (f' : M₂ →lm M₃) : Type :=
   @is_exact M₁ M₂ M₃ (homomorphism_fn f) (homomorphism_fn f')
+  end
 
   end
 
