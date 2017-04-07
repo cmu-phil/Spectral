@@ -32,6 +32,28 @@ namespace algebra
 
   definition one_unique {A : Type} [group A] {a : A} (H : Πb, a * b = b) : a = 1 :=
   !mul_one⁻¹ ⬝ H 1
+
+  definition pSet_of_AddGroup [constructor] [reducible] [coercion] (G : AddGroup) : Set* :=
+  pSet_of_Group G
+  attribute algebra._trans_of_pSet_of_AddGroup [unfold 1]
+  attribute algebra._trans_of_pSet_of_AddGroup_1 algebra._trans_of_pSet_of_AddGroup_2 [constructor]
+
+  definition pType_of_AddGroup [reducible] [constructor] : AddGroup → Type* :=
+  algebra._trans_of_pSet_of_AddGroup_1
+  definition Set_of_AddGroup [reducible] [constructor] : AddGroup → Set :=
+  algebra._trans_of_pSet_of_AddGroup_2
+
+  definition AddGroup_of_AddAbGroup [coercion] [constructor] (G : AddAbGroup) : AddGroup :=
+  AddGroup.mk G _
+
+  attribute algebra._trans_of_AddGroup_of_AddAbGroup_1
+            algebra._trans_of_AddGroup_of_AddAbGroup
+            algebra._trans_of_AddGroup_of_AddAbGroup_3 [constructor]
+  attribute algebra._trans_of_AddGroup_of_AddAbGroup_2 [unfold 1]
+
+  definition add_ab_group_AddAbGroup2 [instance] (G : AddAbGroup) : add_ab_group G :=
+  AddAbGroup.struct G
+
 end algebra
 
 namespace eq
@@ -484,20 +506,48 @@ namespace pointed
 end pointed open pointed
 
 namespace group
-  open is_trunc
+  open is_trunc algebra
 
   definition to_fun_isomorphism_trans {G H K : Group} (φ : G ≃g H) (ψ : H ≃g K) :
     φ ⬝g ψ ~ ψ ∘ φ :=
   by reflexivity
 
-  definition add_homomorphism.mk [constructor] {G H : AddGroup} (φ : G → H) (h : is_add_hom φ) : G →g H :=
+  definition add_homomorphism (G H : AddGroup) : Type := homomorphism G H
+  infix ` →a `:55 := add_homomorphism
+
+  definition agroup_fun [coercion] {G H : AddGroup} (φ : G →a H) : G → H :=
+  φ
+
+  definition add_homomorphism.struct [instance] {G H : AddGroup} (φ : G →a H) : is_add_hom φ :=
+  homomorphism.addstruct φ
+
+  definition add_homomorphism.mk [constructor] {G H : AddGroup} (φ : G → H) (h : is_add_hom φ) : G →a H :=
   homomorphism.mk φ h
 
-  definition homomorphism_add [constructor] {G H : AddAbGroup} (φ ψ : G →g H) : G →g H :=
+  definition add_homomorphism_compose [constructor] [trans] {G₁ G₂ G₃ : AddGroup}
+    (ψ : G₂ →a G₃) (φ : G₁ →a G₂) : G₁ →a G₃ :=
+  add_homomorphism.mk (ψ ∘ φ) (is_add_hom_compose _ _)
+
+  definition add_homomorphism_id [constructor] [refl] (G : AddGroup) : G →a G :=
+  add_homomorphism.mk (@id G) (is_add_hom_id G)
+
+  abbreviation aid [constructor] := @add_homomorphism_id
+  infixr ` ∘a `:75 := add_homomorphism_compose
+
+  definition to_respect_add' {H₁ H₂ : AddGroup} (χ : H₁ →a H₂) (g h : H₁) : χ (g + h) = χ g + χ h :=
+  respect_add χ g h
+
+  theorem to_respect_zero' {H₁ H₂ : AddGroup} (χ : H₁ →a H₂) : χ 0 = 0 :=
+  respect_zero χ
+
+  theorem to_respect_neg' {H₁ H₂ : AddGroup} (χ : H₁ →a H₂) (g : H₁) : χ (-g) = -(χ g) :=
+  respect_neg χ g
+
+  definition homomorphism_add [constructor] {G H : AddAbGroup} (φ ψ : G →a H) : G →a H :=
   add_homomorphism.mk (λg, φ g + ψ g)
     abstract begin
-      intro g g', refine ap011 add !to_respect_add !to_respect_add ⬝ _,
-      refine !add.assoc ⬝ ap (add _) (!add.assoc⁻¹ ⬝ ap (λx, x * _) !add.comm ⬝ !add.assoc) ⬝ !add.assoc⁻¹
+      intro g g', refine ap011 add !to_respect_add' !to_respect_add' ⬝ _,
+      refine !add.assoc ⬝ ap (add _) (!add.assoc⁻¹ ⬝ ap (λx, x + _) !add.comm ⬝ !add.assoc) ⬝ !add.assoc⁻¹
     end end
 
   definition pmap_of_homomorphism_gid (G : Group) : pmap_of_homomorphism (gid G) ~* pid G :=
@@ -947,7 +997,6 @@ namespace sphere
     { exact psphere_pequiv_pbool },
     { exact psusp_pequiv e }
   end
-
 
   -- definition constant_sphere_map_sphere {n m : ℕ} (H : n < m) (f : S* n →* S* m) :
   --   f ~* pconst (S* n) (S* m) :=

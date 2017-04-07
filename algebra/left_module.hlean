@@ -20,8 +20,8 @@ infixl ` • `:73 := has_scalar.smul
 namespace left_module
 
 structure left_module (R M : Type) [ringR : ring R] extends has_scalar R M, ab_group M renaming
-  mul→add mul_assoc→add_assoc one→zero one_mul→zero_add mul_one→add_zero inv→neg
-  mul_left_inv→add_left_inv mul_comm→add_comm :=
+  mul → add mul_assoc → add_assoc one → zero one_mul → zero_add mul_one → add_zero inv → neg
+  mul_left_inv → add_left_inv mul_comm → add_comm :=
 (smul_left_distrib : Π (r : R) (x y : M), smul r (add x y) = (add (smul r x) (smul r y)))
 (smul_right_distrib : Π (r s : R) (x : M), smul (ring.add _ r s) x = (add (smul r x) (smul s x)))
 (mul_smul : Π r s x, smul (mul r s) x = smul r (smul s x))
@@ -146,8 +146,17 @@ end module_hom
 structure LeftModule (R : Ring) :=
 (carrier : Type) (struct : left_module R carrier)
 
-attribute LeftModule.carrier [coercion]
 attribute LeftModule.struct [instance]
+
+section
+local attribute LeftModule.carrier [coercion]
+
+definition AddAbGroup_of_LeftModule [coercion] {R : Ring} (M : LeftModule R) : AddAbGroup :=
+AddAbGroup.mk M (LeftModule.struct M)
+end
+
+definition LeftModule.struct2 [instance] {R : Ring} (M : LeftModule R) : left_module R M :=
+LeftModule.struct M
 
 definition pointed_LeftModule_carrier [instance] {R : Ring} (M : LeftModule R) :
   pointed (LeftModule.carrier M) :=
@@ -155,9 +164,6 @@ pointed.mk zero
 
 definition pSet_of_LeftModule {R : Ring} (M : LeftModule R) : Set* :=
 pSet.mk' (LeftModule.carrier M)
-
-definition AddAbGroup_of_LeftModule [coercion] {R : Ring} (M : LeftModule R) : AddAbGroup :=
-AddAbGroup.mk M _
 
 definition left_module_AddAbGroup_of_LeftModule [instance] {R : Ring} (M : LeftModule R) :
   left_module R (AddAbGroup_of_LeftModule M) :=
@@ -182,8 +188,7 @@ LeftModule.mk G (left_module_of_ab_group G R smul h1 h2 h3 h4)
 section
   variables {R : Ring} {M M₁ M₂ M₃ : LeftModule R}
 
-  definition smul_homomorphism [constructor] (M : LeftModule R) (r : R) :
-    AddAbGroup_of_LeftModule M →g AddAbGroup_of_LeftModule M :=
+  definition smul_homomorphism [constructor] (M : LeftModule R) (r : R) : M →a M :=
   add_homomorphism.mk (λg, r • g) (smul_left_distrib r)
 
   proposition to_smul_left_distrib (a : R) (u v : M) : a • (u + v) = a • u + a • v :=
@@ -260,9 +265,6 @@ section
 end
 
   section
-
-  definition LeftModule.struct2 [instance] (M : LeftModule R) : left_module R M :=
-  LeftModule.struct M
 
   definition homomorphism.mk' [constructor] (φ : M₁ → M₂)
     (p : Π(g₁ g₂ : M₁), φ (g₁ + g₂) = φ g₁ + φ g₂)
