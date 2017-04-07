@@ -113,13 +113,26 @@ parameters {A B C : AbGroup} (ses : SES A B C)
   local abbreviation q := ab_qg_map (kernel_subgroup g)
   local abbreviation B_mod_A := quotient_ab_group (kernel_subgroup g)
 
---definition quotient_SES {A B C : AbGroup} (ses : SES A B C) : 
---  quotient_ab_group (image_subgroup (SES.f ses)) ≃g C :=
---  begin
---    fapply ab_group_first_iso_thm B C (SES.g ses), 
---  end
-
--- definition pre_right_extend_SES (to separate the following definition and replace C with B/A)
+definition SES_of_triangle_left {A' : AbGroup} (α : A' ≃g A) (f' : A' →g B) (H : Π a' : A', f (α a') = f' a') : SES A' B C :=
+begin
+  fapply SES.mk,
+  exact f',
+  exact g,
+  fapply is_embedding_of_is_injective,
+  intro x y p, 
+  fapply eq_of_fn_eq_fn (equiv_of_isomorphism α),
+  fapply @is_injective_of_is_embedding _ _ f (SES.Hf ses) (α x) (α y),
+  rewrite [H x], rewrite [H y], exact p,
+  exact SES.Hg ses,
+  fapply is_exact.mk,
+  intro a',
+  rewrite [(H a')⁻¹],
+  fapply is_exact.im_in_ker (SES.ex ses),
+  intro b p,
+  have  t : trunctype.carrier (subgroup_to_rel (image_subgroup f) b), from is_exact.ker_in_im (SES.ex ses) b p,
+  induction t, fapply tr, induction a with a q, fapply fiber.mk, exact α⁻¹ᵍ a, rewrite [(H (α⁻¹ᵍ a))⁻¹], 
+  krewrite [right_inv (equiv_of_isomorphism α) a], assumption
+end
 
 definition quotient_codomain_SES : B_mod_A ≃g C :=
   begin
