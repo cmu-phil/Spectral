@@ -3,10 +3,28 @@
 import homotopy.sphere2 homotopy.cofiber homotopy.wedge
 
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
-     is_trunc function sphere unit sum prod
+     is_trunc function sphere unit sum prod bool
 
 definition add_comm_right {A : Type} [add_comm_semigroup A] (n m k : A) : n + m + k = n + k + m :=
 !add.assoc ⬝ ap (add n) !add.comm ⬝ !add.assoc⁻¹
+
+structure is_exact_t {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
+  ( im_in_ker : Π(a:A), g (f a) = pt)
+  ( ker_in_im : Π(b:B), (g b = pt) → fiber f b)
+
+structure is_exact {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
+  ( im_in_ker : Π(a:A), g (f a) = pt)
+  ( ker_in_im : Π(b:B), (g b = pt) → image f b)
+
+definition is_exact_g {A B C : Group} (f : A →g B) (g : B →g C) :=
+is_exact f g
+
+definition is_exact_ag {A B C : AbGroup} (f : A →g B) (g : B →g C) :=
+is_exact f g
+
+definition is_exact_g.mk {A B C : Group} {f : A →g B} {g : B →g C}
+  (H₁ : Πa, g (f a) = 1) (H₂ : Πb, g b = 1 → image f b) : is_exact_g f g :=
+is_exact.mk H₁ H₂
 
 namespace algebra
   definition inf_group_loopn (n : ℕ) (A : Type*) [H : is_succ n] : inf_group (Ω[n] A) :=
@@ -913,6 +931,14 @@ end category
 
 namespace sphere
 
+  definition psphere_pequiv_iterate_psusp (n : ℕ) : psphere n ≃* iterate_psusp n pbool :=
+  begin
+    induction n with n e,
+    { exact psphere_pequiv_pbool },
+    { exact psusp_pequiv e }
+  end
+
+
   -- definition constant_sphere_map_sphere {n m : ℕ} (H : n < m) (f : S* n →* S* m) :
   --   f ~* pconst (S* n) (S* m) :=
   -- begin
@@ -968,14 +994,14 @@ begin
   exact ⦃ab_group, struct, mul_comm := H⦄
 end
 
-definition trivial_ab_group : AbGroup.{0} := 
+definition trivial_ab_group : AbGroup.{0} :=
 begin
   fapply AbGroup_of_Group Trivial_group, intro x y, reflexivity
 end
 
 definition trivial_homomorphism (A B : AbGroup) : A →g B :=
 begin
-  fapply homomorphism.mk, 
+  fapply homomorphism.mk,
   exact λ a, 1,
   intros, symmetry, exact one_mul 1,
 end
@@ -992,3 +1018,42 @@ definition is_embedding_from_trivial_ab_group (A : AbGroup) : is_embedding (from
 
 definition to_trivial_ab_group (A : AbGroup) : A →g trivial_ab_group :=
   trivial_homomorphism A trivial_ab_group
+
+/- Stuff added by Jeremy -/
+
+definition exists.elim {A : Type} {p : A → Type} {B : Type} [is_prop B] (H : Exists p)
+  (H' : ∀ (a : A), p a → B) : B :=
+trunc.elim (sigma.rec H') H
+
+definition image.elim {A B : Type} {f : A → B} {C : Type} [is_prop C] {b : B}
+  (H : image f b) (H' : ∀ (a : A), f a = b → C) : C :=
+begin
+  refine (trunc.elim _ H),
+  intro H'', cases H'' with a Ha, exact H' a Ha
+end
+
+definition image.intro {A B : Type} {f : A → B} {a : A} {b : B} (h : f a = b) : image f b :=
+begin
+  apply trunc.merely.intro,
+  apply fiber.mk,
+  exact h
+end
+
+definition image.equiv_exists {A B : Type} {f : A → B} {b : B} : image f b ≃ ∃ a, f a = b :=
+trunc_equiv_trunc _ (fiber.sigma_char _ _)
+
+-- move to homomorphism.hlean
+section
+  theorem eq_zero_of_eq_zero_of_is_embedding {A B : Type} [add_group A] [add_group B]
+    {f : A → B} [is_add_hom f] [is_embedding f] {a : A} (h : f a = 0) : a = 0 :=
+  have f a = f 0, by rewrite [h, respect_zero],
+  show a = 0, from is_injective_of_is_embedding this
+end
+
+/- put somewhere in algebra -/
+
+structure Ring :=
+(carrier : Type) (struct : ring carrier)
+
+attribute Ring.carrier [coercion]
+attribute Ring.struct [instance]

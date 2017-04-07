@@ -1,0 +1,28 @@
+- When using the "have" or "assert" tactic, no coercion is applied to the type. So you have to write for example
+`have g : Group.carrier G, from _,`
+instead of
+`have g : G, from _,`
+
+
+- When using the calc mode for homotopies, you have to give the proofs using a tactic (e.g. `by exact foo` instead of `foo`)
+
+- A file named "module.hlean" cannot be imported using `import .module` because `module` is a keyword (but it can be imported using `import ..foo.module`)
+
+Issues which are not bugs, but still good to know
+
+- once you start tactic mode, you cannot specify universe levels anymore
+
+- esimp is slow, and runs out of memory easily. It is good behavior to split up definitions. So instead of
+```
+equiv.MK (* big function *)
+         (* big inverse *)
+         (* long proof *)
+         (* long proof *)
+```
+first write the functions f and g and then write
+```
+equiv.MK f
+         g
+         abstract (* long proof *) end
+         abstract (* long proof *) end
+```

@@ -363,7 +363,7 @@ namespace seq_colim
     (q : prep0 f n (Point (A 0)) = Point (A n))
     : loop_equiv_eq_closed (ap (@f n) q ⬝ respect_pt (@f n))
     (ap (@f n) p) = Ω→(@f n) (loop_equiv_eq_closed q p) :=
-  by rewrite [▸*, con_inv, +ap_con, ap_inv, +con.assoc]
+  by rewrite [▸*, con_inv, ↑ap1_gen, +ap_con, ap_inv, +con.assoc]
 
   definition succ_add_tr_rep {n : ℕ} (k : ℕ) (x : A n)
     : transport A (succ_add n k) (rep f k (f x)) = rep f (succ k) x :=

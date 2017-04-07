@@ -59,7 +59,7 @@ namespace spherical_fibrations
   begin
     intro X, cases X with X p,
     apply sigma.mk (psusp X), induction p with f, apply tr,
-    apply susp.psusp_equiv f
+    apply susp.psusp_pequiv f
   end
 
   definition BF_of_BG {n : ℕ} : BG n → BF n :=

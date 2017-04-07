@@ -3,7 +3,7 @@ Copyright (c) 2017 Egbert Rijke. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Egbert Rijke
 
-Basic facts about short exact sequences. 
+Basic facts about short exact sequences.
 
 At the moment, it only covers short exact sequences of abelian groups, but this should be extended to short exact sequences in any abelian category.
 -/
@@ -13,18 +13,14 @@ import algebra.group_theory hit.set_quotient types.sigma types.list types.sum .q
 open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function group trunc
      equiv is_equiv
 
-structure is_exact {A B C : AbGroup} (f : A →g B) (g : B →g C) :=
-  ( im_in_ker : Π(a:A), g (f a) = 1)
-  ( ker_in_im : Π(b:B), (g b = 1) → image_subgroup f b)
-
 structure SES (A B C : AbGroup) :=
   ( f : A →g B)
   ( g : B →g C)
   ( Hf : is_embedding f)
   ( Hg : is_surjective g)
-  ( ex : is_exact f g)
+  ( ex : is_exact_ag f g)
 
-definition SES_of_inclusion {A B : AbGroup} (f : A →g B) (Hf : is_embedding f) : SES A B (quotient_ab_group (image_subgroup f)) := 
+definition SES_of_inclusion {A B : AbGroup} (f : A →g B) (Hf : is_embedding f) : SES A B (quotient_ab_group (image_subgroup f)) :=
   begin
     have Hg : is_surjective (ab_qg_map (image_subgroup f)),
     from is_surjective_ab_qg_map (image_subgroup f),
@@ -37,7 +33,7 @@ definition SES_of_inclusion {A B : AbGroup} (f : A →g B) (Hf : is_embedding f)
     intro a,
     fapply qg_map_eq_one, fapply tr, fapply fiber.mk, exact a, reflexivity,
     intro b, intro p,
-    fapply rel_of_ab_qg_map_eq_one, assumption
+    exact rel_of_ab_qg_map_eq_one _ p
   end
 
 definition SES_of_subgroup {B : AbGroup} (S : subgroup_rel B) : SES (ab_subgroup S) B (quotient_ab_group S) :=
@@ -73,7 +69,7 @@ definition SES_of_homomorphism {A B : AbGroup} (f : A →g B) : SES (ab_kernel f
     exact is_surjective_image_lift f,
     fapply is_exact.mk,
     intro a, induction a with a p, fapply subtype_eq, exact p,
-    intro a p, fapply tr, fapply fiber.mk, fapply sigma.mk, exact a, 
+    intro a p, fapply tr, fapply fiber.mk, fapply sigma.mk, exact a,
     exact calc
       f a = image_incl f (image_lift f a) : by exact homotopy_of_eq (ap group_fun (image_factor f)) a
       ... = image_incl f 1 : ap (image_incl f) p
@@ -90,10 +86,10 @@ definition SES_of_isomorphism_right {B C : AbGroup} (g : B ≃g C) : SES trivial
     fapply is_surjective_of_is_equiv,
     fapply is_exact.mk,
     intro a, induction a, fapply respect_one,
-    intro b p, 
+    intro b p,
     have q : g b = g 1,
-    from p ⬝ (respect_one g)⁻¹, 
-    note r := eq_of_fn_eq_fn (equiv_of_isomorphism g) q, 
+    from p ⬝ (respect_one g)⁻¹,
+    note r := eq_of_fn_eq_fn (equiv_of_isomorphism g) q,
     fapply tr, fapply fiber.mk, exact unit.star, rewrite r,
   end
 
@@ -134,6 +130,14 @@ begin
   krewrite [right_inv (equiv_of_isomorphism α) a], assumption
 end
 
+--definition quotient_SES {A B C : AbGroup} (ses : SES A B C) :
+--  quotient_ab_group (image_subgroup (SES.f ses)) ≃g C :=
+--  begin
+--    fapply ab_group_first_iso_thm B C (SES.g ses),
+--  end
+
+-- definition pre_right_extend_SES (to separate the following definition and replace C with B/A)
+
 definition quotient_codomain_SES : B_mod_A ≃g C :=
   begin
     exact (codomain_surjection_is_quotient g (SES.Hg ses))
@@ -150,7 +154,7 @@ definition quotient_triangle_extend_SES {C': AbGroup} (k : B →g C') :
   (Σ (h : C →g C'), h ∘g g ~ k) ≃ (Σ (h' : B_mod_A →g C'), h' ∘g q ~ k) :=
   begin
     fapply equiv.mk,
-    intro pair, induction pair with h H, 
+    intro pair, induction pair with h H,
     fapply sigma.mk, exact h ∘g α, intro b,
     exact H b,
     fapply adjointify,
@@ -166,8 +170,8 @@ definition quotient_triangle_extend_SES {C': AbGroup} (k : B →g C') :
     esimp, fapply is_prop.elimo, fapply pi.is_trunc_pi, intro a, fapply is_trunc_eq,
   end
 
-  parameters {A' B' C' : AbGroup} 
-  (ses' : SES A' B' C')  
+  parameters {A' B' C' : AbGroup}
+  (ses' : SES A' B' C')
   (hA : A →g A') (hB : B →g B') (htpy1 : hB ∘g f ~ (SES.f ses') ∘g hA)
 
   local abbreviation f' := SES.f ses'
@@ -175,12 +179,12 @@ definition quotient_triangle_extend_SES {C': AbGroup} (k : B →g C') :
   local abbreviation ex' := SES.ex ses'
   local abbreviation q' := ab_qg_map (kernel_subgroup g')
   local abbreviation α' := quotient_codomain_SES
-  
+
   include htpy1
 
-  definition quotient_extend_unique_SES : is_contr (Σ (hC : C →g C'), hC ∘g g ~ g' ∘g hB) := 
+  definition quotient_extend_unique_SES : is_contr (Σ (hC : C →g C'), hC ∘g g ~ g' ∘g hB) :=
   begin
-    fapply @(is_trunc_equiv_closed_rev _ (quotient_triangle_extend_SES (g' ∘g hB))), 
+    fapply @(is_trunc_equiv_closed_rev _ (quotient_triangle_extend_SES (g' ∘g hB))),
     fapply ab_qg_universal_property,
     intro b, intro K,
     have k : trunctype.carrier (image_subgroup f b), from is_exact.ker_in_im ex b K,
@@ -211,7 +215,7 @@ definition quotient_extend_SES_square : k ∘g (ab_qg_map (kernel_subgroup g)) ~
     fapply quotient_group_compute
   end
 
-definition right_extend_SES  : C →g C' := 
+definition right_extend_SES  : C →g C' :=
   α' ∘g k ∘g α⁻¹ᵍ
 
 local abbreviation hC := right_extend_SES
@@ -242,7 +246,7 @@ definition right_extend_SES_unique_map (hC' : C →g C') (htpy2' : hC' ∘g g ~ 
   begin
     exact calc
       hC ~ α' ∘g k ∘g α⁻¹ᵍ : by reflexivity
-     ... ~ α' ∘g α'⁻¹ᵍ ∘g hC' ∘g α ∘g α⁻¹ᵍ : 
+     ... ~ α' ∘g α'⁻¹ᵍ ∘g hC' ∘g α ∘g α⁻¹ᵍ :
      ... ~ hC' ∘g α ∘g α⁻¹ᵍ : _
      ... ~ hC' : _
   end
