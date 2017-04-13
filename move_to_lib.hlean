@@ -43,6 +43,11 @@ namespace algebra
   definition Set_of_AddGroup [reducible] [constructor] : AddGroup → Set :=
   algebra._trans_of_pSet_of_AddGroup_2
 
+  -- --
+  -- definition Group_of_AddAbGroup [coercion] [constructor] (G : AddAbGroup) : Group :=
+  -- AddGroup.mk G _
+  -- --
+
   definition AddGroup_of_AddAbGroup [coercion] [constructor] (G : AddAbGroup) : AddGroup :=
   AddGroup.mk G _
 
@@ -515,13 +520,13 @@ namespace group
   definition add_homomorphism (G H : AddGroup) : Type := homomorphism G H
   infix ` →a `:55 := add_homomorphism
 
-  definition agroup_fun [coercion] {G H : AddGroup} (φ : G →a H) : G → H :=
+  definition agroup_fun [coercion] [unfold 3] [reducible] {G H : AddGroup} (φ : G →a H) : G → H :=
   φ
 
   definition add_homomorphism.struct [instance] {G H : AddGroup} (φ : G →a H) : is_add_hom φ :=
   homomorphism.addstruct φ
 
-  definition add_homomorphism.mk [constructor] {G H : AddGroup} (φ : G → H) (h : is_add_hom φ) : G →a H :=
+  definition add_homomorphism.mk [constructor] {G H : AddGroup} (φ : G → H) (h : is_add_hom φ) : G →g H :=
   homomorphism.mk φ h
 
   definition add_homomorphism_compose [constructor] [trans] {G₁ G₂ G₃ : AddGroup}

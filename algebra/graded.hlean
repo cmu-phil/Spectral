@@ -155,7 +155,7 @@ variables {J : Set} (N : graded_module R J)
 definition dirsum' : AddAbGroup :=
 group.dirsum (λj, AddAbGroup_of_LeftModule (N j))
 variable {N}
-definition dirsum_smul [constructor] (r : R) : dirsum' N →g dirsum' N :=
+definition dirsum_smul [constructor] (r : R) : dirsum' N →a dirsum' N :=
 dirsum_functor (λi, smul_homomorphism (N i) r)
 
 definition dirsum_smul_right_distrib (r s : R) (n : dirsum' N) :
@@ -165,12 +165,16 @@ begin
   intro i ni, exact to_smul_right_distrib r s ni
 end
 
-definition dirsum_mul_smul (r s : R) (n : dirsum' N) :
-  dirsum_smul (r * s) n = dirsum_smul r (dirsum_smul s n) :=
+definition dirsum_mul_smul' (r s : R) (n : dirsum' N) :
+  dirsum_smul (r * s) n = (dirsum_smul r ∘a dirsum_smul s) n :=
 begin
-  refine dirsum_functor_homotopy _ n ⬝ !dirsum_functor_compose⁻¹,
+  refine dirsum_functor_homotopy _ n ⬝ (dirsum_functor_compose _ _ n)⁻¹ᵖ,
   intro i ni, exact to_mul_smul r s ni
 end
+
+definition dirsum_mul_smul (r s : R) (n : dirsum' N) :
+  dirsum_smul (r * s) n = dirsum_smul r (dirsum_smul s n) :=
+proof dirsum_mul_smul' r s n qed
 
 definition dirsum_one_smul (n : dirsum' N) : dirsum_smul 1 n = n :=
 begin

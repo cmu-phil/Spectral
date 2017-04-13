@@ -64,7 +64,7 @@ namespace group
       refine dirsum.rec _ _ _,
           exact h,
         refine !to_respect_zero ⬝ !to_respect_zero⁻¹,
-      intro g₁ g₂ h₁ h₂, rewrite [+ to_respect_add, h₁, h₂]
+      intro g₁ g₂ h₁ h₂, rewrite [+ to_respect_add', h₁, h₂]
     end
 
     definition dirsum_elim_resp_quotient (f : Πi, Y i →a A') (g : dirsum_carrier)
@@ -72,7 +72,7 @@ namespace group
     begin
       induction r with r, induction r,
       rewrite [to_respect_add, to_respect_neg], apply add_neg_eq_of_eq_add,
-      rewrite [zero_add, to_respect_add, ▸*, ↑foldl, +one_mul, to_respect_add]
+      rewrite [zero_add, to_respect_add, ▸*, ↑foldl, +one_mul, to_respect_add']
     end
 
     definition dirsum_elim [constructor] (f : Πi, Y i →a A') : dirsum →a A' :=
