@@ -119,7 +119,7 @@ namespace group
     dirsum_functor (λi, homomorphism_add (f i) (f' i)) :=
   begin
     apply dirsum_homotopy,
-    intro i y, exact sorry
+    intro i y, esimp, exact sorry
   end
 
   definition dirsum_functor_homotopy {f f' : Πi, Y i →a Y' i} (p : f ~2 f') :

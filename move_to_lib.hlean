@@ -555,6 +555,9 @@ namespace group
       refine !add.assoc ⬝ ap (add _) (!add.assoc⁻¹ ⬝ ap (λx, x + _) !add.comm ⬝ !add.assoc) ⬝ !add.assoc⁻¹
     end end
 
+  definition homomorphism_mul [constructor] {G H : AbGroup} (φ ψ : G →g H) : G →g H :=
+  homomorphism.mk (λg, φ g * ψ g) (to_respect_add (homomorphism_add φ ψ))
+
   definition pmap_of_homomorphism_gid (G : Group) : pmap_of_homomorphism (gid G) ~* pid G :=
   begin
     fapply phomotopy_of_homotopy, reflexivity

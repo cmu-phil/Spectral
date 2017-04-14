@@ -158,6 +158,11 @@ end
 definition LeftModule.struct2 [instance] {R : Ring} (M : LeftModule R) : left_module R M :=
 LeftModule.struct M
 
+-- definition LeftModule.struct3 [instance] {R : Ring} (M : LeftModule R) :
+--   left_module R (AddAbGroup_of_LeftModule M) :=
+-- _
+
+
 definition pointed_LeftModule_carrier [instance] {R : Ring} (M : LeftModule R) :
   pointed (LeftModule.carrier M) :=
 pointed.mk zero
@@ -363,6 +368,14 @@ end
   definition homomorphism_of_eq [constructor] {M₁ M₂ : LeftModule R} (p : M₁ = M₂ :> LeftModule R)
     : M₁ →lm M₂ :=
   isomorphism_of_eq p
+
+  definition group_homomorphism_of_lm_homomorphism [constructor] {M₁ M₂ : LeftModule R}
+    (φ : M₁ →lm M₂) : M₁ →a M₂ :=
+  add_homomorphism.mk φ (to_respect_add φ)
+
+  definition lm_homomorphism_of_group_homomorphism [constructor] {M₁ M₂ : LeftModule R}
+    (φ : M₁ →a M₂) (h : Π(r : R) g, φ (r • g) = r • φ g) : M₁ →lm M₂ :=
+  homomorphism.mk' φ (group.to_respect_add φ) h
 
   section
   local attribute pSet_of_LeftModule [coercion]
