@@ -427,9 +427,22 @@ namespace group
   :=
   subgroup_functor (gid G) H
 
+  definition is_embedding_subgroup_of_subgroup_incl {R S : subgroup_rel G} (H : Π (g : G), R g -> S g) : is_embedding (subgroup_of_subgroup_incl H) :=
+  begin
+    fapply is_embedding_of_is_injective,
+    intro x y p,
+    induction x with x r, induction y with y s,
+    fapply subtype_eq, esimp,
+    unfold subgroup_of_subgroup_incl at p, exact ap pr1 p,
+  end
+
   definition ab_subgroup_of_subgroup_incl {A : AbGroup} {R S : subgroup_rel A} (H : Π (a : A), R a -> S a) : ab_subgroup R →g ab_subgroup S
   :=
   ab_subgroup_functor (gid A) H 
   
+  definition is_embedding_ab_subgroup_of_subgroup_incl {A : AbGroup} {R S : subgroup_rel A} (H : Π (a : A), R a -> S a) : is_embedding (ab_subgroup_of_subgroup_incl H) :=
+  begin
+    fapply is_embedding_subgroup_of_subgroup_incl,
+  end
 
 end group
