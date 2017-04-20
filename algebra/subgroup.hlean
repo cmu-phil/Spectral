@@ -423,4 +423,13 @@ namespace group
     exact subtype_eq (p g)
   end
 
+  definition subgroup_of_subgroup_incl {R S : subgroup_rel G} (H : Π (g : G), R g -> S g) : subgroup R →g subgroup S
+  :=
+  subgroup_functor (gid G) H
+
+  definition ab_subgroup_of_subgroup_incl {A : AbGroup} {R S : subgroup_rel A} (H : Π (a : A), R a -> S a) : ab_subgroup R →g ab_subgroup S
+  :=
+  ab_subgroup_functor (gid A) H 
+  
+
 end group
