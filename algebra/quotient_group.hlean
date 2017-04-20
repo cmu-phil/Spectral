@@ -21,7 +21,7 @@ namespace group
   definition homotopy_of_homomorphism_eq {f g : G →g G'}(p : f = g) : f ~ g :=
   λx : G , ap010 group_fun p x
 
-  definition quotient_rel (g h : G) : Prop := N (g * h⁻¹)
+  definition quotient_rel [constructor] (g h : G) : Prop := N (g * h⁻¹)
 
   variable {N}
 

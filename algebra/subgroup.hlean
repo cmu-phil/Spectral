@@ -6,7 +6,7 @@ Authors: Floris van Doorn, Egbert Rijke
 Basic concepts of group theory
 -/
 
-import algebra.group_theory
+import algebra.group_theory ..move_to_lib
 
 open eq algebra is_trunc sigma sigma.ops prod trunc
 
@@ -126,6 +126,7 @@ namespace group
   abbreviation subgroup_respect_inv [unfold 2] := @subgroup_rel.Rinv
   abbreviation is_normal_subgroup   [unfold 2] := @normal_subgroup_rel.is_normal_subgroup
 
+  section
   variables {G G' : Group} (H : subgroup_rel G) (N : normal_subgroup_rel G) {g g' h h' k : G}
             {A B : AbGroup}
 
@@ -366,6 +367,60 @@ namespace group
   begin
     intro x,
     fapply image_incl_injective f x 1,
+  end
+  end
+
+  variables {G H K : Group} {R : subgroup_rel G} {S : subgroup_rel H} {T : subgroup_rel K}
+  open function
+  definition subgroup_functor_fun [unfold 7] (φ : G →g H) (h : Πg, R g → S (φ g)) (x : subgroup R) :
+    subgroup S :=
+  begin
+    induction x with g hg,
+    exact ⟨φ g, h g hg⟩
+  end
+
+  definition subgroup_functor [constructor] (φ : G →g H)
+    (h : Πg, R g → S (φ g)) : subgroup R →g subgroup S :=
+  begin
+    fapply homomorphism.mk,
+    { exact subgroup_functor_fun φ h },
+    { intro x₁ x₂, induction x₁ with g₁ hg₁, induction x₂ with g₂ hg₂,
+      exact sigma_eq !to_respect_mul !is_prop.elimo }
+  end
+
+  definition ab_subgroup_functor [constructor] {G H : AbGroup} {R : subgroup_rel G}
+    {S : subgroup_rel H} (φ : G →g H)
+    (h : Πg, R g → S (φ g)) : ab_subgroup R →g ab_subgroup S :=
+  subgroup_functor φ h
+
+  theorem subgroup_functor_compose (ψ : H →g K) (φ : G →g H)
+    (hψ : Πg, S g → T (ψ g)) (hφ : Πg, R g → S (φ g)) :
+    subgroup_functor ψ hψ ∘g subgroup_functor φ hφ ~
+    subgroup_functor (ψ ∘g φ) (λg, proof hψ (φ g) qed ∘ hφ g) :=
+  begin
+    intro g, induction g with g hg, reflexivity
+  end
+
+  definition subgroup_functor_gid : subgroup_functor (gid G) (λg, id) ~ gid (subgroup R) :=
+  begin
+    intro g, induction g with g hg, reflexivity
+  end
+
+  definition subgroup_functor_mul {G H : AbGroup} {R : subgroup_rel G} {S : subgroup_rel H}
+    (ψ φ : G →g H) (hψ : Πg, R g → S (ψ g)) (hφ : Πg, R g → S (φ g)) :
+    homomorphism_mul (ab_subgroup_functor ψ hψ) (ab_subgroup_functor φ hφ) ~
+    ab_subgroup_functor (homomorphism_mul ψ φ)
+                        (λg hg, subgroup_respect_mul S (hψ g hg) (hφ g hg)) :=
+  begin
+    intro g, induction g with g hg, reflexivity
+  end
+
+  definition subgroup_functor_homotopy {ψ φ : G →g H} (hψ : Πg, R g → S (ψ g))
+    (hφ : Πg, R g → S (φ g)) (p : φ ~ ψ) :
+    subgroup_functor φ hφ ~ subgroup_functor ψ hψ :=
+  begin
+    intro g, induction g with g hg,
+    exact subtype_eq (p g)
   end
 
 end group

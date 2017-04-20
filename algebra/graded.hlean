@@ -189,6 +189,10 @@ LeftModule_of_AddAbGroup (dirsum' N) (λr n, dirsum_smul r n)
   dirsum_mul_smul
   dirsum_one_smul
 
+/- homology of a graded module-homomorphism -/
+
+
+
 /- exact couples -/
 
 definition is_exact_gmod (f : M₁ →gm M₂) (f' : M₂ →gm M₃) : Type :=
