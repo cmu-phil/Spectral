@@ -109,6 +109,23 @@ parameters {A B C : AbGroup} (ses : SES A B C)
   local abbreviation q := ab_qg_map (kernel_subgroup g)
   local abbreviation B_mod_A := quotient_ab_group (kernel_subgroup g)
 
+definition SES_iso_stable {A' B' C' : AbGroup} (f' : A' →g B') (g' : B' →g C') (α : A' ≃g A) (β : B' ≃g B) (γ : C' ≃g C) (Hαβ : f ∘g α ~ β ∘g f') (Hβγ : g ∘g β ~ γ ∘g g') : SES A' B' C' :=
+  begin
+    fapply SES.mk, 
+    exact f',
+    exact g',
+    fapply is_embedding_of_is_injective,
+    intros x y p,
+    have path : f (α x) = f (α y), by exact calc
+      f (α x) = β (f' x) : Hαβ x
+          ... = β (f' y) : ap β p
+          ... = f (α y)  : (Hαβ y)⁻¹,
+    have path' : α x = α y, by exact @is_injective_of_is_embedding _ _ f (SES.Hf ses) _ _ path, 
+    exact @is_injective_of_is_embedding _ _ α (is_embedding_of_is_equiv α) _ _ path',
+  exact sorry,
+  exact sorry, 
+  end
+
 definition SES_of_triangle_left {A' : AbGroup} (α : A' ≃g A) (f' : A' →g B) (H : Π a' : A', f (α a') = f' a') : SES A' B C :=
 begin
   fapply SES.mk,
