@@ -8,13 +8,14 @@ Constructions with groups
 
 import algebra.group_theory hit.set_quotient types.list types.sum .free_group
 
-open eq algebra is_trunc set_quotient relation sigma sigma.ops prod sum list trunc function equiv
+open eq algebra is_trunc set_quotient relation sigma sigma.ops prod sum list trunc function equiv trunc_index
+     group
 
 namespace group
 
   variables {G G' : Group} {g g' h h' k : G} {A B : AbGroup}
 
-  variables (X : Set) {l l' : list (X ⊎ X)}
+  variables (X : Set) {Y : Set} {l l' : list (X ⊎ X)}
 
   /- Free Abelian Group of a set -/
   namespace free_ab_group
@@ -196,5 +197,37 @@ namespace group
     { intro k, symmetry, apply homomorphism_eq, apply free_ab_group_elim_unique,
       reflexivity }
   end
+
+  definition free_ab_group_functor (f : X → Y) : free_ab_group X →g free_ab_group Y :=
+  free_ab_group_elim (free_ab_group_inclusion ∘ f)
+
+-- set_option pp.all true
+--   definition free_ab_group.rec {P : free_ab_group X → Type} [H : Πg, is_prop (P g)]
+--     (h₁ : Πx, P (free_ab_group_inclusion x))
+--     (h₂ : P 0)
+--     (h₃ : Πg h, P g → P h → P (g * h))
+--     (h₄ : Πg, P g → P g⁻¹) :
+--     Πg, P g :=
+--   begin
+--     refine @set_quotient.rec_prop _ _ _ H _,
+--     refine @set_quotient.rec_prop _ _ _ (λx, !H) _,
+--     esimp, intro l, induction l with s l ih,
+--       exact h₂,
+--     induction s with v v,
+--       induction v with i y,
+--       exact h₃ _ _ (h₁ i y) ih,
+--     induction v with i y,
+--     refine h₃ (gqg_map _ _ (class_of [inr ⟨i, y⟩])) _ _ ih,
+--     refine transport P _ (h₁ i y⁻¹),
+--     refine _ ⬝ !mul_one,
+--     refine _ ⬝ ap (mul _) (to_respect_one (dirsum_incl i)),
+--     apply gqg_eq_of_rel',
+--     apply tr, esimp,
+--     refine transport dirsum_rel _ (dirsum_rel.rmk i y⁻¹ y),
+--     rewrite [mul.left_inv, mul.assoc],
+--     apply ap (mul _),
+--     refine _ ⬝ (mul_inv (class_of [inr ⟨i, y⟩]) (ι ⟨i, 1⟩))⁻¹ᵖ,
+--     refine ap011 mul _ _,
+--   end
 
 end group

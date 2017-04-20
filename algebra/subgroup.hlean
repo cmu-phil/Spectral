@@ -113,7 +113,7 @@ namespace group
 
   /-- Next, we formalize some aspects of normal subgroups. Recall that a normal subgroup H of a group G is a subgroup which is invariant under all inner automorophisms on G. --/
 
-  definition is_normal [constructor] {G : Group} (R : G → Prop) : Prop :=
+  definition is_normal.{u v} [constructor] {G : Group.{u}} (R : G → Prop.{v}) : Prop.{max u v} :=
   trunctype.mk (Π{g} h, R g → R (h * g * h⁻¹)) _
 
   structure normal_subgroup_rel (G : Group) extends subgroup_rel G :=
@@ -244,7 +244,7 @@ namespace group
   definition is_embedding_incl_of_subgroup {G : Group} (H : subgroup_rel G) : is_embedding (incl_of_subgroup H) :=
   begin
     fapply function.is_embedding_of_is_injective,
-    intro h h', 
+    intro h h',
     fapply subtype_eq
   end
 
@@ -256,7 +256,7 @@ namespace group
   definition is_embedding_ab_kernel_incl {G H : AbGroup} (f : G →g H) : is_embedding (ab_kernel_incl f) :=
   begin
     fapply is_embedding_incl_of_subgroup,
-  end 
+  end
 
   definition subgroup_rel_of_subgroup {G : Group} (H1 H2 : subgroup_rel G) (hyp : Π (g : G), subgroup_rel.R H1 g → subgroup_rel.R H2 g) : subgroup_rel (subgroup H2) :=
   subgroup_rel.mk

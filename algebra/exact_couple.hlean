@@ -26,6 +26,14 @@ definition image_subgroup_of_diff {B : AbGroup} (d : B →g B) (H : is_different
 definition homology {B : AbGroup} (d : B →g B) (H : is_differential d) : AbGroup :=
   @quotient_ab_group (ab_kernel d) (image_subgroup_of_diff d H)
 
+definition SES_of_differential {B : AbGroup} (d : B →g B) (H : is_differential d) : SES (ab_image d) (ab_kernel d) (homology d H) :=
+  begin
+    fapply SES.mk,
+    sorry,
+-- use the more general fact that a subgroup inclusion is a group homomorphism
+-- maybe use SES_of_subgroup?
+  end
+
 structure exact_couple (A B : AbGroup) : Type :=
   ( i : A →g A) (j : A →g B) (k : B →g A)
   ( exact_ij : is_exact i j)

@@ -10,7 +10,7 @@ open left_module
 
 structure module_chain_complex (R : Ring) (N : succ_str) : Type :=
 (mod : N → LeftModule R)
-(hom : Π (n : N), left_module.homomorphism (mod (S n)) (mod n))
+(hom : Π (n : N), mod (S n) →lm mod n)
 (is_chain_complex :
   Π (n : N) (x : mod (S (S n))), hom n (hom (S n) x) = 0)
 
