@@ -23,15 +23,25 @@ definition image_subgroup_of_diff {B : AbGroup} (d : B →g B) (H : is_different
     exact H h
   end
 
+definition diff_im_in_ker {B : AbGroup} (d : B →g B) (H : is_differential d) : Π(b : B), image_subgroup d b → kernel_subgroup d b :=
+  begin
+    intro b p,
+    induction p with q, induction q with b' p, induction p, exact H b'
+  end
+
 definition homology {B : AbGroup} (d : B →g B) (H : is_differential d) : AbGroup :=
   @quotient_ab_group (ab_kernel d) (image_subgroup_of_diff d H)
 
 definition SES_of_differential {B : AbGroup} (d : B →g B) (H : is_differential d) : SES (ab_image d) (ab_kernel d) (homology d H) :=
   begin
     fapply SES.mk,
+    exact @ab_subgroup_of_subgroup_incl B (image_subgroup d) (kernel_subgroup d) (diff_im_in_ker d H),
+    exact ab_qg_map (image_subgroup_of_diff d H),
+    rexact is_embedding_ab_subgroup_of_subgroup_incl (diff_im_in_ker d H),
+    exact is_surjective_ab_qg_map (image_subgroup_of_diff d H),
+    fapply is_exact.mk,
+    intro b, induction b,
     sorry,
--- use the more general fact that a subgroup inclusion is a group homomorphism
--- maybe use SES_of_subgroup?
   end
 
 structure exact_couple (A B : AbGroup) : Type :=
