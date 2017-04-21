@@ -191,7 +191,7 @@ f'\smash 0\arrow[dl,equals] \\
       (a_3,b_3)
     \end{tikzcd}
   \end{center}
-  
+
   If $x$ varies over $\gluer_b$, we need to fill the cube below. The front and the back are the
   squares we just filled, the left square is a degenerate square, and the other three squares are
   the squares in the definition of $q$ and $i$ to show that they respect $\gluer_b$ (and on the
@@ -211,7 +211,7 @@ f'\smash 0\arrow[dl,equals] \\
   After canceling applications of
   $\mapfunc{h\smash k}(\gluer_z)=\gluer_{k(z)}$ on various sides of the squares (TODO).
 
-  
+
   If $x$ varies over $\gluel_a$ the proof is very similar. Only in the end we need to fill the
   following cube instead (TODO).
 
@@ -222,12 +222,9 @@ f'\smash 0\arrow[dl,equals] \\
 \begin{thm}\label{thm:smash-functor-right}
 Given pointed types $A$, $B$ and $C$, the functorial action of the smash product induces a map
 $$({-})\smash C:(A\pmap B)\pmap(A\smash C\pmap B\smash C)$$
-which is natural in $A$, $B$ and $C$. (note: $(A\smash C\pmap B\smash C)$ is both covariant and contravariant in $C$).
+which is natural in $A$, $B$ and dinatural in $C$.
 \end{thm}
-\begin{proof}
-  First note that $\lam{f}f\smash C$ preserves the basepoint so that the map is indeed pointed. We
-  show that this map is natural in each of its arguments individually, which means we need to fill
-  the following squares for $f : A' \to A$ $g:B\to B'$ and $h:C\to C'$.
+The naturality and dinaturality means that the following squares commute for $f : A' \to A$ $g:B\to B'$ and $h:C\to C'$.
 \begin{center}
 \begin{tikzcd}
 (A\pmap B) \arrow[r,"({-})\smash C"]\arrow[d,"f\pmap B"] &
@@ -248,10 +245,13 @@ which is natural in $A$, $B$ and $C$. (note: $(A\smash C\pmap B\smash C)$ is bot
 (A\smash C\pmap B\smash C')
 \end{tikzcd}
 \end{center}
+\begin{proof}
+First note that $\lam{f}f\smash C$ preserves the basepoint so that the map is indeed pointed.
+
 Let $k:A\pmap B$. Then as homotopy the naturality in $A$ becomes
 $(k\o f)\smash C=k\smash C\o f\smash C$. To prove an equality between pointed maps, we need to give
 a pointed homotopy, which is given by interchange. To show that this homotopy is pointed, we need to
-fill the following square (after reducing out the applications of function extensinality), which follows from \autoref{lem:smash-coh}. 
+fill the following square (after reducing out the applications of function extensinality), which follows from \autoref{lem:smash-coh}.
 \begin{center}
 \begin{tikzcd}
 (0 \o f)\smash C \arrow[r, equals]\arrow[dd,equals] &
@@ -273,21 +273,21 @@ square, which follows from \autoref{lem:smash-coh}.
 0
 \end{tikzcd}
 \end{center}
-The naturality in $C$ is a bit harder. For the underlying homotopy we need to show
+The dinaturality in $C$ is a bit harder. For the underlying homotopy we need to show
 $B\smash h\o k\smash C=k\smash C'\o A\smash h$. This follows by applying interchange twice:
 $$B\smash h\o k\smash C\sim(\idfunc[B]\o k)\smash(h\o\idfunc[C])\sim(k\o\idfunc[A])\smash(\idfunc[C']\o h)\sim k\smash C'\o A\smash h.$$
 To show that this homotopy is pointed, we need to fill the following square:
 \begin{center}
   \begin{tikzcd}
-    B\smash h\o 0\smash C \arrow[r, equals]\arrow[d,equals] & 
+    B\smash h\o 0\smash C \arrow[r, equals]\arrow[d,equals] &
     (\idfunc[B]\o 0)\smash(h\o\idfunc[C]) \arrow[r, equals]\arrow[d,equals] &
     (0\o\idfunc[A])\smash(\idfunc[C']\o h)\arrow[r, equals]\arrow[d,equals] &
     0\smash C'\o A\smash h\arrow[d,equals] \\
-    B\smash h\o 0 \arrow[d,equals] & 
+    B\smash h\o 0 \arrow[d,equals] &
     0\smash(h\o\idfunc[C]) \arrow[r, equals]\arrow[d,equals] &
     0\smash(\idfunc[C']\o h) \arrow[d,equals] &
     0\o A\smash h\arrow[d,equals] \\
-    B\smash h\o 0 \arrow[r, equals] & 
+    B\smash h\o 0 \arrow[r, equals] &
     0 \arrow[r, equals] &
     0 \arrow[r, equals] &
     0
@@ -300,14 +300,13 @@ are filled by (corollaries of) \autoref{lem:smash-general}.
 \section{Adjunction}
 
 \begin{lem}
-  There is a unit $\eta_{A,B}\equiv\eta:A\pmap B\pmap A\smash B$ and counit
-  $\epsilon_{B,C}\equiv\epsilon : (B\pmap C)\smash B \pmap C$ which are natural in both arguments
-  and satisfy the unit-counit laws:
+  There is a unit $\eta_{A,B}\equiv\eta:A\pmap B\pmap A\smash B$ natural in $A$ and counit
+  $\epsilon_{B,C}\equiv\epsilon : (B\pmap C)\smash B \pmap C$ dinatural in $B$ and natural in $C$.
+  These maps satisfy the unit-counit laws:
   $$(A\to\epsilon_{A,B})\o \eta_{A\to B,A}\sim \idfunc[A\to B]\qquad
   \epsilon_{B,B\smash C}\o \eta_{A,B}\smash B\sim\idfunc[A\smash B].$$
-  
-
 \end{lem}
+Note: $\eta$ is also dinatural in $B$, but we don't need this.
 \begin{proof}
   We define $\eta ab=(a,b)$. Then $\eta a$ respects the basepoint because
   $(a,b_0)=(a_0,b_0)$. Also, $\eta$ itself respects the basepoint. To show this, we need to show
@@ -322,9 +321,9 @@ are filled by (corollaries of) \autoref{lem:smash-general}.
   need to show that $0(b)=c_0$ which is true by reflexivity. $\epsilon$ is trivially a pointed map,
   which defines the counit.
 
-  Now we need to show that the unit and counit are natural. (TODO).
+  Now we need to show that the unit and counit are (di)natural. (TODO).
 
-  Finally we need to show that unit-counit laws. For the underlying homotopy of the first one, let
+  Finally we need to show the unit-counit laws. For the underlying homotopy of the first one, let
   $f:A\to B$. We need to show that $p:\epsilon\o\eta f\sim f$. For the underlying homotopy of $p$,
   let $a:A$, and we need to show that $\epsilon(f,a)=f(a)$, which is true by reflexivity. To show
   that $p$ is a pointed homotopy, we need to show that
@@ -401,7 +400,13 @@ $e$ is natural in $A$, $B$ and $C$.
 \end{tikzcd}
 \end{center}
 
-\textbf{$e$ is natural in $B$}. Suppose that $f:B'\pmap B$. The diagram looks weird since $({-})\smash B$ is both contravariant and covariant in $B$. Then we get the following diagram. The front square commutes by naturality of $({-})\smash B$ in the second argument (applied to $f\pmap C$). The top square commutes by naturality of $({-})\smash B$ in the third argument, the back square commutes because composition on the left commutes with composition on the right, and finally the right square commutes by applying the functor $A\smash B' \pmap({-})$ to the naturality of $\epsilon$ in the first argument.
+\textbf{$e$ is natural in $B$}. Suppose that $f:B'\pmap B$. Here the diagram is a bit more
+complicated, since $({-})\smash B$ is dinatural (instead of natural) in $B$. Then we get the
+following diagram. The front square commutes by naturality of $({-})\smash B$ in the second argument
+(applied to $f\pmap C$). The top square commutes by naturality of $({-})\smash B$ in the third
+argument, the back square commutes because composition on the left commutes with composition on the
+right, and finally the right square commutes by applying the functor $A\smash B' \pmap({-})$ to the
+naturality of $\epsilon$ in the first argument.
 \begin{center}
 \begin{tikzcd}[row sep=scriptsize, column sep=-4em]
 & (A\smash B\pmap (B\pmap C)\smash B) \arrow[rr] \arrow[dd] & & (A\smash B'\pmap (B\pmap C)\smash B)\arrow[dd] \\
@@ -422,7 +427,7 @@ $e$ is natural in $A$, $B$ and $C$.
     A \smash (B \smash C)\to X&\simeq A \to B\smash C\to X\\
     &\simeq A \to B\to C\to X\\
     &\simeq A \smash B\to C\to X\\
-    &\simeq (A \smash B)\smash C\to X.                              
+    &\simeq (A \smash B)\smash C\to X.
   \end{align*}
   $\phi_X$ is natural in $A,B,C,X$ by repeatedly applying \autoref{e-natural}. Let
   $f\defeq\phi_{A \smash (B \smash C)}(\idfunc)$ and
