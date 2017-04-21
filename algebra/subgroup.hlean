@@ -127,7 +127,7 @@ namespace group
   abbreviation is_normal_subgroup   [unfold 2] := @normal_subgroup_rel.is_normal_subgroup
 
   section
-  variables {G G' : Group} (H : subgroup_rel G) (N : normal_subgroup_rel G) {g g' h h' k : G}
+  variables {G G' G₁ G₂ G₃ : Group} (H : subgroup_rel G) (N : normal_subgroup_rel G) {g g' h h' k : G}
             {A B : AbGroup}
 
   theorem is_normal_subgroup' (h : G) (r : N g) : N (h⁻¹ * g * h) :=
@@ -315,14 +315,14 @@ namespace group
     reflexivity
   end
 
-  definition iso_surjection_ab_image_incl {A B : AbGroup} (f : A →g B) (H : is_surjective f) : ab_image f ≃g B :=
+  definition iso_surjection_ab_image_incl [constructor] {A B : AbGroup} (f : A →g B) (H : is_surjective f) : ab_image f ≃g B :=
   begin
     fapply isomorphism.mk,
     exact (ab_image_incl f),
     exact is_equiv_surjection_ab_image_incl f H
   end
 
-  definition hom_lift {G H : Group} (f : G →g H) (K : subgroup_rel H) (Hyp : Π (g : G), K (f g)) : G →g subgroup K :=
+  definition hom_lift [constructor] {G H : Group} (f : G →g H) (K : subgroup_rel H) (Hyp : Π (g : G), K (f g)) : G →g subgroup K :=
   begin
     fapply homomorphism.mk,
     intro g,
@@ -332,7 +332,7 @@ namespace group
     intro g h, apply subtype_eq, esimp, apply respect_mul
   end
 
-  definition image_lift {G H : Group} (f : G →g H) : G →g image f :=
+  definition image_lift [constructor] {G H : Group} (f : G →g H) : G →g image f :=
   begin
     fapply hom_lift f,
     intro g,
@@ -368,6 +368,24 @@ namespace group
     intro x,
     fapply image_incl_injective f x 1,
   end
+
+  definition image_elim_lemma {f₁ : G₁ →g G₂} {f₂ : G₁ →g G₃} (h : Π⦃g⦄, f₁ g = 1 → f₂ g = 1)
+    (g g' : G₁) (p : f₁ g = f₁ g') : f₂ g = f₂ g' :=
+  have f₁ (g * g'⁻¹) = 1, from !to_respect_mul ⬝ ap (mul _) !to_respect_inv ⬝
+    mul_inv_eq_of_eq_mul (p ⬝ !one_mul⁻¹),
+  have f₂ (g * g'⁻¹) = 1, from h this,
+  eq_of_mul_inv_eq_one (ap (mul _) !to_respect_inv⁻¹ ⬝ !to_respect_mul⁻¹ ⬝ this)
+
+  open image
+  definition image_elim {f₁ : G₁ →g G₂} (f₂ : G₁ →g G₃) (h : Π⦃g⦄, f₁ g = 1 → f₂ g = 1) :
+    image f₁ →g G₃ :=
+  homomorphism.mk (total_image.elim_set f₂ (image_elim_lemma h))
+  begin
+    refine total_image.rec _, intro g,
+    refine total_image.rec _, intro g',
+    exact to_respect_mul f₂ g g'
+  end
+
   end
 
   variables {G H K : Group} {R : subgroup_rel G} {S : subgroup_rel H} {T : subgroup_rel K}
@@ -446,3 +464,6 @@ namespace group
   end
 
 end group
+
+open group
+attribute image_subgroup [constructor]

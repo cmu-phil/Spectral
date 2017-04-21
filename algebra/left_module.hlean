@@ -141,7 +141,16 @@ section module_hom
 
   proposition respect_smul_add_smul (a b : R) (u v : M₁) : f (a • u + b • v) = a • f u + b • f v :=
   by rewrite [respect_add f, +respect_smul R f]
+
 end module_hom
+
+section hom_constant
+  variables {R : Type} {M₁ M₂ : Type}
+  variables [ring R] [has_scalar R M₁] [add_group M₁] [left_module R M₂]
+  proposition is_module_hom_constant : is_module_hom R (const M₁ (0 : M₂)) :=
+  (λm₁ m₂, !add_zero⁻¹, λr m, (smul_zero r)⁻¹ᵖ)
+
+end hom_constant
 
 structure LeftModule (R : Ring) :=
 (carrier : Type) (struct : left_module R carrier)
@@ -289,6 +298,9 @@ end
 
   abbreviation lmid [constructor] := homomorphism_id M
   infixr ` ∘lm `:75 := homomorphism_compose
+
+  definition lm_constant [constructor] (M₁ M₂ : LeftModule R) : M₁ →lm M₂ :=
+  homomorphism.mk (const M₁ 0) !is_module_hom_constant
 
   structure isomorphism (M₁ M₂ : LeftModule R) :=
     (to_hom : M₁ →lm M₂)

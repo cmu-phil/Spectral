@@ -3,69 +3,13 @@ import .left_module .quotient_group
 
 open algebra eq group sigma is_trunc function trunc
 
-/- move to subgroup -/
-
-namespace group
-
-  variables {G H K : Group} {R : subgroup_rel G} {S : subgroup_rel H} {T : subgroup_rel K}
-
-  definition subgroup_functor_fun [unfold 7] (φ : G →g H) (h : Πg, R g → S (φ g)) (x : subgroup R) :
-    subgroup S :=
-  begin
-    induction x with g hg,
-    exact ⟨φ g, h g hg⟩
-  end
-
-  definition subgroup_functor [constructor] (φ : G →g H)
-    (h : Πg, R g → S (φ g)) : subgroup R →g subgroup S :=
-  begin
-    fapply homomorphism.mk,
-    { exact subgroup_functor_fun φ h },
-    { intro x₁ x₂, induction x₁ with g₁ hg₁, induction x₂ with g₂ hg₂,
-      exact sigma_eq !to_respect_mul !is_prop.elimo }
-  end
-
-  definition ab_subgroup_functor [constructor] {G H : AbGroup} {R : subgroup_rel G}
-    {S : subgroup_rel H} (φ : G →g H)
-    (h : Πg, R g → S (φ g)) : ab_subgroup R →g ab_subgroup S :=
-  subgroup_functor φ h
-
-  theorem subgroup_functor_compose (ψ : H →g K) (φ : G →g H)
-    (hψ : Πg, S g → T (ψ g)) (hφ : Πg, R g → S (φ g)) :
-    subgroup_functor ψ hψ ∘g subgroup_functor φ hφ ~
-    subgroup_functor (ψ ∘g φ) (λg, proof hψ (φ g) qed ∘ hφ g) :=
-  begin
-    intro g, induction g with g hg, reflexivity
-  end
-
-  definition subgroup_functor_gid : subgroup_functor (gid G) (λg, id) ~ gid (subgroup R) :=
-  begin
-    intro g, induction g with g hg, reflexivity
-  end
-
-  definition subgroup_functor_mul {G H : AbGroup} {R : subgroup_rel G} {S : subgroup_rel H}
-    (ψ φ : G →g H) (hψ : Πg, R g → S (ψ g)) (hφ : Πg, R g → S (φ g)) :
-    homomorphism_mul (ab_subgroup_functor ψ hψ) (ab_subgroup_functor φ hφ) ~
-    ab_subgroup_functor (homomorphism_mul ψ φ)
-                        (λg hg, subgroup_respect_mul S (hψ g hg) (hφ g hg)) :=
-  begin
-    intro g, induction g with g hg, reflexivity
-  end
-
-  definition subgroup_functor_homotopy {ψ φ : G →g H} (hψ : Πg, R g → S (ψ g))
-    (hφ : Πg, R g → S (φ g)) (p : φ ~ ψ) :
-    subgroup_functor φ hφ ~ subgroup_functor ψ hψ :=
-  begin
-    intro g, induction g with g hg,
-    exact subtype_eq (p g)
-  end
-
-
-end group open group
+-- move to subgroup
+attribute normal_subgroup_rel._trans_of_to_subgroup_rel [unfold 2]
+attribute normal_subgroup_rel.to_subgroup_rel [constructor]
 
 namespace left_module
 /- submodules -/
-variables {R : Ring} {M : LeftModule R} {m m₁ m₂ : M}
+variables {R : Ring} {M M₁ M₂ : LeftModule R} {m m₁ m₂ : M}
 
 structure submodule_rel (M : LeftModule R) : Type :=
   (S : M → Prop)
@@ -140,6 +84,13 @@ lm_homomorphism_of_group_homomorphism (incl_of_subgroup _)
     intro r m, induction m with m hm, reflexivity
   end
 
+definition hom_lift [constructor] {K : submodule_rel M₂} (φ : M₁ →lm M₂)
+  (h : Π (m : M₁), K (φ m)) : M₁ →lm submodule K :=
+lm_homomorphism_of_group_homomorphism (hom_lift (group_homomorphism_of_lm_homomorphism φ) _ h)
+  begin
+    intro r g, exact subtype_eq (to_respect_smul φ r g)
+  end
+
 definition incl_smul (S : submodule_rel M) (r : R) (m : M) (h : S m) :
   r • ⟨m, h⟩ = ⟨_, contains_smul S r h⟩ :> submodule S :=
 by reflexivity
@@ -154,53 +105,6 @@ submodule_rel.mk (λm, S₁ (submodule_incl S₂ m))
   end
 
 end left_module
-
-/- move to quotient_group -/
-
-namespace group
-
-  variables {G H K : Group} {R : normal_subgroup_rel G} {S : normal_subgroup_rel H}
-    {T : normal_subgroup_rel K}
-
-  definition quotient_ab_group_functor [constructor] {G H : AbGroup} {R : subgroup_rel G}
-    {S : subgroup_rel H} (φ : G →g H)
-    (h : Πg, R g → S (φ g)) : quotient_ab_group R →g quotient_ab_group S :=
-  quotient_group_functor φ h
-
-  theorem quotient_group_functor_compose (ψ : H →g K) (φ : G →g H)
-    (hψ : Πg, S g → T (ψ g)) (hφ : Πg, R g → S (φ g)) :
-    quotient_group_functor ψ hψ ∘g quotient_group_functor φ hφ ~
-    quotient_group_functor (ψ ∘g φ) (λg, proof hψ (φ g) qed ∘ hφ g) :=
-  begin
-    intro g, induction g using set_quotient.rec_prop with g hg, reflexivity
-  end
-
-  definition quotient_group_functor_gid :
-    quotient_group_functor (gid G) (λg, id) ~ gid (quotient_group R) :=
-  begin
-    intro g, induction g using set_quotient.rec_prop with g hg, reflexivity
-  end
-
-set_option pp.universes true
-  definition quotient_group_functor_mul.{u₁ v₁ u₂ v₂}
-    {G H : AbGroup} {R : subgroup_rel.{u₁ v₁} G} {S : subgroup_rel.{u₂ v₂} H}
-    (ψ φ : G →g H) (hψ : Πg, R g → S (ψ g)) (hφ : Πg, R g → S (φ g)) :
-    homomorphism_mul (quotient_ab_group_functor ψ hψ) (quotient_ab_group_functor φ hφ) ~
-    quotient_ab_group_functor (homomorphism_mul ψ φ)
-                        (λg hg, subgroup_respect_mul S (hψ g hg) (hφ g hg)) :=
-  begin
-    intro g, induction g using set_quotient.rec_prop with g hg, reflexivity
-  end
-
-  definition quotient_group_functor_homotopy {ψ φ : G →g H} (hψ : Πg, R g → S (ψ g))
-    (hφ : Πg, R g → S (φ g)) (p : φ ~ ψ) :
-    quotient_group_functor φ hφ ~ quotient_group_functor ψ hψ :=
-  begin
-    intro g, induction g using set_quotient.rec_prop with g hg,
-    exact ap set_quotient.class_of (p g)
-  end
-
-end group open group
 
 namespace left_module
 
@@ -247,8 +151,21 @@ LeftModule_of_AddAbGroup (quotient_module' S) (quotient_module_smul S)
   quotient_module_mul_smul
   quotient_module_one_smul
 
-definition quotient_map (S : submodule_rel M) : M →lm quotient_module S :=
+definition quotient_map [constructor] (S : submodule_rel M) : M →lm quotient_module S :=
 lm_homomorphism_of_group_homomorphism (ab_qg_map _) (λr g, idp)
+
+definition quotient_map_eq_zero (m : M) (H : S m) : quotient_map S m = 0 :=
+qg_map_eq_one _ H
+
+definition quotient_elim [constructor] (φ : M →lm M₂) (H : Π⦃m⦄, S m → φ m = 0) :
+  quotient_module S →lm M₂ :=
+lm_homomorphism_of_group_homomorphism
+  (quotient_group_elim (group_homomorphism_of_lm_homomorphism φ) H)
+  begin
+    intro r m, esimp,
+    induction m using set_quotient.rec_prop with m,
+    exact to_respect_smul φ r m
+  end
 
 /- specific submodules -/
 definition has_scalar_image (φ : M₁ →lm M₂) ⦃m : M₂⦄ (r : R)
@@ -259,10 +176,28 @@ begin
   refine to_respect_smul φ r m' ⬝ ap (λx, r • x) p,
 end
 
-definition image_rel (φ : M₁ →lm M₂) : submodule_rel M₂ :=
+definition image_rel [constructor] (φ : M₁ →lm M₂) : submodule_rel M₂ :=
 submodule_rel_of_subgroup_rel
   (image_subgroup (group_homomorphism_of_lm_homomorphism φ))
   (has_scalar_image φ)
+
+definition image_module [constructor] (φ : M₁ →lm M₂) : LeftModule R := submodule (image_rel φ)
+
+-- unfortunately this is note definitionally equal:
+-- definition foo (φ : M₁ →lm M₂) :
+--   (image_module φ : AddAbGroup) = image (group_homomorphism_of_lm_homomorphism φ) :=
+-- by reflexivity
+
+variables {ψ : M₂ →lm M₃} {φ : M₁ →lm M₂}
+definition image_elim [constructor] (ψ : M₁ →lm M₃) (h : Π⦃g⦄, φ g = 0 → ψ g = 0) :
+  image_module φ →lm M₃ :=
+begin
+  refine homomorphism.mk (image_elim (group_homomorphism_of_lm_homomorphism ψ) h) _,
+  split,
+  { apply homomorphism.addstruct },
+  { intro r, refine @total_image.rec _ _ _ _ (λx, !is_trunc_eq) _, intro g,
+    apply to_respect_smul }
+end
 
 definition has_scalar_kernel (φ : M₁ →lm M₂) ⦃m : M₁⦄ (r : R)
   (p : φ m = 0) : φ (r • m) = 0 :=
@@ -270,15 +205,19 @@ begin
   refine to_respect_smul φ r m ⬝ ap (λx, r • x) p ⬝ smul_zero r,
 end
 
-definition kernel_rel (φ : M₁ →lm M₂) : submodule_rel M₁ :=
+definition kernel_rel [constructor](φ : M₁ →lm M₂) : submodule_rel M₁ :=
 submodule_rel_of_subgroup_rel
   (kernel_subgroup (group_homomorphism_of_lm_homomorphism φ))
   (has_scalar_kernel φ)
 
+definition kernel_module [constructor] (φ : M₁ →lm M₂) : LeftModule R := submodule (kernel_rel φ)
+
+definition image_lift [constructor] (φ : M₁ →lm M₂) : M₁ →lm image_module φ :=
+hom_lift φ (λm, image.mk m idp)
+
 definition homology (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂) : LeftModule R :=
 @quotient_module R (submodule (kernel_rel ψ)) (submodule_rel_of_submodule _ (image_rel φ))
 
-variables {ψ : M₂ →lm M₃} {φ : M₁ →lm M₂} (h : Πm, ψ (φ m) = 0)
 definition homology.mk (m : M₂) (h : ψ m = 0) : homology ψ φ :=
 quotient_map _ ⟨m, h⟩
 
@@ -294,6 +233,19 @@ definition homology_eq {m n : M₂} {hm : ψ m = 0} {hn : ψ n = 0} (h : image �
   homology.mk m hm = homology.mk n hn :> homology ψ φ :=
 eq_of_sub_eq_zero (homology_eq0 h)
 
+definition homology_elim [constructor] (θ : M₂ →lm M) (H : Πm, θ (φ m) = 0) :
+  homology ψ φ →lm M :=
+quotient_elim (θ ∘lm submodule_incl _)
+  begin
+    intro m x,
+    induction m with m h,
+    esimp at *,
+    induction x with v, induction v with m' p,
+    exact ap θ p⁻¹ ⬝ H m'
+  end
+
+-- remove:
+
 -- definition homology.rec (P : homology ψ φ → Type)
 --   [H : Πx, is_set (P x)] (h₀ : Π(m : M₂) (h : ψ m = 0), P (homology.mk m h))
 --   (h₁ : Π(m : M₂) (h : ψ m = 0) (k : image φ m), h₀ m h =[homology_eq0' k] h₀ 0 (to_respect_zero ψ))
@@ -302,9 +254,32 @@ eq_of_sub_eq_zero (homology_eq0 h)
 --   refine @set_quotient.rec _ _ _ H _ _,
 --   { intro v, induction v with m h, exact h₀ m h },
 --   { intro v v', induction v with m hm, induction v' with n hn,
---     esimp, intro h,
---     exact change_path _ _, }
+--     intro h,
+--     note x := h₁ (m - n) _ h,
+--     esimp,
+--     exact change_path _ _,
+-- }
 -- end
+
+  -- definition quotient.rec (P : quotient_group N → Type)
+  --   [H : Πx, is_set (P x)] (h₀ : Π(g : G), P (qg_map N g))
+  --   -- (h₀_mul : Π(g h : G), h₀ (g * h))
+  --   (h₁ : Π(g : G) (h : N g), h₀ g =[qg_map_eq_one g h] h₀ 1)
+  --   : Πx, P x :=
+  -- begin
+  --   refine @set_quotient.rec _ _ _ H _ _,
+  --   { intro g, exact h₀ g },
+  --   { intro g g' h,
+  --     note x := h₁ (g * g'⁻¹) h,
+  --     }
+  -- --   { intro v, induction  },
+  -- --   { intro v v', induction v with m hm, induction v' with n hn,
+  -- --     intro h,
+  -- --     note x := h₁ (m - n) _ h,
+  -- --     esimp,
+  -- --     exact change_path _ _,
+  -- -- }
+  -- end
 
 
 

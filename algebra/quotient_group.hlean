@@ -159,7 +159,7 @@ namespace group
   end
 
   namespace quotient
-    notation `⟦`:max a `⟧`:0 := qg_map a _
+    notation `⟦`:max a `⟧`:0 := qg_map _ a
   end quotient
 
   open quotient
@@ -501,4 +501,48 @@ definition codomain_surjection_is_quotient_triangle {A B : AbGroup} (f : A →g 
 
   end
 
-  end group
+end group
+
+namespace group
+
+  variables {G H K : Group} {R : normal_subgroup_rel G} {S : normal_subgroup_rel H}
+    {T : normal_subgroup_rel K}
+
+  definition quotient_ab_group_functor [constructor] {G H : AbGroup} {R : subgroup_rel G}
+    {S : subgroup_rel H} (φ : G →g H)
+    (h : Πg, R g → S (φ g)) : quotient_ab_group R →g quotient_ab_group S :=
+  quotient_group_functor φ h
+
+  theorem quotient_group_functor_compose (ψ : H →g K) (φ : G →g H)
+    (hψ : Πg, S g → T (ψ g)) (hφ : Πg, R g → S (φ g)) :
+    quotient_group_functor ψ hψ ∘g quotient_group_functor φ hφ ~
+    quotient_group_functor (ψ ∘g φ) (λg, proof hψ (φ g) qed ∘ hφ g) :=
+  begin
+    intro g, induction g using set_quotient.rec_prop with g hg, reflexivity
+  end
+
+  definition quotient_group_functor_gid :
+    quotient_group_functor (gid G) (λg, id) ~ gid (quotient_group R) :=
+  begin
+    intro g, induction g using set_quotient.rec_prop with g hg, reflexivity
+  end
+
+  definition quotient_group_functor_mul.{u₁ v₁ u₂ v₂}
+    {G H : AbGroup} {R : subgroup_rel.{u₁ v₁} G} {S : subgroup_rel.{u₂ v₂} H}
+    (ψ φ : G →g H) (hψ : Πg, R g → S (ψ g)) (hφ : Πg, R g → S (φ g)) :
+    homomorphism_mul (quotient_ab_group_functor ψ hψ) (quotient_ab_group_functor φ hφ) ~
+    quotient_ab_group_functor (homomorphism_mul ψ φ)
+                        (λg hg, subgroup_respect_mul S (hψ g hg) (hφ g hg)) :=
+  begin
+    intro g, induction g using set_quotient.rec_prop with g hg, reflexivity
+  end
+
+  definition quotient_group_functor_homotopy {ψ φ : G →g H} (hψ : Πg, R g → S (ψ g))
+    (hφ : Πg, R g → S (φ g)) (p : φ ~ ψ) :
+    quotient_group_functor φ hφ ~ quotient_group_functor ψ hψ :=
+  begin
+    intro g, induction g using set_quotient.rec_prop with g hg,
+    exact ap set_quotient.class_of (p g)
+  end
+
+end group

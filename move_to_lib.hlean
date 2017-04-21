@@ -1,9 +1,11 @@
 -- definitions, theorems and attributes which should be moved to files in the HoTT library
 
-import homotopy.sphere2 homotopy.cofiber homotopy.wedge
+import homotopy.sphere2 homotopy.cofiber homotopy.wedge hit.prop_trunc
 
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
      is_trunc function sphere unit sum prod bool
+
+attribute is_prop.elim_set [unfold 6]
 
 definition add_comm_right {A : Type} [add_comm_semigroup A] (n m k : A) : n + m + k = n + k + m :=
 !add.assoc ⬝ ap (add n) !add.comm ⬝ !add.assoc⁻¹
@@ -1104,6 +1106,29 @@ begin
   apply trunc.merely.intro,
   apply fiber.mk,
   exact h
+end
+
+definition total_image {A B : Type} (f : A → B) : Type := sigma (image f)
+local attribute is_prop.elim_set [recursor 6]
+definition total_image.elim_set [unfold 8]
+  {A B : Type} {f : A → B} {C : Type} [is_set C]
+  (g : A → C) (h : Πa a', f a = f a' → g a = g a') (x : total_image f) : C :=
+begin
+  induction x with b v,
+  induction v using is_prop.elim_set with x x x',
+  { induction x with a p, exact g a },
+  { induction x with a p, induction x' with a' p', induction p', exact h _ _ p }
+end
+
+definition total_image.rec [unfold 7]
+  {A B : Type} {f : A → B} {C : total_image f → Type} [H : Πx, is_prop (C x)]
+  (g : Πa, C ⟨f a, image.mk a idp⟩)
+  (x : total_image f) : C x :=
+begin
+  induction x with b v,
+  refine @image.rec _ _ _ _ _ (λv, H ⟨b, v⟩) _ v,
+  intro a p,
+  induction p, exact g a
 end
 
 definition image.equiv_exists {A B : Type} {f : A → B} {b : B} : image f b ≃ ∃ a, f a = b :=
