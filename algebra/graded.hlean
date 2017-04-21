@@ -366,9 +366,10 @@ namespace left_module
   theorem j_lemma2 : Π⦃x : I⦄ ⦃m : D x⦄ (p : i x m = 0),
     (graded_quotient_map _ ∘gm graded_hom_lift j j_lemma1) x m = 0 :> E' _ :=
   begin
-    have Π⦃x : I⦄ ⦃m : D (deg k x)⦄ (p : i (deg k x) m = 0), image (d x) (j (deg k x) m),
+    have Π⦃x y : I⦄ (q : deg k x = y) (r : deg d x = deg j y) (s : ap (deg j) q = r) ⦃m : D y⦄
+      (p : i y m = 0), image (d ↘ r) (j y m),
     begin
-      intros,
+      intros, induction s, induction q,
       note m_in_im_k := is_exact.ker_in_im (exact_ki idp _) _ p,
       induction m_in_im_k with e q,
       induction q,
@@ -376,7 +377,10 @@ namespace left_module
     end,
     have Π⦃x : I⦄ ⦃m : D x⦄ (p : i x m = 0), image (d ← (deg j x)) (j x m),
     begin
-      exact sorry
+      intros,
+      refine this _ _ _ p,
+      exact to_right_inv (deg k) _ ⬝ to_left_inv (deg j) x,
+      rewrite [ap_con, -adj],
     end,
     intros,
     rewrite [graded_hom_compose_fn],
