@@ -9,7 +9,7 @@ attribute normal_subgroup_rel.to_subgroup_rel [constructor]
 
 namespace left_module
 /- submodules -/
-variables {R : Ring} {M M₁ M₂ : LeftModule R} {m m₁ m₂ : M}
+variables {R : Ring} {M M₁ M₂ M₃ : LeftModule R} {m m₁ m₂ : M}
 
 structure submodule_rel (M : LeftModule R) : Type :=
   (S : M → Prop)
@@ -91,6 +91,16 @@ lm_homomorphism_of_group_homomorphism (hom_lift (group_homomorphism_of_lm_homomo
     intro r g, exact subtype_eq (to_respect_smul φ r g)
   end
 
+definition hom_lift_compose {K : submodule_rel M₃}
+  (φ : M₂ →lm M₃) (h : Π (m : M₂), K (φ m)) (ψ : M₁ →lm M₂) :
+  hom_lift φ h ∘lm ψ ~ hom_lift (φ ∘lm ψ) proof (λm, h (ψ m)) qed :=
+by reflexivity
+
+definition hom_lift_homotopy {K : submodule_rel M₂} {φ : M₁ →lm M₂}
+  {h : Π (m : M₁), K (φ m)} {φ' : M₁ →lm M₂}
+  {h' : Π (m : M₁), K (φ' m)} (p : φ ~ φ') : hom_lift φ h ~ hom_lift φ' h' :=
+λg, subtype_eq (p g)
+
 definition incl_smul (S : submodule_rel M) (r : R) (m : M) (h : S m) :
   r • ⟨m, h⟩ = ⟨_, contains_smul S r h⟩ :> submodule S :=
 by reflexivity
@@ -104,12 +114,7 @@ submodule_rel.mk (λm, S₁ (submodule_incl S₂ m))
     intro m r p, induction m with m hm, exact contains_smul S₁ r p
   end
 
-end left_module
-
-namespace left_module
-
 /- quotient modules -/
-variables {R : Ring} {M M₁ M₂ M₃ : LeftModule R} {m m₁ m₂ : M} {S : submodule_rel M}
 
 definition quotient_module' (S : submodule_rel M) : AddAbGroup :=
 quotient_ab_group (subgroup_rel_of_submodule_rel S)
@@ -188,15 +193,24 @@ definition image_module [constructor] (φ : M₁ →lm M₂) : LeftModule R := s
 --   (image_module φ : AddAbGroup) = image (group_homomorphism_of_lm_homomorphism φ) :=
 -- by reflexivity
 
-variables {ψ : M₂ →lm M₃} {φ : M₁ →lm M₂}
-definition image_elim [constructor] (ψ : M₁ →lm M₃) (h : Π⦃g⦄, φ g = 0 → ψ g = 0) :
+definition image_lift [constructor] (φ : M₁ →lm M₂) : M₁ →lm image_module φ :=
+hom_lift φ (λm, image.mk m idp)
+
+variables {ψ : M₂ →lm M₃} {φ : M₁ →lm M₂} {θ : M₁ →lm M₃}
+definition image_elim [constructor] (θ : M₁ →lm M₃) (h : Π⦃g⦄, φ g = 0 → θ g = 0) :
   image_module φ →lm M₃ :=
 begin
-  refine homomorphism.mk (image_elim (group_homomorphism_of_lm_homomorphism ψ) h) _,
+  refine homomorphism.mk (image_elim (group_homomorphism_of_lm_homomorphism θ) h) _,
   split,
   { apply homomorphism.addstruct },
   { intro r, refine @total_image.rec _ _ _ _ (λx, !is_trunc_eq) _, intro g,
     apply to_respect_smul }
+end
+
+definition image_elim_compute (h : Π⦃g⦄, φ g = 0 → θ g = 0) :
+  image_elim θ h ∘lm image_lift φ ~ θ :=
+begin
+  reflexivity
 end
 
 definition has_scalar_kernel (φ : M₁ →lm M₂) ⦃m : M₁⦄ (r : R)
@@ -211,9 +225,6 @@ submodule_rel_of_subgroup_rel
   (has_scalar_kernel φ)
 
 definition kernel_module [constructor] (φ : M₁ →lm M₂) : LeftModule R := submodule (kernel_rel φ)
-
-definition image_lift [constructor] (φ : M₁ →lm M₂) : M₁ →lm image_module φ :=
-hom_lift φ (λm, image.mk m idp)
 
 definition homology (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂) : LeftModule R :=
 @quotient_module R (submodule (kernel_rel ψ)) (submodule_rel_of_submodule _ (image_rel φ))

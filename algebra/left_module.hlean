@@ -288,11 +288,12 @@ end
   definition to_respect_zero (φ : M₁ →lm M₂) : φ 0 = 0 :=
   respect_zero φ
 
-  definition homomorphism_compose [constructor] (f' : M₂ →lm M₃) (f : M₁ →lm M₂) : M₁ →lm M₃ :=
+  definition homomorphism_compose [reducible] [constructor] (f' : M₂ →lm M₃) (f : M₁ →lm M₂) :
+    M₁ →lm M₃ :=
   homomorphism.mk (f' ∘ f) !is_module_hom_comp
 
   variable (M)
-  definition homomorphism_id [constructor] [refl] : M →lm M :=
+  definition homomorphism_id [reducible] [constructor] [refl] : M →lm M :=
   homomorphism.mk (@id M) !is_module_hom_id
   variable {M}
 

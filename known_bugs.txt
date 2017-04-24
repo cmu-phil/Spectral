@@ -3,6 +3,7 @@
 instead of
 `have g : G, from _,`
 
+- coercions are still displayed by the pretty printer
 
 - When using the calc mode for homotopies, you have to give the proofs using a tactic (e.g. `by exact foo` instead of `foo`)
 
@@ -26,3 +27,5 @@ equiv.MK f
          abstract (* long proof *) end
          abstract (* long proof *) end
 ```
+
+- unfold [foo] also does various (sometimes unwanted) reductions (as if you called esimp)

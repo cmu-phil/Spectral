@@ -2,7 +2,7 @@
 
 -- Author: Floris van Doorn
 
-import .left_module .direct_sum .submodule
+import .left_module .direct_sum .submodule ..heq
 
 open algebra eq left_module pointed function equiv is_equiv is_trunc prod group sigma
 
@@ -11,7 +11,7 @@ namespace left_module
 definition graded [reducible] (str : Type) (I : Type) : Type := I → str
 definition graded_module [reducible] (R : Ring) : Type → Type := graded (LeftModule R)
 
-variables {R : Ring} {I : Type} {M M₁ M₂ M₃ : graded_module R I}
+variables {R : Ring} {I : Set} {M M₁ M₂ M₃ : graded_module R I}
 
 /-
   morphisms between graded modules.
@@ -31,6 +31,7 @@ variables {R : Ring} {I : Type} {M M₁ M₂ M₃ : graded_module R I}
     but as a function taking a path as argument. Specifically, for every path
     deg f i = j
     we get a function M₁ i → M₂ j.
+  (3) Note: we do assume that I is a set. This is not strictly necessary, but it simplifies things
 -/
 
 definition graded_hom_of_deg (d : I ≃ I) (M₁ M₂ : graded_module R I) : Type :=
@@ -49,21 +50,21 @@ mk' ::  (d : I ≃ I)
 notation M₁ ` →gm ` M₂ := graded_hom M₁ M₂
 
 abbreviation deg [unfold 5] := @graded_hom.d
-postfix ` ↘`:(max+10) := graded_hom.fn' -- there is probably a better character for this? Maybe ↷?
+postfix ` ↘`:max := graded_hom.fn' -- there is probably a better character for this? Maybe ↷?
 
 definition graded_hom_fn [reducible] [unfold 5] [coercion] (f : M₁ →gm M₂) (i : I) : M₁ i →lm M₂ (deg f i) :=
 f ↘ idp
 
-definition graded_hom_fn_in [reducible] [unfold 5] (f : M₁ →gm M₂) (i : I) : M₁ ((deg f)⁻¹ i) →lm M₂ i :=
+definition graded_hom_fn_out [reducible] [unfold 5] (f : M₁ →gm M₂) (i : I) : M₁ ((deg f)⁻¹ i) →lm M₂ i :=
 f ↘ (to_right_inv (deg f) i)
 
-infix ` ← `:101 := graded_hom_fn_in -- todo: change notation
+infix ` ← `:101 := graded_hom_fn_out -- todo: change notation
 
 definition graded_hom.mk [constructor] {M₁ M₂ : graded_module R I} (d : I ≃ I)
   (fn : Πi, M₁ i →lm M₂ (d i)) : M₁ →gm M₂ :=
 graded_hom.mk' d (λi j p, homomorphism_of_eq (ap M₂ p) ∘lm fn i)
 
-definition graded_hom.mk_in [constructor] {M₁ M₂ : graded_module R I} (d : I ≃ I)
+definition graded_hom.mk_out [constructor] {M₁ M₂ : graded_module R I} (d : I ≃ I)
   (fn : Πi, M₁ (d⁻¹ i) →lm M₂ i) : M₁ →gm M₂ :=
 graded_hom.mk' d (λi j p, fn j ∘lm homomorphism_of_eq (ap M₁ (eq_inv_of_eq p)))
 
@@ -81,7 +82,7 @@ definition graded_hom_eq_zero {f : M₁ →gm M₂} {i j k : I} {q : deg f i = j
 have f ↘ p m = transport M₂ (q⁻¹ ⬝ p) (f ↘ q m), begin induction p, induction q, reflexivity end,
 this ⬝ ap (transport M₂ (q⁻¹ ⬝ p)) r ⬝ tr_eq_of_pathover (apd (λi, 0) (q⁻¹ ⬝ p))
 
-variables {f' : M₂ →gm M₃} {f g : M₁ →gm M₂}
+variables {f' : M₂ →gm M₃} {f g h : M₁ →gm M₂}
 
 definition graded_hom_compose [constructor] (f' : M₂ →gm M₃) (f : M₁ →gm M₂) : M₁ →gm M₃ :=
 graded_hom.mk (deg f ⬝e deg f') (λi, f' (deg f i) ∘lm f i)
@@ -121,7 +122,7 @@ definition isomorphism_of_graded_iso [constructor] (φ : M₁ ≃gm M₂) (i : I
   M₁ i ≃lm M₂ (deg φ i) :=
 isomorphism.mk (φ i) _
 
-definition isomorphism_of_graded_iso_in [constructor] (φ : M₁ ≃gm M₂) (i : I) :
+definition isomorphism_of_graded_iso_out [constructor] (φ : M₁ ≃gm M₂) (i : I) :
   M₁ ((deg φ)⁻¹ i) ≃lm M₂ i :=
 isomorphism_of_graded_iso' φ !to_right_inv
 
@@ -133,10 +134,10 @@ begin
   exact to_is_equiv (equiv_of_isomorphism (φ i)),
 end
 
-protected definition graded_iso.mk_in [constructor] (d : I ≃ I) (φ : Πi, M₁ (d⁻¹ i) ≃lm M₂ i) :
+protected definition graded_iso.mk_out [constructor] (d : I ≃ I) (φ : Πi, M₁ (d⁻¹ i) ≃lm M₂ i) :
   M₁ ≃gm M₂ :=
 begin
-  apply graded_iso.mk' (graded_hom.mk_in d φ),
+  apply graded_iso.mk' (graded_hom.mk_out d φ),
   intro i j p, esimp,
   exact @is_equiv_compose _ _ _ _ _ !is_equiv_cast _,
 end
@@ -146,7 +147,7 @@ definition graded_iso_of_eq [constructor] {M₁ M₂ : graded_module R I} (p : M
 graded_iso.mk erfl (λi, isomorphism_of_eq (p i))
 
 -- definition to_gminv [constructor] (φ : M₁ ≃gm M₂) : M₂ →gm M₁ :=
--- graded_hom.mk_in (deg φ)⁻¹ᵉ
+-- graded_hom.mk_out (deg φ)⁻¹ᵉ
 --   abstract begin
 --     intro i, apply isomorphism.to_hom, symmetry,
 --     apply isomorphism_of_graded_iso φ
@@ -160,63 +161,91 @@ variable {M}
 definition graded_iso.rfl [refl] [constructor] : M ≃gm M := graded_iso.refl M
 
 definition graded_iso.symm [symm] [constructor] (φ : M₁ ≃gm M₂) : M₂ ≃gm M₁ :=
-graded_iso.mk_in (deg φ)⁻¹ᵉ (λi, (isomorphism_of_graded_iso φ i)⁻¹ˡᵐ)
+graded_iso.mk_out (deg φ)⁻¹ᵉ (λi, (isomorphism_of_graded_iso φ i)⁻¹ˡᵐ)
 
 definition graded_iso.trans [trans] [constructor] (φ : M₁ ≃gm M₂) (ψ : M₂ ≃gm M₃) : M₁ ≃gm M₃ :=
 graded_iso.mk (deg φ ⬝e deg ψ)
   (λi, isomorphism_of_graded_iso φ i ⬝lm isomorphism_of_graded_iso ψ (deg φ i))
 
 definition graded_iso.eq_trans [trans] [constructor]
-   {M₁ M₂ : graded_module R I} {M₃ : graded_module R I} (φ : M₁ ~ M₂) (ψ : M₂ ≃gm M₃) : M₁ ≃gm M₃ :=
+   {M₁ M₂ M₃ : graded_module R I} (φ : M₁ ~ M₂) (ψ : M₂ ≃gm M₃) : M₁ ≃gm M₃ :=
 proof graded_iso.trans (graded_iso_of_eq φ) ψ qed
 
 definition graded_iso.trans_eq [trans] [constructor]
-  {M₁ : graded_module R I} {M₂ M₃ : graded_module R I} (φ : M₁ ≃gm M₂) (ψ : M₂ ~ M₃) : M₁ ≃gm M₃ :=
+  {M₁ M₂ M₃ : graded_module R I} (φ : M₁ ≃gm M₂) (ψ : M₂ ~ M₃) : M₁ ≃gm M₃ :=
 graded_iso.trans φ (graded_iso_of_eq ψ)
 
-postfix `⁻¹ᵍᵐ`:(max + 1) := graded_iso.symm
-infixl ` ⬝gm `:75 := graded_iso.trans
-infixl ` ⬝gmp `:75 := graded_iso.trans_eq
-infixl ` ⬝pgm `:75 := graded_iso.eq_trans
+postfix `⁻¹ᵉᵍᵐ`:(max + 1) := graded_iso.symm
+infixl ` ⬝egm `:75 := graded_iso.trans
+infixl ` ⬝egmp `:75 := graded_iso.trans_eq
+infixl ` ⬝epgm `:75 := graded_iso.eq_trans
 
-definition graded_hom_of_eq [constructor] {M₁ M₂ : graded_module R I} (p : M₁ ~ M₂)
-  : M₁ →gm M₂ :=
-graded_iso_of_eq p
+definition graded_hom_of_eq [constructor] {M₁ M₂ : graded_module R I} (p : M₁ ~ M₂) : M₁ →gm M₂ :=
+proof graded_iso_of_eq p qed
 
-structure graded_homotopy (f g : M₁ →gm M₂) : Type :=
-mk' :: (hd : deg f ~ deg g)
-       (hfn : Π⦃i j : I⦄ (pf : deg f i = j) (pg : deg g i = j) (r : hd i ⬝ pg = pf), f ↘ pf ~ g ↘ pg)
+definition graded_homotopy (f g : M₁ →gm M₂) : Type :=
+Π⦃i j k⦄ (p : deg f i = j) (q : deg g i = k) (m : M₁ i), f ↘ p m ==[λi, M₂ i] g ↘ q m
+-- mk' :: (hd : deg f ~ deg g)
+--        (hfn : Π⦃i j : I⦄ (pf : deg f i = j) (pg : deg g i = j), f ↘ pf ~ g ↘ pg)
 
 infix ` ~gm `:50 := graded_homotopy
 
-definition graded_homotopy.mk (hd : deg f ~ deg g) (hfn : Πi m, f i m =[hd i] g i m) : f ~gm g :=
-graded_homotopy.mk' hd
-  begin
-    intro i j pf pg r m, induction r, induction pg, esimp,
-    exact graded_hom_eq_transport f (hd i) m ⬝ tr_eq_of_pathover (hfn i m),
-  end
+-- definition graded_homotopy.mk2 (hd : deg f ~ deg g) (hfn : Πi m, f i m =[hd i] g i m) : f ~gm g :=
+-- graded_homotopy.mk' hd
+--   begin
+--     intro i j pf pg m, induction (is_set.elim (hd i ⬝ pg) pf), induction pg, esimp,
+--     exact graded_hom_eq_transport f (hd i) m ⬝ tr_eq_of_pathover (hfn i m),
+--   end
 
-definition graded_homotopy_of_deg (d : I ≃ I) (f g : graded_hom_of_deg d M₁ M₂) : Type :=
-Π⦃i j : I⦄ (p : d i = j), f p ~ g p
-
-notation f ` ~[`:50 d:0 `] `:0 g:50 := graded_homotopy_of_deg d f g
-
-variables {d : I ≃ I} {f₁ f₂ : graded_hom_of_deg d M₁ M₂}
--- definition graded_homotopy_elim' [unfold 8] := @graded_homotopy_of_deg.elim'
--- definition graded_homotopy_elim [reducible] [unfold 8] [coercion] (h : f₁ ~[d] f₂) (i : I) :
---   f₁ (refl i) ~ f₂ (refl i) :=
--- graded_homotopy_elim' _ _
-
--- definition graded_homotopy_elim_in [reducible] [unfold 8] (f : M₁ →gm M₂) (i : I) : M₁ ((deg f)⁻¹ i) →lm M₂ i :=
--- f ↘ (to_right_inv (deg f) i)
-
-definition graded_homotopy_of_deg.mk [constructor] (h : Πi, f₁ (idpath (d i)) ~ f₂ (idpath (d i))) :
-  f₁ ~[d] f₂ :=
+definition graded_homotopy.mk (h : Πi m, f i m ==[λi, M₂ i] g i m) : f ~gm g :=
 begin
-  intro i j p, induction p, exact h i
+  intros i j k p q m, induction q, induction p, exact h i m
 end
 
--- definition graded_homotopy.mk_in [constructor] {M₁ M₂ : graded_module R I} (d : I ≃ I)
+-- definition graded_hom_compose_out {d₁ d₂ : I ≃ I} (f₂ : Πi, M₂ i →lm M₃ (d₂ i))
+--   (f₁ : Πi, M₁ (d₁⁻¹ i) →lm M₂ i) : graded_hom.mk d₂ f₂ ∘gm graded_hom.mk_out d₁ f₁ ~gm
+--   graded_hom.mk_out_in d₁⁻¹ᵉ d₂ _ :=
+-- _
+
+definition graded_hom_out_in_compose_out {d₁ d₂ d₃ : I ≃ I} (f₂ : Πi, M₂ (d₂ i) →lm M₃ (d₃ i))
+  (f₁ : Πi, M₁ (d₁⁻¹ i) →lm M₂ i) : graded_hom.mk_out_in d₂ d₃ f₂ ∘gm graded_hom.mk_out d₁ f₁ ~gm
+  graded_hom.mk_out_in (d₂ ⬝e d₁⁻¹ᵉ) d₃ (λi, f₂ i ∘lm (f₁ (d₂ i))) :=
+begin
+  apply graded_homotopy.mk, intro i m, exact sorry
+end
+
+definition graded_hom_out_in_rfl {d₁ d₂ : I ≃ I} (f : Πi, M₁ i →lm M₂ (d₂ i))
+  (p : Πi, d₁ i = i) :
+  graded_hom.mk_out_in d₁ d₂ (λi, sorry) ~gm graded_hom.mk d₂ f :=
+begin
+  apply graded_homotopy.mk, intro i m, exact sorry
+end
+
+definition graded_homotopy.trans (h₁ : f ~gm g) (h₂ : g ~gm h) : f ~gm h :=
+begin
+  exact sorry
+end
+
+-- postfix `⁻¹ᵍᵐ`:(max + 1) := graded_iso.symm
+infixl ` ⬝gm `:75 := graded_homotopy.trans
+-- infixl ` ⬝gmp `:75 := graded_iso.trans_eq
+-- infixl ` ⬝pgm `:75 := graded_iso.eq_trans
+
+
+-- definition graded_homotopy_of_deg (d : I ≃ I) (f g : graded_hom_of_deg d M₁ M₂) : Type :=
+-- Π⦃i j : I⦄ (p : d i = j), f p ~ g p
+
+-- notation f ` ~[`:50 d:0 `] `:0 g:50 := graded_homotopy_of_deg d f g
+
+-- variables {d : I ≃ I} {f₁ f₂ : graded_hom_of_deg d M₁ M₂}
+
+-- definition graded_homotopy_of_deg.mk [constructor] (h : Πi, f₁ (idpath (d i)) ~ f₂ (idpath (d i))) :
+--   f₁ ~[d] f₂ :=
+-- begin
+--   intro i j p, induction p, exact h i
+-- end
+
+-- definition graded_homotopy.mk_out [constructor] {M₁ M₂ : graded_module R I} (d : I ≃ I)
 --   (fn : Πi, M₁ (d⁻¹ i) →lm M₂ i) : M₁ →gm M₂ :=
 -- graded_hom.mk' d (λi j p, fn j ∘lm homomorphism_of_eq (ap M₁ (eq_inv_of_eq p)))
 -- definition is_gconstant (f : M₁ →gm M₂) : Type :=
@@ -294,10 +323,10 @@ definition graded_hom_lift [constructor] {S : Πi, submodule_rel (M₂ i)} (φ :
 graded_hom.mk (deg φ) (λi, hom_lift (φ i) (h i))
 
 definition graded_image (f : M₁ →gm M₂) : graded_module R I :=
-λi, image_module (f ↘ (to_right_inv (deg f) i))
+λi, image_module (f ← i)
 
 definition graded_image_lift [constructor] (f : M₁ →gm M₂) : M₁ →gm graded_image f :=
-graded_hom.mk_in (deg f) (λi, image_lift (f ↘ (to_right_inv (deg f) i)))
+graded_hom.mk_out (deg f) (λi, image_lift (f ← i))
 
 definition graded_image_elim [constructor] {f : M₁ →gm M₂} (g : M₁ →gm M₃)
   (h : Π⦃i m⦄, f i m = 0 → g i m = 0) :
@@ -311,6 +340,77 @@ begin
   exact graded_hom_eq_zero m p
 end
 
+definition graded_image' (f : M₁ →gm M₂) : graded_module R I :=
+λi, image_module (f i)
+
+definition graded_image'_lift [constructor] (f : M₁ →gm M₂) : M₁ →gm graded_image' f :=
+graded_hom.mk erfl (λi, image_lift (f i))
+
+definition graded_image'_elim [constructor] {f : M₁ →gm M₂} (g : M₁ →gm M₃)
+  (h : Π⦃i m⦄, f i m = 0 → g i m = 0) :
+  graded_image' f →gm M₃ :=
+begin
+  apply graded_hom.mk (deg g),
+  intro i,
+  apply image_elim (g i),
+  intro m p, exact h p
+end
+
+theorem graded_image'_elim_compute {f : M₁ →gm M₂} {g : M₁ →gm M₃}
+  (h : Π⦃i m⦄, f i m = 0 → g i m = 0) :
+  graded_image'_elim g h ∘gm graded_image'_lift f ~gm g :=
+begin
+  apply graded_homotopy.mk,
+  intro i m, reflexivity
+end
+
+theorem graded_image_elim_compute {f : M₁ →gm M₂} {g : M₁ →gm M₃}
+  (h : Π⦃i m⦄, f i m = 0 → g i m = 0) :
+  graded_image_elim g h ∘gm graded_image_lift f ~gm g :=
+begin
+  refine _ ⬝gm graded_image'_elim_compute h,
+  esimp, exact sorry
+  -- refine graded_hom_out_in_compose_out _ _ ⬝gm _, exact sorry
+  -- -- apply graded_homotopy.mk,
+  -- -- intro i m,
+end
+variables {α β : I ≃ I}
+definition gen_image (f : M₁ →gm M₂) (p : Πi, deg f (α i) = β i) : graded_module R I :=
+λi, image_module (f ↘ (p i))
+
+definition gen_image_lift [constructor] (f : M₁ →gm M₂) (p : Πi, deg f (α i) = β i) : M₁ →gm gen_image f p :=
+graded_hom.mk_out α⁻¹ᵉ (λi, image_lift (f ↘ (p i)))
+
+definition gen_image_elim [constructor] {f : M₁ →gm M₂} (p : Πi, deg f (α i) = β i) (g : M₁ →gm M₃)
+  (h : Π⦃i m⦄, f i m = 0 → g i m = 0) :
+  gen_image f p →gm M₃ :=
+begin
+  apply graded_hom.mk_out_in α⁻¹ᵉ (deg g),
+  intro i,
+  apply image_elim (g ↘ (ap (deg g) (to_right_inv α i))),
+  intro m p,
+  refine graded_hom_eq_zero m (h _),
+  exact graded_hom_eq_zero m p
+end
+
+theorem gen_image_elim_compute {f : M₁ →gm M₂} {p : deg f ∘ α ~ β} {g : M₁ →gm M₃}
+  (h : Π⦃i m⦄, f i m = 0 → g i m = 0) :
+  gen_image_elim p g h ∘gm gen_image_lift f p ~gm g :=
+begin
+  -- induction β with β βe, esimp at *, induction p using homotopy.rec_on_idp,
+  assert q : β ⬝e (deg f)⁻¹ᵉ = α,
+  { apply equiv_eq, intro i, apply inv_eq_of_eq, exact (p i)⁻¹ },
+  induction q,
+  -- unfold [gen_image_elim, gen_image_lift],
+
+  -- induction (is_prop.elim (λi, to_right_inv (deg f) (β i)) p),
+  -- apply graded_homotopy.mk,
+  -- intro i m, reflexivity
+end
+
+definition graded_kernel (f : M₁ →gm M₂) : graded_module R I :=
+λi, kernel_module (f i)
+
 definition graded_quotient (S : Πi, submodule_rel (M i)) : graded_module R I :=
 λi, quotient_module (S i)
 
@@ -321,6 +421,10 @@ graded_hom.mk erfl (λi, quotient_map (S i))
 definition graded_homology (g : M₂ →gm M₃) (f : M₁ →gm M₂) : graded_module R I :=
 λi, homology (g i) (f ↘ (to_right_inv (deg f) i))
 
+definition graded_homology_intro [constructor] (g : M₂ →gm M₃) (f : M₁ →gm M₂) :
+  graded_kernel g →gm graded_homology g f :=
+graded_quotient_map _
+
 definition graded_homology_elim {g : M₂ →gm M₃} {f : M₁ →gm M₂} (h : M₂ →gm M)
   (H : compose_constant h f) : graded_homology g f →gm M :=
 graded_hom.mk (deg h) (λi, homology_elim (h i) (H _ _))
@@ -330,6 +434,11 @@ graded_hom.mk (deg h) (λi, homology_elim (h i) (H _ _))
 
 definition is_exact_gmod (f : M₁ →gm M₂) (f' : M₂ →gm M₃) : Type :=
 Π⦃i j k⦄ (p : deg f i = j) (q : deg f' j = k), is_exact_mod (f ↘ p) (f' ↘ q)
+
+definition is_exact_gmod.mk {f : M₁ →gm M₂} {f' : M₂ →gm M₃}
+  (h₁ : Π⦃i⦄ (m : M₁ i), f' (deg f i) (f i m) = 0)
+  (h₂ : Π⦃i⦄ (m : M₂ (deg f i)), f' (deg f i) m = 0 → image (f i) m) : is_exact_gmod f f' :=
+begin intro i j k p q; induction p; induction q; split, apply h₁, apply h₂ end
 
 definition gmod_im_in_ker (h : is_exact_gmod f f') : compose_constant f' f :=
 λi j k p q, is_exact.im_in_ker (h p q)
@@ -345,16 +454,19 @@ end left_module
 namespace left_module
   namespace derived_couple
   section
-  parameters {R : Ring} {I : Type} {D E : graded_module R I} {i : D →gm D} {j : D →gm E} {k : E →gm D}
-            (exact_ij : is_exact_gmod i j)
-            (exact_jk : is_exact_gmod j k)
-            (exact_ki : is_exact_gmod k i)
+  parameters {R : Ring} {I : Set} {D E : graded_module R I}
+    {i : D →gm D} {j : D →gm E} {k : E →gm D}
+    (exact_ij : is_exact_gmod i j) (exact_jk : is_exact_gmod j k) (exact_ki : is_exact_gmod k i)
 
   definition d : E →gm E := j ∘gm k
   definition D' : graded_module R I := graded_image i
   definition E' : graded_module R I := graded_homology d d
-  definition i' : D' →gm D' := graded_image_lift i ∘gm graded_submodule_incl _
-  include exact_jk exact_ki
+
+  include exact_jk exact_ki exact_ij
+
+  definition i' : D' →gm D' :=
+  graded_image_lift i ∘gm graded_submodule_incl _
+  -- degree i + 0
 
   theorem j_lemma1 ⦃x : I⦄ (m : D x) : d ((deg j) x) (j x m) = 0 :=
   begin
@@ -380,7 +492,8 @@ namespace left_module
       intros,
       refine this _ _ _ p,
       exact to_right_inv (deg k) _ ⬝ to_left_inv (deg j) x,
-      rewrite [ap_con, -adj],
+      apply is_set.elim
+      -- rewrite [ap_con, -adj],
     end,
     intros,
     rewrite [graded_hom_compose_fn],
@@ -388,7 +501,8 @@ namespace left_module
   end
 
   definition j' : D' →gm E' :=
-  graded_image_elim (!graded_quotient_map ∘gm graded_hom_lift j j_lemma1) j_lemma2
+  graded_image_elim (graded_homology_intro d d ∘gm graded_hom_lift j j_lemma1) j_lemma2
+  -- degree -(deg i) + deg j
 
   definition k' : E' →gm D' :=
   graded_homology_elim (graded_image_lift i ∘gm k)
@@ -398,8 +512,45 @@ namespace left_module
       refine ap (graded_hom_fn (graded_image_lift i) (deg k (deg d x))) _ ⬝ !to_respect_zero,
       exact compose_constant.elim (gmod_im_in_ker exact_jk) (deg k x) (k x m)
     end end
+  -- degree deg i + deg k
+
+  theorem is_exact_i'j' : is_exact_gmod i' j' :=
+  begin
+    apply is_exact_gmod.mk,
+    { intro x, refine total_image.rec _, intro m,
+      exact calc
+        j' (deg i' x) (i' x ⟨(i ← x) m, image.mk m idp⟩)
+            = j' (deg i' x) (graded_image_lift i x ((i ← x) m)) : idp
+        ... = graded_homology_intro d d (deg j ((deg i)⁻¹ᵉ (deg i x)))
+                (graded_hom_lift j j_lemma1 ((deg i)⁻¹ᵉ (deg i x))
+                (i ↘ (!to_right_inv ⬝ !to_left_inv⁻¹) m)) : _
+        ... = graded_homology_intro d d (deg j ((deg i)⁻¹ᵉ (deg i x)))
+                (graded_hom_lift j j_lemma1 ((deg i)⁻¹ᵉ (deg i x))
+                (i ↘ (!to_right_inv ⬝ !to_left_inv⁻¹) m)) : _
+        ... = 0 : _
+      },
+    { exact sorry }
+  end
+
+  theorem is_exact_j'k' : is_exact_gmod j' k' :=
+  begin
+    apply is_exact_gmod.mk,
+    { },
+    { exact sorry }
+  end
+
+  theorem is_exact_k'i' : is_exact_gmod k' i' :=
+  begin
+    apply is_exact_gmod.mk,
+    { intro x m, },
+    { exact sorry }
+  end
 
   end
+
+-- homomorphism_fn (graded_hom_fn j' (to_fun (deg i') i))
+--       (homomorphism_fn (graded_hom_fn i' i) m) = 0
+
 
   end derived_couple
 
