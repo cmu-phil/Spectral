@@ -2,7 +2,7 @@
 
 -- Author: Floris van Doorn
 
-import .left_module .direct_sum .submodule ..heq
+import .left_module .direct_sum .submodule --..heq
 
 open algebra eq left_module pointed function equiv is_equiv is_trunc prod group sigma
 
@@ -183,6 +183,9 @@ infixl ` ⬝epgm `:75 := graded_iso.eq_trans
 definition graded_hom_of_eq [constructor] {M₁ M₂ : graded_module R I} (p : M₁ ~ M₂) : M₁ →gm M₂ :=
 proof graded_iso_of_eq p qed
 
+definition foo {I : Set} (P : I → Type) {i j : I} (M : P i) (N : P j) := unit
+notation M ` ==[`:50 P:0 `] `:0 N:50 := foo P M N
+
 definition graded_homotopy (f g : M₁ →gm M₂) : Type :=
 Π⦃i j k⦄ (p : deg f i = j) (q : deg g i = k) (m : M₁ i), f ↘ p m ==[λi, M₂ i] g ↘ q m
 -- mk' :: (hd : deg f ~ deg g)
@@ -199,7 +202,7 @@ infix ` ~gm `:50 := graded_homotopy
 
 definition graded_homotopy.mk (h : Πi m, f i m ==[λi, M₂ i] g i m) : f ~gm g :=
 begin
-  intros i j k p q m, induction q, induction p, exact h i m
+  intros i j k p q m, induction q, induction p, constructor --exact h i m
 end
 
 -- definition graded_hom_compose_out {d₁ d₂ : I ≃ I} (f₂ : Πi, M₂ i →lm M₃ (d₂ i))
@@ -318,7 +321,8 @@ definition graded_submodule_incl [constructor] (S : Πi, submodule_rel (M i)) :
   graded_submodule S →gm M :=
 graded_hom.mk erfl (λi, submodule_incl (S i))
 
-definition graded_hom_lift [constructor] {S : Πi, submodule_rel (M₂ i)} (φ : M₁ →gm M₂)
+definition graded_hom_lift [constructor] {S : Πi, submodule_rel (M₂ i)}
+  (φ : M₁ →gm M₂)
   (h : Π(i : I) (m : M₁ i), S (deg φ i) (φ i m)) : M₁ →gm graded_submodule S :=
 graded_hom.mk (deg φ) (λi, hom_lift (φ i) (h i))
 
@@ -361,7 +365,7 @@ theorem graded_image'_elim_compute {f : M₁ →gm M₂} {g : M₁ →gm M₃}
   graded_image'_elim g h ∘gm graded_image'_lift f ~gm g :=
 begin
   apply graded_homotopy.mk,
-  intro i m, reflexivity
+  intro i m, exact sorry --reflexivity
 end
 
 theorem graded_image_elim_compute {f : M₁ →gm M₂} {g : M₁ →gm M₃}
@@ -406,6 +410,7 @@ begin
   -- induction (is_prop.elim (λi, to_right_inv (deg f) (β i)) p),
   -- apply graded_homotopy.mk,
   -- intro i m, reflexivity
+  exact sorry
 end
 
 definition graded_kernel (f : M₁ →gm M₂) : graded_module R I :=
@@ -443,26 +448,46 @@ begin intro i j k p q; induction p; induction q; split, apply h₁, apply h₂ e
 definition gmod_im_in_ker (h : is_exact_gmod f f') : compose_constant f' f :=
 λi j k p q, is_exact.im_in_ker (h p q)
 
-structure exact_couple (M₁ M₂ : graded_module R I) : Type :=
-  (i : M₁ →gm M₁) (j : M₁ →gm M₂) (k : M₂ →gm M₁)
-  (exact_ij : is_exact_gmod i j)
-  (exact_jk : is_exact_gmod j k)
-  (exact_ki : is_exact_gmod k i)
+-- structure exact_couple (M₁ M₂ : graded_module R I) : Type :=
+--   (i : M₁ →gm M₁) (j : M₁ →gm M₂) (k : M₂ →gm M₁)
+--   (exact_ij : is_exact_gmod i j)
+--   (exact_jk : is_exact_gmod j k)
+--   (exact_ki : is_exact_gmod k i)
 
 end left_module
 
 namespace left_module
+
+  structure exact_couple (R : Ring) (I : Set) : Type :=
+    (D E : graded_module R I)
+    (i : D →gm D) (j : D →gm E) (k : E →gm D)
+    (ij : is_exact_gmod i j)
+    (jk : is_exact_gmod j k)
+    (ki : is_exact_gmod k i)
+
   namespace derived_couple
   section
-  parameters {R : Ring} {I : Set} {D E : graded_module R I}
-    {i : D →gm D} {j : D →gm E} {k : E →gm D}
-    (exact_ij : is_exact_gmod i j) (exact_jk : is_exact_gmod j k) (exact_ki : is_exact_gmod k i)
+  open exact_couple
+
+  parameters {R : Ring} {I : Set} (X : exact_couple R I)
+  local abbreviation D := D X
+  local abbreviation E := E X
+  local abbreviation i := i X
+  local abbreviation j := j X
+  local abbreviation k := k X
+  local abbreviation ij := ij X
+  local abbreviation jk := jk X
+  local abbreviation ki := ki X
 
   definition d : E →gm E := j ∘gm k
   definition D' : graded_module R I := graded_image i
   definition E' : graded_module R I := graded_homology d d
 
-  include exact_jk exact_ki exact_ij
+  definition is_contr_E' {x : I} (H : is_contr (E x)) : is_contr (E' x) :=
+  sorry
+
+  definition is_contr_D' {x : I} (H : is_contr (D x)) : is_contr (D' x) :=
+  sorry
 
   definition i' : D' →gm D' :=
   graded_image_lift i ∘gm graded_submodule_incl _
@@ -471,18 +496,19 @@ namespace left_module
   theorem j_lemma1 ⦃x : I⦄ (m : D x) : d ((deg j) x) (j x m) = 0 :=
   begin
     rewrite [graded_hom_compose_fn,↑d,graded_hom_compose_fn],
-    refine ap (graded_hom_fn j (deg k (deg j x))) _ ⬝ !to_respect_zero,
-    exact compose_constant.elim (gmod_im_in_ker exact_jk) x m
+    refine ap (graded_hom_fn j (deg k (deg j x))) _ ⬝
+      !to_respect_zero,
+    exact compose_constant.elim (gmod_im_in_ker (jk)) x m
   end
 
   theorem j_lemma2 : Π⦃x : I⦄ ⦃m : D x⦄ (p : i x m = 0),
     (graded_quotient_map _ ∘gm graded_hom_lift j j_lemma1) x m = 0 :> E' _ :=
   begin
-    have Π⦃x y : I⦄ (q : deg k x = y) (r : deg d x = deg j y) (s : ap (deg j) q = r) ⦃m : D y⦄
-      (p : i y m = 0), image (d ↘ r) (j y m),
+    have Π⦃x y : I⦄ (q : deg k x = y) (r : deg d x = deg j y)
+      (s : ap (deg j) q = r) ⦃m : D y⦄ (p : i y m = 0), image (d ↘ r) (j y m),
     begin
       intros, induction s, induction q,
-      note m_in_im_k := is_exact.ker_in_im (exact_ki idp _) _ p,
+      note m_in_im_k := is_exact.ker_in_im (ki idp _) _ p,
       induction m_in_im_k with e q,
       induction q,
       apply image.mk e idp
@@ -502,57 +528,132 @@ namespace left_module
 
   definition j' : D' →gm E' :=
   graded_image_elim (graded_homology_intro d d ∘gm graded_hom_lift j j_lemma1) j_lemma2
-  -- degree -(deg i) + deg j
+  -- degree deg j - deg i
+
+  theorem k_lemma1 ⦃x : I⦄ (m : E x) : image (i ← (deg k x)) (k x m) :=
+  begin
+    exact sorry
+  end
+
+  theorem k_lemma2 : compose_constant (graded_hom_lift k k_lemma1 : E →gm D') d :=
+  begin
+    --   apply compose_constant.mk, intro x m,
+    --   rewrite [graded_hom_compose_fn],
+    --   refine ap (graded_hom_fn (graded_image_lift i) (deg k (deg d x))) _ ⬝ !to_respect_zero,
+    --   exact compose_constant.elim (gmod_im_in_ker jk) (deg k x) (k x m)
+    exact sorry
+  end
 
   definition k' : E' →gm D' :=
-  graded_homology_elim (graded_image_lift i ∘gm k)
-    abstract begin
-      apply compose_constant.mk, intro x m,
-      rewrite [graded_hom_compose_fn],
-      refine ap (graded_hom_fn (graded_image_lift i) (deg k (deg d x))) _ ⬝ !to_respect_zero,
-      exact compose_constant.elim (gmod_im_in_ker exact_jk) (deg k x) (k x m)
-    end end
-  -- degree deg i + deg k
+  graded_homology_elim (graded_hom_lift k k_lemma1) k_lemma2
 
-  theorem is_exact_i'j' : is_exact_gmod i' j' :=
+  definition deg_i' : deg i' ~ deg i := by reflexivity
+  definition deg_j' : deg j' ~ deg j ∘ (deg i)⁻¹ := by reflexivity
+  definition deg_k' : deg k' ~ deg k := by reflexivity
+
+  theorem i'j' : is_exact_gmod i' j' :=
   begin
     apply is_exact_gmod.mk,
-    { intro x, refine total_image.rec _, intro m,
-      exact calc
-        j' (deg i' x) (i' x ⟨(i ← x) m, image.mk m idp⟩)
-            = j' (deg i' x) (graded_image_lift i x ((i ← x) m)) : idp
-        ... = graded_homology_intro d d (deg j ((deg i)⁻¹ᵉ (deg i x)))
-                (graded_hom_lift j j_lemma1 ((deg i)⁻¹ᵉ (deg i x))
-                (i ↘ (!to_right_inv ⬝ !to_left_inv⁻¹) m)) : _
-        ... = graded_homology_intro d d (deg j ((deg i)⁻¹ᵉ (deg i x)))
-                (graded_hom_lift j j_lemma1 ((deg i)⁻¹ᵉ (deg i x))
-                (i ↘ (!to_right_inv ⬝ !to_left_inv⁻¹) m)) : _
-        ... = 0 : _
+    { intro x, refine total_image.rec _, intro m, exact sorry
+      -- exact calc
+      --   j' (deg i' x) (i' x ⟨(i ← x) m, image.mk m idp⟩)
+      --       = j' (deg i' x) (graded_image_lift i x ((i ← x) m)) : idp
+      --   ... = graded_homology_intro d d (deg j ((deg i)⁻¹ᵉ (deg i x)))
+      --           (graded_hom_lift j j_lemma1 ((deg i)⁻¹ᵉ (deg i x))
+      --           (i ↘ (!to_right_inv ⬝ !to_left_inv⁻¹) m)) : _
+      --   ... = graded_homology_intro d d (deg j ((deg i)⁻¹ᵉ (deg i x)))
+      --           (graded_hom_lift j j_lemma1 ((deg i)⁻¹ᵉ (deg i x))
+      --           (i ↘ (!to_right_inv ⬝ !to_left_inv⁻¹) m)) : _
+      --   ... = 0 : _
       },
     { exact sorry }
   end
 
-  theorem is_exact_j'k' : is_exact_gmod j' k' :=
+  theorem j'k' : is_exact_gmod j' k' :=
   begin
     apply is_exact_gmod.mk,
-    { },
+    { exact sorry },
     { exact sorry }
   end
 
-  theorem is_exact_k'i' : is_exact_gmod k' i' :=
+  theorem k'i' : is_exact_gmod k' i' :=
   begin
     apply is_exact_gmod.mk,
-    { intro x m, },
+    { intro x m, exact sorry },
     { exact sorry }
   end
 
   end
-
--- homomorphism_fn (graded_hom_fn j' (to_fun (deg i') i))
---       (homomorphism_fn (graded_hom_fn i' i) m) = 0
-
-
   end derived_couple
+
+  section
+  open derived_couple exact_couple
+
+  definition derived_couple [constructor] {R : Ring} {I : Set}
+    (X : exact_couple R I) : exact_couple R I :=
+  ⦃exact_couple, D := D' X, E := E' X, i := i' X, j := j' X, k := k' X,
+    ij := i'j' X, jk := j'k' X, ki := k'i' X⦄
+
+  parameters {R : Ring} {I : Set} (X : exact_couple R I) (B : I → ℕ)
+    (Dub : Π⦃x y⦄ ⦃s : ℕ⦄, B x ≤ s → deg (j X) (iterate (deg (i X)) s x) = y → is_contr (D X y))
+    (Dlb : Π⦃x y⦄ ⦃s : ℕ⦄, B x ≤ s → deg (j X) (iterate (deg (i X))⁻¹ s x) = y → is_contr (D X y))
+    (Eub : Π⦃x y⦄ ⦃s : ℕ⦄, B x ≤ s → deg (j X) (iterate (deg (i X)) s x) = y → is_contr (E X y))
+    (Elb : Π⦃x y⦄ ⦃s : ℕ⦄, B x ≤ s → deg (j X) (iterate (deg (i X))⁻¹ s x) = y → is_contr (E X y))
+-- also need a single deg j and/or deg k here
+
+  -- we start counting pages at 0, not at 2.
+  definition page (r : ℕ) : exact_couple R I :=
+  iterate derived_couple r X
+
+  definition is_contr_E (r : ℕ) (x : I) (h : is_contr (E X x)) :
+    is_contr (E (page r) x) :=
+  by induction r with r IH; exact h; exact is_contr_E' (page r) IH
+
+  definition is_contr_D (r : ℕ) (x : I) (h : is_contr (D X x)) :
+    is_contr (D (page r) x) :=
+  by induction r with r IH; exact h; exact is_contr_D' (page r) IH
+
+  definition deg_i (r : ℕ) : deg (i (page r)) ~ deg (i X) :=
+  begin
+    induction r with r IH,
+    { reflexivity },
+    { exact IH }
+  end
+
+  definition deg_k (r : ℕ) : deg (k (page r)) ~ deg (k X) :=
+  begin
+    induction r with r IH,
+    { reflexivity },
+    { exact IH }
+  end
+
+  definition deg_j (r : ℕ) :
+    deg (j (page r)) ~ deg (j X) ∘ iterate (deg (i X))⁻¹ r :=
+  begin
+    induction r with r IH,
+    { reflexivity },
+    { refine hwhisker_left (deg (j (page r)))
+        (to_inv_homotopy_inv (deg_i r)) ⬝hty _,
+      refine hwhisker_right _ IH ⬝hty _,
+      apply hwhisker_left, symmetry, apply iterate_succ }
+  end
+
+  definition deg_d (r : ℕ) :
+    deg (d (page r)) ~ deg (j X) ∘ iterate (deg (i X))⁻¹ r ∘ deg (k X) :=
+  compose2 (deg_j r) (deg_k r)
+
+  definition Eub' (x : I) (r : ℕ) (h : B (deg (k X) x) ≤ r) :
+    is_contr (E (page r) (deg (d (page r)) x)) :=
+  is_contr_E _ _ (Elb h (deg_d r x)⁻¹)
+
+  definition Estable {x : I} {r : ℕ} (H : B (deg (k X) x) ≤ r) :
+    E (page (r + 1)) x ≃ E (page r) x :=
+  sorry
+
+  definition inf_page : graded_module R I :=
+  λx, E (page (B (deg (k X) x))) x
+
+  end
 
 
 end left_module

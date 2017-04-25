@@ -305,6 +305,17 @@ end
   --   (p : f ~ g) (q : a = a') : natural_square p q = square_of_pathover (apd p q) :=
   -- idp
 
+  definition inv_homotopy_inv {A B : Type} {f g : A → B} [is_equiv f] [is_equiv g]
+    (p : f ~ g) : f⁻¹ ~ g⁻¹ :=
+  λa, inv_eq_of_eq (p (g⁻¹ a) ⬝ right_inv g a)⁻¹
+
+  definition to_inv_homotopy_inv {A B : Type} {f g : A ≃ B}
+    (p : f ~ g) : f⁻¹ ~ g⁻¹ :=
+  inv_homotopy_inv p
+
+  definition compose2 {A B C : Type} {g g' : B → C} {f f' : A → B}
+    (p : g ~ g') (q : f ~ f') : g ∘ f ~ g' ∘ f' :=
+  hwhisker_right f p ⬝hty hwhisker_left g' q
 
   section hsquare
   variables {A₀₀ A₂₀ A₄₀ A₀₂ A₂₂ A₄₂ A₀₄ A₂₄ A₄₄ : Type}
@@ -1141,6 +1152,10 @@ section
   have f a = f 0, by rewrite [h, respect_zero],
   show a = 0, from is_injective_of_is_embedding this
 end
+
+definition iterate_succ {A : Type} (f : A → A) (n : ℕ) (x : A) :
+  iterate f (succ n) x = iterate f n (f x) :=
+by induction n with n p; reflexivity; exact ap f p
 
 /- put somewhere in algebra -/
 
