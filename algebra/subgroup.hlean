@@ -243,11 +243,7 @@ namespace group
   end
 
   definition is_embedding_incl_of_subgroup {G : Group} (H : subgroup_rel G) : is_embedding (incl_of_subgroup H) :=
-  begin
-    fapply function.is_embedding_of_is_injective,
-    intro h h',
-    fapply subtype_eq
-  end
+  function.is_embedding_pr1 _
 
   definition ab_kernel_incl {G H : AbGroup} (f : G →g H) : ab_kernel f →g G :=
   begin
@@ -447,8 +443,8 @@ definition hom_lift [constructor] {G H : Group} (f : G →g H) (K : subgroup_rel
 
   definition ab_subgroup_of_subgroup_incl {A : AbGroup} {R S : subgroup_rel A} (H : Π (a : A), R a -> S a) : ab_subgroup R →g ab_subgroup S
   :=
-  ab_subgroup_functor (gid A) H 
-  
+  ab_subgroup_functor (gid A) H
+
   definition is_embedding_ab_subgroup_of_subgroup_incl {A : AbGroup} {R S : subgroup_rel A} (H : Π (a : A), R a -> S a) : is_embedding (ab_subgroup_of_subgroup_incl H) :=
   begin
     fapply is_embedding_subgroup_of_subgroup_incl,

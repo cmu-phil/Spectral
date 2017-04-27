@@ -424,7 +424,7 @@ definition graded_quotient_map [constructor] (S : Πi, submodule_rel (M i)) :
 graded_hom.mk erfl (λi, quotient_map (S i))
 
 definition graded_homology (g : M₂ →gm M₃) (f : M₁ →gm M₂) : graded_module R I :=
-λi, homology (g i) (f ↘ (to_right_inv (deg f) i))
+λi, homology (g i) (f ← i)
 
 definition graded_homology_intro [constructor] (g : M₂ →gm M₃) (f : M₁ →gm M₂) :
   graded_kernel g →gm graded_homology g f :=
@@ -484,10 +484,10 @@ namespace left_module
   definition E' : graded_module R I := graded_homology d d
 
   definition is_contr_E' {x : I} (H : is_contr (E x)) : is_contr (E' x) :=
-  sorry
+  !is_contr_homology
 
   definition is_contr_D' {x : I} (H : is_contr (D x)) : is_contr (D' x) :=
-  sorry
+  !is_contr_image_module
 
   definition i' : D' →gm D' :=
   graded_image_lift i ∘gm graded_submodule_incl _
@@ -595,10 +595,10 @@ namespace left_module
     ij := i'j' X, jk := j'k' X, ki := k'i' X⦄
 
   parameters {R : Ring} {I : Set} (X : exact_couple R I) (B : I → ℕ)
-    (Dub : Π⦃x y⦄ ⦃s : ℕ⦄, B x ≤ s → deg (j X) (iterate (deg (i X)) s x) = y → is_contr (D X y))
-    (Dlb : Π⦃x y⦄ ⦃s : ℕ⦄, B x ≤ s → deg (j X) (iterate (deg (i X))⁻¹ s x) = y → is_contr (D X y))
-    (Eub : Π⦃x y⦄ ⦃s : ℕ⦄, B x ≤ s → deg (j X) (iterate (deg (i X)) s x) = y → is_contr (E X y))
-    (Elb : Π⦃x y⦄ ⦃s : ℕ⦄, B x ≤ s → deg (j X) (iterate (deg (i X))⁻¹ s x) = y → is_contr (E X y))
+    (Dub : Π⦃x y⦄ ⦃s : ℕ⦄, B x ≤ s → (deg (k X))⁻¹ (iterate (deg (i X)) s ((deg (j X))⁻¹ x)) = y → is_contr (D X y))
+    (Eub : Π⦃x y⦄ ⦃s : ℕ⦄, B x ≤ s → (deg (k X))⁻¹ (iterate (deg (i X)) s ((deg (j X))⁻¹ x)) = y → is_contr (E X y))
+    (Dlb : Π⦃x y⦄ ⦃s : ℕ⦄, B x ≤ s → deg (j X) (iterate (deg (i X))⁻¹ s (deg (k X) x)) = y → is_contr (D X y))
+    (Elb : Π⦃x y⦄ ⦃s : ℕ⦄, B x ≤ s → deg (j X) (iterate (deg (i X))⁻¹ s (deg (k X) x)) = y → is_contr (E X y))
 -- also need a single deg j and/or deg k here
 
   -- we start counting pages at 0, not at 2.
@@ -642,13 +642,48 @@ namespace left_module
     deg (d (page r)) ~ deg (j X) ∘ iterate (deg (i X))⁻¹ r ∘ deg (k X) :=
   compose2 (deg_j r) (deg_k r)
 
-  definition Eub' (x : I) (r : ℕ) (h : B (deg (k X) x) ≤ r) :
+  definition deg_d_inv (r : ℕ) :
+    (deg (d (page r)))⁻¹ ~ (deg (k X))⁻¹ ∘ iterate (deg (i X)) r ∘ (deg (j X))⁻¹ :=
+  sorry --inv_homotopy_inv (deg_d r) ⬝hty _  --compose2 (deg_j r) (deg_k r)
+
+  include Elb Eub
+  definition Eub' (x : I) (r : ℕ) (h : B x ≤ r) :
     is_contr (E (page r) (deg (d (page r)) x)) :=
   is_contr_E _ _ (Elb h (deg_d r x)⁻¹)
 
-  definition Estable {x : I} {r : ℕ} (H : B (deg (k X) x) ≤ r) :
-    E (page (r + 1)) x ≃ E (page r) x :=
-  sorry
+  definition Elb' (x : I) (r : ℕ) (h : B x ≤ r) :
+    is_contr (E (page r) ((deg (d (page r)))⁻¹ x)) :=
+  is_contr_E _ _ (Eub h (deg_d_inv r x)⁻¹)
+
+  -- definition Dub' (x : I) (r : ℕ) (h : B x ≤ r) :
+  --   is_contr (D (page r) (deg (d (page r)) x)) :=
+  -- is_contr_D _ _ (Dlb h (deg_d r x)⁻¹)
+
+  -- definition Dlb' (x : I) (r : ℕ) (h : B x ≤ r) :
+  --   is_contr (D (page r) ((deg (d (page r)))⁻¹ x)) :=
+  -- is_contr_D _ _ (Dub h (deg_d_inv r x)⁻¹)
+
+  definition Estable {x : I} {r : ℕ} (H : B x ≤ r) :
+    E (page (r + 1)) x ≃lm E (page r) x :=
+  begin
+    change homology (d (page r) x) (d (page r) ← x) ≃lm E (page r) x,
+    apply homology_isomorphism,
+    exact Elb' _ _ H, exact Eub' _ _ H
+  end
+
+  definition is_equiv_i {x y : I} {r : ℕ} (H : B y ≤ r) (p : deg (i (page r)) x = y) :
+    is_equiv (i (page r) ↘ p) :=
+  begin
+    induction p,
+    exact sorry
+  end
+
+  definition Dstable {x : I} {r : ℕ} (H : B x ≤ r) :
+    D (page (r + 1)) x ≃lm D (page r) x :=
+  begin
+    change image_module (i (page r) ← x) ≃lm D (page r) x,
+    exact image_module_isomorphism (isomorphism.mk (i (page r) ← x) (is_equiv_i H _))
+  end
 
   definition inf_page : graded_module R I :=
   λx, E (page (B (deg (k X) x))) x
