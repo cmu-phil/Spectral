@@ -284,24 +284,15 @@ namespace group
     exact H
   end
 
-  definition ab_image {G : AbGroup} {H : Group} (f : G →g H) : AbGroup :=
-  AbGroup_of_Group (image f)
-  begin
-    intro g h,
-    induction g with x t, induction h with y s,
-    fapply subtype_eq,
-    induction t with p, induction s with q, induction p with g p, induction q with h q, induction p, induction q,
-    refine (((respect_mul f g h)⁻¹ ⬝ _) ⬝ (respect_mul f h g)),
-    apply (ap f),
-    induction G, induction struct, apply mul_comm
-  end
+definition ab_image {G : AbGroup} {H : AbGroup} (f : G →g H) : AbGroup :=
+ ab_subgroup (image_subgroup f)
 
-  definition image_incl {G H : Group} (f : G →g H) : image f →g H :=
+definition image_incl {G H : Group} (f : G →g H) : image f →g H :=
     incl_of_subgroup (image_subgroup f)
 
-  definition ab_image_incl {A B : AbGroup} (f : A →g B) : ab_image f →g B := incl_of_subgroup (image_subgroup f)
+definition ab_image_incl {A B : AbGroup} (f : A →g B) : ab_image f →g B := incl_of_subgroup (image_subgroup f)
 
-  definition is_equiv_surjection_ab_image_incl {A B : AbGroup} (f : A →g B) (H : is_surjective f) : is_equiv (ab_image_incl f ) :=
+definition is_equiv_surjection_ab_image_incl {A B : AbGroup} (f : A →g B) (H : is_surjective f) : is_equiv (ab_image_incl f ) :=
   begin
     fapply is_equiv.adjointify (ab_image_incl f),
     intro b,
@@ -315,14 +306,14 @@ namespace group
     reflexivity
   end
 
-  definition iso_surjection_ab_image_incl [constructor] {A B : AbGroup} (f : A →g B) (H : is_surjective f) : ab_image f ≃g B :=
+definition iso_surjection_ab_image_incl [constructor] {A B : AbGroup} (f : A →g B) (H : is_surjective f) : ab_image f ≃g B :=
   begin
     fapply isomorphism.mk,
     exact (ab_image_incl f),
     exact is_equiv_surjection_ab_image_incl f H
   end
 
-  definition hom_lift [constructor] {G H : Group} (f : G →g H) (K : subgroup_rel H) (Hyp : Π (g : G), K (f g)) : G →g subgroup K :=
+definition hom_lift [constructor] {G H : Group} (f : G →g H) (K : subgroup_rel H) (Hyp : Π (g : G), K (f g)) : G →g subgroup K :=
   begin
     fapply homomorphism.mk,
     intro g,
