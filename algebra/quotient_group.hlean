@@ -6,9 +6,9 @@ Authors: Floris van Doorn, Egbert Rijke
 Constructions with groups
 -/
 
-import hit.set_quotient .subgroup ..move_to_lib
+import hit.set_quotient .subgroup ..move_to_lib types.equiv
 
-open eq algebra is_trunc set_quotient relation sigma sigma.ops prod trunc function equiv
+open eq algebra is_trunc set_quotient relation sigma sigma.ops prod trunc function equiv is_equiv
 
 namespace group
 
@@ -269,6 +269,31 @@ namespace group
     exact H
   end
 
+  definition quotient_group_functor_contr {K L : subgroup_rel A} (H : Π (a : A), K a → L a) :
+  is_contr ((Σ(g : quotient_ab_group K →g quotient_ab_group L), g ∘g ab_qg_map K ~ ab_qg_map L) ) :=
+  begin
+    fapply ab_qg_universal_property,
+    intro a p,
+    fapply qg_map_eq_one,
+    exact H a p,
+  end
+
+  definition quotient_group_iso {K L : subgroup_rel A} (H1 : Π (a : A), K a → L a) (H2 : Π (a : A), L a → K a) : 
+    is_contr (Σ gh : (Σ (g : quotient_ab_group K →g quotient_ab_group L), g ∘g ab_qg_map K ~ ab_qg_map L), 
+      is_equiv (group_fun (pr1 gh))) :=
+  begin
+    fapply is_trunc_sigma,
+    exact quotient_group_functor_contr H1,
+    intro a, induction a with g h,
+    fapply is_contr_of_inhabited_prop,
+    fapply adjointify,
+    rexact group_fun (pr1 (center' (@quotient_group_functor_contr A L K H2))), 
+    have KK : is_contr ((Σ(g' : quotient_ab_group K →g quotient_ab_group K), g' ∘g ab_qg_map K ~ ab_qg_map K) ), from
+      quotient_group_functor_contr (λ a, (H2 a) ∘ (H1 a)),
+    -- have KK_path : ⟨g, h⟩ = ⟨id, λ a, refl (ab_qg_map K a)⟩, from eq_of_is_contr ⟨g, h⟩ ⟨id, λ a, refl (ab_qg_map K a)⟩, 
+    repeat exact sorry
+  end
+ 
   definition quotient_group_functor [constructor] (φ : G →g G') (h : Πg, N g → N' (φ g)) :
     quotient_group N →g quotient_group N' :=
   begin
