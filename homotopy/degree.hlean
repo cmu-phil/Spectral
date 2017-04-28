@@ -2,8 +2,38 @@ import homotopy.sphere2 ..move_to_lib
 
 open fin eq equiv group algebra sphere.ops pointed nat int trunc is_equiv function circle
 
+  protected definition nat.eq_one_of_mul_eq_one {n : ℕ} (m : ℕ) (q : n * m = 1) : n = 1 :=
+  begin
+    cases n with n,
+    { exact empty.elim (succ_ne_zero 0 ((nat.zero_mul m)⁻¹ ⬝ q)⁻¹) },
+    { cases n with n,
+      { reflexivity },
+      { apply empty.elim, cases m with m,
+        { exact succ_ne_zero 0 q⁻¹ },
+        { apply nat.lt_irrefl 1,
+          exact (calc
+            1 ≤ (m + 1)
+              : succ_le_succ (nat.zero_le m)
+          ... = 1 * (m + 1)
+              : (nat.one_mul (m + 1))⁻¹
+          ... < (n + 2) * (m + 1)
+              : nat.mul_lt_mul_of_pos_right
+                  (succ_le_succ (succ_le_succ (nat.zero_le n))) (zero_lt_succ m)
+          ... = 1 : q) } } }
+  end
+
+  definition cases_of_nat_abs_eq {z : ℤ} (n : ℕ) (p : nat_abs z = n)
+    : (z = of_nat n) ⊎ (z = - of_nat n) :=
+  begin
+    cases p, apply by_cases_of_nat z,
+    { intro n, apply sum.inl, reflexivity },
+    { intro n, apply sum.inr, exact ap int.neg (ap of_nat (nat_abs_neg n))⁻¹ }
+  end
+
   definition eq_one_or_eq_neg_one_of_mul_eq_one {n : ℤ} (m : ℤ) (p : n * m = 1) : n = 1 ⊎ n = -1 :=
-  sorry
+  cases_of_nat_abs_eq 1
+    (nat.eq_one_of_mul_eq_one (nat_abs m)
+      ((int.nat_abs_mul n m)⁻¹ ⬝ ap int.nat_abs p))
 
   definition endomorphism_int_unbundled (f : ℤ → ℤ) [is_add_hom f] (n : ℤ) :
     f n = f 1 * n :=
@@ -18,6 +48,12 @@ open fin eq equiv group algebra sphere.ops pointed nat int trunc is_equiv functi
   end
 
 namespace sphere
+
+  /-
+    TODO: define for unbased maps, define for S 0,
+    clear sorry s
+    prove stable under suspension
+  -/
 
   attribute fundamental_group_of_circle fg_carrier_equiv_int [constructor]
   attribute untrunc_of_is_trunc [unfold 4]
