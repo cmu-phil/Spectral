@@ -33,7 +33,7 @@ definition homology {B : AbGroup} (d : B →g B) (H : is_differential d) : AbGro
   @quotient_ab_group (ab_kernel d) (image_subgroup_of_diff d H)
 
 definition homology_ugly {B : AbGroup} (d : B →g B) (H : is_differential d) : AbGroup :=
-(quotient_ab_group (image_subgroup (ab_subgroup_of_subgroup_incl (diff_im_in_ker d H))))
+  @quotient_ab_group (ab_kernel d) (image_subgroup (ab_subgroup_of_subgroup_incl (diff_im_in_ker d H)))
 
 definition homology_iso_ugly {B : AbGroup} (d : B →g B) (H : is_differential d) : (homology d H) ≃g (homology_ugly d H) :=
   begin
@@ -50,8 +50,22 @@ definition SES_iso_C {A B C C' : AbGroup} (ses : SES A B C) (k : C ≃g C') : SE
   fapply @is_surjective_compose _ _ _ k (SES.g ses),
   exact is_surjective_of_is_equiv k,
   exact SES.Hg ses,
-  fapply is_exact.mk,  
-  repeat exact sorry
+  fapply is_exact.mk,
+  intro a,
+  esimp,
+  note h := SES.ex ses,
+  note h2 := is_exact.im_in_ker h a,
+  refine ap k h2 ⬝ _ ,
+  exact to_respect_one k,
+  intro b,
+  intro k3,
+  note h := SES.ex ses,
+  note h3 := is_exact.ker_in_im h b,
+  fapply is_exact.ker_in_im h,
+  refine  _ ⬝ ap k⁻¹ᵍ k3 ⬝ _ ,
+  esimp,
+  exact (to_left_inv (equiv_of_isomorphism k) ((SES.g ses) b))⁻¹,
+  exact to_respect_one k⁻¹ᵍ
   end
 
 definition SES_of_differential_ugly {B : AbGroup} (d : B →g B) (H : is_differential d) : SES (ab_image d) (ab_kernel d) (homology_ugly d H) :=
@@ -62,6 +76,7 @@ definition SES_of_differential_ugly {B : AbGroup} (d : B →g B) (H : is_differe
 definition SES_of_differential {B : AbGroup} (d : B →g B) (H : is_differential d) : SES (ab_image d) (ab_kernel d) (homology d H) :=
   begin
     exact SES_of_inclusion (ab_subgroup_of_subgroup_incl (diff_im_in_ker d H)) (is_embedding_ab_subgroup_of_subgroup_incl (diff_im_in_ker d H)),
+    exact sorry,
    end
 
 structure exact_couple (A B : AbGroup) : Type :=
