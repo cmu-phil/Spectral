@@ -4,7 +4,41 @@
 
 import .left_module .direct_sum .submodule --..heq
 
-open algebra eq left_module pointed function equiv is_equiv is_trunc prod group sigma
+open is_trunc algebra eq left_module pointed function equiv is_equiv prod group sigma nat
+
+-- move
+  lemma le_sub_of_add_le {n m k : ℕ} (h : n + m ≤ k) : n ≤ k - m :=
+  begin
+    induction h with k h IH,
+    { exact le_of_eq !nat.add_sub_cancel⁻¹ },
+    { exact le.trans IH (nat.sub_le_sub_right !self_le_succ _) }
+  end
+
+  lemma iterate_sub {A : Type} (f : A ≃ A) {n m : ℕ} (h : n ≥ m) (a : A) :
+    iterate f (n - m) a = iterate f n (iterate f⁻¹ m a) :=
+  begin
+    revert n h, induction m with m p: intro n h,
+    { reflexivity },
+    { cases n with n, exfalso, apply not_succ_le_zero _ h,
+      rewrite [succ_sub_succ], refine p n (le_of_succ_le_succ h) ⬝ _,
+      refine ap (_^[n]) _ ⬝ !iterate_succ⁻¹, exact !to_right_inv⁻¹ }
+  end
+
+  definition iterate_commute {A : Type} {f g : A → A} (n : ℕ) (h : f ∘ g ~ g ∘ f) :
+    iterate f n ∘ g ~ g ∘ iterate f n :=
+  by induction n with n IH; reflexivity; exact λx, ap f (IH x) ⬝ !h
+
+  definition iterate_equiv {A : Type} (f : A ≃ A) (n : ℕ) : A ≃ A :=
+  equiv.mk (iterate f n)
+           (by induction n with n IH; apply is_equiv_id; exact is_equiv_compose f (iterate f n))
+
+  definition iterate_inv {A : Type} (f : A ≃ A) (n : ℕ) :
+    (iterate_equiv f n)⁻¹ ~ iterate f⁻¹ n :=
+  begin
+    induction n with n p: intro a,
+      reflexivity,
+      exact p (f⁻¹ a) ⬝ !iterate_succ⁻¹
+  end
 
 namespace left_module
 
@@ -60,15 +94,15 @@ f ↘ (to_right_inv (deg f) i)
 
 infix ` ← `:101 := graded_hom_fn_out -- todo: change notation
 
-definition graded_hom.mk [constructor] {M₁ M₂ : graded_module R I} (d : I ≃ I)
+definition graded_hom.mk [constructor] (d : I ≃ I)
   (fn : Πi, M₁ i →lm M₂ (d i)) : M₁ →gm M₂ :=
 graded_hom.mk' d (λi j p, homomorphism_of_eq (ap M₂ p) ∘lm fn i)
 
-definition graded_hom.mk_out [constructor] {M₁ M₂ : graded_module R I} (d : I ≃ I)
+definition graded_hom.mk_out [constructor] (d : I ≃ I)
   (fn : Πi, M₁ (d⁻¹ i) →lm M₂ i) : M₁ →gm M₂ :=
 graded_hom.mk' d (λi j p, fn j ∘lm homomorphism_of_eq (ap M₁ (eq_inv_of_eq p)))
 
-definition graded_hom.mk_out_in [constructor] {M₁ M₂ : graded_module R I} (d₁ : I ≃ I) (d₂ : I ≃ I)
+definition graded_hom.mk_out_in [constructor] (d₁ : I ≃ I) (d₂ : I ≃ I)
   (fn : Πi, M₁ (d₁ i) →lm M₂ (d₂ i)) : M₁ →gm M₂ :=
 graded_hom.mk' (d₁⁻¹ᵉ ⬝e d₂) (λi j p, homomorphism_of_eq (ap M₂ p) ∘lm fn (d₁⁻¹ᵉ i) ∘lm
   homomorphism_of_eq (ap M₁ (to_right_inv d₁ i)⁻¹))
@@ -76,6 +110,10 @@ graded_hom.mk' (d₁⁻¹ᵉ ⬝e d₂) (λi j p, homomorphism_of_eq (ap M₂ p)
 definition graded_hom_eq_transport (f : M₁ →gm M₂) {i j : I} (p : deg f i = j) (m : M₁ i) :
   f ↘ p m = transport M₂ p (f i m) :=
 by induction p; reflexivity
+
+definition graded_hom_mk_refl (d : I ≃ I)
+  (fn : Πi, M₁ i →lm M₂ (d i)) {i : I} (m : M₁ i) : graded_hom.mk d fn i m = fn i m :=
+by reflexivity
 
 definition graded_hom_eq_zero {f : M₁ →gm M₂} {i j k : I} {q : deg f i = j} {p : deg f i = k}
   (m : M₁ i) (r : f ↘ q m = 0) : f ↘ p m = 0 :=
@@ -101,6 +139,16 @@ abbreviation gmid [constructor] := graded_hom_id M
 
 definition gm_constant [constructor] (M₁ M₂ : graded_module R I) (d : I ≃ I) : M₁ →gm M₂ :=
 graded_hom.mk' d (gmd_constant d M₁ M₂)
+
+definition is_surjective_graded_hom_compose ⦃x z⦄
+  (f' : M₂ →gm M₃) (f : M₁ →gm M₂) (p : deg f' (deg f x) = z)
+  (H' : Π⦃y⦄ (q : deg f' y = z), is_surjective (f' ↘ q))
+  (H : Π⦃y⦄ (q : deg f x = y), is_surjective (f ↘ q)) : is_surjective ((f' ∘gm f) ↘ p) :=
+begin
+  induction p,
+  apply is_surjective_compose (f' (deg f x)) (f x),
+  apply H', apply H
+end
 
 structure graded_iso (M₁ M₂ : graded_module R I) : Type :=
 mk' :: (to_hom : M₁ →gm M₂)
@@ -183,8 +231,8 @@ infixl ` ⬝epgm `:75 := graded_iso.eq_trans
 definition graded_hom_of_eq [constructor] {M₁ M₂ : graded_module R I} (p : M₁ ~ M₂) : M₁ →gm M₂ :=
 proof graded_iso_of_eq p qed
 
-definition foo {I : Set} (P : I → Type) {i j : I} (M : P i) (N : P j) := unit
-notation M ` ==[`:50 P:0 `] `:0 N:50 := foo P M N
+definition fooff {I : Set} (P : I → Type) {i j : I} (M : P i) (N : P j) := unit
+notation M ` ==[`:50 P:0 `] `:0 N:50 := fooff P M N
 
 definition graded_homotopy (f g : M₁ →gm M₂) : Type :=
 Π⦃i j k⦄ (p : deg f i = j) (q : deg g i = k) (m : M₁ i), f ↘ p m ==[λi, M₂ i] g ↘ q m
@@ -344,6 +392,12 @@ begin
   exact graded_hom_eq_zero m p
 end
 
+definition is_surjective_graded_image_lift ⦃x y⦄ (f : M₁ →gm M₂)
+  (p : deg f x = y) : is_surjective (graded_image_lift f ↘ p) :=
+begin
+  exact sorry
+end
+
 definition graded_image' (f : M₁ →gm M₂) : graded_module R I :=
 λi, image_module (f i)
 
@@ -493,7 +547,18 @@ namespace left_module
   graded_image_lift i ∘gm graded_submodule_incl _
   -- degree i + 0
 
-  theorem j_lemma1 ⦃x : I⦄ (m : D x) : d ((deg j) x) (j x m) = 0 :=
+  lemma is_surjective_i' {x y : I} (p : deg i' x = y)
+    (H : Π⦃z⦄ (q : deg i z = x), is_surjective (i ↘ q)) : is_surjective (i' ↘ p) :=
+  begin
+    apply is_surjective_graded_hom_compose,
+    { intro y q, apply is_surjective_graded_image_lift },
+    { intro y q, apply is_surjective_of_is_equiv,
+      induction q,
+      exact to_is_equiv (equiv_of_isomorphism (image_module_isomorphism (i ← x) (H _)))
+      }
+  end
+
+  lemma j_lemma1 ⦃x : I⦄ (m : D x) : d ((deg j) x) (j x m) = 0 :=
   begin
     rewrite [graded_hom_compose_fn,↑d,graded_hom_compose_fn],
     refine ap (graded_hom_fn j (deg k (deg j x))) _ ⬝
@@ -501,7 +566,7 @@ namespace left_module
     exact compose_constant.elim (gmod_im_in_ker (jk)) x m
   end
 
-  theorem j_lemma2 : Π⦃x : I⦄ ⦃m : D x⦄ (p : i x m = 0),
+  lemma j_lemma2 : Π⦃x : I⦄ ⦃m : D x⦄ (p : i x m = 0),
     (graded_quotient_map _ ∘gm graded_hom_lift j j_lemma1) x m = 0 :> E' _ :=
   begin
     have Π⦃x y : I⦄ (q : deg k x = y) (r : deg d x = deg j y)
@@ -594,12 +659,19 @@ namespace left_module
   ⦃exact_couple, D := D' X, E := E' X, i := i' X, j := j' X, k := k' X,
     ij := i'j' X, jk := j'k' X, ki := k'i' X⦄
 
-  parameters {R : Ring} {I : Set} (X : exact_couple R I) (B : I → ℕ)
-    (Dub : Π⦃x y⦄ ⦃s : ℕ⦄, B x ≤ s → (deg (k X))⁻¹ (iterate (deg (i X)) s ((deg (j X))⁻¹ x)) = y → is_contr (D X y))
-    (Eub : Π⦃x y⦄ ⦃s : ℕ⦄, B x ≤ s → (deg (k X))⁻¹ (iterate (deg (i X)) s ((deg (j X))⁻¹ x)) = y → is_contr (E X y))
-    (Dlb : Π⦃x y⦄ ⦃s : ℕ⦄, B x ≤ s → deg (j X) (iterate (deg (i X))⁻¹ s (deg (k X) x)) = y → is_contr (D X y))
-    (Elb : Π⦃x y⦄ ⦃s : ℕ⦄, B x ≤ s → deg (j X) (iterate (deg (i X))⁻¹ s (deg (k X) x)) = y → is_contr (E X y))
--- also need a single deg j and/or deg k here
+  parameters {R : Ring} {I : Set} (X : exact_couple R I) (B B' : I → ℕ)
+    (Dub : Π⦃x y⦄ ⦃s : ℕ⦄, (deg (i X))^[s] x = y → B x ≤ s → is_contr (D X y))
+    (Eub : Π⦃x y⦄ ⦃s : ℕ⦄, (deg (k X))⁻¹ (iterate (deg (i X)) s ((deg (j X))⁻¹ x)) = y →
+           B x ≤ s → is_contr (E X y))
+    (Dlb : Π⦃x y z⦄ ⦃s : ℕ⦄ (p : deg (i X) x = y),
+    iterate (deg (i X)) s y = z → B' z ≤ s → is_surjective (i X ↘ p))
+    (Elb : Π⦃x y⦄ ⦃s : ℕ⦄, deg (j X) (iterate (deg (i X))⁻¹ᵉ s (deg (k X) x)) = y → B x ≤ s →
+           is_contr (E X y))
+    (deg_ik_commute : deg (i X) ∘ deg (k X) ~ deg (k X) ∘ deg (i X))
+
+  definition deg_iterate_ik_commute (n : ℕ) (x : I) :
+    (deg (i X))^[n] (deg (k X) x) = deg (k X) ((deg (i X))^[n] x) :=
+  iterate_commute _ deg_ik_commute x
 
   -- we start counting pages at 0, not at 2.
   definition page (r : ℕ) : exact_couple R I :=
@@ -638,55 +710,126 @@ namespace left_module
       apply hwhisker_left, symmetry, apply iterate_succ }
   end
 
+  definition deg_j_inv (r : ℕ) :
+    (deg (j (page r)))⁻¹ ~ iterate (deg (i X)) r ∘ (deg (j X))⁻¹ :=
+  have H : deg (j (page r)) ~ iterate_equiv (deg (i X))⁻¹ᵉ r ⬝e deg (j X), from deg_j r,
+  λx, to_inv_homotopy_to_inv H x ⬝ iterate_inv (deg (i X))⁻¹ᵉ r ((deg (j X))⁻¹ x)
+
   definition deg_d (r : ℕ) :
     deg (d (page r)) ~ deg (j X) ∘ iterate (deg (i X))⁻¹ r ∘ deg (k X) :=
   compose2 (deg_j r) (deg_k r)
 
   definition deg_d_inv (r : ℕ) :
     (deg (d (page r)))⁻¹ ~ (deg (k X))⁻¹ ∘ iterate (deg (i X)) r ∘ (deg (j X))⁻¹ :=
-  sorry --inv_homotopy_inv (deg_d r) ⬝hty _  --compose2 (deg_j r) (deg_k r)
+  compose2 (to_inv_homotopy_to_inv (deg_k r)) (deg_j_inv r)
 
   include Elb Eub
-  definition Eub' (x : I) (r : ℕ) (h : B x ≤ r) :
-    is_contr (E (page r) (deg (d (page r)) x)) :=
-  is_contr_E _ _ (Elb h (deg_d r x)⁻¹)
-
-  definition Elb' (x : I) (r : ℕ) (h : B x ≤ r) :
-    is_contr (E (page r) ((deg (d (page r)))⁻¹ x)) :=
-  is_contr_E _ _ (Eub h (deg_d_inv r x)⁻¹)
-
-  -- definition Dub' (x : I) (r : ℕ) (h : B x ≤ r) :
-  --   is_contr (D (page r) (deg (d (page r)) x)) :=
-  -- is_contr_D _ _ (Dlb h (deg_d r x)⁻¹)
-
-  -- definition Dlb' (x : I) (r : ℕ) (h : B x ≤ r) :
-  --   is_contr (D (page r) ((deg (d (page r)))⁻¹ x)) :=
-  -- is_contr_D _ _ (Dub h (deg_d_inv r x)⁻¹)
-
   definition Estable {x : I} {r : ℕ} (H : B x ≤ r) :
     E (page (r + 1)) x ≃lm E (page r) x :=
   begin
     change homology (d (page r) x) (d (page r) ← x) ≃lm E (page r) x,
-    apply homology_isomorphism,
-    exact Elb' _ _ H, exact Eub' _ _ H
+    apply homology_isomorphism: apply is_contr_E,
+    exact Eub (deg_d_inv r x)⁻¹ H, exact Elb (deg_d r x)⁻¹ H
   end
 
-  definition is_equiv_i {x y : I} {r : ℕ} (H : B y ≤ r) (p : deg (i (page r)) x = y) :
-    is_equiv (i (page r) ↘ p) :=
+  include Dlb
+  definition is_surjective_i {x y z : I} {r s : ℕ} (H : B' z ≤ s + r)
+    (p : deg (i (page r)) x = y) (q : iterate (deg (i X)) s y = z) :
+    is_surjective (i (page r) ↘ p) :=
   begin
-    induction p,
-    exact sorry
+    revert x y z s H p q, induction r with r IH: intro x y z s H p q,
+    { exact Dlb p q H  },
+    { change is_surjective (i' (page r) ↘ p),
+      apply is_surjective_i', intro z' q',
+      refine IH _ _ _ _ (le.trans H (le_of_eq (succ_add s r)⁻¹)) _ _,
+      refine !iterate_succ ⬝ ap ((deg (i X))^[s]) _ ⬝ q,
+      exact !deg_i⁻¹ ⬝ p }
   end
 
-  definition Dstable {x : I} {r : ℕ} (H : B x ≤ r) :
+  definition Dstable {x : I} {r : ℕ} (H : B' x ≤ r) :
     D (page (r + 1)) x ≃lm D (page r) x :=
   begin
     change image_module (i (page r) ← x) ≃lm D (page r) x,
-    exact image_module_isomorphism (isomorphism.mk (i (page r) ← x) (is_equiv_i H _))
+    refine image_module_isomorphism (i (page r) ← x)
+      (is_surjective_i (le.trans H (le_of_eq !zero_add⁻¹)) _ _),
+    reflexivity
   end
 
-  definition inf_page : graded_module R I :=
-  λx, E (page (B (deg (k X) x))) x
+  definition Einf : graded_module R I :=
+  λx, E (page (B x)) x
+
+  definition Dinf : graded_module R I :=
+  λx, D (page (B' x)) x
+
+  definition Einfstable {x y : I} {r : ℕ} (Hr : B y ≤ r) (p : x = y) :
+    Einf y ≃lm E (page r) x :=
+  by symmetry; induction p; induction Hr with r Hr IH; reflexivity; exact Estable Hr ⬝lm IH
+
+  definition Dinfstable {x y : I} {r : ℕ} (Hr : B' y ≤ r) (p : x = y) :
+    Dinf y ≃lm D (page r) x :=
+  by symmetry; induction p; induction Hr with r Hr IH; reflexivity; exact Dstable Hr ⬝lm IH
+
+  parameters {x : I}
+
+  definition r (n : ℕ) : ℕ :=
+  max (max (B x + n + 1) (B ((deg (i X))^[n] x)))
+      (max (B' (deg (k X) ((deg (i X))^[n] x)))
+           (max (B' (deg (k X) ((deg (i X))^[n+1] x))) (B ((deg (j X))⁻¹ ((deg (i X))^[n] x)))))
+
+  lemma rb0 (n : ℕ) : r n ≥ n + 1 :=
+  ge.trans !le_max_left (ge.trans !le_max_left !le_add_left)
+  lemma rb1 (n : ℕ) : B x ≤ r n - (n + 1) :=
+  le_sub_of_add_le (le.trans !le_max_left !le_max_left)
+  lemma rb2 (n : ℕ) : B ((deg (i X))^[n] x) ≤ r n :=
+  le.trans !le_max_right !le_max_left
+  lemma rb3 (n : ℕ) : B' (deg (k X) ((deg (i X))^[n] x)) ≤ r n :=
+  le.trans !le_max_left !le_max_right
+  lemma rb4 (n : ℕ) : B' (deg (k X) ((deg (i X))^[n+1] x)) ≤ r n :=
+  le.trans (le.trans !le_max_left !le_max_right) !le_max_right
+  lemma rb5 (n : ℕ) : B ((deg (j X))⁻¹ ((deg (i X))^[n] x)) ≤ r n :=
+  le.trans (le.trans !le_max_right !le_max_right) !le_max_right
+
+  definition Einfdiag : graded_module R ℕ :=
+  λn, Einf ((deg (i X))^[n] x)
+
+  definition Dinfdiag : graded_module R ℕ :=
+  λn, Dinf (deg (k X) ((deg (i X))^[n] x))
+
+  include deg_ik_commute Dub
+  definition short_exact_mod_page_r (n : ℕ) : short_exact_mod
+    (E (page (r n)) ((deg (i X))^[n] x))
+    (D (page (r n)) (deg (k (page (r n))) ((deg (i X))^[n] x)))
+    (D (page (r n)) (deg (i (page (r n))) (deg (k (page (r n))) ((deg (i X))^[n] x)))) :=
+  begin
+    fapply short_exact_mod_of_is_exact,
+    { exact j (page (r n)) ← ((deg (i X))^[n] x) },
+    { exact k (page (r n)) ((deg (i X))^[n] x) },
+    { exact i (page (r n)) (deg (k (page (r n))) ((deg (i X))^[n] x)) },
+    { exact j (page (r n)) _ },
+    { apply is_contr_D, refine Dub !deg_j_inv⁻¹ (rb5 n) },
+    { apply is_contr_E, refine Elb _ (rb1 n),
+      refine ap (deg (j X)) _ ⬝ !deg_j⁻¹,
+      refine iterate_sub _ !rb0 _ ⬝ _, apply ap (_^[r n]),
+      exact ap (deg (i X)) (!deg_iterate_ik_commute ⬝ !deg_k⁻¹) ⬝ !deg_i⁻¹ },
+    { apply jk (page (r n)) },
+    { apply ki (page (r n)) },
+    { apply ij (page (r n)) }
+  end
+
+  definition short_exact_mod_infpage (n : ℕ) :
+    short_exact_mod (Einfdiag n) (Dinfdiag n) (Dinfdiag (n+1)) :=
+  begin
+    refine short_exact_mod_isomorphism _ _ _ (short_exact_mod_page_r n),
+    { exact Einfstable !rb2 idp },
+    { exact Dinfstable !rb3 !deg_k },
+    { exact Dinfstable !rb4 (!deg_i ⬝ ap (deg (i X)) !deg_k ⬝ !deg_ik_commute) }
+  end
+
+  definition Dinfdiag0 (bound_zero : B' (deg (k X) x) = 0) : Dinfdiag 0 ≃lm D X (deg (k X) x) :=
+  Dinfstable (le_of_eq bound_zero) idp
+
+  definition Dinfdiag_stable {s : ℕ} (h : B (deg (k X) x) ≤ s) : is_contr (Dinfdiag s) :=
+  is_contr_D _ _ (Dub !deg_iterate_ik_commute h)
 
   end
 

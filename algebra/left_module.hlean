@@ -7,7 +7,7 @@ Modules prod vector spaces over a ring.
 
 (We use "left_module," which is more precise, because "module" is a keyword.)
 -/
-import algebra.field ..move_to_lib
+import algebra.field ..move_to_lib .is_short_exact
 open is_trunc pointed function sigma eq algebra prod is_equiv equiv group
 
 structure has_scalar [class] (F V : Type) :=
@@ -394,6 +394,28 @@ end
   local attribute pSet_of_LeftModule [coercion]
   definition is_exact_mod (f : M₁ →lm M₂) (f' : M₂ →lm M₃) : Type :=
   @is_exact M₁ M₂ M₃ (homomorphism_fn f) (homomorphism_fn f')
+
+  structure short_exact_mod (A B C : LeftModule R) :=
+    (f : A →lm B)
+    (g : B →lm C)
+    (h : @is_short_exact _ _ (pType.mk _ 0) f g)
+
+  definition short_exact_mod_of_is_exact {X A B C Y : LeftModule R}
+    (k : X →lm A) (f : A →lm B) (g : B →lm C) (l : C →lm Y)
+    (hX : is_contr X) (hY : is_contr Y)
+    (kf : is_exact_mod k f) (fg : is_exact_mod f g) (gl : is_exact_mod g l) :
+    short_exact_mod A B C :=
+  short_exact_mod.mk f g (is_short_exact_of_is_exact k f g l hX hY kf fg gl)
+
+  definition short_exact_mod_isomorphism {A B A' B' C C' : LeftModule R}
+    (eA : A ≃lm A') (eB : B ≃lm B') (eC : C ≃lm C')
+    (H : short_exact_mod A' B' C') : short_exact_mod A B C :=
+  short_exact_mod.mk (eB⁻¹ˡᵐ ∘lm short_exact_mod.f H ∘lm eA) (eC⁻¹ˡᵐ ∘lm short_exact_mod.g H ∘lm eB)
+    (is_short_exact_equiv _ _
+      (equiv_of_isomorphism eA) (equiv_of_isomorphism eB) (pequiv_of_isomorphism eC)
+      (λa, to_right_inv (equiv_of_isomorphism eB) _) (λb, to_right_inv (equiv_of_isomorphism eC) _)
+      (short_exact_mod.h H))
+
   end
 
   end

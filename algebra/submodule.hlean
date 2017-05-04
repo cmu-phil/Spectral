@@ -260,6 +260,11 @@ definition image_module [constructor] (φ : M₁ →lm M₂) : LeftModule R := s
 definition image_lift [constructor] (φ : M₁ →lm M₂) : M₁ →lm image_module φ :=
 hom_lift φ (λm, image.mk m idp)
 
+definition is_surjective_image_lift (φ : M₁ →lm M₂) : is_surjective (image_lift φ) :=
+begin
+  refine total_image.rec _, intro m, exact image.mk m (subtype_eq idp)
+end
+
 variables {ψ : M₂ →lm M₃} {φ : M₁ →lm M₂} {θ : M₁ →lm M₃}
 definition image_elim [constructor] (θ : M₁ →lm M₃) (h : Π⦃g⦄, φ g = 0 → θ g = 0) :
   image_module φ →lm M₃ :=
@@ -293,8 +298,9 @@ is_contr.mk 0
     exact (to_respect_zero φ)⁻¹
   end
 
-definition image_module_isomorphism [constructor] (φ : M₁ ≃lm M₂) : image_module φ ≃lm M₂ :=
-submodule_isomorphism _ (λm, image.mk (φ⁻¹ˡᵐ m) proof to_right_inv (equiv_of_isomorphism φ) m qed)
+definition image_module_isomorphism [constructor] (φ : M₁ →lm M₂)
+  (H : is_surjective φ) : image_module φ ≃lm M₂ :=
+submodule_isomorphism _ H
 
 definition has_scalar_kernel (φ : M₁ →lm M₂) ⦃m : M₁⦄ (r : R)
   (p : φ m = 0) : φ (r • m) = 0 :=
