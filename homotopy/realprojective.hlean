@@ -160,10 +160,6 @@ begin
   induction p with p, induction p, reflexivity
 end
 
-definition bool_of_two (A : BoolType) (x y : A) : bool :=
-to_inv (BoolType.eq_equiv_equiv pt A
-  (to_inv (corollary_II_6 A) x)) y
-
 definition bool_type_dec_eq : Π (A : BoolType), decidable_eq A :=
 @is_conn.is_conn.elim -1 pBoolType is_conn_BoolType
     (λ A : BoolType, decidable_eq A) _ dec_eq_bool

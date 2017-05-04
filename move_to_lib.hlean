@@ -1,6 +1,6 @@
 -- definitions, theorems and attributes which should be moved to files in the HoTT library
 
-import homotopy.sphere2 homotopy.cofiber homotopy.wedge hit.prop_trunc
+import homotopy.sphere2 homotopy.cofiber homotopy.wedge hit.prop_trunc hit.set_quotient
 
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
      is_trunc function sphere unit sum prod bool
@@ -305,6 +305,17 @@ end
   --   (p : f ~ g) (q : a = a') : natural_square p q = square_of_pathover (apd p q) :=
   -- idp
 
+  definition inv_homotopy_inv {A B : Type} {f g : A → B} [is_equiv f] [is_equiv g]
+    (p : f ~ g) : f⁻¹ ~ g⁻¹ :=
+  λa, inv_eq_of_eq (p (g⁻¹ a) ⬝ right_inv g a)⁻¹
+
+  definition to_inv_homotopy_inv {A B : Type} {f g : A ≃ B}
+    (p : f ~ g) : f⁻¹ ~ g⁻¹ :=
+  inv_homotopy_inv p
+
+  definition compose2 {A B C : Type} {g g' : B → C} {f f' : A → B}
+    (p : g ~ g') (q : f ~ f') : g ∘ f ~ g' ∘ f' :=
+  hwhisker_right f p ⬝hty hwhisker_left g' q
 
   section hsquare
   variables {A₀₀ A₂₀ A₄₀ A₀₂ A₂₂ A₄₂ A₀₄ A₂₄ A₄₄ : Type}
@@ -1142,6 +1153,10 @@ section
   show a = 0, from is_injective_of_is_embedding this
 end
 
+definition iterate_succ {A : Type} (f : A → A) (n : ℕ) (x : A) :
+  iterate f (succ n) x = iterate f n (f x) :=
+by induction n with n p; reflexivity; exact ap f p
+
 /- put somewhere in algebra -/
 
 structure Ring :=
@@ -1149,3 +1164,35 @@ structure Ring :=
 
 attribute Ring.carrier [coercion]
 attribute Ring.struct [instance]
+
+namespace set_quotient
+  definition is_prop_set_quotient {A : Type} (R : A → A → Prop) [is_prop A] : is_prop (set_quotient R) :=
+  begin
+    apply is_prop.mk, intro x y,
+    induction x using set_quotient.rec_prop, induction y using set_quotient.rec_prop,
+    exact ap class_of !is_prop.elim
+  end
+
+  local attribute is_prop_set_quotient [instance]
+  definition is_trunc_set_quotient [instance] (n : ℕ₋₂) {A : Type} (R : A → A → Prop) [is_trunc n A] :
+    is_trunc n (set_quotient R) :=
+  begin
+    cases n with n, { apply is_contr_of_inhabited_prop, exact class_of !center },
+    cases n with n, { apply _ },
+    apply is_trunc_succ_succ_of_is_set
+  end
+
+  definition is_equiv_class_of [constructor] {A : Type} [is_set A] (R : A → A → Prop)
+    (p : Π⦃a b⦄, R a b → a = b) : is_equiv (@class_of A R) :=
+  begin
+    fapply adjointify,
+    { intro x, induction x, exact a, exact p H },
+    { intro x, induction x using set_quotient.rec_prop, reflexivity },
+    { intro a, reflexivity }
+  end
+
+  definition equiv_set_quotient [constructor] {A : Type} [is_set A] (R : A → A → Prop)
+    (p : Π⦃a b⦄, R a b → a = b) : A ≃ set_quotient R :=
+  equiv.mk _ (is_equiv_class_of R p)
+
+end set_quotient

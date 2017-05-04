@@ -144,11 +144,7 @@ namespace group
   homomorphism.mk class_of (λ g h, idp)
 
   definition ab_qg_map {G : AbGroup} (N : subgroup_rel G) : G →g quotient_ab_group N :=
-  begin
-    fapply homomorphism.mk,
-    exact class_of,
-    exact λ g h, idp
-  end
+  qg_map _
 
  definition is_surjective_ab_qg_map {A : AbGroup} (N : subgroup_rel A) : is_surjective (ab_qg_map N) :=
   begin
