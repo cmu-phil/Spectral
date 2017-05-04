@@ -278,21 +278,133 @@ namespace group
     exact H a p,
   end
 
-  definition quotient_group_iso {K L : subgroup_rel A} (H1 : Π (a : A), K a → L a) (H2 : Π (a : A), L a → K a) : 
-    is_contr (Σ gh : (Σ (g : quotient_ab_group K →g quotient_ab_group L), g ∘g ab_qg_map K ~ ab_qg_map L), 
-      is_equiv (group_fun (pr1 gh))) :=
+  definition quotient_group_functor_id {K : subgroup_rel A} (H : Π (a : A), K a → K a) : 
+    center' (@quotient_group_functor_contr _ K K H) = ⟨gid (quotient_ab_group K), λ x, rfl⟩ :=
+    begin
+      note p := @quotient_group_functor_contr _ K K H,
+      fapply eq_of_is_contr,
+    end 
+
+  section quotient_group_iso_ua
+
+  set_option pp.universes true
+
+  definition subgroup_rel_eq' {K L : subgroup_rel A} (htpy : Π (a : A), K a ≃ L a) : K = L :=
+  begin
+    induction K with K', induction L with L', esimp at *,
+    assert q : K' = L',
+    begin
+      fapply eq_of_homotopy,
+      intro a,
+      fapply tua,
+      exact htpy a,
+    end,
+    induction q,
+    assert q : Rone = Rone_1,
+    begin
+      fapply is_prop.elim,
+    end,
+    induction q,
+    assert q2 : @Rmul = @Rmul_1,
+    begin
+      fapply is_prop.elim,
+    end,
+    induction q2,
+    assert q : @Rinv = @Rinv_1,
+    begin
+      fapply is_prop.elim,
+    end,
+    induction q,
+    reflexivity    
+  end
+
+  definition subgroup_rel_eq {K L : subgroup_rel A} (forth : Π (a : A), K a → L a) (opforth : Π (a : A), L a → K a) : K = L :=
+  begin
+    have htpy : Π (a : A), K a ≃ L a,
+    begin
+      intro a,
+      fapply equiv_of_is_prop,
+      fapply forth a,
+      fapply opforth a,
+    end,
+    exact subgroup_rel_eq' htpy,
+  end
+
+  definition  eq_of_ab_qg_group' {K L : subgroup_rel A} (p : K = L) : quotient_ab_group K = quotient_ab_group L :=
+  begin
+    induction p, reflexivity
+  end
+
+  definition eq_of_ab_qg_group {K L : subgroup_rel A} (forth : Π (a : A), K a → L a) (opforth : Π (a : A), L a → K a) : quotient_ab_group K = quotient_ab_group L :=
+  eq_of_ab_qg_group' (subgroup_rel_eq forth opforth) 
+
+  end quotient_group_iso_ua
+  
+  section quotient_group_iso
+  variables {K L : subgroup_rel A} (H1 : Π (a : A), K a → L a) (H2 : Π (a : A), L a → K a)
+  include H1
+  include H2
+  
+  definition quotient_group_iso_contr_KL_map :
+    quotient_ab_group K →g quotient_ab_group L :=
+    pr1 (center' (quotient_group_functor_contr H1))
+
+  definition quotient_group_iso_contr_KL_triangle :
+    quotient_group_iso_contr_KL_map H1 H2 ∘g ab_qg_map K ~ ab_qg_map L :=
+    pr2 (center' (quotient_group_functor_contr H1))
+
+  definition quotient_group_iso_contr_KK :
+    is_contr (Σ (g : quotient_ab_group K →g quotient_ab_group K), g ∘g ab_qg_map K ~ ab_qg_map K) :=
+    @quotient_group_functor_contr A K K (λ a, H2 a ∘ H1 a)
+
+  definition quotient_group_iso_contr_LK :
+    quotient_ab_group L →g quotient_ab_group K :=
+    pr1 (center' (@quotient_group_functor_contr A L K H2))
+
+  definition quotient_group_iso_contr_LL : 
+    quotient_ab_group L →g quotient_ab_group L :=
+    pr1 (center' (@quotient_group_functor_contr A L L (λ a, H1 a ∘ H2 a)))
+
+/-
+  definition quotient_group_iso : quotient_ab_group K ≃g quotient_ab_group L :=
+    begin
+      fapply isomorphism.mk,
+      exact pr1 (center' (quotient_group_iso_contr_KL H1 H2)),
+      fapply adjointify,
+      exact quotient_group_iso_contr_LK H1 H2,
+      intro x,
+      induction x, reflexivity,
+    end
+-/
+
+  definition quotient_group_iso_contr_aux  : 
+    is_contr (Σ(gh : Σ (g : quotient_ab_group K →g quotient_ab_group L), g ∘g ab_qg_map K ~ ab_qg_map L), is_equiv (group_fun (pr1 gh))) :=
   begin
     fapply is_trunc_sigma,
     exact quotient_group_functor_contr H1,
     intro a, induction a with g h,
     fapply is_contr_of_inhabited_prop,
     fapply adjointify,
-    rexact group_fun (pr1 (center' (@quotient_group_functor_contr A L K H2))), 
+    rexact group_fun (pr1 (center' (@quotient_group_functor_contr A L K H2))),
+    note htpy := homotopy_of_eq (ap group_fun (ap sigma.pr1 (@quotient_group_functor_id _ L (λ a, (H1 a) ∘ (H2 a))))),  
     have KK : is_contr ((Σ(g' : quotient_ab_group K →g quotient_ab_group K), g' ∘g ab_qg_map K ~ ab_qg_map K) ), from
       quotient_group_functor_contr (λ a, (H2 a) ∘ (H1 a)),
     -- have KK_path : ⟨g, h⟩ = ⟨id, λ a, refl (ab_qg_map K a)⟩, from eq_of_is_contr ⟨g, h⟩ ⟨id, λ a, refl (ab_qg_map K a)⟩, 
     repeat exact sorry
   end
+/-
+  definition quotient_group_iso_contr {K L : subgroup_rel A} (H1 : Π (a : A), K a → L a) (H2 : Π (a : A), L a → K a) : 
+    is_contr (Σ (g : quotient_ab_group K ≃g quotient_ab_group L), g ∘g ab_qg_map K ~ ab_qg_map L) :=
+  begin
+    refine @is_trunc_equiv_closed (Σ(gh : Σ (g : quotient_ab_group K →g quotient_ab_group L), g ∘g ab_qg_map K ~ ab_qg_map L), is_equiv (group_fun (pr1 gh))) (Σ (g : quotient_ab_group K ≃g quotient_ab_group L), g ∘g ab_qg_map K ~ ab_qg_map L) -2 _ (quotient_group_iso_contr_aux H1 H2), 
+  exact calc
+    (Σ gh, is_equiv (group_fun gh.1)) ≃ Σ (g : quotient_ab_group K →g quotient_ab_group L) (h : g ∘g ab_qg_map K ~ ab_qg_map L), is_equiv (group_fun g) : by exact (sigma_assoc_equiv (λ gh, is_equiv (group_fun gh.1)))⁻¹
+    ... ≃ (Σ (g : quotient_ab_group K ≃g quotient_ab_group L), g ∘g ab_qg_map K ~ ab_qg_map L) : _
+  end
+-/
+
+  end quotient_group_iso
+
  
   definition quotient_group_functor [constructor] (φ : G →g G') (h : Πg, N g → N' (φ g)) :
     quotient_group N →g quotient_group N' :=
