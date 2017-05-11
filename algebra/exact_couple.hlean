@@ -131,12 +131,20 @@ definition SES_of_exact_couple_at_i : SES (ab_kernel i) A (ab_image i) :=
   fapply ab_group_first_iso_thm i,
   end
 
+definition kj_zero (a : A) : k (j a) = 1 :=
+  begin
+    exact sorry
+  end
+
 definition j_factor : A →g (ab_kernel d) := 
 begin
   fapply ab_hom_lift j,
   intro a, 
   unfold kernel_subgroup, 
-  exact sorry --refine ap (group_fun j) _,  
+  exact calc
+    d (j a) = j (k (j a)) : rfl
+       ...  = j 1 : by exact ap j (kj_zero a)
+       ...  = 1   : to_respect_one,
 end
 
 
