@@ -319,7 +319,26 @@ definition hom_lift [constructor] {G H : Group} (f : G →g H) (K : subgroup_rel
     intro g h, apply subtype_eq, esimp, apply respect_mul
   end
 
+definition ab_hom_lift [constructor] {G H : AbGroup} (f : G →g H) (K : subgroup_rel H) (Hyp : Π (g : G), K (f g)) : G →g ab_subgroup K :=
+  begin
+    fapply homomorphism.mk,
+    intro g,
+    fapply sigma.mk,
+    exact f g,
+    fapply Hyp,
+    intro g h, apply subtype_eq, apply respect_mul,
+  end
+
   definition image_lift [constructor] {G H : Group} (f : G →g H) : G →g image f :=
+  begin
+    fapply hom_lift f,
+    intro g,
+    apply tr,
+    fapply fiber.mk,
+    exact g, reflexivity
+  end
+
+definition ab_image_lift [constructor] {G H : AbGroup} (f : G →g H) : G →g image f :=
   begin
     fapply hom_lift f,
     intro g,

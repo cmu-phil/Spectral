@@ -35,11 +35,19 @@ definition homology {B : AbGroup} (d : B →g B) (H : is_differential d) : AbGro
 definition homology_ugly {B : AbGroup} (d : B →g B) (H : is_differential d) : AbGroup :=
   @quotient_ab_group (ab_kernel d) (image_subgroup (ab_subgroup_of_subgroup_incl (diff_im_in_ker d H)))
 
+
 definition homology_iso_ugly {B : AbGroup} (d : B →g B) (H : is_differential d) : (homology d H) ≃g (homology_ugly d H) :=
   begin
-  fapply @iso_of_ab_qg_group (ab_kernel d) (image_subgroup (ab_subgroup_of_subgroup_incl (diff_im_in_ker d H))) (image_subgroup_of_diff d H),
-
+  fapply @iso_of_ab_qg_group (ab_kernel d), 
+  intro a,
+  intro p, induction p with f, induction f with b p, 
+  fapply tr, fapply fiber.mk, fapply sigma.mk, exact d b, fapply tr, fapply fiber.mk, exact b, reflexivity,
+  induction a with c q, fapply subtype_eq, refine p ⬝ _, reflexivity,
+  intro b p, induction p with f, induction f with c p, induction p,
+  induction c with a q, induction q with f, induction f with a' p, induction p,
+  fapply tr, fapply fiber.mk, exact a', reflexivity
   end
+
 
 definition SES_iso_C {A B C C' : AbGroup} (ses : SES A B C) (k : C ≃g C') : SES A B C' :=
   begin 
@@ -68,6 +76,7 @@ definition SES_iso_C {A B C C' : AbGroup} (ses : SES A B C) (k : C ≃g C') : SE
   exact to_respect_one k⁻¹ᵍ
   end
 
+
 definition SES_of_differential_ugly {B : AbGroup} (d : B →g B) (H : is_differential d) : SES (ab_image d) (ab_kernel d) (homology_ugly d H) :=
   begin
     exact SES_of_inclusion (ab_subgroup_of_subgroup_incl (diff_im_in_ker d H)) (is_embedding_ab_subgroup_of_subgroup_incl (diff_im_in_ker d H)),
@@ -75,8 +84,9 @@ definition SES_of_differential_ugly {B : AbGroup} (d : B →g B) (H : is_differe
 
 definition SES_of_differential {B : AbGroup} (d : B →g B) (H : is_differential d) : SES (ab_image d) (ab_kernel d) (homology d H) :=
   begin
-    exact SES_of_inclusion (ab_subgroup_of_subgroup_incl (diff_im_in_ker d H)) (is_embedding_ab_subgroup_of_subgroup_incl (diff_im_in_ker d H)),
-    exact sorry,
+    fapply SES_iso_C,
+    fapply SES_of_inclusion (ab_subgroup_of_subgroup_incl (diff_im_in_ker d H)) (is_embedding_ab_subgroup_of_subgroup_incl (diff_im_in_ker d H)),
+    exact (homology_iso_ugly d H)⁻¹ᵍ
    end
 
 structure exact_couple (A B : AbGroup) : Type :=
@@ -98,16 +108,37 @@ definition differential_is_differential {A B : AbGroup} (EC : exact_couple A B) 
 
 section derived_couple
 
-  variables {A B : AbGroup} (EC : exact_couple A B)
+  parameters {A B : AbGroup} (EC : exact_couple A B)
+  local abbreviation i := exact_couple.i EC
+  local abbreviation j := exact_couple.j EC
+  local abbreviation k := exact_couple.k EC
+  local abbreviation d := differential EC
+  local abbreviation H := differential_is_differential EC
 
 definition derived_couple_A : AbGroup :=
-  ab_subgroup (image_subgroup (exact_couple.i EC))
+  ab_subgroup (image_subgroup i)
 
 definition derived_couple_B : AbGroup :=
   homology (differential EC) (differential_is_differential EC)
 
-definition derived_couple_i : derived_couple_A EC →g derived_couple_A EC :=
+definition derived_couple_i : derived_couple_A →g derived_couple_A :=
   (image_lift (exact_couple.i EC)) ∘g (image_incl (exact_couple.i EC))
+
+definition SES_of_exact_couple_at_i : SES (ab_kernel i) A (ab_image i) :=
+  begin
+  fapply SES_iso_C,
+  fapply SES_of_subgroup (kernel_subgroup i),
+  fapply ab_group_first_iso_thm i,
+  end
+
+definition j_factor : A →g (ab_kernel d) := 
+begin
+  fapply ab_hom_lift j,
+  intro a, 
+  unfold kernel_subgroup, 
+  exact sorry --refine ap (group_fun j) _,  
+end
+
 
 definition derived_couple_j : derived_couple_A EC →g derived_couple_B EC :=
   begin
