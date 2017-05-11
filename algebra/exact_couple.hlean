@@ -37,8 +37,8 @@ definition homology_ugly {B : AbGroup} (d : B →g B) (H : is_differential d) : 
 
 definition homology_iso_ugly {B : AbGroup} (d : B →g B) (H : is_differential d) : (homology d H) ≃g (homology_ugly d H) :=
   begin
--- fapply quotientgroupiso ...
-  exact sorry
+  fapply @iso_of_ab_qg_group (ab_kernel d) (image_subgroup (ab_subgroup_of_subgroup_incl (diff_im_in_ker d H))) (image_subgroup_of_diff d H),
+
   end
 
 definition SES_iso_C {A B C C' : AbGroup} (ses : SES A B C) (k : C ≃g C') : SES A B C' :=
