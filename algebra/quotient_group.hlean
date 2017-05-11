@@ -314,14 +314,14 @@ namespace group
     reflexivity    
   end
 
-  definition subgroup_rel_eq {K L : subgroup_rel A} (forth : Π (a : A), K a → L a) (opforth : Π (a : A), L a → K a) : K = L :=
+  definition subgroup_rel_eq {K L : subgroup_rel A} (K_in_L : Π (a : A), K a → L a) (L_in_K : Π (a : A), L a → K a) : K = L :=
   begin
     have htpy : Π (a : A), K a ≃ L a,
     begin
       intro a,
       fapply equiv_of_is_prop,
-      fapply forth a,
-      fapply opforth a,
+      fapply K_in_L a,
+      fapply L_in_K a,
     end,
     exact subgroup_rel_eq' htpy,
   end
@@ -331,8 +331,29 @@ namespace group
     induction p, reflexivity
   end
 
-  definition eq_of_ab_qg_group {K L : subgroup_rel A} (forth : Π (a : A), K a → L a) (opforth : Π (a : A), L a → K a) : quotient_ab_group K = quotient_ab_group L :=
-  eq_of_ab_qg_group' (subgroup_rel_eq forth opforth) 
+  definition iso_of_eq {B : AbGroup} (p : A = B) : A ≃g B :=
+  begin
+    induction p, fapply isomorphism.mk, exact gid A, fapply adjointify, exact id, intro a, reflexivity, intro a, reflexivity
+  end
+
+  definition iso_of_ab_qg_group' {K L : subgroup_rel A} (p : K = L) : quotient_ab_group K ≃g quotient_ab_group L :=
+  iso_of_eq (eq_of_ab_qg_group' p)
+
+  definition htpy_of_ab_qg_map' {K L : subgroup_rel A} (p : K = L) : (iso_of_ab_qg_group' p) ∘g ab_qg_map K ~ ab_qg_map L :=
+  begin
+    induction p, reflexivity
+  end 
+
+  definition eq_of_ab_qg_group {K L : subgroup_rel A} (K_in_L : Π (a : A), K a → L a) (L_in_K : Π (a : A), L a → K a) : quotient_ab_group K = quotient_ab_group L :=
+  eq_of_ab_qg_group' (subgroup_rel_eq K_in_L L_in_K) 
+
+  definition iso_of_ab_qg_group {K L : subgroup_rel A} (K_in_L : Π (a : A), K a → L a) (L_in_K : Π (a : A), L a → K a) : quotient_ab_group K ≃g quotient_ab_group L :=
+  iso_of_eq (eq_of_ab_qg_group K_in_L L_in_K)
+
+  definition eq_of_ab_qg_group_triangle {K L : subgroup_rel A} (K_in_L : Π (a : A), K a → L a) (L_in_K : Π (a : A), L a → K a) :  iso_of_ab_qg_group K_in_L L_in_K ∘g ab_qg_map K ~ ab_qg_map L :=
+  begin
+    
+  end
 
   end quotient_group_iso_ua
   
