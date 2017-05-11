@@ -339,7 +339,7 @@ namespace group
   definition iso_of_ab_qg_group' {K L : subgroup_rel A} (p : K = L) : quotient_ab_group K ≃g quotient_ab_group L :=
   iso_of_eq (eq_of_ab_qg_group' p)
 
-  definition htpy_of_ab_qg_map' {K L : subgroup_rel A} (p : K = L) : (iso_of_ab_qg_group' p) ∘g ab_qg_map K ~ ab_qg_map L :=
+  definition htpy_of_ab_qg_group' {K L : subgroup_rel A} (p : K = L) : (iso_of_ab_qg_group' p) ∘g ab_qg_map K ~ ab_qg_map L :=
   begin
     induction p, reflexivity
   end 
@@ -350,9 +350,9 @@ namespace group
   definition iso_of_ab_qg_group {K L : subgroup_rel A} (K_in_L : Π (a : A), K a → L a) (L_in_K : Π (a : A), L a → K a) : quotient_ab_group K ≃g quotient_ab_group L :=
   iso_of_eq (eq_of_ab_qg_group K_in_L L_in_K)
 
-  definition eq_of_ab_qg_group_triangle {K L : subgroup_rel A} (K_in_L : Π (a : A), K a → L a) (L_in_K : Π (a : A), L a → K a) :  iso_of_ab_qg_group K_in_L L_in_K ∘g ab_qg_map K ~ ab_qg_map L :=
+  definition htpy_of_ab_qg_group {K L : subgroup_rel A} (K_in_L : Π (a : A), K a → L a) (L_in_K : Π (a : A), L a → K a) :  iso_of_ab_qg_group K_in_L L_in_K ∘g ab_qg_map K ~ ab_qg_map L :=
   begin
-    
+    fapply htpy_of_ab_qg_group' 
   end
 
   end quotient_group_iso_ua
