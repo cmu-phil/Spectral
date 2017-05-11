@@ -269,17 +269,6 @@ namespace group
   definition image {G H : Group} (f : G →g H) : Group :=
     subgroup (image_subgroup f)
 
-  definition AbGroup_of_Group.{u} (G : Group.{u}) (H : Π (g h : G), mul g h = mul h g) : AbGroup.{u} :=
-  begin
-    induction G,
-    induction struct,
-    fapply AbGroup.mk,
-    exact carrier,
-    fapply ab_group.mk,
-    repeat assumption,
-    exact H
-  end
-
 definition ab_image {G : AbGroup} {H : AbGroup} (f : G →g H) : AbGroup :=
  ab_subgroup (image_subgroup f)
 

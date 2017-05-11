@@ -29,6 +29,9 @@ definition is_exact_g.mk {A B C : Group} {f : A →g B} {g : B →g C}
 is_exact.mk H₁ H₂
 
 namespace algebra
+  definition ab_group_unit [constructor] : ab_group unit :=
+  ⦃ab_group, trivial_group, mul_comm := λx y, idp⦄
+
   definition inf_group_loopn (n : ℕ) (A : Type*) [H : is_succ n] : inf_group (Ω[n] A) :=
   by induction H; exact _
 
@@ -64,6 +67,18 @@ namespace algebra
 end algebra
 
 namespace eq
+
+  definition eq.rec_to {A : Type} {a₀ : A} {P : Π⦃a₁⦄, a₀ = a₁ → Type}
+    {a₁ : A} (p₀ : a₀ = a₁) (H : P p₀) {a₂ : A} (p : a₀ = a₂) : P p :=
+  begin
+    induction p₀, induction p, exact H
+  end
+
+  definition eq.rec_to2 {A : Type} {P : Π⦃a₀ a₁⦄, a₀ = a₁ → Type}
+    {a₀ a₀' a₁' : A} (p' : a₀' = a₁') (p₀ : a₀ = a₀') (H : P p') ⦃a₁ : A⦄ (p : a₀ = a₁) : P p :=
+  begin
+   induction p₀, induction p', induction p, exact H
+  end
 
 section -- squares
   variables {A B : Type} {a a' a'' a₀₀ a₂₀ a₄₀ a₀₂ a₂₂ a₂₄ a₀₄ a₄₂ a₄₄ a₁ a₂ a₃ a₄ : A}
@@ -1164,6 +1179,15 @@ structure Ring :=
 
 attribute Ring.carrier [coercion]
 attribute Ring.struct [instance]
+
+namespace int
+
+  definition ring_int : Ring :=
+  Ring.mk ℤ _
+
+  notation `rℤ` := ring_int
+
+end int
 
 namespace set_quotient
   definition is_prop_set_quotient {A : Type} (R : A → A → Prop) [is_prop A] : is_prop (set_quotient R) :=

@@ -1,3 +1,7 @@
+/- submodules and quotient modules -/
+
+-- Authors: Floris van Doorn
+
 
 import .left_module .quotient_group
 

@@ -208,11 +208,11 @@ namespace spectrum
   -- read off the homotopy groups without any tedious case-analysis of
   -- n.  We increment by 2 in order to ensure that they are all
   -- automatically abelian groups.
-  definition shomotopy_group [constructor] (n : ℤ) (E : spectrum) : AbGroup := πag[2] (E (2 - n))
+  definition shomotopy_group (n : ℤ) (E : spectrum) : AbGroup := πag[2] (E (2 - n))
 
   notation `πₛ[`:95 n:0 `]`:0 := shomotopy_group n
 
-  definition shomotopy_group_fun [constructor] (n : ℤ) {E F : spectrum} (f : E →ₛ F) :
+  definition shomotopy_group_fun (n : ℤ) {E F : spectrum} (f : E →ₛ F) :
     πₛ[n] E →g πₛ[n] F :=
   π→g[2] (f (2 - n))
 
@@ -318,23 +318,26 @@ namespace spectrum
         (homomorphism_LES_of_homotopy_groups_fun (f (2 - n)) (1, 2) ∘g πg_glue Y n) qed
   | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
 
+  definition is_exact_LES_of_shomotopy_groups : is_exact LES_of_shomotopy_groups :=
+  begin
+    apply is_exact_splice, intro n, apply is_exact_LES_of_homotopy_groups,
+  end
+
   -- In the comments below is a start on an explicit description of the LES for spectra
   -- Maybe it's slightly nicer to work with than the above version
 
---   definition shomotopy_groups [reducible] : -3ℤ → AbGroup
---   | (n, fin.mk 0 H) := πₛ[n] Y
---   | (n, fin.mk 1 H) := πₛ[n] X
---   | (n, fin.mk k H) := πₛ[n] (sfiber f)
+  definition shomotopy_groups [reducible] : +3ℤ → AbGroup
+  | (n, fin.mk 0 H) := πₛ[n] Y
+  | (n, fin.mk 1 H) := πₛ[n] X
+  | (n, fin.mk k H) := πₛ[n] (sfiber f)
 
---   definition shomotopy_groups_fun : Π(n : -3ℤ), shomotopy_groups (S n) →g shomotopy_groups n
---   | (n, fin.mk 0 H) := proof π→g[1+1] (f (n + 2)) qed --π→[2] f (n+2)
--- --pmap_of_homomorphism (πₛ→[n] f)
---   | (n, fin.mk 1 H) := proof π→g[1+1] (ppoint (f (n + 2))) qed
---   | (n, fin.mk 2 H) :=
---     proof _ ∘g π→g[1+1] equiv_glue Y (pred n + 2) qed
--- --π→[n] boundary_map ∘* pcast (ap (ptrunc 0) (loop_space_succ_eq_in Y n))
---   | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
-
+  definition shomotopy_groups_fun : Π(v : +3ℤ), shomotopy_groups (S v) →g shomotopy_groups v
+  | (n, fin.mk 0 H) := proof πₛ→[n] f qed
+  | (n, fin.mk 1 H) := proof πₛ→[n] (spoint f) qed
+  | (n, fin.mk 2 H) := proof homomorphism_LES_of_homotopy_groups_fun (f (2 - n)) (nat.succ nat.zero, 2) ∘g
+                             πg_glue Y n ∘g (by reflexivity) qed
+  | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
+--(homomorphism_LES_of_homotopy_groups_fun (f (2 - n)) (1, 2) ∘g πg_glue Y n)
   end
 
   structure sp_chain_complex (N : succ_str) : Type :=

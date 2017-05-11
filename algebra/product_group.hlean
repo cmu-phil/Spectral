@@ -58,7 +58,19 @@ namespace group
   definition ab_product [constructor] (G G' : AbGroup) : AbGroup :=
   AbGroup.mk _ (ab_group_prod G G')
 
-  infix ` ×g `:30 := group.product
-  infix ` ×ag `:30 := group.ab_product
+  infix ` ×g `:60 := group.product
+  infix ` ×ag `:60 := group.ab_product
+
+  definition product_functor [constructor] {G G' H H' : Group} (φ : G →g H) (ψ : G' →g H') :
+    G ×g G' →g H ×g H' :=
+  homomorphism.mk (λx, (φ x.1, ψ x.2)) (λx y, prod_eq !to_respect_mul !to_respect_mul)
+
+  infix ` ×→g `:60 := group.product_functor
+
+  definition product_isomorphism [constructor] {G G' H H' : Group} (φ : G ≃g H) (ψ : G' ≃g H') :
+    G ×g G' ≃g H ×g H' :=
+  isomorphism.mk (φ ×→g ψ) !is_equiv_prod_functor
+
+  infix ` ×≃g `:60 := group.product_isomorphism
 
 end group
