@@ -121,6 +121,7 @@ section derived_couple
   local abbreviation k := exact_couple.k EC
   local abbreviation d := differential EC
   local abbreviation H := differential_is_differential EC
+ -- local abbreviation u := exact_couple.i (SES_of_differential d H)
 
 definition derived_couple_A : AbGroup :=
   ab_subgroup (image_subgroup i)
@@ -172,7 +173,16 @@ definition subgroup_iso_exact_at_A_triangle : ab_kernel_incl i ~ ab_image_incl k
     induction EC, induction exact_ki, exact im_in_ker b,
   end
 
-definition 
+definition subgroup_homom_ker_to_im : ab_kernel i →g ab_image d :=
+  (image_homomorphism k j) ∘g subgroup_iso_exact_at_A
+open eq
+definition left_square_derived_ses : j_factor ∘g (ab_kernel_incl i) ~ (SES.f (SES_of_differential d H)) ∘g subgroup_homom_ker_to_im :=
+  begin
+  intro x,
+  fapply subtype_eq,
+  refine sorry --(ap (j_factor) subgroup_iso_exact_at_A_triangle) ⬝ _,
+  end
+
 definition derived_couple_j : derived_couple_A EC →g derived_couple_B EC :=
   begin
   exact sorry,
