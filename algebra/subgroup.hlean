@@ -404,6 +404,12 @@ definition ab_image_lift [constructor] {G H : AbGroup} (f : G →g H) : G →g i
          ...  = 1   : to_respect_one,
   end
 
+  definition image_homomorphism_square {A B C : AbGroup} (f : A →g B) (g : B →g C) :
+    g ∘g image_incl f ~ image_incl (g ∘g f ) ∘g image_homomorphism f g :=
+  begin
+    intro x, induction x with b p, induction p with x, induction x with a p, induction p, reflexivity
+  end
+
   end
 
   variables {G H K : Group} {R : subgroup_rel G} {S : subgroup_rel H} {T : subgroup_rel K}
