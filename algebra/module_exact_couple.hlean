@@ -2,7 +2,7 @@
 
 -- Author: Floris van Doorn
 
-import .graded ..homotopy.spectrum .product_group
+import .graded ..homotopy.spectrum .product_group --types.int.order
 
 open algebra is_trunc left_module is_equiv equiv eq function nat
 
@@ -20,7 +20,75 @@ section
     (H : is_exact_at A n) : is_exact (cc_to_fn A (S n)) (cc_to_fn A n) :=
   is_exact.mk (cc_is_chain_complex A n) H
 
+  definition is_equiv_mul_right [constructor] {A : Group} (a : A) : is_equiv (λb, b * a) :=
+  adjointify _ (λb : A, b * a⁻¹) (λb, !inv_mul_cancel_right) (λb, !mul_inv_cancel_right)
+
+  definition right_action [constructor] {A : Group} (a : A) : A ≃ A :=
+  equiv.mk _ (is_equiv_mul_right a)
+
+  definition is_equiv_add_right [constructor] {A : AddGroup} (a : A) : is_equiv (λb, b + a) :=
+  adjointify _ (λb : A, b - a) (λb, !neg_add_cancel_right) (λb, !add_neg_cancel_right)
+
+  definition add_right_action [constructor] {A : AddGroup} (a : A) : A ≃ A :=
+  equiv.mk _ (is_equiv_add_right a)
+
+
+  section
+    variables {A B : Type} (f : A ≃ B) [ab_group A]
+
+    -- to group
+    definition group_equiv_mul_comm (b b' : B) : group_equiv_mul f b b' = group_equiv_mul f b' b :=
+    by rewrite [↑group_equiv_mul, mul.comm]
+
+    definition ab_group_equiv_closed : ab_group B :=
+    ⦃ab_group, group_equiv_closed f,
+      mul_comm := group_equiv_mul_comm f⦄
+  end
+
+  definition ab_group_of_is_contr (A : Type) [is_contr A] : ab_group A :=
+  have ab_group unit, from ab_group_unit,
+  ab_group_equiv_closed (equiv_unit_of_is_contr A)⁻¹ᵉ
+
+  definition group_of_is_contr (A : Type) [is_contr A] : group A :=
+  have ab_group A, from ab_group_of_is_contr A, by apply _
+
+  definition ab_group_lift_unit : ab_group (lift unit) :=
+  ab_group_of_is_contr (lift unit)
+
+  definition trivial_ab_group_lift : AbGroup :=
+  AbGroup.mk _ ab_group_lift_unit
+
+  definition homomorphism_of_is_contr_right (A : Group) {B : Type} (H : is_contr B) :
+    A →g Group.mk B (group_of_is_contr B) :=
+  group.homomorphism.mk (λa, center _) (λa a', !is_prop.elim)
+
+  open trunc pointed is_conn
+  definition ab_group_homotopy_group_of_is_conn (n : ℕ) (A : Type*) [H : is_conn 1 A] : ab_group (π[n] A) :=
+  begin
+    have is_conn 0 A, from !is_conn_of_is_conn_succ,
+    cases n with n,
+    { unfold [homotopy_group, ptrunc], apply ab_group_of_is_contr },
+    cases n with n,
+    { unfold [homotopy_group, ptrunc], apply ab_group_of_is_contr },
+    exact ab_group_homotopy_group n A
+  end
+
 end
+
+namespace int /- move to int-/
+  definition max0 : ℤ → ℕ
+  | (of_nat n) := n
+  | (-[1+ n])  := 0
+
+  lemma le_max0 : Π(n : ℤ), n ≤ of_nat (max0 n)
+  | (of_nat n) := proof le.refl n qed
+  | (-[1+ n])  := proof unit.star qed
+
+  lemma le_of_max0_le {n : ℤ} {m : ℕ} (h : max0 n ≤ m) : n ≤ of_nat m :=
+  le.trans (le_max0 n) (of_nat_le_of_nat_of_le h)
+
+end int
+
 /- exact couples -/
 
 namespace left_module
@@ -172,19 +240,55 @@ namespace left_module
   ⦃exact_couple, D := D' X, E := E' X, i := i' X, j := j' X, k := k' X,
     ij := i'j' X, jk := j'k' X, ki := k'i' X⦄
 
-  parameters {R : Ring} {I : Set} (X : exact_couple R I) (B B' : I → ℕ)
+  structure is_bounded {R : Ring} {I : Set} (X : exact_couple R I) : Type :=
+    (B B' : I → ℕ)
     (Dub : Π⦃x y⦄ ⦃s : ℕ⦄, (deg (i X))^[s] x = y → B x ≤ s → is_contr (D X y))
-    (Eub : Π⦃x y⦄ ⦃s : ℕ⦄, (deg (k X))⁻¹ (iterate (deg (i X)) s ((deg (j X))⁻¹ x)) = y →
-           B x ≤ s → is_contr (E X y))
-    (Dlb : Π⦃x y z⦄ ⦃s : ℕ⦄ (p : deg (i X) x = y),
-    iterate (deg (i X)) s y = z → B' z ≤ s → is_surjective (i X ↘ p))
-    (Elb : Π⦃x y⦄ ⦃s : ℕ⦄, deg (j X) (iterate (deg (i X))⁻¹ᵉ s (deg (k X) x)) = y → B x ≤ s →
-           is_contr (E X y))
-    (deg_ik_commute : deg (i X) ∘ deg (k X) ~ deg (k X) ∘ deg (i X))
+    (Eub : Π⦃x y⦄ ⦃s : ℕ⦄, (deg (i X))^[s] x = y → B x ≤ s → is_contr (E X y))
+    (Dlb : Π⦃x y z⦄ ⦃s : ℕ⦄ (p : deg (i X) x = y), (deg (i X))^[s] y = z → B' z ≤ s → is_surjective (i X ↘ p))
+    (Elb : Π⦃x y⦄ ⦃s : ℕ⦄, (deg (i X))⁻¹ᵉ^[s] x = y → B x ≤ s → is_contr (E X y))
+    (deg_ik_commute : hsquare (deg (k X)) (deg (k X)) (deg (i X)) (deg (i X)))
+    (deg_ij_commute : hsquare (deg (j X)) (deg (j X)) (deg (i X)) (deg (i X)))
 
-  definition deg_iterate_ik_commute (n : ℕ) (x : I) :
-    (deg (i X))^[n] (deg (k X) x) = deg (k X) ((deg (i X))^[n] x) :=
-  iterate_commute _ deg_ik_commute x
+--   definition is_bounded.mk_commute {R : Ring} {I : Set} {X : exact_couple R I}
+--     (B B' : I → ℕ)
+--     (Dub : Π⦃x : I⦄ ⦃s : ℕ⦄, B x ≤ s → is_contr (D X ((deg (i X))^[s] x)))
+--     (Eub : Π⦃x : I⦄ ⦃s : ℕ⦄, B x ≤ s → is_contr (E X ((deg (i X))^[s] x)))
+--     (Dlb : Π⦃x : I⦄ ⦃s : ℕ⦄, B' x ≤ s → is_surjective (i X (((deg (i X))⁻¹ᵉ^[s + 1] x))))
+--     (Elb : Π⦃x : I⦄ ⦃s : ℕ⦄, B x ≤ s → is_contr (E X ((deg (i X))⁻¹ᵉ^[s] x)))
+--     (deg_ik_commute : deg (i X) ∘ deg (k X) ~ deg (k X) ∘ deg (i X))
+--     (deg_ij_commute : deg (i X) ∘ deg (j X) ~ deg (j X) ∘ deg (i X)) : is_bounded X :=
+--   begin
+--     apply is_bounded.mk B B',
+--     { intro x y s p h, induction p, exact Dub h },
+--     { intro x y s p h, induction p,
+--       refine @(is_contr_middle_of_is_exact (exact_couple.jk X (right_inv (deg (j X)) _) idp)) _ _ _,
+
+--      --refine transport (λx, is_contr (E X x)) _ (Eub h), exact sorry
+-- },
+--     { exact sorry },
+--     { exact sorry },
+--     { assumption },
+--   end
+
+  open is_bounded
+  parameters {R : Ring} {I : Set} (X : exact_couple R I) (HH : is_bounded X)
+
+  local abbreviation B := B HH
+  local abbreviation B' := B' HH
+  local abbreviation Dub := Dub HH
+  local abbreviation Eub := Eub HH
+  local abbreviation Dlb := Dlb HH
+  local abbreviation Elb := Elb HH
+  local abbreviation deg_ik_commute := deg_ik_commute HH
+  local abbreviation deg_ij_commute := deg_ij_commute HH
+
+  definition deg_iterate_ik_commute (n : ℕ) :
+    hsquare (deg (k X)) (deg (k X)) ((deg (i X))^[n]) ((deg (i X))^[n]) :=
+  iterate_commute n deg_ik_commute
+
+  definition deg_iterate_ij_commute (n : ℕ) :
+    hsquare (deg (j X)) (deg (j X)) ((deg (i X))⁻¹ᵉ^[n]) ((deg (i X))⁻¹ᵉ^[n]) :=
+  iterate_commute n (hvinverse deg_ij_commute)
 
   -- we start counting pages at 0, not at 2.
   definition page (r : ℕ) : exact_couple R I :=
@@ -236,13 +340,19 @@ namespace left_module
     (deg (d (page r)))⁻¹ ~ (deg (k X))⁻¹ ∘ iterate (deg (i X)) r ∘ (deg (j X))⁻¹ :=
   compose2 (to_inv_homotopy_to_inv (deg_k r)) (deg_j_inv r)
 
+  definition B2 (x : I) : ℕ :=
+  max (B (deg (j X) (deg (k X) x))) (B ((deg (k X))⁻¹ ((deg (j X))⁻¹ x)))
+
   include Elb Eub
-  definition Estable {x : I} {r : ℕ} (H : B x ≤ r) :
+  definition Estable {x : I} {r : ℕ} (H : B2 x ≤ r) :
     E (page (r + 1)) x ≃lm E (page r) x :=
   begin
     change homology (d (page r) x) (d (page r) ← x) ≃lm E (page r) x,
     apply homology_isomorphism: apply is_contr_E,
-    exact Eub (deg_d_inv r x)⁻¹ H, exact Elb (deg_d r x)⁻¹ H
+    exact Eub (hhinverse (deg_iterate_ik_commute r) _ ⬝ (deg_d_inv r x)⁻¹)
+              (le.trans !le_max_right H),
+    exact Elb (deg_iterate_ij_commute r _ ⬝ (deg_d r x)⁻¹)
+              (le.trans !le_max_left H)
   end
 
   include Dlb
@@ -269,31 +379,29 @@ namespace left_module
   end
 
   definition Einf : graded_module R I :=
-  λx, E (page (B x)) x
+  λx, E (page (B2 x)) x
 
   definition Dinf : graded_module R I :=
   λx, D (page (B' x)) x
 
-  definition Einfstable {x y : I} {r : ℕ} (Hr : B y ≤ r) (p : x = y) :
-    Einf y ≃lm E (page r) x :=
+  definition Einfstable {x y : I} {r : ℕ} (Hr : B2 y ≤ r) (p : x = y) : Einf y ≃lm E (page r) x :=
   by symmetry; induction p; induction Hr with r Hr IH; reflexivity; exact Estable Hr ⬝lm IH
 
-  definition Dinfstable {x y : I} {r : ℕ} (Hr : B' y ≤ r) (p : x = y) :
-    Dinf y ≃lm D (page r) x :=
+  definition Dinfstable {x y : I} {r : ℕ} (Hr : B' y ≤ r) (p : x = y) : Dinf y ≃lm D (page r) x :=
   by symmetry; induction p; induction Hr with r Hr IH; reflexivity; exact Dstable Hr ⬝lm IH
 
   parameters {x : I}
 
   definition r (n : ℕ) : ℕ :=
-  max (max (B x + n + 1) (B ((deg (i X))^[n] x)))
+  max (max (B (deg (j X) (deg (k X) x)) + n + 1) (B2 ((deg (i X))^[n] x)))
       (max (B' (deg (k X) ((deg (i X))^[n] x)))
            (max (B' (deg (k X) ((deg (i X))^[n+1] x))) (B ((deg (j X))⁻¹ ((deg (i X))^[n] x)))))
 
   lemma rb0 (n : ℕ) : r n ≥ n + 1 :=
   ge.trans !le_max_left (ge.trans !le_max_left !le_add_left)
-  lemma rb1 (n : ℕ) : B x ≤ r n - (n + 1) :=
+  lemma rb1 (n : ℕ) : B (deg (j X) (deg (k X) x)) ≤ r n - (n + 1) :=
   le_sub_of_add_le (le.trans !le_max_left !le_max_left)
-  lemma rb2 (n : ℕ) : B ((deg (i X))^[n] x) ≤ r n :=
+  lemma rb2 (n : ℕ) : B2 ((deg (i X))^[n] x) ≤ r n :=
   le.trans !le_max_right !le_max_left
   lemma rb3 (n : ℕ) : B' (deg (k X) ((deg (i X))^[n] x)) ≤ r n :=
   le.trans !le_max_left !le_max_right
@@ -321,6 +429,7 @@ namespace left_module
     { exact j (page (r n)) _ },
     { apply is_contr_D, refine Dub !deg_j_inv⁻¹ (rb5 n) },
     { apply is_contr_E, refine Elb _ (rb1 n),
+      refine !deg_iterate_ij_commute ⬝ _,
       refine ap (deg (j X)) _ ⬝ !deg_j⁻¹,
       refine iterate_sub _ !rb0 _ ⬝ _, apply ap (_^[r n]),
       exact ap (deg (i X)) (!deg_iterate_ik_commute ⬝ !deg_k⁻¹) ⬝ !deg_i⁻¹ },
@@ -346,50 +455,12 @@ namespace left_module
 
   end
 
+
 end left_module
 open left_module
 namespace pointed
-  -- move
+
   open pointed int group is_trunc trunc is_conn
-
-  section
-    variables {A B : Type} (f : A ≃ B) [ab_group A]
-
-    -- to group
-    definition group_equiv_mul_comm (b b' : B) : group_equiv_mul f b b' = group_equiv_mul f b' b :=
-    by rewrite [↑group_equiv_mul, mul.comm]
-
-    definition ab_group_equiv_closed : ab_group B :=
-    ⦃ab_group, group_equiv_closed f,
-      mul_comm := group_equiv_mul_comm f⦄
-  end
-
-  definition ab_group_of_is_contr (A : Type) [is_contr A] : ab_group A :=
-  have ab_group unit, from ab_group_unit,
-  ab_group_equiv_closed (equiv_unit_of_is_contr A)⁻¹ᵉ
-
-  definition group_of_is_contr (A : Type) [is_contr A] : group A :=
-  have ab_group A, from ab_group_of_is_contr A, by apply _
-
-  definition ab_group_lift_unit : ab_group (lift unit) :=
-  ab_group_of_is_contr (lift unit)
-
-  definition trivial_ab_group_lift : AbGroup :=
-  AbGroup.mk _ ab_group_lift_unit
-
-  definition homomorphism_of_is_contr_right (A : Group) {B : Type} (H : is_contr B) :
-    A →g Group.mk B (group_of_is_contr B) :=
-  group.homomorphism.mk (λa, center _) (λa a', !is_prop.elim)
-
-  definition ab_group_homotopy_group_of_is_conn (n : ℕ) (A : Type*) [H : is_conn 1 A] : ab_group (π[n] A) :=
-  begin
-    have is_conn 0 A, from !is_conn_of_is_conn_succ,
-    cases n with n,
-    { unfold [homotopy_group, ptrunc], apply ab_group_of_is_contr },
-    cases n with n,
-    { unfold [homotopy_group, ptrunc], apply ab_group_of_is_contr },
-    exact ab_group_homotopy_group n A
-  end
 
   definition homotopy_group_conn_nat (n : ℕ) (A : Type*[1]) : AbGroup :=
   AbGroup.mk (π[n] A) (ab_group_homotopy_group_of_is_conn n A)
@@ -437,19 +508,6 @@ end pointed
 namespace spectrum
   open pointed int group is_trunc trunc is_conn prod prod.ops group fin chain_complex
   section
---  notation `πₛ→[`:95 n:0 `]`:0 := shomotopy_group_fun n
-
-  definition is_equiv_mul_right [constructor] {A : Group} (a : A) : is_equiv (λb, b * a) :=
-  adjointify _ (λb : A, b * a⁻¹) (λb, !inv_mul_cancel_right) (λb, !mul_inv_cancel_right)
-
-  definition right_action [constructor] {A : Group} (a : A) : A ≃ A :=
-  equiv.mk _ (is_equiv_mul_right a)
-
-  definition is_equiv_add_right [constructor] {A : AddGroup} (a : A) : is_equiv (λb, b + a) :=
-  adjointify _ (λb : A, b - a) (λb, !neg_add_cancel_right) (λb, !add_neg_cancel_right)
-
-  definition add_right_action [constructor] {A : AddGroup} (a : A) : A ≃ A :=
-  equiv.mk _ (is_equiv_add_right a)
 
   parameters {A : ℤ → spectrum} (f : Π(s : ℤ), A s →ₛ A (s - 1))
 
@@ -467,8 +525,6 @@ namespace spectrum
     fapply graded_hom.mk, exact (prod_equiv_prod erfl (add_right_action (- 1))),
     intro v, induction v with n s,
     apply lm_hom_int.mk, esimp,
-    -- exact homomorphism.mk _ (is_mul_hom_LES_of_shomotopy_groups (f s) (n, 0)),
---    exact shomotopy_groups_fun (f s) (n, 0)
     exact πₛ→[n] (f s)
   end
 
@@ -486,41 +542,89 @@ namespace spectrum
     fapply graded_hom.mk erfl,
     intro v, induction v with n s,
     apply lm_hom_int.mk, esimp,
-    -- exact homomorphism.mk _ (is_mul_hom_LES_of_shomotopy_groups (f s) (n, 1)),
-    -- exact shomotopy_groups_fun (f s) (n, 1)
     exact πₛ→[n] (spoint (f s))
   end
 
   lemma ij_sequence : is_exact_gmod i_sequence j_sequence :=
   begin
-    intro i, induction i with n s,
-    revert n, refine equiv_rect (add_right_action 1) _ _, intro n,
-    esimp, intro j k p, unfold [i_sequence] at p,
-    -- induction p,
-    intro q, unfold [j_sequence] at q,
-    note qq := left_inv (deg j_sequence) (n, s),
-    unfold [j_sequence] at qq,
-    revert k q,
-    --refine eq.rec_to2 qq _ _
-    --intro i j k p q,
-
---    revert k q,
+    intro x y z p q,
+    revert y z q p,
+    refine eq.rec_right_inv (deg j_sequence) _,
+    intro y, induction x with n s, induction y with m t,
+    refine equiv_rect !dpair_eq_dpair_equiv⁻¹ᵉ _ _,
+    intro pq, esimp at pq, induction pq with p q,
+    revert t q, refine eq.rec_equiv (add_right_action (- 1)) _,
+    induction p using eq.rec_symm,
+    apply is_exact_homotopy homotopy.rfl,
+    { symmetry, intro, apply graded_hom_mk_out'_left_inv },
+    rexact is_exact_of_is_exact_at (is_exact_LES_of_shomotopy_groups (f s) (m, 2)),
+    -- exact sorry
   end
 
   lemma jk_sequence : is_exact_gmod j_sequence k_sequence :=
-  sorry
+  begin
+    intro x y z p q, induction q,
+    revert x y p, refine eq.rec_right_inv (deg j_sequence) _,
+    intro x, induction x with n s,
+    apply is_exact_homotopy,
+    { symmetry, intro, apply graded_hom_mk_out'_left_inv },
+    { reflexivity },
+    rexact is_exact_of_is_exact_at (is_exact_LES_of_shomotopy_groups (f s) (n, 1)),
+  end
 
-local attribute i_sequence [reducible]
   lemma ki_sequence : is_exact_gmod k_sequence i_sequence :=
   begin
---    unfold [is_exact_gmod, is_exact_mod],
     intro i j k p q, induction p, induction q, induction i with n s,
     rexact is_exact_of_is_exact_at (is_exact_LES_of_shomotopy_groups (f s) (n, 0)),
   end
 
-
-  definition exact_couple_sequence : exact_couple rℤ I :=
+  definition exact_couple_sequence [constructor] : exact_couple rℤ I :=
   exact_couple.mk D_sequence E_sequence i_sequence j_sequence k_sequence ij_sequence jk_sequence ki_sequence
+
+  open int
+  parameters (ub : ℤ) (lb : ℤ → ℤ)
+    (Aub : Πs n, s ≥ ub → is_contr (A s n))
+    (Alb : Πs n, s ≤ lb n → is_contr (πₛ[n] (A s)))
+
+  definition B : I → ℕ
+  | (n, s) := max0 (s - lb n)
+
+  definition B' : I → ℕ
+  | (n, s) := max0 (ub - s)
+
+  lemma iterate_deg_i (n s : ℤ) (m : ℕ) : (deg i_sequence)^[m] (n, s) = (n, s - m) :=
+  begin
+    induction m with m IH,
+    { exact prod_eq idp !sub_zero⁻¹ },
+    { exact ap (deg i_sequence) IH ⬝ (prod_eq idp !sub_sub) }
+  end
+
+  include Aub Alb
+  lemma Dub ⦃x : I⦄ ⦃t : ℕ⦄ (h : B x ≤ t) : is_contr (D_sequence ((deg i_sequence)^[t] x)) :=
+  begin
+    -- apply is_contr_homotopy_group_of_is_contr,
+    apply Alb, induction x with n s, rewrite [iterate_deg_i],
+    apply sub_le_of_sub_le,
+    exact le_of_max0_le h,
+  end
+
+  lemma Eub ⦃x : I⦄ ⦃s : ℕ⦄ (H : B x ≤ s) : is_contr (E_sequence ((deg i_sequence)^[s] x)) :=
+  begin
+    exact sorry
+  end
+
+  lemma Dlb ⦃x : I⦄ ⦃s : ℕ⦄ (H : B' x ≤ s) : is_surjective (i_sequence ((deg i_sequence)⁻¹ᵉ^[s+1] x)) :=
+  begin
+    exact sorry
+  end
+
+  lemma Elb ⦃x : I⦄ ⦃s : ℕ⦄ (H : B x ≤ s) : is_contr (E_sequence ((deg i_sequence)⁻¹ᵉ^[s] x)) :=
+  begin
+    exact sorry
+  end
+
+  -- definition is_bounded_sequence : is_bounded exact_couple_sequence :=
+  -- is_bounded.mk_commute B B' Dub Eub Dlb Elb (by reflexivity) sorry
 
   end
 

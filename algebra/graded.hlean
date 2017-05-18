@@ -119,7 +119,7 @@ definition graded_hom_mk_refl (d : I ≃ I)
   (fn : Πi, M₁ i →lm M₂ (d i)) {i : I} (m : M₁ i) : graded_hom.mk d fn i m = fn i m :=
 by reflexivity
 
-definition graded_hom_mk_out'_left_inv (d : I ≃ I)
+lemma graded_hom_mk_out'_left_inv (d : I ≃ I)
   (fn : Πi, M₁ (d i) →lm M₂ i) {i : I} (m : M₁ (d i)) :
   graded_hom.mk_out' d fn ↘ (left_inv d i) m = fn i m :=
 begin
@@ -127,6 +127,13 @@ begin
   apply ap (λx, fn i (cast x m)),
   refine !ap_compose⁻¹ ⬝ ap02 _ _,
   apply is_set.elim --we can also prove this in arbitrary types
+end
+
+lemma graded_hom_mk_out_right_inv (d : I ≃ I)
+  (fn : Πi, M₁ (d⁻¹ i) →lm M₂ i) {i : I} (m : M₁ (d⁻¹ i)) :
+  graded_hom.mk_out d fn ↘ (right_inv d i) m = fn i m :=
+begin
+  rexact graded_hom_mk_out'_left_inv d⁻¹ᵉ fn m
 end
 
 definition graded_hom_eq_zero {f : M₁ →gm M₂} {i j k : I} {q : deg f i = j} {p : deg f i = k}

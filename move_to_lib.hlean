@@ -28,6 +28,24 @@ definition is_exact_g.mk {A B C : Group} {f : A →g B} {g : B →g C}
   (H₁ : Πa, g (f a) = 1) (H₂ : Πb, g b = 1 → image f b) : is_exact_g f g :=
 is_exact.mk H₁ H₂
 
+-- TO DO: give less univalency proof
+definition is_exact_homotopy {A B : Type} {C : Type*} {f f' : A → B} {g g' : B → C}
+  (p : f ~ f') (q : g ~ g') (H : is_exact f g) : is_exact f' g' :=
+begin
+  induction p using homotopy.rec_on_idp,
+  induction q using homotopy.rec_on_idp,
+  exact H
+end
+
+definition is_contr_middle_of_is_exact {A B : Type} {C : Type*} {f : A → B} {g : B → C} (H : is_exact f g)
+  [is_contr A] [is_set B] [is_contr C] : is_contr B :=
+begin
+  apply is_contr.mk (f pt),
+  intro b,
+  induction is_exact.ker_in_im H b !is_prop.elim,
+  exact ap f !is_prop.elim ⬝ p
+end
+
 namespace algebra
   definition ab_group_unit [constructor] : ab_group unit :=
   ⦃ab_group, trivial_group, mul_comm := λx y, idp⦄
@@ -78,6 +96,38 @@ namespace eq
     {a₀ a₀' a₁' : A} (p' : a₀' = a₁') (p₀ : a₀ = a₀') (H : P p') ⦃a₁ : A⦄ (p : a₀ = a₁) : P p :=
   begin
    induction p₀, induction p', induction p, exact H
+  end
+
+  definition eq.rec_right_inv {A : Type} (f : A ≃ A) {P : Π⦃a₀ a₁⦄, f a₀ = a₁ → Type}
+    (H : Πa, P (right_inv f a)) ⦃a₀ a₁ : A⦄ (p : f a₀ = a₁) : P p :=
+  begin
+    revert a₀ p, refine equiv_rect f⁻¹ᵉ _ _,
+    intro a₀ p, exact eq.rec_to (right_inv f a₀) (H a₀) p,
+  end
+
+  definition eq.rec_equiv {A B : Type} {a₀ : A} (f : A ≃ B) {P : Π⦃a₁⦄, f a₀ = f a₁ → Type}
+    (H : P (idpath (f a₀))) ⦃a₁ : A⦄ (p : f a₀ = f a₁) : P p :=
+  begin
+--    induction f using equiv.rec_on_ua_idp, esimp at *, induction p, exact H
+    revert a₁ p, refine equiv_rect f⁻¹ᵉ _ _, intro b p,
+    refine transport (@P _) (!con_inv_cancel_right) _,
+    exact b, exact right_inv f b,
+    generalize p ⬝ right_inv f b,
+    clear p, intro q, induction q,
+    exact sorry
+  end
+
+  definition eq.rec_symm {A : Type} {a₀ : A} {P : Π⦃a₁⦄, a₁ = a₀ → Type}
+    (H : P idp) ⦃a₁ : A⦄ (p : a₁ = a₀) : P p :=
+  begin
+    cases p, exact H
+  end
+
+  definition is_contr_homotopy_group_of_is_contr (A : Type*) (n : ℕ) [is_contr A] : is_contr (π[n] A) :=
+  begin
+    apply is_trunc_trunc_of_is_trunc,
+    apply is_contr_loop_of_is_trunc,
+    apply is_trunc_of_is_contr
   end
 
 section -- squares
