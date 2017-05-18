@@ -108,6 +108,13 @@ definition differential_is_differential {A B : AbGroup} (EC : exact_couple A B) 
 
 section derived_couple
 
+/-
+   A - i -> A
+ k ^        |
+   |        v j
+   B ====== B
+-/
+
   parameters {A B : AbGroup} (EC : exact_couple A B)
   local abbreviation i := exact_couple.i EC
   local abbreviation j := exact_couple.j EC
@@ -131,11 +138,9 @@ definition SES_of_exact_couple_at_i : SES (ab_kernel i) A (ab_image i) :=
   fapply ab_group_first_iso_thm i,
   end
 
-definition kj_zero (a : A) : k (j a) = 1 :=
-  begin
-    exact sorry
-  end
-
+definition kj_zero (a : A) : k (j a) = 1 := 
+is_exact.im_in_ker (exact_couple.exact_jk EC) a
+ 
 definition j_factor : A →g (ab_kernel d) := 
 begin
   fapply ab_hom_lift j,
@@ -146,7 +151,6 @@ begin
        ...  = j 1 : by exact ap j (kj_zero a)
        ...  = 1   : to_respect_one,
 end
-
 
 definition derived_couple_j : derived_couple_A EC →g derived_couple_B EC :=
   begin
