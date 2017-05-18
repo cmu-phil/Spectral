@@ -469,6 +469,22 @@ definition ab_image_lift [constructor] {G H : AbGroup} (f : G →g H) : G →g i
     fapply is_embedding_subgroup_of_subgroup_incl,
   end
 
+  definition ab_subgroup_iso {A : AbGroup} {R S : subgroup_rel A} (H : Π (a : A), R a -> S a) (K : Π (a : A), S a -> R a) : 
+    ab_subgroup R ≃g ab_subgroup S :=
+  begin
+    fapply isomorphism.mk,
+    exact subgroup_of_subgroup_incl H,
+    fapply is_equiv.adjointify,
+    exact subgroup_of_subgroup_incl K,
+    intro s, induction s with a p, fapply subtype_eq, reflexivity,
+    intro r, induction r with a p, fapply subtype_eq, reflexivity
+  end
+
+  definition ab_subgroup_iso_triangle {A : AbGroup} {R S : subgroup_rel A} (H : Π (a : A), R a -> S a) (K : Π (a : A), S a -> R a) : incl_of_subgroup R  ~ incl_of_subgroup S ∘g ab_subgroup_iso H K :=
+  begin
+    intro r, induction r, reflexivity
+  end 
+
 end group
 
 open group
