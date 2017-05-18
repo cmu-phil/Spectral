@@ -152,6 +152,27 @@ begin
        ...  = 1   : to_respect_one,
 end
 
+definition subgroup_iso_exact_at_A : ab_kernel i ≃g ab_image k :=
+  begin
+  fapply ab_subgroup_iso,
+  intro a,
+  induction EC,
+  induction exact_ki,
+  exact ker_in_im a,
+  intro a b, induction b with f, induction f with b p, induction p,
+  induction EC,
+  induction exact_ki,
+  exact im_in_ker b,
+  end  
+
+definition subgroup_iso_exact_at_A_triangle : ab_kernel_incl i ~ ab_image_incl k ∘g subgroup_iso_exact_at_A :=
+  begin
+    fapply ab_subgroup_iso_triangle,
+    intro a b, induction b with f, induction f with b p, induction p,
+    induction EC, induction exact_ki, exact im_in_ker b,
+  end
+
+definition 
 definition derived_couple_j : derived_couple_A EC →g derived_couple_B EC :=
   begin
   exact sorry,
