@@ -392,6 +392,18 @@ definition ab_image_lift [constructor] {G H : AbGroup} (f : G →g H) : G →g i
     exact to_respect_mul f₂ g g'
   end
 
+  definition image_homomorphism {A B C : AbGroup} (f : A →g B) (g : B →g C) :
+    ab_image f →g ab_image (g ∘g f) :=
+  begin
+    fapply image_elim,
+    exact image_lift (g ∘g f),
+    intro a p,
+    fapply subtype_eq, unfold image_lift,
+    exact calc
+      g (f a) = g 1 : by exact ap g p
+         ...  = 1   : to_respect_one,
+  end
+
   end
 
   variables {G H K : Group} {R : subgroup_rel G} {S : subgroup_rel H} {T : subgroup_rel K}
