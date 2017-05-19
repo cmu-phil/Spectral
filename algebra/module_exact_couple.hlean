@@ -241,34 +241,31 @@ namespace left_module
     ij := i'j' X, jk := j'k' X, ki := k'i' X⦄
 
   structure is_bounded {R : Ring} {I : Set} (X : exact_couple R I) : Type :=
-    (B B' : I → ℕ)
+  mk' :: (B B' : I → ℕ)
     (Dub : Π⦃x y⦄ ⦃s : ℕ⦄, (deg (i X))^[s] x = y → B x ≤ s → is_contr (D X y))
-    (Eub : Π⦃x y⦄ ⦃s : ℕ⦄, (deg (i X))^[s] x = y → B x ≤ s → is_contr (E X y))
     (Dlb : Π⦃x y z⦄ ⦃s : ℕ⦄ (p : deg (i X) x = y), (deg (i X))^[s] y = z → B' z ≤ s → is_surjective (i X ↘ p))
     (Elb : Π⦃x y⦄ ⦃s : ℕ⦄, (deg (i X))⁻¹ᵉ^[s] x = y → B x ≤ s → is_contr (E X y))
     (deg_ik_commute : hsquare (deg (k X)) (deg (k X)) (deg (i X)) (deg (i X)))
     (deg_ij_commute : hsquare (deg (j X)) (deg (j X)) (deg (i X)) (deg (i X)))
 
---   definition is_bounded.mk_commute {R : Ring} {I : Set} {X : exact_couple R I}
---     (B B' : I → ℕ)
---     (Dub : Π⦃x : I⦄ ⦃s : ℕ⦄, B x ≤ s → is_contr (D X ((deg (i X))^[s] x)))
---     (Eub : Π⦃x : I⦄ ⦃s : ℕ⦄, B x ≤ s → is_contr (E X ((deg (i X))^[s] x)))
---     (Dlb : Π⦃x : I⦄ ⦃s : ℕ⦄, B' x ≤ s → is_surjective (i X (((deg (i X))⁻¹ᵉ^[s + 1] x))))
---     (Elb : Π⦃x : I⦄ ⦃s : ℕ⦄, B x ≤ s → is_contr (E X ((deg (i X))⁻¹ᵉ^[s] x)))
---     (deg_ik_commute : deg (i X) ∘ deg (k X) ~ deg (k X) ∘ deg (i X))
---     (deg_ij_commute : deg (i X) ∘ deg (j X) ~ deg (j X) ∘ deg (i X)) : is_bounded X :=
---   begin
---     apply is_bounded.mk B B',
---     { intro x y s p h, induction p, exact Dub h },
---     { intro x y s p h, induction p,
---       refine @(is_contr_middle_of_is_exact (exact_couple.jk X (right_inv (deg (j X)) _) idp)) _ _ _,
-
---      --refine transport (λx, is_contr (E X x)) _ (Eub h), exact sorry
--- },
---     { exact sorry },
---     { exact sorry },
---     { assumption },
---   end
+/- Note: Elb proves Dlb for some bound B', but we want tight control over when B' = 0 -/
+  definition is_bounded.mk [constructor] {R : Ring} {I : Set} {X : exact_couple R I}
+    (B B' B'' : I → ℕ)
+    (Dub : Π⦃x : I⦄ ⦃s : ℕ⦄, B x ≤ s → is_contr (D X ((deg (i X))^[s] x)))
+    (Dlb : Π⦃x : I⦄ ⦃s : ℕ⦄, B' x ≤ s → is_surjective (i X (((deg (i X))⁻¹ᵉ^[s + 1] x))))
+    (Elb : Π⦃x : I⦄ ⦃s : ℕ⦄, B'' x ≤ s → is_contr (E X ((deg (i X))⁻¹ᵉ^[s] x)))
+    (deg_ik_commute : hsquare (deg (k X)) (deg (k X)) (deg (i X)) (deg (i X)))
+    (deg_ij_commute : hsquare (deg (j X)) (deg (j X)) (deg (i X)) (deg (i X))) : is_bounded X :=
+  begin
+    apply is_bounded.mk' (λx, max (B x) (B'' x)) B',
+    { intro x y s p h, induction p, exact Dub (le.trans !le_max_left h) },
+    { intro x y z s p q h, induction p, induction q,
+      refine transport (λx, is_surjective (i X x)) _ (Dlb h),
+      rewrite [-iterate_succ], apply iterate_left_inv },
+    { intro x y s p h, induction p, exact Elb (le.trans !le_max_right h) },
+    { assumption },
+    { assumption }
+  end
 
   open is_bounded
   parameters {R : Ring} {I : Set} (X : exact_couple R I) (HH : is_bounded X)
@@ -276,7 +273,6 @@ namespace left_module
   local abbreviation B := B HH
   local abbreviation B' := B' HH
   local abbreviation Dub := Dub HH
-  local abbreviation Eub := Eub HH
   local abbreviation Dlb := Dlb HH
   local abbreviation Elb := Elb HH
   local abbreviation deg_ik_commute := deg_ik_commute HH
@@ -289,6 +285,16 @@ namespace left_module
   definition deg_iterate_ij_commute (n : ℕ) :
     hsquare (deg (j X)) (deg (j X)) ((deg (i X))⁻¹ᵉ^[n]) ((deg (i X))⁻¹ᵉ^[n]) :=
   iterate_commute n (hvinverse deg_ij_commute)
+
+  definition B2 (x : I) : ℕ := max (B (deg (k X) x)) (B ((deg (j X))⁻¹ x))
+  definition Eub ⦃x y : I⦄ ⦃s : ℕ⦄ (p : (deg (i X))^[s] x = y) (h : B2 x ≤ s) :
+    is_contr (E X y) :=
+  begin
+    induction p,
+    refine @(is_contr_middle_of_is_exact (exact_couple.jk X (right_inv (deg (j X)) _) idp)) _ _ _,
+    exact Dub (iterate_commute s (hhinverse deg_ij_commute) x) (le.trans !le_max_right h),
+    exact Dub !deg_iterate_ik_commute (le.trans !le_max_left h)
+  end
 
   -- we start counting pages at 0, not at 2.
   definition page (r : ℕ) : exact_couple R I :=
@@ -340,11 +346,10 @@ namespace left_module
     (deg (d (page r)))⁻¹ ~ (deg (k X))⁻¹ ∘ iterate (deg (i X)) r ∘ (deg (j X))⁻¹ :=
   compose2 (to_inv_homotopy_to_inv (deg_k r)) (deg_j_inv r)
 
-  definition B2 (x : I) : ℕ :=
-  max (B (deg (j X) (deg (k X) x))) (B ((deg (k X))⁻¹ ((deg (j X))⁻¹ x)))
+  definition B3 (x : I) : ℕ :=
+  max (B (deg (j X) (deg (k X) x))) (B2 ((deg (k X))⁻¹ ((deg (j X))⁻¹ x)))
 
-  include Elb Eub
-  definition Estable {x : I} {r : ℕ} (H : B2 x ≤ r) :
+  definition Estable {x : I} {r : ℕ} (H : B3 x ≤ r) :
     E (page (r + 1)) x ≃lm E (page r) x :=
   begin
     change homology (d (page r) x) (d (page r) ← x) ≃lm E (page r) x,
@@ -355,13 +360,17 @@ namespace left_module
               (le.trans !le_max_left H)
   end
 
-  include Dlb
   definition is_surjective_i {x y z : I} {r s : ℕ} (H : B' z ≤ s + r)
     (p : deg (i (page r)) x = y) (q : iterate (deg (i X)) s y = z) :
     is_surjective (i (page r) ↘ p) :=
   begin
     revert x y z s H p q, induction r with r IH: intro x y z s H p q,
-    { exact Dlb p q H  },
+    { exact Dlb p q H },
+-- the following is a start of the proof that i is surjective from the contractibility of E
+      -- induction p, change is_surjective (i X x),
+      -- apply @(is_surjective_of_is_exact_of_is_contr (exact_couple.ij X idp idp)),
+      -- refine Elb _ H,
+      -- exact sorry
     { change is_surjective (i' (page r) ↘ p),
       apply is_surjective_i', intro z' q',
       refine IH _ _ _ _ (le.trans H (le_of_eq (succ_add s r)⁻¹)) _ _,
@@ -379,12 +388,12 @@ namespace left_module
   end
 
   definition Einf : graded_module R I :=
-  λx, E (page (B2 x)) x
+  λx, E (page (B3 x)) x
 
   definition Dinf : graded_module R I :=
   λx, D (page (B' x)) x
 
-  definition Einfstable {x y : I} {r : ℕ} (Hr : B2 y ≤ r) (p : x = y) : Einf y ≃lm E (page r) x :=
+  definition Einfstable {x y : I} {r : ℕ} (Hr : B3 y ≤ r) (p : x = y) : Einf y ≃lm E (page r) x :=
   by symmetry; induction p; induction Hr with r Hr IH; reflexivity; exact Estable Hr ⬝lm IH
 
   definition Dinfstable {x y : I} {r : ℕ} (Hr : B' y ≤ r) (p : x = y) : Dinf y ≃lm D (page r) x :=
@@ -393,7 +402,7 @@ namespace left_module
   parameters {x : I}
 
   definition r (n : ℕ) : ℕ :=
-  max (max (B (deg (j X) (deg (k X) x)) + n + 1) (B2 ((deg (i X))^[n] x)))
+  max (max (B (deg (j X) (deg (k X) x)) + n + 1) (B3 ((deg (i X))^[n] x)))
       (max (B' (deg (k X) ((deg (i X))^[n] x)))
            (max (B' (deg (k X) ((deg (i X))^[n+1] x))) (B ((deg (j X))⁻¹ ((deg (i X))^[n] x)))))
 
@@ -401,7 +410,7 @@ namespace left_module
   ge.trans !le_max_left (ge.trans !le_max_left !le_add_left)
   lemma rb1 (n : ℕ) : B (deg (j X) (deg (k X) x)) ≤ r n - (n + 1) :=
   le_sub_of_add_le (le.trans !le_max_left !le_max_left)
-  lemma rb2 (n : ℕ) : B2 ((deg (i X))^[n] x) ≤ r n :=
+  lemma rb2 (n : ℕ) : B3 ((deg (i X))^[n] x) ≤ r n :=
   le.trans !le_max_right !le_max_left
   lemma rb3 (n : ℕ) : B' (deg (k X) ((deg (i X))^[n] x)) ≤ r n :=
   le.trans !le_max_left !le_max_right
@@ -416,7 +425,6 @@ namespace left_module
   definition Dinfdiag : graded_module R ℕ :=
   λn, Dinf (deg (k X) ((deg (i X))^[n] x))
 
-  include deg_ik_commute Dub
   definition short_exact_mod_page_r (n : ℕ) : short_exact_mod
     (E (page (r n)) ((deg (i X))^[n] x))
     (D (page (r n)) (deg (k (page (r n))) ((deg (i X))^[n] x)))
@@ -497,8 +505,8 @@ namespace pointed
   definition E_sequence : graded_module rℤ I :=
   λv, LeftModule_int_of_AbGroup (πag'[v.2] (pconntype.mk (pfiber (f (v.1))) !Hf pt))
 
-  definition exact_couple_sequence : exact_couple rℤ I :=
-  exact_couple.mk D_sequence E_sequence sorry sorry sorry sorry sorry sorry
+  -- definition exact_couple_sequence : exact_couple rℤ I :=
+  -- exact_couple.mk D_sequence E_sequence sorry sorry sorry sorry sorry sorry
 
   end
 
@@ -523,9 +531,9 @@ namespace spectrum
   definition i_sequence : D_sequence →gm D_sequence :=
   begin
     fapply graded_hom.mk, exact (prod_equiv_prod erfl (add_right_action (- 1))),
-    intro v, induction v with n s,
+    intro v,
     apply lm_hom_int.mk, esimp,
-    exact πₛ→[n] (f s)
+    exact πₛ→[v.1] (f v.2)
   end
 
   definition j_sequence : D_sequence →gm E_sequence :=
@@ -551,14 +559,13 @@ namespace spectrum
     revert y z q p,
     refine eq.rec_right_inv (deg j_sequence) _,
     intro y, induction x with n s, induction y with m t,
-    refine equiv_rect !dpair_eq_dpair_equiv⁻¹ᵉ _ _,
+    refine equiv_rect !pair_eq_pair_equiv⁻¹ᵉ _ _,
     intro pq, esimp at pq, induction pq with p q,
     revert t q, refine eq.rec_equiv (add_right_action (- 1)) _,
     induction p using eq.rec_symm,
     apply is_exact_homotopy homotopy.rfl,
     { symmetry, intro, apply graded_hom_mk_out'_left_inv },
     rexact is_exact_of_is_exact_at (is_exact_LES_of_shomotopy_groups (f s) (m, 2)),
-    -- exact sorry
   end
 
   lemma jk_sequence : is_exact_gmod j_sequence k_sequence :=
@@ -579,11 +586,12 @@ namespace spectrum
   end
 
   definition exact_couple_sequence [constructor] : exact_couple rℤ I :=
-  exact_couple.mk D_sequence E_sequence i_sequence j_sequence k_sequence ij_sequence jk_sequence ki_sequence
+  exact_couple.mk D_sequence E_sequence i_sequence j_sequence k_sequence
+                  ij_sequence jk_sequence ki_sequence
 
   open int
   parameters (ub : ℤ) (lb : ℤ → ℤ)
-    (Aub : Πs n, s ≥ ub → is_contr (A s n))
+    (Aub : Πs n, s ≥ ub + 1 → is_equiv (f s n))
     (Alb : Πs n, s ≤ lb n → is_contr (πₛ[n] (A s)))
 
   definition B : I → ℕ
@@ -592,6 +600,9 @@ namespace spectrum
   definition B' : I → ℕ
   | (n, s) := max0 (ub - s)
 
+  definition B'' : I → ℕ
+  | (n, s) := max0 (ub + 1 - s)
+
   lemma iterate_deg_i (n s : ℤ) (m : ℕ) : (deg i_sequence)^[m] (n, s) = (n, s - m) :=
   begin
     induction m with m IH,
@@ -599,36 +610,51 @@ namespace spectrum
     { exact ap (deg i_sequence) IH ⬝ (prod_eq idp !sub_sub) }
   end
 
+  lemma iterate_deg_i_inv (n s : ℤ) (m : ℕ) : (deg i_sequence)⁻¹ᵉ^[m] (n, s) = (n, s + m) :=
+  begin
+    induction m with m IH,
+    { exact prod_eq idp !add_zero⁻¹ },
+    { exact ap (deg i_sequence)⁻¹ᵉ IH ⬝ (prod_eq idp !add.assoc) }
+  end
+
   include Aub Alb
   lemma Dub ⦃x : I⦄ ⦃t : ℕ⦄ (h : B x ≤ t) : is_contr (D_sequence ((deg i_sequence)^[t] x)) :=
   begin
-    -- apply is_contr_homotopy_group_of_is_contr,
     apply Alb, induction x with n s, rewrite [iterate_deg_i],
     apply sub_le_of_sub_le,
     exact le_of_max0_le h,
   end
 
-  lemma Eub ⦃x : I⦄ ⦃s : ℕ⦄ (H : B x ≤ s) : is_contr (E_sequence ((deg i_sequence)^[s] x)) :=
+  lemma Dlb ⦃x : I⦄ ⦃t : ℕ⦄ (h : B' x ≤ t) :
+    is_surjective (i_sequence ((deg i_sequence)⁻¹ᵉ^[t+1] x)) :=
   begin
-    exact sorry
+    apply is_surjective_of_is_equiv,
+    apply is_equiv_homotopy_group_functor,
+    apply Aub, induction x with n s,
+    rewrite [iterate_deg_i_inv, ▸*, of_nat_add, -add.assoc],
+    apply add_le_add_right,
+    apply le_add_of_sub_left_le,
+    exact le_of_max0_le h
   end
 
-  lemma Dlb ⦃x : I⦄ ⦃s : ℕ⦄ (H : B' x ≤ s) : is_surjective (i_sequence ((deg i_sequence)⁻¹ᵉ^[s+1] x)) :=
+  lemma Elb ⦃x : I⦄ ⦃t : ℕ⦄ (h : B'' x ≤ t) : is_contr (E_sequence ((deg i_sequence)⁻¹ᵉ^[t] x)) :=
   begin
-    exact sorry
+    apply is_contr_homotopy_group_of_is_contr,
+    apply is_contr_fiber_of_is_equiv,
+    apply Aub, induction x with n s,
+    rewrite [iterate_deg_i_inv, ▸*],
+    apply le_add_of_sub_left_le,
+    apply le_of_max0_le h,
   end
 
-  lemma Elb ⦃x : I⦄ ⦃s : ℕ⦄ (H : B x ≤ s) : is_contr (E_sequence ((deg i_sequence)⁻¹ᵉ^[s] x)) :=
-  begin
-    exact sorry
+  definition is_bounded_sequence [constructor] : is_bounded exact_couple_sequence :=
+  is_bounded.mk B B' B'' Dub Dlb Elb
+    (by intro x; reflexivity)
+    begin
+      intro x, induction x with n s, apply pair_eq, esimp, esimp, esimp [j_sequence, i_sequence],
+      refine !add.assoc ⬝ ap (add s) !add.comm ⬝ !add.assoc⁻¹,
+    end
+
   end
-
-  -- definition is_bounded_sequence : is_bounded exact_couple_sequence :=
-  -- is_bounded.mk_commute B B' Dub Eub Dlb Elb (by reflexivity) sorry
-
-  end
-
-
-
 
 end spectrum

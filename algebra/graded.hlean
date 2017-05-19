@@ -28,6 +28,13 @@ open is_trunc algebra eq left_module pointed function equiv is_equiv prod group 
     iterate f n ∘ g ~ g ∘ iterate f n :=
   by induction n with n IH; reflexivity; exact λx, ap f (IH x) ⬝ !h
 
+  -- definition iterate_left_inv {A : Type} (f : A ≃ A) (n : ℕ) : Πa, f⁻¹ᵉ^[n] (f^[n] a) = a :=
+  -- begin
+  --   induction n with n p: intro a,
+  --     reflexivity,
+  --     exact ap f⁻¹ᵉ (ap (f⁻¹ᵉ^[n]) (iterate_succ f n a) ⬝ p (f a)) ⬝ left_inv f a,
+  -- end
+
   definition iterate_equiv {A : Type} (f : A ≃ A) (n : ℕ) : A ≃ A :=
   equiv.mk (iterate f n)
            (by induction n with n IH; apply is_equiv_id; exact is_equiv_compose f (iterate f n))
@@ -39,6 +46,12 @@ open is_trunc algebra eq left_module pointed function equiv is_equiv prod group 
       reflexivity,
       exact p (f⁻¹ a) ⬝ !iterate_succ⁻¹
   end
+
+  definition iterate_left_inv {A : Type} (f : A ≃ A) (n : ℕ) (a : A) : f⁻¹ᵉ^[n] (f^[n] a) = a :=
+  (iterate_inv f n (f^[n] a))⁻¹ ⬝ to_left_inv (iterate_equiv f n) a
+
+  definition iterate_right_inv {A : Type} (f : A ≃ A) (n : ℕ) (a : A) : f^[n] (f⁻¹ᵉ^[n] a) = a :=
+  ap (f^[n]) (iterate_inv f n a)⁻¹ ⬝ to_right_inv (iterate_equiv f n) a
 
 namespace left_module
 

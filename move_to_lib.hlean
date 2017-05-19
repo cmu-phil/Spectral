@@ -46,6 +46,10 @@ begin
   exact ap f !is_prop.elim ⬝ p
 end
 
+definition is_surjective_of_is_exact_of_is_contr {A B : Type} {C : Type*} {f : A → B} {g : B → C}
+  (H : is_exact f g) [is_contr C] : is_surjective f :=
+λb, is_exact.ker_in_im H b !is_prop.elim
+
 namespace algebra
   definition ab_group_unit [constructor] : ab_group unit :=
   ⦃ab_group, trivial_group, mul_comm := λx y, idp⦄
@@ -1219,8 +1223,9 @@ section
 end
 
 definition iterate_succ {A : Type} (f : A → A) (n : ℕ) (x : A) :
-  iterate f (succ n) x = iterate f n (f x) :=
+  f^[succ n] x = f^[n] (f x) :=
 by induction n with n p; reflexivity; exact ap f p
+
 
 /- put somewhere in algebra -/
 
