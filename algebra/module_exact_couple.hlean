@@ -2,19 +2,13 @@
 
 -- Author: Floris van Doorn
 
-import .graded ..homotopy.spectrum .product_group --types.int.order
+import .graded ..homotopy.spectrum .product_group
 
 open algebra is_trunc left_module is_equiv equiv eq function nat
 
 -- move
 section
   open group int chain_complex pointed succ_str
-  definition LeftModule_int_of_AbGroup [constructor] (A : AbGroup) : LeftModule rℤ :=
-  LeftModule.mk A (left_module.mk sorry sorry sorry sorry 1 sorry sorry sorry sorry sorry sorry sorry sorry sorry)
-
-  definition lm_hom_int.mk [constructor] {A B : AbGroup} (φ : A →g B) :
-    LeftModule_int_of_AbGroup A →lm LeftModule_int_of_AbGroup B :=
- homomorphism.mk φ sorry
 
   definition is_exact_of_is_exact_at {N : succ_str} {A : chain_complex N} {n : N}
     (H : is_exact_at A n) : is_exact (cc_to_fn A (S n)) (cc_to_fn A n) :=

@@ -7,7 +7,7 @@ Modules prod vector spaces over a ring.
 
 (We use "left_module," which is more precise, because "module" is a keyword.)
 -/
-import algebra.field ..move_to_lib .is_short_exact
+import algebra.field ..move_to_lib .is_short_exact algebra.group_power
 open is_trunc pointed function sigma eq algebra prod is_equiv equiv group
 
 structure has_scalar [class] (F V : Type) :=
@@ -183,21 +183,17 @@ definition left_module_AddAbGroup_of_LeftModule [instance] {R : Ring} (M : LeftM
   left_module R (AddAbGroup_of_LeftModule M) :=
 LeftModule.struct M
 
-definition left_module_of_ab_group (G : Type) [gG : add_ab_group G] (R : Type) [ring R]
+definition left_module_of_ab_group {G : Type} [gG : add_ab_group G] {R : Type} [ring R]
   (smul : R → G → G)
   (h1 : Π (r : R) (x y : G), smul r (x + y) = (smul r x + smul r y))
   (h2 : Π (r s : R) (x : G), smul (r + s) x = (smul r x + smul s x))
   (h3 : Π r s x, smul (r * s) x = smul r (smul s x))
   (h4 : Π x, smul 1 x = x) : left_module R G  :=
-begin
-  cases gG with Gs Gm Gh1 G1 Gh2 Gh3 Gi Gh4 Gh5,
-  exact left_module.mk smul Gs Gm Gh1 G1 Gh2 Gh3 Gi Gh4 Gh5 h1 h2 h3 h4
-end
+left_module.mk smul _ add add.assoc 0 zero_add add_zero neg add.left_inv add.comm h1 h2 h3 h4
 
 definition LeftModule_of_AddAbGroup {R : Ring} (G : AddAbGroup) (smul : R → G → G)
   (h1 h2 h3 h4) : LeftModule R :=
-LeftModule.mk G (left_module_of_ab_group G R smul h1 h2 h3 h4)
-
+LeftModule.mk G (left_module_of_ab_group smul h1 h2 h3 h4)
 
 section
   variables {R : Ring} {M M₁ M₂ M₃ : LeftModule R}
@@ -400,12 +396,14 @@ end
     (g : B →lm C)
     (h : @is_short_exact _ _ (pType.mk _ 0) f g)
 
+  local abbreviation g_of_lm := @group_homomorphism_of_lm_homomorphism
   definition short_exact_mod_of_is_exact {X A B C Y : LeftModule R}
     (k : X →lm A) (f : A →lm B) (g : B →lm C) (l : C →lm Y)
     (hX : is_contr X) (hY : is_contr Y)
     (kf : is_exact_mod k f) (fg : is_exact_mod f g) (gl : is_exact_mod g l) :
     short_exact_mod A B C :=
-  short_exact_mod.mk f g (is_short_exact_of_is_exact k f g l hX hY kf fg gl)
+  short_exact_mod.mk f g
+    (is_short_exact_of_is_exact (g_of_lm k) (g_of_lm f) (g_of_lm g) (g_of_lm l) hX hY kf fg gl)
 
   definition short_exact_mod_isomorphism {A B A' B' C C' : LeftModule R}
     (eA : A ≃lm A') (eB : B ≃lm B') (eC : C ≃lm C')
@@ -421,5 +419,18 @@ end
   end
 
 end
+
+section int
+open int
+definition left_module_int_of_ab_group [constructor] (A : Type) [add_ab_group A] : left_module rℤ A :=
+left_module_of_ab_group imul imul_add add_imul mul_imul one_imul
+
+definition LeftModule_int_of_AbGroup [constructor] (A : AddAbGroup) : LeftModule rℤ :=
+LeftModule.mk A (left_module_int_of_ab_group A)
+
+definition lm_hom_int.mk [constructor] {A B : AbGroup} (φ : A →g B) :
+  LeftModule_int_of_AbGroup A →lm LeftModule_int_of_AbGroup B :=
+lm_homomorphism_of_group_homomorphism φ (to_respect_imul φ)
+end int
 
 end left_module
