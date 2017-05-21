@@ -6,83 +6,6 @@ import .graded ..homotopy.spectrum .product_group
 
 open algebra is_trunc left_module is_equiv equiv eq function nat
 
--- move
-section
-  open group int chain_complex pointed succ_str
-
-  definition is_exact_of_is_exact_at {N : succ_str} {A : chain_complex N} {n : N}
-    (H : is_exact_at A n) : is_exact (cc_to_fn A (S n)) (cc_to_fn A n) :=
-  is_exact.mk (cc_is_chain_complex A n) H
-
-  definition is_equiv_mul_right [constructor] {A : Group} (a : A) : is_equiv (λb, b * a) :=
-  adjointify _ (λb : A, b * a⁻¹) (λb, !inv_mul_cancel_right) (λb, !mul_inv_cancel_right)
-
-  definition right_action [constructor] {A : Group} (a : A) : A ≃ A :=
-  equiv.mk _ (is_equiv_mul_right a)
-
-  definition is_equiv_add_right [constructor] {A : AddGroup} (a : A) : is_equiv (λb, b + a) :=
-  adjointify _ (λb : A, b - a) (λb, !neg_add_cancel_right) (λb, !add_neg_cancel_right)
-
-  definition add_right_action [constructor] {A : AddGroup} (a : A) : A ≃ A :=
-  equiv.mk _ (is_equiv_add_right a)
-
-
-  section
-    variables {A B : Type} (f : A ≃ B) [ab_group A]
-
-    -- to group
-    definition group_equiv_mul_comm (b b' : B) : group_equiv_mul f b b' = group_equiv_mul f b' b :=
-    by rewrite [↑group_equiv_mul, mul.comm]
-
-    definition ab_group_equiv_closed : ab_group B :=
-    ⦃ab_group, group_equiv_closed f,
-      mul_comm := group_equiv_mul_comm f⦄
-  end
-
-  definition ab_group_of_is_contr (A : Type) [is_contr A] : ab_group A :=
-  have ab_group unit, from ab_group_unit,
-  ab_group_equiv_closed (equiv_unit_of_is_contr A)⁻¹ᵉ
-
-  definition group_of_is_contr (A : Type) [is_contr A] : group A :=
-  have ab_group A, from ab_group_of_is_contr A, by apply _
-
-  definition ab_group_lift_unit : ab_group (lift unit) :=
-  ab_group_of_is_contr (lift unit)
-
-  definition trivial_ab_group_lift : AbGroup :=
-  AbGroup.mk _ ab_group_lift_unit
-
-  definition homomorphism_of_is_contr_right (A : Group) {B : Type} (H : is_contr B) :
-    A →g Group.mk B (group_of_is_contr B) :=
-  group.homomorphism.mk (λa, center _) (λa a', !is_prop.elim)
-
-  open trunc pointed is_conn
-  definition ab_group_homotopy_group_of_is_conn (n : ℕ) (A : Type*) [H : is_conn 1 A] : ab_group (π[n] A) :=
-  begin
-    have is_conn 0 A, from !is_conn_of_is_conn_succ,
-    cases n with n,
-    { unfold [homotopy_group, ptrunc], apply ab_group_of_is_contr },
-    cases n with n,
-    { unfold [homotopy_group, ptrunc], apply ab_group_of_is_contr },
-    exact ab_group_homotopy_group n A
-  end
-
-end
-
-namespace int /- move to int-/
-  definition max0 : ℤ → ℕ
-  | (of_nat n) := n
-  | (-[1+ n])  := 0
-
-  lemma le_max0 : Π(n : ℤ), n ≤ of_nat (max0 n)
-  | (of_nat n) := proof le.refl n qed
-  | (-[1+ n])  := proof unit.star qed
-
-  lemma le_of_max0_le {n : ℤ} {m : ℕ} (h : max0 n ≤ m) : n ≤ of_nat m :=
-  le.trans (le_max0 n) (of_nat_le_of_nat_of_le h)
-
-end int
-
 /- exact couples -/
 
 namespace left_module
@@ -403,7 +326,7 @@ namespace left_module
   lemma rb0 (n : ℕ) : r n ≥ n + 1 :=
   ge.trans !le_max_left (ge.trans !le_max_left !le_add_left)
   lemma rb1 (n : ℕ) : B (deg (j X) (deg (k X) x)) ≤ r n - (n + 1) :=
-  le_sub_of_add_le (le.trans !le_max_left !le_max_left)
+  nat.le_sub_of_add_le (le.trans !le_max_left !le_max_left)
   lemma rb2 (n : ℕ) : B3 ((deg (i X))^[n] x) ≤ r n :=
   le.trans !le_max_right !le_max_left
   lemma rb3 (n : ℕ) : B' (deg (k X) ((deg (i X))^[n] x)) ≤ r n :=
@@ -471,7 +394,7 @@ namespace pointed
   | (of_nat n) A := homotopy_group_conn_nat n A
   | (-[1+ n])  A := trivial_ab_group_lift
 
-  notation `πag'[`:95 n:0 `]`:0 := homotopy_group_conn n
+  notation `πc[`:95 n:0 `]`:0 := homotopy_group_conn n
 
   definition homotopy_group_conn_nat_functor (n : ℕ) {A B : Type*[1]} (f : A →* B) :
     homotopy_group_conn_nat n A →g homotopy_group_conn_nat n B :=
@@ -481,7 +404,7 @@ namespace pointed
     exact π→g[n+2] f
   end
 
-  definition homotopy_group_conn_functor : Π(n : ℤ) {A B : Type*[1]} (f : A →* B), πag'[n] A →g πag'[n] B
+  definition homotopy_group_conn_functor : Π(n : ℤ) {A B : Type*[1]} (f : A →* B), πc[n] A →g πc[n] B
   | (of_nat n) A B f := homotopy_group_conn_nat_functor n f
   | (-[1+ n])  A B f := homomorphism_of_is_contr_right _ _
 
@@ -494,10 +417,10 @@ namespace pointed
   definition I [constructor] : Set := trunctype.mk (ℤ × ℤ) !is_trunc_prod
 
   definition D_sequence : graded_module rℤ I :=
-  λv, LeftModule_int_of_AbGroup (πag'[v.2] (A (v.1)))
+  λv, LeftModule_int_of_AbGroup (πc[v.2] (A (v.1)))
 
   definition E_sequence : graded_module rℤ I :=
-  λv, LeftModule_int_of_AbGroup (πag'[v.2] (pconntype.mk (pfiber (f (v.1))) !Hf pt))
+  λv, LeftModule_int_of_AbGroup (πc[v.2] (pconntype.mk (pfiber (f (v.1))) !Hf pt))
 
   -- definition exact_couple_sequence : exact_couple rℤ I :=
   -- exact_couple.mk D_sequence E_sequence sorry sorry sorry sorry sorry sorry
@@ -530,14 +453,19 @@ namespace spectrum
     exact πₛ→[v.1] (f v.2)
   end
 
-  definition j_sequence : D_sequence →gm E_sequence :=
+  definition deg_j_seq_inv [constructor] : I ≃ I :=
+  prod_equiv_prod (add_right_action 1) (add_right_action (- 1))
+
+  definition fn_j_sequence [unfold 3] (x : I) :
+    D_sequence (deg_j_seq_inv x) →lm E_sequence x :=
   begin
-    fapply graded_hom.mk_out',
-    exact (prod_equiv_prod (add_right_action 1) (add_right_action (- 1))),
-    intro v, induction v with n s,
+    induction x with n s,
     apply lm_hom_int.mk, esimp,
     rexact shomotopy_groups_fun (f s) (n, 2)
   end
+
+  definition j_sequence : D_sequence →gm E_sequence :=
+  graded_hom.mk_out deg_j_seq_inv⁻¹ᵉ fn_j_sequence
 
   definition k_sequence : E_sequence →gm D_sequence :=
   begin
@@ -558,7 +486,7 @@ namespace spectrum
     revert t q, refine eq.rec_equiv (add_right_action (- 1)) _,
     induction p using eq.rec_symm,
     apply is_exact_homotopy homotopy.rfl,
-    { symmetry, intro, apply graded_hom_mk_out'_left_inv },
+    { symmetry, intro m, exact graded_hom_mk_out_right_inv deg_j_seq_inv⁻¹ᵉ fn_j_sequence m },
     rexact is_exact_of_is_exact_at (is_exact_LES_of_shomotopy_groups (f s) (m, 2)),
   end
 
@@ -568,7 +496,7 @@ namespace spectrum
     revert x y p, refine eq.rec_right_inv (deg j_sequence) _,
     intro x, induction x with n s,
     apply is_exact_homotopy,
-    { symmetry, intro, apply graded_hom_mk_out'_left_inv },
+    { symmetry, intro m, exact graded_hom_mk_out_right_inv deg_j_seq_inv⁻¹ᵉ fn_j_sequence m },
     { reflexivity },
     rexact is_exact_of_is_exact_at (is_exact_LES_of_shomotopy_groups (f s) (n, 1)),
   end
@@ -651,4 +579,13 @@ namespace spectrum
 
   end
 
+-- Uncomment the next line to see that the proof uses univalence, but that there are no holes
+--('sorry') in the proof:
+
+-- print axioms is_bounded_sequence
+
+-- I think it depends on univalence in an essential way. The reason is that the long exact sequence
+-- of homotopy groups already depends on univalence. Namely, in that proof we need to show that if f
+-- : A → B and g : B → C are exact at B, then ∥A∥₀ → ∥B∥₀ → ∥C∥₀ is exact at ∥B∥₀. For this we need
+-- that the equality |b|₀ = |b'|₀ is equivalent to ∥b = b'∥₋₁, which requires univalence.
 end spectrum

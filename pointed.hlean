@@ -1,8 +1,6 @@
-/- equalities between pointed homotopies -/
+/- equalities between pointed homotopies and other facts about pointed types/functions/homotopies -/
 
 -- Author: Floris van Doorn
-
---import .pointed_pi
 
 import .move_to_lib
 

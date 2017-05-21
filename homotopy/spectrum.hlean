@@ -243,7 +243,7 @@ namespace spectrum
 
   definition sfiber {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y) : gen_spectrum N :=
     spectrum.MK (λn, pfiber (f n))
-      (λn, pfiber_loop_space (f (S n)) ∘*ᵉ pfiber_equiv_of_square _ _ (sglue_square f n))
+       (λn, (loop_pfiber (f (S n)))⁻¹ᵉ* ∘*ᵉ pfiber_equiv_of_square _ _ (sglue_square f n))
 
   /- the map from the fiber to the domain -/
   definition spoint {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y) : sfiber f →ₛ X :=
@@ -251,7 +251,7 @@ namespace spectrum
     begin
       intro n,
       refine _ ⬝* !passoc,
-      refine _ ⬝* pwhisker_right _ !ap1_ppoint_phomotopy⁻¹*,
+      refine _ ⬝* pwhisker_right _ !ppoint_loop_pfiber_inv⁻¹*,
       rexact (pfiber_equiv_of_square_ppoint (equiv_glue X n) (equiv_glue Y n) (sglue_square f n))⁻¹*
     end
 

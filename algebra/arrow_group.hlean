@@ -3,12 +3,6 @@ open pi pointed algebra group eq equiv is_trunc trunc
 
 namespace group
 
-  -- definition pmap_mul [constructor] {A B : Type*} [inf_pgroup B] (f g : A →* B) : A →* B :=
-  -- pmap.mk (λa, f a * g a) (ap011 mul (respect_pt f) (respect_pt g) ⬝ !one_mul)
-
-  -- definition pmap_inv [constructor] {A B : Type*} [inf_pgroup B] (f : A →* B) : A →* B :=
-  -- pmap.mk (λa, (f a)⁻¹) (ap inv (respect_pt f) ⬝ !one_inv)
-
   definition pmap_mul [constructor] {A B : Type*} (f g : A →* Ω B) : A →* Ω B :=
   pmap.mk (λa, f a ⬝ g a) (respect_pt f ◾ respect_pt g ⬝ !idp_con)
 

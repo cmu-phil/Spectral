@@ -6,53 +6,6 @@ import .left_module .direct_sum .submodule --..heq
 
 open is_trunc algebra eq left_module pointed function equiv is_equiv prod group sigma nat
 
--- move
-  lemma le_sub_of_add_le {n m k : ℕ} (h : n + m ≤ k) : n ≤ k - m :=
-  begin
-    induction h with k h IH,
-    { exact le_of_eq !nat.add_sub_cancel⁻¹ },
-    { exact le.trans IH (nat.sub_le_sub_right !self_le_succ _) }
-  end
-
-  lemma iterate_sub {A : Type} (f : A ≃ A) {n m : ℕ} (h : n ≥ m) (a : A) :
-    iterate f (n - m) a = iterate f n (iterate f⁻¹ m a) :=
-  begin
-    revert n h, induction m with m p: intro n h,
-    { reflexivity },
-    { cases n with n, exfalso, apply not_succ_le_zero _ h,
-      rewrite [succ_sub_succ], refine p n (le_of_succ_le_succ h) ⬝ _,
-      refine ap (_^[n]) _ ⬝ !iterate_succ⁻¹, exact !to_right_inv⁻¹ }
-  end
-
-  definition iterate_commute {A : Type} {f g : A → A} (n : ℕ) (h : f ∘ g ~ g ∘ f) :
-    iterate f n ∘ g ~ g ∘ iterate f n :=
-  by induction n with n IH; reflexivity; exact λx, ap f (IH x) ⬝ !h
-
-  -- definition iterate_left_inv {A : Type} (f : A ≃ A) (n : ℕ) : Πa, f⁻¹ᵉ^[n] (f^[n] a) = a :=
-  -- begin
-  --   induction n with n p: intro a,
-  --     reflexivity,
-  --     exact ap f⁻¹ᵉ (ap (f⁻¹ᵉ^[n]) (iterate_succ f n a) ⬝ p (f a)) ⬝ left_inv f a,
-  -- end
-
-  definition iterate_equiv {A : Type} (f : A ≃ A) (n : ℕ) : A ≃ A :=
-  equiv.mk (iterate f n)
-           (by induction n with n IH; apply is_equiv_id; exact is_equiv_compose f (iterate f n))
-
-  definition iterate_inv {A : Type} (f : A ≃ A) (n : ℕ) :
-    (iterate_equiv f n)⁻¹ ~ iterate f⁻¹ n :=
-  begin
-    induction n with n p: intro a,
-      reflexivity,
-      exact p (f⁻¹ a) ⬝ !iterate_succ⁻¹
-  end
-
-  definition iterate_left_inv {A : Type} (f : A ≃ A) (n : ℕ) (a : A) : f⁻¹ᵉ^[n] (f^[n] a) = a :=
-  (iterate_inv f n (f^[n] a))⁻¹ ⬝ to_left_inv (iterate_equiv f n) a
-
-  definition iterate_right_inv {A : Type} (f : A ≃ A) (n : ℕ) (a : A) : f^[n] (f⁻¹ᵉ^[n] a) = a :=
-  ap (f^[n]) (iterate_inv f n a)⁻¹ ⬝ to_right_inv (iterate_equiv f n) a
-
 namespace left_module
 
 definition graded [reducible] (str : Type) (I : Type) : Type := I → str

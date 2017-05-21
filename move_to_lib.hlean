@@ -10,6 +10,7 @@ attribute is_prop.elim_set [unfold 6]
 definition add_comm_right {A : Type} [add_comm_semigroup A] (n m k : A) : n + m + k = n + k + m :=
 !add.assoc ⬝ ap (add n) !add.comm ⬝ !add.assoc⁻¹
 
+-- move to chain_complex (or another file). rename chain_complex.is_exact
 structure is_exact_t {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
   ( im_in_ker : Π(a:A), g (f a) = pt)
   ( ker_in_im : Π(b:B), (g b = pt) → fiber f b)
@@ -49,6 +50,13 @@ end
 definition is_surjective_of_is_exact_of_is_contr {A B : Type} {C : Type*} {f : A → B} {g : B → C}
   (H : is_exact f g) [is_contr C] : is_surjective f :=
 λb, is_exact.ker_in_im H b !is_prop.elim
+
+section chain_complex
+open succ_str chain_complex
+definition is_exact_of_is_exact_at {N : succ_str} {A : chain_complex N} {n : N}
+  (H : is_exact_at A n) : is_exact (cc_to_fn A (S n)) (cc_to_fn A n) :=
+is_exact.mk (cc_is_chain_complex A n) H
+end chain_complex
 
 namespace algebra
   definition ab_group_unit [constructor] : ab_group unit :=
@@ -109,16 +117,12 @@ namespace eq
     intro a₀ p, exact eq.rec_to (right_inv f a₀) (H a₀) p,
   end
 
-  definition eq.rec_equiv {A B : Type} {a₀ : A} (f : A ≃ B) {P : Π⦃a₁⦄, f a₀ = f a₁ → Type}
+  definition eq.rec_equiv {A B : Type} {a₀ : A} (f : A ≃ B) {P : Π{a₁}, f a₀ = f a₁ → Type}
     (H : P (idpath (f a₀))) ⦃a₁ : A⦄ (p : f a₀ = f a₁) : P p :=
   begin
---    induction f using equiv.rec_on_ua_idp, esimp at *, induction p, exact H
-    revert a₁ p, refine equiv_rect f⁻¹ᵉ _ _, intro b p,
-    refine transport (@P _) (!con_inv_cancel_right) _,
-    exact b, exact right_inv f b,
-    generalize p ⬝ right_inv f b,
-    clear p, intro q, induction q,
-    exact sorry
+    assert qr : Σ(q : a₀ = a₁), ap f q = p,
+    { exact ⟨eq_of_fn_eq_fn f p, ap_eq_of_fn_eq_fn' f p⟩ },
+    cases qr with q r, apply transport P r, induction q, exact H
   end
 
   definition eq.rec_symm {A : Type} {a₀ : A} {P : Π⦃a₁⦄, a₁ = a₀ → Type}
@@ -404,6 +408,14 @@ end
   definition homotopy_of_hsquare (p : hsquare f₁₀ f₁₂ f₀₁ f₂₁) : f₂₁ ∘ f₁₀ ~ f₁₂ ∘ f₀₁ :=
   p
 
+  definition homotopy_top_of_hsquare {f₂₁ : A₂₀ ≃ A₂₂} (p : hsquare f₁₀ f₁₂ f₀₁ f₂₁) :
+    f₁₀ ~ f₂₁⁻¹ ∘ f₁₂ ∘ f₀₁ :=
+  homotopy_inv_of_homotopy_post _ _ _ p
+
+  definition homotopy_top_of_hsquare' [is_equiv f₂₁] (p : hsquare f₁₀ f₁₂ f₀₁ f₂₁) :
+    f₁₀ ~ f₂₁⁻¹ ∘ f₁₂ ∘ f₀₁ :=
+  homotopy_inv_of_homotopy_post _ _ _ p
+
   definition hhconcat (p : hsquare f₁₀ f₁₂ f₀₁ f₂₁) (q : hsquare f₃₀ f₃₂ f₂₁ f₄₁) :
     hsquare (f₃₀ ∘ f₁₀) (f₃₂ ∘ f₁₂) f₀₁ f₄₁ :=
   hwhisker_right f₁₀ q ⬝hty hwhisker_left f₃₂ p
@@ -455,6 +467,46 @@ namespace wedge
   pushout.glue ⋆
 
 end wedge
+
+namespace nat
+
+  definition iterate_succ {A : Type} (f : A → A) (n : ℕ) (x : A) :
+    f^[succ n] x = f^[n] (f x) :=
+  by induction n with n p; reflexivity; exact ap f p
+
+  lemma iterate_sub {A : Type} (f : A ≃ A) {n m : ℕ} (h : n ≥ m) (a : A) :
+    iterate f (n - m) a = iterate f n (iterate f⁻¹ m a) :=
+  begin
+    revert n h, induction m with m p: intro n h,
+    { reflexivity },
+    { cases n with n, exfalso, apply not_succ_le_zero _ h,
+      rewrite [succ_sub_succ], refine p n (le_of_succ_le_succ h) ⬝ _,
+      refine ap (f^[n]) _ ⬝ !iterate_succ⁻¹, exact !to_right_inv⁻¹ }
+  end
+
+  definition iterate_commute {A : Type} {f g : A → A} (n : ℕ) (h : f ∘ g ~ g ∘ f) :
+    iterate f n ∘ g ~ g ∘ iterate f n :=
+  by induction n with n IH; reflexivity; exact λx, ap f (IH x) ⬝ !h
+
+  definition iterate_equiv {A : Type} (f : A ≃ A) (n : ℕ) : A ≃ A :=
+  equiv.mk (iterate f n)
+           (by induction n with n IH; apply is_equiv_id; exact is_equiv_compose f (iterate f n))
+
+  definition iterate_inv {A : Type} (f : A ≃ A) (n : ℕ) :
+    (iterate_equiv f n)⁻¹ ~ iterate f⁻¹ n :=
+  begin
+    induction n with n p: intro a,
+      reflexivity,
+      exact p (f⁻¹ a) ⬝ !iterate_succ⁻¹
+  end
+
+  definition iterate_left_inv {A : Type} (f : A ≃ A) (n : ℕ) (a : A) : f⁻¹ᵉ^[n] (f^[n] a) = a :=
+  (iterate_inv f n (f^[n] a))⁻¹ ⬝ to_left_inv (iterate_equiv f n) a
+
+  definition iterate_right_inv {A : Type} (f : A ≃ A) (n : ℕ) (a : A) : f^[n] (f⁻¹ᵉ^[n] a) = a :=
+  ap (f^[n]) (iterate_inv f n a)⁻¹ ⬝ to_right_inv (iterate_equiv f n) a
+
+end nat
 
 namespace pi
 
@@ -682,6 +734,57 @@ namespace group
     apply is_trunc_equiv_closed_rev, exact H
   end
 
+  definition is_equiv_mul_right [constructor] {A : Group} (a : A) : is_equiv (λb, b * a) :=
+  adjointify _ (λb : A, b * a⁻¹) (λb, !inv_mul_cancel_right) (λb, !mul_inv_cancel_right)
+
+  definition right_action [constructor] {A : Group} (a : A) : A ≃ A :=
+  equiv.mk _ (is_equiv_mul_right a)
+
+  definition is_equiv_add_right [constructor] {A : AddGroup} (a : A) : is_equiv (λb, b + a) :=
+  adjointify _ (λb : A, b - a) (λb, !neg_add_cancel_right) (λb, !add_neg_cancel_right)
+
+  definition add_right_action [constructor] {A : AddGroup} (a : A) : A ≃ A :=
+  equiv.mk _ (is_equiv_add_right a)
+
+  section
+    variables {A B : Type} (f : A ≃ B) [ab_group A]
+    definition group_equiv_mul_comm (b b' : B) : group_equiv_mul f b b' = group_equiv_mul f b' b :=
+    by rewrite [↑group_equiv_mul, mul.comm]
+
+    definition ab_group_equiv_closed : ab_group B :=
+    ⦃ab_group, group_equiv_closed f,
+      mul_comm := group_equiv_mul_comm f⦄
+  end
+
+  definition ab_group_of_is_contr (A : Type) [is_contr A] : ab_group A :=
+  have ab_group unit, from ab_group_unit,
+  ab_group_equiv_closed (equiv_unit_of_is_contr A)⁻¹ᵉ
+
+  definition group_of_is_contr (A : Type) [is_contr A] : group A :=
+  have ab_group A, from ab_group_of_is_contr A, by apply _
+
+  definition ab_group_lift_unit : ab_group (lift unit) :=
+  ab_group_of_is_contr (lift unit)
+
+  definition trivial_ab_group_lift : AbGroup :=
+  AbGroup.mk _ ab_group_lift_unit
+
+  definition homomorphism_of_is_contr_right (A : Group) {B : Type} (H : is_contr B) :
+    A →g Group.mk B (group_of_is_contr B) :=
+  group.homomorphism.mk (λa, center _) (λa a', !is_prop.elim)
+
+  open trunc pointed is_conn
+  definition ab_group_homotopy_group_of_is_conn (n : ℕ) (A : Type*) [H : is_conn 1 A] :
+    ab_group (π[n] A) :=
+  begin
+    have is_conn 0 A, from !is_conn_of_is_conn_succ,
+    cases n with n,
+    { unfold [homotopy_group, ptrunc], apply ab_group_of_is_contr },
+    cases n with n,
+    { unfold [homotopy_group, ptrunc], apply ab_group_of_is_contr },
+    exact ab_group_homotopy_group n A
+  end
+
 
 --  definition is_equiv_isomorphism
 
@@ -703,7 +806,32 @@ namespace group
 
 end group open group
 
+namespace function
+  variables {A B : Type} {f f' : A → B}
+  definition is_embedding_homotopy_closed (p : f ~ f') (H : is_embedding f) : is_embedding f' :=
+  begin
+    intro a a', fapply is_equiv_of_equiv_of_homotopy,
+    exact equiv.mk (ap f) _ ⬝e equiv_eq_closed_left _ (p a) ⬝e equiv_eq_closed_right _ (p a'),
+    intro q, esimp, exact (eq_bot_of_square (transpose (natural_square p q)))⁻¹
+  end
+
+  definition is_embedding_homotopy_closed_rev (p : f' ~ f) (H : is_embedding f) : is_embedding f' :=
+  is_embedding_homotopy_closed p⁻¹ʰᵗʸ H
+
+  definition is_surjective_homotopy_closed (p : f ~ f') (H : is_surjective f) : is_surjective f' :=
+  begin
+    intro b, induction H b with a q,
+    exact image.mk a ((p a)⁻¹ ⬝ q)
+  end
+
+  definition is_surjective_homotopy_closed_rev (p : f' ~ f) (H : is_surjective f) :
+    is_surjective f' :=
+  is_surjective_homotopy_closed p⁻¹ʰᵗʸ H
+
+end function
+
 namespace fiber
+  open pointed
 
   definition pcompose_ppoint {A B : Type*} (f : A →* B) : f ∘* ppoint f ~* pconst (pfiber f) B :=
   begin
@@ -712,16 +840,91 @@ namespace fiber
     { exact !idp_con⁻¹ }
   end
 
-  definition ap1_ppoint_phomotopy {A B : Type*} (f : A →* B)
-    : Ω→ (ppoint f) ∘* pfiber_loop_space f ~* ppoint (Ω→ f) :=
+  definition point_fiber_eq {A B : Type} {f : A → B} {b : B} {x y : fiber f b}
+    (p : point x = point y) (q : point_eq x = ap f p ⬝ point_eq y) :
+    ap point (fiber_eq p q) = p :=
   begin
-    exact sorry
+    induction x with a r, induction y with a' s, esimp at *, induction p,
+    induction q using eq.rec_symm, induction s, reflexivity
+  end
+
+  definition fiber_eq_equiv_fiber {A B : Type} {f : A → B} {b : B} (x y : fiber f b) :
+    x = y ≃ fiber (ap1_gen f (point_eq x) (point_eq y)) (idpath b) :=
+  calc
+    x = y ≃ fiber.sigma_char f b x = fiber.sigma_char f b y :
+      eq_equiv_fn_eq_of_equiv (fiber.sigma_char f b) x y
+      ... ≃ Σ(p : point x = point y), point_eq x =[p] point_eq y : sigma_eq_equiv
+      ... ≃ Σ(p : point x = point y), (point_eq x)⁻¹ ⬝ ap f p ⬝ point_eq y = idp :
+      sigma_equiv_sigma_right (λp,
+      calc point_eq x =[p] point_eq y ≃ point_eq x = ap f p ⬝ point_eq y : eq_pathover_equiv_Fl
+           ... ≃ ap f p ⬝ point_eq y = point_eq x : eq_equiv_eq_symm
+           ... ≃ (point_eq x)⁻¹ ⬝ (ap f p ⬝ point_eq y) = idp : eq_equiv_inv_con_eq_idp
+           ... ≃ (point_eq x)⁻¹ ⬝ ap f p ⬝ point_eq y = idp : equiv_eq_closed_left _ !con.assoc⁻¹)
+      ... ≃ fiber (ap1_gen f (point_eq x) (point_eq y)) (idpath b) : fiber.sigma_char
+
+  definition loop_pfiber [constructor] {A B : Type*} (f : A →* B) : Ω (pfiber f) ≃* pfiber (Ω→ f) :=
+  pequiv_of_equiv (fiber_eq_equiv_fiber pt pt)
+    begin
+      induction f with f f₀, induction B with B b₀, esimp at (f,f₀), induction f₀, reflexivity
+    end
+
+  definition point_fiber_eq_equiv_fiber {A B : Type} {f : A → B} {b : B} {x y : fiber f b}
+    (p : x = y) : point (fiber_eq_equiv_fiber x y p) = ap1_gen point idp idp p :=
+  by induction p; reflexivity
+
+  lemma ppoint_loop_pfiber {A B : Type*} (f : A →* B) :
+    ppoint (Ω→ f) ∘* loop_pfiber f ~* Ω→ (ppoint f) :=
+  phomotopy.mk (point_fiber_eq_equiv_fiber)
+    begin
+     induction f with f f₀, induction B with B b₀, esimp at (f,f₀), induction f₀, reflexivity
+    end
+
+  lemma ppoint_loop_pfiber_inv {A B : Type*} (f : A →* B) :
+    Ω→ (ppoint f) ∘* (loop_pfiber f)⁻¹ᵉ* ~* ppoint (Ω→ f) :=
+  (phomotopy_pinv_right_of_phomotopy (ppoint_loop_pfiber f))⁻¹*
+
+  lemma pfiber_equiv_of_phomotopy_ppoint {A B : Type*} {f g : A →* B} (h : f ~* g)
+    : ppoint g ∘* pfiber_equiv_of_phomotopy h ~* ppoint f :=
+  begin
+    induction f with f f₀, induction g with g g₀, induction h with h h₀, induction B with B b₀,
+    esimp at *, induction h₀, induction g₀,
+    fapply phomotopy.mk,
+    { reflexivity },
+    { esimp [pfiber_equiv_of_phomotopy], exact !point_fiber_eq⁻¹ }
+  end
+
+  lemma pequiv_postcompose_ppoint {A B B' : Type*} (f : A →* B) (g : B ≃* B')
+    : ppoint f ∘* fiber.pequiv_postcompose f g ~* ppoint (g ∘* f) :=
+  begin
+    induction f with f f₀, induction g with g hg g₀, induction B with B b₀,
+    induction B' with B' b₀', esimp at *, induction g₀, induction f₀,
+    fapply phomotopy.mk,
+    { reflexivity },
+    { esimp [pequiv_postcompose], symmetry,
+      refine !ap_compose⁻¹ ⬝ _, apply ap_constant }
+  end
+
+  lemma pequiv_precompose_ppoint {A A' B : Type*} (f : A →* B) (g : A' ≃* A)
+    : ppoint f ∘* fiber.pequiv_precompose f g ~* g ∘* ppoint (f ∘* g) :=
+  begin
+    induction f with f f₀, induction g with g hg g₀, induction B with B b₀,
+    induction A with A a₀', esimp at *, induction g₀, induction f₀,
+    reflexivity,
   end
 
   definition pfiber_equiv_of_square_ppoint {A B C D : Type*} {f : A →* B} {g : C →* D}
     (h : A ≃* C) (k : B ≃* D) (s : k ∘* f ~* g ∘* h)
     : ppoint g ∘* pfiber_equiv_of_square h k s ~* h ∘* ppoint f :=
-  sorry
+  begin
+    refine !passoc⁻¹* ⬝* _,
+    refine pwhisker_right _ !pequiv_precompose_ppoint ⬝* _,
+    refine !passoc ⬝* _,
+    apply pwhisker_left,
+    refine !passoc⁻¹* ⬝* _,
+    refine pwhisker_right _ !pfiber_equiv_of_phomotopy_ppoint ⬝* _,
+    apply pinv_right_phomotopy_of_phomotopy,
+    refine !pequiv_postcompose_ppoint⁻¹*,
+  end
 
 end fiber
 
@@ -1222,11 +1425,6 @@ section
   show a = 0, from is_injective_of_is_embedding this
 end
 
-definition iterate_succ {A : Type} (f : A → A) (n : ℕ) (x : A) :
-  f^[succ n] x = f^[n] (f x) :=
-by induction n with n p; reflexivity; exact ap f p
-
-
 /- put somewhere in algebra -/
 
 structure Ring :=
@@ -1241,6 +1439,17 @@ namespace int
   Ring.mk ℤ _
 
   notation `rℤ` := ring_int
+
+  definition max0 : ℤ → ℕ
+  | (of_nat n) := n
+  | (-[1+ n])  := 0
+
+  lemma le_max0 : Π(n : ℤ), n ≤ of_nat (max0 n)
+  | (of_nat n) := proof le.refl n qed
+  | (-[1+ n])  := proof unit.star qed
+
+  lemma le_of_max0_le {n : ℤ} {m : ℕ} (h : max0 n ≤ m) : n ≤ of_nat m :=
+  le.trans (le_max0 n) (of_nat_le_of_nat_of_le h)
 
 end int
 
@@ -1275,3 +1484,47 @@ namespace set_quotient
   equiv.mk _ (is_equiv_class_of R p)
 
 end set_quotient
+
+-- should be in pushout
+namespace pushout
+variables {TL BL TR : Type} (f : TL → BL) (g : TL → TR)
+
+protected theorem elim_inl {P : Type} (Pinl : BL → P) (Pinr : TR → P)
+  (Pglue : Π(x : TL), Pinl (f x) = Pinr (g x)) {b b' : BL} (p : b = b')
+  : ap (pushout.elim Pinl Pinr Pglue) (ap inl p) = ap Pinl p :=
+by cases p; reflexivity
+
+protected theorem elim_inr {P : Type} (Pinl : BL → P) (Pinr : TR → P)
+  (Pglue : Π(x : TL), Pinl (f x) = Pinr (g x)) {b b' : TR} (p : b = b')
+  : ap (pushout.elim Pinl Pinr Pglue) (ap inr p) = ap Pinr p :=
+by cases p; reflexivity
+
+end pushout
+
+-- should be in prod
+namespace prod
+open prod.ops
+definition pair_eq_eta {A B : Type} {u v : A × B}
+  (p : u = v) : pair_eq (p..1) (p..2) = prod.eta u ⬝ p ⬝ (prod.eta v)⁻¹ :=
+by induction p; induction u; reflexivity
+
+definition prod_eq_eq {A B : Type} {u v : A × B}
+  {p₁ q₁ : u.1 = v.1} {p₂ q₂ : u.2 = v.2} (α₁ : p₁ = q₁) (α₂ : p₂ = q₂)
+  : prod_eq p₁ p₂ = prod_eq q₁ q₂ :=
+by cases α₁; cases α₂; reflexivity
+
+definition prod_eq_assemble {A B : Type} {u v : A × B}
+  {p q : u = v} (α₁ : p..1 = q..1) (α₂ : p..2 = q..2) : p = q :=
+(prod_eq_eta p)⁻¹ ⬝ prod.prod_eq_eq α₁ α₂ ⬝ prod_eq_eta q
+
+definition eq_pr1_concat {A B : Type} {u v w : A × B}
+  (p : u = v) (q : v = w)
+  : (p ⬝ q)..1 = p..1 ⬝ q..1 :=
+by cases q; reflexivity
+
+definition eq_pr2_concat {A B : Type} {u v w : A × B}
+  (p : u = v) (q : v = w)
+  : (p ⬝ q)..2 = p..2 ⬝ q..2 :=
+by cases q; reflexivity
+
+end prod

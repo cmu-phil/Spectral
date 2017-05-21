@@ -3,46 +3,6 @@ import algebra.group_theory ..pointed ..homotopy.smash
 open eq pointed algebra group eq equiv is_trunc is_conn prod prod.ops
      smash susp unit pushout trunc prod
 
--- should be in pushout
-section
-parameters {TL BL TR : Type} (f : TL → BL) (g : TL → TR)
-
-protected theorem pushout.elim_inl {P : Type} (Pinl : BL → P) (Pinr : TR → P)
-  (Pglue : Π(x : TL), Pinl (f x) = Pinr (g x)) {b b' : BL} (p : b = b')
-  : ap (pushout.elim Pinl Pinr Pglue) (ap inl p) = ap Pinl p :=
-by cases p; reflexivity
-
-protected theorem pushout.elim_inr {P : Type} (Pinl : BL → P) (Pinr : TR → P)
-  (Pglue : Π(x : TL), Pinl (f x) = Pinr (g x)) {b b' : TR} (p : b = b')
-  : ap (pushout.elim Pinl Pinr Pglue) (ap inr p) = ap Pinr p :=
-by cases p; reflexivity
-
-end
-
--- should be in prod
-definition prod.pair_eq_eta {A B : Type} {u v : A × B}
-  (p : u = v) : pair_eq (p..1) (p..2) = prod.eta u ⬝ p ⬝ (prod.eta v)⁻¹ :=
-by induction p; induction u; reflexivity
-
-definition prod.prod_eq_eq {A B : Type} {u v : A × B}
-  {p₁ q₁ : u.1 = v.1} {p₂ q₂ : u.2 = v.2} (α₁ : p₁ = q₁) (α₂ : p₂ = q₂)
-  : prod_eq p₁ p₂ = prod_eq q₁ q₂ :=
-by cases α₁; cases α₂; reflexivity
-
-definition prod.prod_eq_assemble {A B : Type} {u v : A × B}
-  {p q : u = v} (α₁ : p..1 = q..1) (α₂ : p..2 = q..2) : p = q :=
-(prod_eq_eta p)⁻¹ ⬝ prod.prod_eq_eq α₁ α₂ ⬝ prod_eq_eta q
-
-definition prod.eq_pr1_concat {A B : Type} {u v w : A × B}
-  (p : u = v) (q : v = w)
-  : (p ⬝ q)..1 = p..1 ⬝ q..1 :=
-by cases q; reflexivity
-
-definition prod.eq_pr2_concat {A B : Type} {u v w : A × B}
-  (p : u = v) (q : v = w)
-  : (p ⬝ q)..2 = p..2 ⬝ q..2 :=
-by cases q; reflexivity
-
 section
   variables {A B C : Type*}
 
@@ -258,4 +218,3 @@ end
 -/
 
 end group
-
