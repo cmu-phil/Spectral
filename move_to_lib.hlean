@@ -29,6 +29,12 @@ definition is_exact_g.mk {A B C : Group} {f : A →g B} {g : B →g C}
   (H₁ : Πa, g (f a) = 1) (H₂ : Πb, g b = 1 → image f b) : is_exact_g f g :=
 is_exact.mk H₁ H₂
 
+definition is_exact.im_in_ker2 {A B : Type} {C : Set*} {f : A → B} {g : B → C} (H : is_exact f g)
+  {b : B} (h : image f b) : g b = pt :=
+begin
+  induction h with a p, exact ap g p⁻¹ ⬝ is_exact.im_in_ker H a
+end
+
 -- TO DO: give less univalency proof
 definition is_exact_homotopy {A B : Type} {C : Type*} {f f' : A → B} {g g' : B → C}
   (p : f ~ f') (q : g ~ g') (H : is_exact f g) : is_exact f' g' :=
@@ -99,7 +105,7 @@ end algebra
 namespace eq
 
   definition eq.rec_to {A : Type} {a₀ : A} {P : Π⦃a₁⦄, a₀ = a₁ → Type}
-    {a₁ : A} (p₀ : a₀ = a₁) (H : P p₀) {a₂ : A} (p : a₀ = a₂) : P p :=
+    {a₁ : A} (p₀ : a₀ = a₁) (H : P p₀) ⦃a₂ : A⦄ (p : a₀ = a₂) : P p :=
   begin
     induction p₀, induction p, exact H
   end
@@ -125,6 +131,54 @@ namespace eq
     cases qr with q r, apply transport P r, induction q, exact H
   end
 
+  definition eq.rec_equiv_symm {A B : Type} {a₁ : A} (f : A ≃ B) {P : Π{a₀}, f a₀ = f a₁ → Type}
+    (H : P (idpath (f a₁))) ⦃a₀ : A⦄ (p : f a₀ = f a₁) : P p :=
+  begin
+    assert qr : Σ(q : a₀ = a₁), ap f q = p,
+    { exact ⟨eq_of_fn_eq_fn f p, ap_eq_of_fn_eq_fn' f p⟩ },
+    cases qr with q r, apply transport P r, induction q, exact H
+  end
+
+  definition eq.rec_equiv_to_same {A B : Type} {a₀ : A} (f : A ≃ B) {P : Π{a₁}, f a₀ = f a₁ → Type}
+    ⦃a₁' : A⦄ (p' : f a₀ = f a₁') (H : P p') ⦃a₁ : A⦄ (p : f a₀ = f a₁) : P p :=
+  begin
+    revert a₁' p' H a₁ p,
+    refine eq.rec_equiv f _,
+    exact eq.rec_equiv f
+  end
+
+  definition eq.rec_equiv_to {A A' B : Type} {a₀ : A} (f : A ≃ B) (g : A' ≃ B)
+    {P : Π{a₁}, f a₀ = g a₁ → Type}
+    ⦃a₁' : A'⦄ (p' : f a₀ = g a₁') (H : P p') ⦃a₁ : A'⦄ (p : f a₀ = g a₁) : P p :=
+  begin
+    assert qr : Σ(q : g⁻¹ (f a₀) = a₁), (right_inv g (f a₀))⁻¹ ⬝ ap g q = p,
+    { exact ⟨eq_of_fn_eq_fn g (right_inv g (f a₀) ⬝ p),
+             whisker_left _ (ap_eq_of_fn_eq_fn' g _) ⬝ !inv_con_cancel_left⟩ },
+    assert q'r' : Σ(q' : g⁻¹ (f a₀) = a₁'), (right_inv g (f a₀))⁻¹ ⬝ ap g q' = p',
+    { exact ⟨eq_of_fn_eq_fn g (right_inv g (f a₀) ⬝ p'),
+             whisker_left _ (ap_eq_of_fn_eq_fn' g _) ⬝ !inv_con_cancel_left⟩ },
+    induction qr with q r, induction q'r' with q' r',
+    induction q, induction q',
+    induction r, induction r',
+    exact H
+  end
+
+  definition eq.rec_grading {A A' B : Type} {a : A} (f : A ≃ B) (g : A' ≃ B)
+    {P : Π{b}, f a = b → Type}
+    {a' : A'} (p' : f a = g a') (H : P p') ⦃b : B⦄ (p : f a = b) : P p :=
+  begin
+    revert b p, refine equiv_rect g _ _,
+    exact eq.rec_equiv_to f g p' H
+  end
+
+  definition eq.rec_grading_unbased {A B B' C : Type} (f : A ≃ B) (g : B ≃ C) (h : B' ≃ C)
+    {P : Π{b c}, g b = c → Type}
+    {a' : A} {b' : B'} (p' : g (f a') = h b') (H : P p') ⦃b : B⦄ ⦃c : C⦄ (q : f a' = b)
+    (p : g b = c) : P p :=
+  begin
+    induction q, exact eq.rec_grading (f ⬝e g) h p' H p
+  end
+
   definition eq.rec_symm {A : Type} {a₀ : A} {P : Π⦃a₁⦄, a₁ = a₀ → Type}
     (H : P idp) ⦃a₁ : A⦄ (p : a₁ = a₀) : P p :=
   begin
@@ -137,6 +191,12 @@ namespace eq
     apply is_contr_loop_of_is_trunc,
     apply is_trunc_of_is_contr
   end
+
+  definition cast_fn_cast_square {A : Type} {B C : A → Type} (f : Π⦃a⦄, B a → C a) {a₁ a₂ : A}
+    (p : a₁ = a₂) (q : a₂ = a₁) (r : p ⬝ q = idp) (b : B a₁) :
+    cast (ap C q) (f (cast (ap B p) b)) = f b :=
+  have q⁻¹ = p, from inv_eq_of_idp_eq_con r⁻¹,
+  begin induction this, induction q, reflexivity end
 
 section -- squares
   variables {A B : Type} {a a' a'' a₀₀ a₂₀ a₄₀ a₀₂ a₂₂ a₂₄ a₀₄ a₄₂ a₄₄ a₁ a₂ a₃ a₄ : A}

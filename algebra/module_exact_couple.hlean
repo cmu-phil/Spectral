@@ -1,10 +1,13 @@
-/- Exact couples of graded (left-) R-modules. -/
+/- Exact couples of graded (left-) R-modules. This file includes:
+  - Constructing exact couples from sequences of maps
+  - Deriving an exact couple
+  - The convergence theorem for exact couples -/
 
 -- Author: Floris van Doorn
 
 import .graded ..homotopy.spectrum .product_group
 
-open algebra is_trunc left_module is_equiv equiv eq function nat
+open algebra is_trunc left_module is_equiv equiv eq function nat sigma sigma.ops set_quotient
 
 /- exact couples -/
 
@@ -17,9 +20,10 @@ namespace left_module
     (jk : is_exact_gmod j k)
     (ki : is_exact_gmod k i)
 
+  open exact_couple
+
   namespace derived_couple
   section
-  open exact_couple
 
   parameters {R : Ring} {I : Set} (X : exact_couple R I)
   local abbreviation D := D X
@@ -42,7 +46,7 @@ namespace left_module
   !is_contr_image_module
 
   definition i' : D' →gm D' :=
-  graded_image_lift i ∘gm graded_submodule_incl _
+  graded_image_lift i ∘gm graded_submodule_incl (λx, image_rel (i ← x))
   -- degree i + 0
 
   lemma is_surjective_i' {x y : I} (p : deg i' x = y)
@@ -93,70 +97,126 @@ namespace left_module
   graded_image_elim (graded_homology_intro d d ∘gm graded_hom_lift j j_lemma1) j_lemma2
   -- degree deg j - deg i
 
-  lemma k_lemma1 ⦃x : I⦄ (m : E x) : image (i ← (deg k x)) (k x m) :=
-  begin
-    exact sorry
-  end
+  -- mk_out_in (deg f) (deg g)
 
-  lemma k_lemma2 : compose_constant (graded_hom_lift k k_lemma1 : E →gm D') d :=
+  lemma k_lemma1 ⦃x : I⦄ (m : E x) (p : d x m = 0) : image (i ← (deg k x)) (k x m) :=
+  gmod_ker_in_im (exact_couple.ij X) (k x m) p
+
+  definition k₂ : graded_kernel d →gm D' := graded_submodule_functor k k_lemma1
+
+  lemma k_lemma2 ⦃x : I⦄ (m : E x) (h₁ : kernel_rel (d x) m) (h₂ : image (d ← x) m) :
+    k₂ x ⟨m, h₁⟩ = 0 :=
   begin
-    --   apply compose_constant.mk, intro x m,
-    --   rewrite [graded_hom_compose_fn],
-    --   refine ap (graded_hom_fn (graded_image_lift i) (deg k (deg d x))) _ ⬝ !to_respect_zero,
-    --   exact compose_constant.elim (gmod_im_in_ker jk) (deg k x) (k x m)
-    exact sorry
+    assert H₁ : Π⦃x' y z w : I⦄ (p : deg k x' = y) (q : deg j y = z) (r : deg k z = w) (n : E x'),
+      k ↘ r (j ↘ q (k ↘ p n)) = 0,
+    { intros, exact gmod_im_in_ker (exact_couple.jk X) q r (k ↘ p n) },
+    induction h₂ with n p,
+    assert H₂ : k x m = 0,
+    { rewrite [-p], refine ap (k x) (graded_hom_compose_fn_out j k x n) ⬝ _, apply H₁ },
+    exact subtype_eq H₂
   end
 
   definition k' : E' →gm D' :=
-  graded_homology_elim (graded_hom_lift k k_lemma1) k_lemma2
+  graded_quotient_elim (graded_submodule_functor k k_lemma1)
+                       (by intro x m h; exact k_lemma2 m.1 m.2 h)
+
+  definition i'_eq ⦃x : I⦄ (m : D x) (h : image (i ← x) m) : (i' x ⟨m, h⟩).1 = i x m :=
+  by reflexivity
+
+  definition k'_eq ⦃x : I⦄ (m : E x) (h : d x m = 0) : (k' x (class_of ⟨m, h⟩)).1 = k x m :=
+  by reflexivity
+
+  lemma j'_eq {x : I} (m : D x) : j' ↘ (ap (deg j) (left_inv (deg i) x)) (graded_image_lift i x m) =
+    class_of (graded_hom_lift j proof j_lemma1 qed x m) :=
+  begin
+    refine graded_image_elim_destruct _ _ _ idp _ m,
+    apply is_set.elim,
+  end
 
   definition deg_i' : deg i' ~ deg i := by reflexivity
   definition deg_j' : deg j' ~ deg j ∘ (deg i)⁻¹ := by reflexivity
   definition deg_k' : deg k' ~ deg k := by reflexivity
 
+  open group
   lemma i'j' : is_exact_gmod i' j' :=
   begin
-    apply is_exact_gmod.mk,
-    { intro x, refine total_image.rec _, intro m, exact sorry
-      -- exact calc
-      --   j' (deg i' x) (i' x ⟨(i ← x) m, image.mk m idp⟩)
-      --       = j' (deg i' x) (graded_image_lift i x ((i ← x) m)) : idp
-      --   ... = graded_homology_intro d d (deg j ((deg i)⁻¹ᵉ (deg i x)))
-      --           (graded_hom_lift j j_lemma1 ((deg i)⁻¹ᵉ (deg i x))
-      --           (i ↘ (!to_right_inv ⬝ !to_left_inv⁻¹) m)) : _
-      --   ... = graded_homology_intro d d (deg j ((deg i)⁻¹ᵉ (deg i x)))
-      --           (graded_hom_lift j j_lemma1 ((deg i)⁻¹ᵉ (deg i x))
-      --           (i ↘ (!to_right_inv ⬝ !to_left_inv⁻¹) m)) : _
-      --   ... = 0 : _
-      },
-    { exact sorry }
+    intro x, refine equiv_rect (deg i) _ _,
+    intros y z p q, revert z q x p,
+    refine eq.rec_grading (deg i ⬝e deg j') (deg j) (ap (deg j) (left_inv (deg i) y)) _,
+    intro x, revert y, refine eq.rec_equiv (deg i) _,
+    apply transport (λx, is_exact_mod x _) (idpath (i' x)),
+    apply transport (λx, is_exact_mod _ (j' ↘ (ap (deg j) (left_inv (deg i) x)))) (idpath x),
+    apply is_exact_mod.mk,
+    { revert x, refine equiv_rect (deg i) _ _, intro x,
+      refine graded_image.rec _, intro m,
+      transitivity j' ↘ _ (graded_image_lift i (deg i x) (i x m)),
+        apply ap (λx, j' ↘ _ x), apply subtype_eq, apply i'_eq,
+      refine !j'_eq ⬝ _,
+      apply ap class_of, apply subtype_eq, exact is_exact.im_in_ker (exact_couple.ij X idp idp) m },
+    { revert x, refine equiv_rect (deg k) _ _, intro x,
+      refine graded_image.rec _, intro m p,
+      assert q : graded_homology_intro d d (deg j (deg k x))
+                   (graded_hom_lift j j_lemma1 (deg k x) m) = 0,
+      { exact !j'_eq⁻¹ ⬝ p },
+      note q2 := image_of_graded_homology_intro_eq_zero idp (graded_hom_lift j _ _ m) q,
+      induction q2 with n r,
+      assert s : j (deg k x) (m - k x n) = 0,
+      { refine respect_sub (j (deg k x)) m (k x n) ⬝ _,
+        refine ap (sub _) r ⬝ _, apply sub_self },
+      assert t : trunctype.carrier (image (i ← (deg k x)) (m - k x n)),
+      { exact is_exact.ker_in_im (exact_couple.ij X _ _) _ s },
+      refine image.mk ⟨m - k x n, t⟩ _,
+      apply subtype_eq, refine !i'_eq ⬝ !to_respect_sub ⬝ _,
+      refine ap (sub _) _ ⬝ !sub_zero,
+      apply is_exact.im_in_ker (exact_couple.ki X _ _) }
   end
 
   lemma j'k' : is_exact_gmod j' k' :=
   begin
-    apply is_exact_gmod.mk,
-    { exact sorry },
-    { exact sorry }
+    refine equiv_rect (deg i) _ _,
+    intros x y z p, revert y p z,
+    refine eq.rec_grading (deg i ⬝e deg j') (deg j) (ap (deg j) (left_inv (deg i) x)) _,
+    intro z q, induction q,
+    apply is_exact_mod.mk,
+    { refine graded_image.rec _, intro m,
+      refine ap (k' _) (j'_eq m) ⬝ _,
+      apply subtype_eq,
+      refine k'_eq _ _ ⬝ _,
+      exact is_exact.im_in_ker (exact_couple.jk X idp idp) m },
+    { intro m p, induction m using set_quotient.rec_prop with m,
+      induction m with m h, note q := (k'_eq m h)⁻¹ ⬝ ap pr1 p,
+      induction is_exact.ker_in_im (exact_couple.jk X idp idp) m q with n r,
+      apply image.mk (graded_image_lift i x n),
+      refine !j'_eq ⬝ _,
+      apply ap class_of, apply subtype_eq, exact r }
   end
 
   lemma k'i' : is_exact_gmod k' i' :=
   begin
     apply is_exact_gmod.mk,
-    { intro x m, exact sorry },
-    { exact sorry }
+    { intro x m, induction m using set_quotient.rec_prop with m,
+      cases m with m p, apply subtype_eq,
+      change i (deg k x) (k x m) = 0,
+      exact is_exact.im_in_ker (exact_couple.ki X idp idp) m },
+    { intro x m, induction m with m h, intro p,
+      have i (deg k x) m = 0, from ap pr1 p,
+      induction is_exact.ker_in_im (exact_couple.ki X idp idp) m this with n q,
+      have j (deg k x) m = 0, from @(is_exact.im_in_ker2 (exact_couple.ij X _ _)) m h,
+      have d x n = 0, from ap (j (deg k x)) q ⬝ this,
+      exact image.mk (class_of ⟨n, this⟩) (subtype_eq q) }
   end
 
   end
   end derived_couple
 
-  section
-  open derived_couple exact_couple
+  open derived_couple
 
   definition derived_couple [constructor] {R : Ring} {I : Set}
     (X : exact_couple R I) : exact_couple R I :=
   ⦃exact_couple, D := D' X, E := E' X, i := i' X, j := j' X, k := k' X,
     ij := i'j' X, jk := j'k' X, ki := k'i' X⦄
 
+  /- if an exact couple is bounded, we can prove the convergence theorem for it -/
   structure is_bounded {R : Ring} {I : Set} (X : exact_couple R I) : Type :=
   mk' :: (B B' : I → ℕ)
     (Dub : Π⦃x y⦄ ⦃s : ℕ⦄, (deg (i X))^[s] x = y → B x ≤ s → is_contr (D X y))
@@ -166,7 +226,7 @@ namespace left_module
     (deg_ij_commute : hsquare (deg (j X)) (deg (j X)) (deg (i X)) (deg (i X)))
 
 /- Note: Elb proves Dlb for some bound B', but we want tight control over when B' = 0 -/
-  definition is_bounded.mk [constructor] {R : Ring} {I : Set} {X : exact_couple R I}
+  protected definition is_bounded.mk [constructor] {R : Ring} {I : Set} {X : exact_couple R I}
     (B B' B'' : I → ℕ)
     (Dub : Π⦃x : I⦄ ⦃s : ℕ⦄, B x ≤ s → is_contr (D X ((deg (i X))^[s] x)))
     (Dlb : Π⦃x : I⦄ ⦃s : ℕ⦄, B' x ≤ s → is_surjective (i X (((deg (i X))⁻¹ᵉ^[s + 1] x))))
@@ -183,6 +243,9 @@ namespace left_module
     { assumption },
     { assumption }
   end
+
+  namespace convergence_theorem
+  section
 
   open is_bounded
   parameters {R : Ring} {I : Set} (X : exact_couple R I) (HH : is_bounded X)
@@ -213,7 +276,7 @@ namespace left_module
     exact Dub !deg_iterate_ik_commute (le.trans !le_max_left h)
   end
 
-  -- we start counting pages at 0, not at 2.
+  -- we start counting pages at 0
   definition page (r : ℕ) : exact_couple R I :=
   iterate derived_couple r X
 
@@ -283,7 +346,8 @@ namespace left_module
   begin
     revert x y z s H p q, induction r with r IH: intro x y z s H p q,
     { exact Dlb p q H },
--- the following is a start of the proof that i is surjective from the contractibility of E
+/- the following is a start of the proof that i is surjective using that E is contractible (but this
+   makes the bound 1 higher than necessary -/
       -- induction p, change is_surjective (i X x),
       -- apply @(is_surjective_of_is_exact_of_is_contr (exact_couple.ij X idp idp)),
       -- refine Elb _ H,
@@ -304,6 +368,7 @@ namespace left_module
     reflexivity
   end
 
+  /- the infinity pages of E and D -/
   definition Einf : graded_module R I :=
   λx, E (page (B3 x)) x
 
@@ -363,6 +428,7 @@ namespace left_module
     { apply ij (page (r n)) }
   end
 
+  /- the convergence theorem is a combination of the following three results -/
   definition short_exact_mod_infpage (n : ℕ) :
     short_exact_mod (Einfdiag n) (Dinfdiag n) (Dinfdiag (n+1)) :=
   begin
@@ -375,11 +441,16 @@ namespace left_module
   definition Dinfdiag0 (bound_zero : B' (deg (k X) x) = 0) : Dinfdiag 0 ≃lm D X (deg (k X) x) :=
   Dinfstable (le_of_eq bound_zero) idp
 
-  definition Dinfdiag_stable {s : ℕ} (h : B (deg (k X) x) ≤ s) : is_contr (Dinfdiag s) :=
+  lemma Dinfdiag_stable {s : ℕ} (h : B (deg (k X) x) ≤ s) : is_contr (Dinfdiag s) :=
   is_contr_D _ _ (Dub !deg_iterate_ik_commute h)
 
   end
+  end convergence_theorem
 
+  -- open convergence_theorem
+  -- print axioms short_exact_mod_infpage
+  -- print axioms Dinfdiag0
+  -- print axioms Dinfdiag_stable
 
 end left_module
 open left_module
@@ -486,7 +557,7 @@ namespace spectrum
     revert t q, refine eq.rec_equiv (add_right_action (- 1)) _,
     induction p using eq.rec_symm,
     apply is_exact_homotopy homotopy.rfl,
-    { symmetry, intro m, exact graded_hom_mk_out_right_inv deg_j_seq_inv⁻¹ᵉ fn_j_sequence m },
+    { symmetry, exact graded_hom_mk_out_destruct deg_j_seq_inv⁻¹ᵉ fn_j_sequence },
     rexact is_exact_of_is_exact_at (is_exact_LES_of_shomotopy_groups (f s) (m, 2)),
   end
 
@@ -496,7 +567,7 @@ namespace spectrum
     revert x y p, refine eq.rec_right_inv (deg j_sequence) _,
     intro x, induction x with n s,
     apply is_exact_homotopy,
-    { symmetry, intro m, exact graded_hom_mk_out_right_inv deg_j_seq_inv⁻¹ᵉ fn_j_sequence m },
+    { symmetry, exact graded_hom_mk_out_destruct deg_j_seq_inv⁻¹ᵉ fn_j_sequence },
     { reflexivity },
     rexact is_exact_of_is_exact_at (is_exact_LES_of_shomotopy_groups (f s) (n, 1)),
   end

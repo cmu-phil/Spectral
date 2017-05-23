@@ -5,7 +5,7 @@
 
 import .left_module .quotient_group
 
-open algebra eq group sigma is_trunc function trunc equiv is_equiv
+open algebra eq group sigma sigma.ops is_trunc function trunc equiv is_equiv
 
 -- move to subgroup
 attribute normal_subgroup_rel._trans_of_to_subgroup_rel [unfold 2]
@@ -122,6 +122,10 @@ lm_homomorphism_of_group_homomorphism (hom_lift (group_homomorphism_of_lm_homomo
     intro r g, exact subtype_eq (to_respect_smul φ r g)
   end
 
+definition submodule_functor [constructor] {S : submodule_rel M₁} {K : submodule_rel M₂}
+  (φ : M₁ →lm M₂) (h : Π (m : M₁), S m → K (φ m)) : submodule S →lm submodule K :=
+hom_lift (φ ∘lm submodule_incl S) (by intro m; exact h m.1 m.2)
+
 definition hom_lift_compose {K : submodule_rel M₃}
   (φ : M₂ →lm M₃) (h : Π (m : M₂), K (φ m)) (ψ : M₁ →lm M₂) :
   hom_lift φ h ∘lm ψ ~ hom_lift (φ ∘lm ψ) proof (λm, h (ψ m)) qed :=
@@ -210,6 +214,9 @@ lm_homomorphism_of_group_homomorphism (ab_qg_map _) (λr g, idp)
 definition quotient_map_eq_zero (m : M) (H : S m) : quotient_map S m = 0 :=
 qg_map_eq_one _ H
 
+definition rel_of_quotient_map_eq_zero (m : M) (H : quotient_map S m = 0) : S m :=
+rel_of_qg_map_eq_one m H
+
 definition quotient_elim [constructor] (φ : M →lm M₂) (H : Π⦃m⦄, S m → φ m = 0) :
   quotient_module S →lm M₂ :=
 lm_homomorphism_of_group_homomorphism
@@ -286,6 +293,12 @@ begin
   reflexivity
 end
 
+-- definition image_elim_hom_lift (ψ : M →lm M₂) (h : Π⦃g⦄, φ g = 0 → θ g = 0) :
+--   image_elim θ h ∘lm hom_lift ψ _ ~ _ :=
+-- begin
+--   reflexivity
+-- end
+
 definition is_contr_image_module [instance] (φ : M₁ →lm M₂) [is_contr M₂] :
   is_contr (image_module φ) :=
 !is_contr_submodule
@@ -332,19 +345,19 @@ submodule_isomorphism _ (kernel_rel_full φ)
 definition homology (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂) : LeftModule R :=
 @quotient_module R (submodule (kernel_rel ψ)) (submodule_rel_submodule _ (image_rel φ))
 
-definition homology.mk (m : M₂) (h : ψ m = 0) : homology ψ φ :=
+definition homology.mk (φ : M₁ →lm M₂) (m : M₂) (h : ψ m = 0) : homology ψ φ :=
 quotient_map _ ⟨m, h⟩
 
 definition homology_eq0 {m : M₂} {hm : ψ m = 0} (h : image φ m) :
-  homology.mk m hm = 0 :> homology ψ φ :=
+  homology.mk φ m hm = 0 :=
 ab_qg_map_eq_one _ h
 
 definition homology_eq0' {m : M₂} {hm : ψ m = 0} (h : image φ m):
-  homology.mk m hm = homology.mk 0 (to_respect_zero ψ) :> homology ψ φ :=
+  homology.mk φ m hm = homology.mk φ 0 (to_respect_zero ψ) :=
 ab_qg_map_eq_one _ h
 
 definition homology_eq {m n : M₂} {hm : ψ m = 0} {hn : ψ n = 0} (h : image φ (m - n)) :
-  homology.mk m hm = homology.mk n hn :> homology ψ φ :=
+  homology.mk φ m hm = homology.mk φ n hn :=
 eq_of_sub_eq_zero (homology_eq0 h)
 
 definition homology_elim [constructor] (θ : M₂ →lm M) (H : Πm, θ (φ m) = 0) :
@@ -362,8 +375,8 @@ definition is_contr_homology [instance] (ψ : M₂ →lm M₃) (φ : M₁ →lm 
   is_contr (homology ψ φ) :=
 begin apply @is_contr_quotient_module end
 
-definition homology_isomorphism [constructor] (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂) [is_contr M₁] [is_contr M₃] :
-  homology ψ φ ≃lm M₂ :=
+definition homology_isomorphism [constructor] (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂)
+  [is_contr M₁] [is_contr M₃] : homology ψ φ ≃lm M₂ :=
 quotient_module_isomorphism _ (submodule_rel_submodule_trivial (image_rel_trivial φ)) ⬝lm
 !kernel_module_isomorphism
 

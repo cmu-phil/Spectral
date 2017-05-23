@@ -234,6 +234,9 @@ section
     definition to_respect_smul (a : R) (x : M₁) : φ (a • x) = a • (φ x) :=
     respect_smul R φ a x
 
+    definition to_respect_sub (x y : M₁) : φ (x - y) = φ x - φ y :=
+    respect_sub φ x y
+
     definition is_embedding_of_homomorphism /- φ -/ (H : Π{x}, φ x = 0 → x = 0) : is_embedding φ :=
     is_embedding_of_is_add_hom φ @H
 
@@ -390,6 +393,10 @@ end
   local attribute pSet_of_LeftModule [coercion]
   definition is_exact_mod (f : M₁ →lm M₂) (f' : M₂ →lm M₃) : Type :=
   @is_exact M₁ M₂ M₃ (homomorphism_fn f) (homomorphism_fn f')
+
+  definition is_exact_mod.mk {f : M₁ →lm M₂} {f' : M₂ →lm M₃}
+    (h₁ : Πm, f' (f m) = 0) (h₂ : Πm, f' m = 0 → image f m) : is_exact_mod f f' :=
+  is_exact.mk h₁ h₂
 
   structure short_exact_mod (A B C : LeftModule R) :=
     (f : A →lm B)
