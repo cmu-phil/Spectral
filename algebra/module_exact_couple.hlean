@@ -97,8 +97,6 @@ namespace left_module
   graded_image_elim (graded_homology_intro d d ∘gm graded_hom_lift j j_lemma1) j_lemma2
   -- degree deg j - deg i
 
-  -- mk_out_in (deg f) (deg g)
-
   lemma k_lemma1 ⦃x : I⦄ (m : E x) (p : d x m = 0) : image (i ← (deg k x)) (k x m) :=
   gmod_ker_in_im (exact_couple.ij X) (k x m) p
 
@@ -381,7 +379,7 @@ namespace left_module
   definition Dinfstable {x y : I} {r : ℕ} (Hr : B' y ≤ r) (p : x = y) : Dinf y ≃lm D (page r) x :=
   by symmetry; induction p; induction Hr with r Hr IH; reflexivity; exact Dstable Hr ⬝lm IH
 
-  parameters {x : I}
+  parameters (x : I)
 
   definition r (n : ℕ) : ℕ :=
   max (max (B (deg (j X) (deg (k X) x)) + n + 1) (B3 ((deg (i X))^[n] x)))
@@ -475,11 +473,12 @@ namespace pointed
     exact π→g[n+2] f
   end
 
-  definition homotopy_group_conn_functor : Π(n : ℤ) {A B : Type*[1]} (f : A →* B), πc[n] A →g πc[n] B
+  definition homotopy_group_conn_functor :
+    Π(n : ℤ) {A B : Type*[1]} (f : A →* B), πc[n] A →g πc[n] B
   | (of_nat n) A B f := homotopy_group_conn_nat_functor n f
   | (-[1+ n])  A B f := homomorphism_of_is_contr_right _ _
 
-  notation `π→ag'[`:95 n:0 `]`:0 := homotopy_group_conn_functor n
+  notation `π→c[`:95 n:0 `]`:0 := homotopy_group_conn_functor n
 
   section
   open prod prod.ops fiber
@@ -492,6 +491,8 @@ namespace pointed
 
   definition E_sequence : graded_module rℤ I :=
   λv, LeftModule_int_of_AbGroup (πc[v.2] (pconntype.mk (pfiber (f (v.1))) !Hf pt))
+
+  /- first need LES of these connected homotopy groups -/
 
   -- definition exact_couple_sequence : exact_couple rℤ I :=
   -- exact_couple.mk D_sequence E_sequence sorry sorry sorry sorry sorry sorry

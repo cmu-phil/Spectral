@@ -401,7 +401,7 @@ end
   structure short_exact_mod (A B C : LeftModule R) :=
     (f : A →lm B)
     (g : B →lm C)
-    (h : @is_short_exact _ _ (pType.mk _ 0) f g)
+    (h : @is_short_exact A B C f g)
 
   local abbreviation g_of_lm := @group_homomorphism_of_lm_homomorphism
   definition short_exact_mod_of_is_exact {X A B C Y : LeftModule R}
@@ -420,6 +420,7 @@ end
       (equiv_of_isomorphism eA) (equiv_of_isomorphism eB) (pequiv_of_isomorphism eC)
       (λa, to_right_inv (equiv_of_isomorphism eB) _) (λb, to_right_inv (equiv_of_isomorphism eC) _)
       (short_exact_mod.h H))
+
 
   end
 
