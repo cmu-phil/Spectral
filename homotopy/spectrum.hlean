@@ -5,9 +5,9 @@ Authors: Michael Shulman, Floris van Doorn
 
 -/
 
-import homotopy.LES_of_homotopy_groups .splice homotopy.susp ..colim ..pointed
+import homotopy.LES_of_homotopy_groups .splice homotopy.susp ..colim ..pointed .EM ..pointed_pi
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
-     seq_colim succ_str
+     seq_colim succ_str EM EM.ops
 
 /---------------------
   Basic definitions
@@ -47,6 +47,13 @@ namespace spectrum
   --definition glue := (@gen_prespectrum.glue +ℤ)
   definition equiv_glue {N : succ_str} (E : gen_prespectrum N) [H : is_spectrum E] (n:N) : (E n) ≃* (Ω (E (S n))) :=
     pequiv_of_pmap (glue E n) (is_spectrum.is_equiv_glue E n)
+
+  definition equiv_glue2 (Y : spectrum) (n : ℤ) : Ω (Ω (Y (n+2))) ≃* Y n :=
+  begin
+    refine (!equiv_glue ⬝e* loop_pequiv_loop (!equiv_glue ⬝e* loop_pequiv_loop _))⁻¹ᵉ*,
+    refine pequiv_of_eq (ap Y _),
+    exact add.assoc n 1 1
+  end
 
   -- a square when we compose glue with transporting over a path in N
   definition glue_ptransport {N : succ_str} (X : gen_prespectrum N) {n n' : N} (p : n = n') :
@@ -224,7 +231,8 @@ namespace spectrum
 
   -- Makes sense for any indexing succ_str.  Could be done for
   -- prespectra too, but as with truncation, why bother?
-  definition sp_cotensor {N : succ_str} (A : Type*) (B : gen_spectrum N) : gen_spectrum N :=
+
+  definition sp_cotensor [constructor] {N : succ_str} (A : Type*) (B : gen_spectrum N) : gen_spectrum N :=
     spectrum.MK (λn, ppmap A (B n))
       (λn, (loop_pmap_commute A (B (S n)))⁻¹ᵉ* ∘*ᵉ (pequiv_ppcompose_left (equiv_glue B n)))
 
@@ -232,10 +240,9 @@ namespace spectrum
   -- Sections of parametrized spectra
   ----------------------------------------
 
-  -- this definition must be changed to use dependent maps respecting the basepoint, presumably
-  -- definition spi {N : succ_str} (A : Type) (E : A -> gen_spectrum N) : gen_spectrum N :=
-  --   spectrum.MK (λn, ppi (λa, E a n))
-  --     (λn, (loop_ppi_commute (λa, E a (S n)))⁻¹ᵉ* ∘*ᵉ equiv_ppi_right (λa, equiv_glue (E a) n))
+  definition spi [constructor] {N : succ_str} (A : Type*) (E : A -> gen_spectrum N) : gen_spectrum N :=
+    spectrum.MK (λn, Π*a, E a n)
+      (λn, !ppi_loop_pequiv⁻¹ᵉ* ∘*ᵉ ppi_pequiv_right (λa, equiv_glue (E a) n))
 
   /-----------------------------------------
     Fibers and long exact sequences
@@ -355,17 +362,8 @@ namespace spectrum
   end
 
   /- Mapping spectra -/
+  -- note: see also cotensor above
 
-  definition mapping_prespectrum [constructor] {N : succ_str} (X : Type*) (Y : gen_prespectrum N) :
-    gen_prespectrum N :=
-  gen_prespectrum.mk (λn, ppmap X (Y n)) (λn, pfunext X (Y (S n)) ∘* ppcompose_left (glue Y n))
-
-  definition mapping_spectrum [constructor] {N : succ_str} (X : Type*) (Y : gen_spectrum N) :
-    gen_spectrum N :=
-  gen_spectrum.mk
-    (mapping_prespectrum X Y)
-    (is_spectrum.mk (λn, to_is_equiv (pequiv_ppcompose_left (equiv_glue Y n) ⬝e
-                         pfunext X (Y (S n)))))
 
   /- Spectrification -/
 
@@ -445,5 +443,11 @@ namespace spectrum
   /- Smash product of spectra -/
 
   /- Cofibers and stability -/
+
+  /- The Eilenberg-MacLane spectrum -/
+
+  definition EM_spectrum /-[constructor]-/ (G : AbGroup) : spectrum :=
+  spectrum.Mk (K G) (λn, (loop_EM G n)⁻¹ᵉ*)
+
 
 end spectrum

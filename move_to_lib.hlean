@@ -44,6 +44,17 @@ begin
   exact H
 end
 
+definition is_exact_trunc_functor {A B : Type} {C : Type*} {f : A → B} {g : B → C}
+  (H : is_exact_t f g) : @is_exact _ _ (ptrunc 0 C) (trunc_functor 0 f) (trunc_functor 0 g) :=
+begin
+  constructor,
+  { intro a, esimp, induction a with a,
+    exact ap tr (is_exact_t.im_in_ker H a) },
+  { intro b p, induction b with b, note q := !tr_eq_tr_equiv p, induction q with q,
+    induction is_exact_t.ker_in_im H b q with a r,
+    exact image.mk (tr a) (ap tr r) }
+end
+
 definition is_contr_middle_of_is_exact {A B : Type} {C : Type*} {f : A → B} {g : B → C} (H : is_exact f g)
   [is_contr A] [is_set B] [is_contr C] : is_contr B :=
 begin

@@ -6,86 +6,22 @@ Authors: Floris van Doorn
 Reduced cohomology of spectra and cohomology theories
 -/
 
-import .spectrum .EM ..algebra.arrow_group .fwedge ..choice .pushout ..move_to_lib ..algebra.product_group
+import .spectrum ..algebra.arrow_group .fwedge ..choice .pushout ..algebra.product_group
 
 open eq spectrum int trunc pointed EM group algebra circle sphere nat EM.ops equiv susp is_trunc
      function fwedge cofiber bool lift sigma is_equiv choice pushout algebra unit pi
 
-definition is_exact_trunc_functor {A B : Type} {C : Type*} {f : A → B} {g : B → C}
-  (H : is_exact_t f g) : @is_exact _ _ (ptrunc 0 C) (trunc_functor 0 f) (trunc_functor 0 g) :=
-begin
-  constructor,
-  { intro a, esimp, induction a with a,
-    exact ap tr (is_exact_t.im_in_ker H a) },
-  { intro b p, induction b with b, note q := !tr_eq_tr_equiv p, induction q with q,
-    induction is_exact_t.ker_in_im H b q with a r,
-    exact image.mk (tr a) (ap tr r) }
-end
-
-definition is_exact_homotopy {A B C : Type*} {f f' : A → B} {g g' : B → C}
-  (p : f ~ f') (q : g ~ g') (H : is_exact f g) : is_exact f' g' :=
-begin
-  induction p using homotopy.rec_on_idp,
-  induction q using homotopy.rec_on_idp,
-  assumption
-end
-
--- move to arrow group
-
-definition ap1_pmap_mul {X Y : Type*} (f g : X →* Ω Y) :
-  Ω→ (pmap_mul f g) ~* pmap_mul (Ω→ f) (Ω→ g) :=
-begin
-  fconstructor,
-  { intro p, esimp,
-    refine ap1_gen_con_left (respect_pt f) (respect_pt f)
-             (respect_pt g) (respect_pt g) p ⬝ _,
-    refine !whisker_right_idp ◾ !whisker_left_idp2, },
-  { refine !con.assoc ⬝ _,
-    refine _ ◾ idp ⬝ _, rotate 1,
-    rexact ap1_gen_con_left_idp (respect_pt f) (respect_pt g), esimp,
-    refine !con.assoc ⬝ _,
-    apply whisker_left, apply inv_con_eq_idp,
-    refine !con2_con_con2 ⬝ ap011 concat2 _ _:
-      refine eq_of_square (!natural_square ⬝hp !ap_id) ⬝ !con_idp }
-end
-
-definition pmap_mul_pcompose {A B C : Type*} (g h : B →* Ω C) (f : A →* B) :
-  pmap_mul g h ∘* f ~* pmap_mul (g ∘* f) (h ∘* f) :=
-begin
-  fconstructor,
-  { intro p, reflexivity },
-  { esimp, refine !idp_con ⬝ _, refine !con2_con_con2⁻¹ ⬝ whisker_right _ _,
-    refine !ap_eq_ap011⁻¹ }
-end
-
-definition pcompose_pmap_mul {A B C : Type*} (h : B →* C) (f g : A →* Ω B) :
-  Ω→ h ∘* pmap_mul f g ~* pmap_mul (Ω→ h ∘* f) (Ω→ h ∘* g) :=
-begin
-  fconstructor,
-  { intro p, exact ap1_con h (f p) (g p) },
-  { refine whisker_left _ !con2_con_con2⁻¹ ⬝ _, refine !con.assoc⁻¹ ⬝ _,
-    refine whisker_right _ (eq_of_square !ap1_gen_con_natural) ⬝ _,
-    refine !con.assoc ⬝ whisker_left _ _, apply ap1_gen_con_idp }
-end
-
-definition loop_psusp_intro_pmap_mul {X Y : Type*} (f g : psusp X →* Ω Y) :
-  loop_psusp_intro (pmap_mul f g) ~* pmap_mul (loop_psusp_intro f) (loop_psusp_intro g) :=
-pwhisker_right _ !ap1_pmap_mul ⬝* !pmap_mul_pcompose
-
-definition equiv_glue2 (Y : spectrum) (n : ℤ) : Ω (Ω (Y (n+2))) ≃* Y n :=
-begin
-  refine (!equiv_glue ⬝e* loop_pequiv_loop (!equiv_glue ⬝e* loop_pequiv_loop _))⁻¹ᵉ*,
-  refine pequiv_of_eq (ap Y _),
-  exact add.assoc n 1 1
-end
-
 namespace cohomology
 
-definition EM_spectrum /-[constructor]-/ (G : AbGroup) : spectrum :=
-spectrum.Mk (K G) (λn, (loop_EM G n)⁻¹ᵉ*)
-
+/- The cohomology of X with coefficients in Y is
+   trunc 0 (A →* Ω[2] (Y (n+2)))
+   In the file arrow_group (in algebra) we construct the group structor on this type.
+-/
 definition cohomology (X : Type*) (Y : spectrum) (n : ℤ) : AbGroup :=
 AbGroup_trunc_pmap X (Y (n+2))
+
+definition parametrized_cohomology {X : Type*} (Y : X → spectrum) (n : ℤ) : AbGroup :=
+AbGroup_trunc_ppi (λx, Y x (n+2))
 
 definition ordinary_cohomology [reducible] (X : Type*) (G : AbGroup) (n : ℤ) : AbGroup :=
 cohomology X (EM_spectrum G) n
@@ -95,9 +31,17 @@ ordinary_cohomology X agℤ n
 
 notation `H^` n `[`:0 X:0 `, ` Y:0 `]`:0 := cohomology X Y n
 notation `H^` n `[`:0 X:0 `]`:0 := ordinary_cohomology_Z X n
+notation `pH^` n `[`:0 binders `, ` r:(scoped Y, parametrized_cohomology Y n) `]`:0 := r
 
 -- check H^3[S¹*,EM_spectrum agℤ]
 -- check H^3[S¹*]
+-- check pH^3[(x : S¹*), EM_spectrum agℤ]
+
+/- an alternate definition of cohomology -/
+definition cohomology_equiv_shomotopy_group_cotensor (X : Type*) (Y : spectrum) (n : ℤ) :
+  H^n[X, Y] ≃ πₛ[-n] (sp_cotensor X Y) :=
+trunc_equiv_trunc 0 (!pfunext ⬝e loop_pequiv_loop !pfunext ⬝e loopn_pequiv_loopn 2
+  (pequiv_of_eq (ap (λn, ppmap X (Y n)) (add.comm n 2 ⬝ ap (add 2) !neg_neg⁻¹))))
 
 definition unpointed_cohomology (X : Type) (Y : spectrum) (n : ℤ) : AbGroup :=
 cohomology X₊ Y n

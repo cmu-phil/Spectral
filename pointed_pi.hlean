@@ -6,7 +6,7 @@ Authors: Ulrik Buchholtz
 
 import .move_to_lib
 
-open eq pointed equiv sigma
+open eq pointed equiv sigma is_equiv
 
 /-
   The goal of this file is to give the truncation level
@@ -18,17 +18,18 @@ open eq pointed equiv sigma
   as a tool, because these appear in the more general
   statement is_trunc_ppi (the generality needed for induction).
 
-  Unfortunately, some of these names (ppi) and notations (Π*)
-  clash with those in types.pi in the pi namespace.
 -/
 
 namespace pointed
 
   abbreviation ppi_resp_pt [unfold 3] := @ppi.resp_pt
 
+  definition ppi_const [constructor] {A : Type*} (P : A → Type*) : Π*(a : A), P a :=
+  ppi.mk (λa, pt) idp
+
   definition pointed_ppi [instance] [constructor] {A : Type*}
     (P : A → Type*) : pointed (ppi A P) :=
-  pointed.mk (ppi.mk (λ a, pt) idp)
+  pointed.mk (ppi_const P)
 
   definition pppi [constructor] {A : Type*} (P : A → Type*) : Type* :=
   pointed.mk' (ppi A P)
@@ -39,12 +40,28 @@ namespace pointed
     (homotopy : f ~ g)
     (homotopy_pt : homotopy pt ⬝ ppi_resp_pt g = ppi_resp_pt f)
 
-  variables {A : Type*} {P : A → Type*} {f g : Π*(a : A), P a}
+  variables {A : Type*} {P Q R : A → Type*} {f g h : Π*(a : A), P a}
 
   infix ` ~~* `:50 := ppi_homotopy
   abbreviation ppi_to_homotopy_pt [unfold 5] := @ppi_homotopy.homotopy_pt
   abbreviation ppi_to_homotopy [coercion] [unfold 5] (p : f ~~* g) : Πa, f a = g a :=
   ppi_homotopy.homotopy p
+
+  variable (f)
+  protected definition ppi_homotopy.refl : f ~~* f :=
+  sorry
+  variable {f}
+  protected definition ppi_homotopy.rfl [refl] : f ~~* f :=
+  ppi_homotopy.refl f
+
+  protected definition ppi_homotopy.symm [symm] (p : f ~~* g) : g ~~* f :=
+  sorry
+
+  protected definition ppi_homotopy.trans [trans] (p : f ~~* g) (q : g ~~* h) : f ~~* h :=
+  sorry
+
+  infix ` ⬝*' `:75 := ppi_homotopy.trans
+  postfix `⁻¹*'`:(max+1) := ppi_homotopy.symm
 
   definition ppi_equiv_pmap (A B : Type*) : (Π*(a : A), B) ≃ (A →* B) :=
   begin
@@ -92,14 +109,14 @@ namespace pointed
   definition ppi_eq_equiv : (f = g) ≃ (f ~~* g) :=
     calc (f = g) ≃ ppi.sigma_char P f = ppi.sigma_char P g
                    : eq_equiv_fn_eq (ppi.sigma_char P) f g
-            ...  ≃ Σ(p : ppi.to_fun f = ppi.to_fun g),
+            ...  ≃ Σ(p : f = g),
                      pathover (λh, h pt = pt) (ppi_resp_pt f) p (ppi_resp_pt g)
                    : sigma_eq_equiv _ _
-            ...  ≃ Σ(p : ppi.to_fun f = ppi.to_fun g),
+            ...  ≃ Σ(p : f = g),
                      ppi_resp_pt f = ap (λh, h pt) p ⬝ ppi_resp_pt g
                    : sigma_equiv_sigma_right
                        (λp, eq_pathover_equiv_Fl p (ppi_resp_pt f) (ppi_resp_pt g))
-            ...  ≃ Σ(p : ppi.to_fun f = ppi.to_fun g),
+            ...  ≃ Σ(p : f = g),
                      ppi_resp_pt f = apd10 p pt ⬝ ppi_resp_pt g
                    : sigma_equiv_sigma_right
                        (λp, equiv_eq_closed_right _ (whisker_right _ (ap_eq_apd10 p _)))
@@ -129,6 +146,57 @@ namespace pointed
                    : ppi.sigma_char
              ... ≃ Π*(a : A), Ω (pType.mk (P a) (f a))
                    : erfl
+
+  variables {f g}
+  definition eq_of_ppi_homotopy (h : f ~~* g) : f = g :=
+  (ppi_eq_equiv f g)⁻¹ᵉ h
+
+  definition ppi_loop_pequiv : Ω (Π*(a : A), P a) ≃* Π*(a : A), Ω (P a) :=
+  pequiv_of_equiv (ppi_loop_equiv pt) idp
+
+  definition pmap_compose_ppi [constructor] (g : Π(a : A), ppmap (P a) (Q a))
+    (f : Π*(a : A), P a) : Π*(a : A), Q a :=
+  proof ppi.mk (λa, g a (f a)) (ap (g pt) (ppi.resp_pt f) ⬝ respect_pt (g pt)) qed
+
+  definition pmap_compose_ppi_const_right (g : Π(a : A), ppmap (P a) (Q a)) :
+    pmap_compose_ppi g (ppi_const P) ~~* ppi_const Q :=
+  proof ppi_homotopy.mk (λa, respect_pt (g a)) !idp_con⁻¹ qed
+
+  definition pmap_compose_ppi_const_left (f : Π*(a : A), P a) :
+    pmap_compose_ppi (λa, pconst (P a) (Q a)) f ~~* ppi_const Q :=
+  sorry
+
+  definition ppi_compose_left [constructor] (g : Π(a : A), ppmap (P a) (Q a)) :
+    (Π*(a : A), P a) →* Π*(a : A), Q a :=
+  pmap.mk (pmap_compose_ppi g) (eq_of_ppi_homotopy (pmap_compose_ppi_const_right g))
+
+  definition pmap_compose_ppi_phomotopy_left [constructor] {g g' : Π(a : A), ppmap (P a) (Q a)}
+    (f : Π*(a : A), P a) (p : Πa, g a ~* g' a) : pmap_compose_ppi g f ~~* pmap_compose_ppi g' f :=
+  sorry
+
+  definition pmap_compose_ppi_pid_left [constructor]
+    (f : Π*(a : A), P a) : pmap_compose_ppi (λa, pid (P a)) f ~~* f :=
+  sorry
+
+  definition pmap_compose_pmap_compose_ppi [constructor] (h : Π(a : A), ppmap (Q a) (R a))
+    (g : Π(a : A), ppmap (P a) (Q a)) :
+    pmap_compose_ppi h (pmap_compose_ppi g f) ~~* pmap_compose_ppi (λa, h a ∘* g a) f :=
+  sorry
+
+  definition ppi_pequiv_right [constructor] (g : Π(a : A), P a ≃* Q a) :
+    (Π*(a : A), P a) ≃* Π*(a : A), Q a :=
+  begin
+    apply pequiv_of_pmap (ppi_compose_left g),
+    apply adjointify _ (ppi_compose_left (λa, (g a)⁻¹ᵉ*)),
+    { intro f, apply eq_of_ppi_homotopy,
+      refine !pmap_compose_pmap_compose_ppi ⬝*' _,
+      refine pmap_compose_ppi_phomotopy_left _ (λa, !pright_inv) ⬝*' _,
+      apply pmap_compose_ppi_pid_left },
+    { intro f, apply eq_of_ppi_homotopy,
+      refine !pmap_compose_pmap_compose_ppi ⬝*' _,
+      refine pmap_compose_ppi_phomotopy_left _ (λa, !pleft_inv) ⬝*' _,
+      apply pmap_compose_ppi_pid_left }
+  end
 
 end pointed open pointed
 
