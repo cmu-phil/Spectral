@@ -499,6 +499,65 @@ namespace EM
   equivalence.mk (EM_cfunctor (n+2)) (is_equivalence_EM_cfunctor n)
   end category
 
+  /- move -/
+  -- switch arguments in homotopy_group_trunc_of_le
+  lemma ghomotopy_group_trunc_of_le (k n : ℕ) (A : Type*) [Hk : is_succ k] (H : k ≤[ℕ] n)
+    : πg[k] (ptrunc n A) ≃g πg[k] A :=
+  begin
+    exact sorry
+  end
+
+  lemma homotopy_group_isomorphism_of_ptrunc_pequiv {A B : Type*}
+    (n k : ℕ) (H : n+1 ≤[ℕ] k) (f : ptrunc k A ≃* ptrunc k B) : πg[n+1] A ≃g πg[n+1] B :=
+  (ghomotopy_group_trunc_of_le _ k A H)⁻¹ᵍ ⬝g
+  homotopy_group_isomorphism_of_pequiv n f ⬝g
+  ghomotopy_group_trunc_of_le _ k B H
+
+  open trunc_index
+  lemma minus_two_add_plus_two (n : ℕ₋₂) : -2+2+n = n :=
+  by induction n with n p; reflexivity; exact ap succ p
+
+  definition is_trunc_succ_of_is_trunc_loop (n : ℕ₋₂) (A : Type*) (H : is_trunc (n.+1) (Ω A))
+    (H2 : is_conn 0 A) : is_trunc (n.+2) A :=
+  begin
+    apply is_trunc_succ_of_is_trunc_loop, apply minus_one_le_succ,
+    refine is_conn.elim -1 _ _, exact H
+  end
+
+  lemma is_trunc_of_is_trunc_loopn (m n : ℕ) (A : Type*) (H : is_trunc n (Ω[m] A))
+    (H2 : is_conn m A) : is_trunc (m + n) A :=
+  begin
+    revert A H H2; induction m with m IH: intro A H H2,
+    { rewrite [nat.zero_add], exact H },
+    rewrite [succ_add],
+    apply is_trunc_succ_of_is_trunc_loop,
+    { apply IH,
+      { apply is_trunc_equiv_closed _ !loopn_succ_in },
+      apply is_conn_loop },
+    exact is_conn_of_le _ (zero_le_of_nat (succ m))
+  end
+
+  lemma is_trunc_of_is_set_loopn (m : ℕ) (A : Type*) (H : is_set (Ω[m] A))
+    (H2 : is_conn m A) : is_trunc m A :=
+  is_trunc_of_is_trunc_loopn m 0 A H H2
+
+  definition pequiv_EMadd1_of_loopn_pequiv_EM1 {G : AbGroup} {X : Type*} (n : ℕ) (e : Ω[n] X ≃* EM1 G)
+    [H1 : is_conn n X] : X ≃* EMadd1 G n :=
+  begin
+    symmetry, apply EMadd1_pequiv,
+    refine isomorphism_of_eq (ap (λx, πg[x+1] X) !zero_add⁻¹) ⬝g homotopy_group_add X 0 n ⬝g _ ⬝g
+      !fundamental_group_EM1,
+    exact homotopy_group_isomorphism_of_pequiv 0 e,
+    refine is_trunc_of_is_trunc_loopn n 1 X _ _,
+    apply is_trunc_equiv_closed_rev 1 e
+  end
+
+  definition EM1_pequiv_EM1 {G H : Group} (φ : G ≃g H) : EM1 G ≃* EM1 H :=
+  sorry
+
+  definition EMadd1_pequiv_EMadd1 (n : ℕ) {G H : AbGroup} (φ : G ≃g H) : EMadd1 G n ≃* EMadd1 H n :=
+  sorry
+
   /- Eilenberg MacLane spaces are the fibers of the Postnikov system of a type -/
 
   definition postnikov_map [constructor] (A : Type*) (n : ℕ₋₂) : ptrunc (n.+1) A →* ptrunc n A :=
@@ -507,30 +566,40 @@ namespace EM
   open fiber EM.ops
 
   definition loopn_succ_pfiber_postnikov_map (A : Type*) (k : ℕ) (n : ℕ₋₂) :
-    Ω[k+1] (pfiber (postnikov_map A (n.+1))) ≃* Ω[k] (pfiber (postnikov_map A n)) :=
+    Ω[k+1] (pfiber (postnikov_map A (n.+1))) ≃* Ω[k] (pfiber (postnikov_map (Ω A) n)) :=
   begin
     exact sorry
   end
 
-  definition loopn_pfiber_postnikov_map (A : Type*) (n : ℕ) :
-    Ω[n+1] (pfiber (postnikov_map A n)) ≃* ptrunc 0 A :=
+  definition pfiber_postnikov_map_zero (A : Type*) :
+    pfiber (postnikov_map A 0) ≃* EM1 (πg[1] A) :=
   begin
-    induction n with n IH,
-    { exact loopn_succ_pfiber_postnikov_map A 0 -1 ⬝e* !pfiber_pequiv_of_is_prop },
-    exact loopn_succ_pfiber_postnikov_map A (n+1) n ⬝e* IH
+    symmetry, apply EM1_pequiv,
+    { refine !homotopy_group_component⁻¹ᵍ ⬝g _,
+      apply homotopy_group_isomorphism_of_ptrunc_pequiv, exact le.refl 1, symmetry,
+      refine !ptrunc_pequiv ⬝e* _,
+      exact sorry
+      },
+    { apply @is_conn_fun_trunc_elim, apply is_conn_fun_tr }
+  end
+
+
+  definition loopn_pfiber_postnikov_map (A : Type*) (n : ℕ) :
+    Ω[n] (pfiber (postnikov_map A n)) ≃* EM1 (πg[n+1] A) :=
+  begin
+    revert A, induction n with n IH: intro A,
+    { apply pfiber_postnikov_map_zero },
+    exact loopn_succ_pfiber_postnikov_map A n n ⬝e* IH (Ω A) ⬝e*
+          EM1_pequiv_EM1 !ghomotopy_group_succ_in⁻¹ᵍ
   end
 
   definition pfiber_postnikov_map_succ (A : Type*) (n : ℕ) :
     pfiber (postnikov_map A (n+1)) ≃* EMadd1 (πag[n+2] A) (n+1) :=
   begin
-    symmetry, apply EMadd1_pequiv,
-    { },
-    { apply @is_conn_fun_trunc_elim, apply is_conn_fun_tr }
+    apply pequiv_EMadd1_of_loopn_pequiv_EM1,
+    { exact sorry },
+    { apply is_conn_fun_trunc_elim,  apply is_conn_fun_tr }
   end
 
-  definition pfiber_postnikov_map_zero (A : Type*) : pfiber (postnikov_map A 0) ≃* EM1 (πg[1] A) :=
-  begin
-    exact sorry
-  end
 
 end EM

@@ -954,6 +954,7 @@ namespace fiber
     Ω→ (ppoint f) ∘* (loop_pfiber f)⁻¹ᵉ* ~* ppoint (Ω→ f) :=
   (phomotopy_pinv_right_of_phomotopy (ppoint_loop_pfiber f))⁻¹*
 
+  -- rename to pfiber_pequiv_...
   lemma pfiber_equiv_of_phomotopy_ppoint {A B : Type*} {f g : A →* B} (h : f ~* g)
     : ppoint g ∘* pfiber_equiv_of_phomotopy h ~* ppoint f :=
   begin
@@ -1005,19 +1006,13 @@ namespace fiber
     [is_trunc n A] [is_trunc (n.+1) B] : is_trunc n (pfiber f) :=
   is_trunc_fiber n f pt
 
-  definition fiber_equiv_of_is_prop [constructor] {A B : Type} (f : A → B) (b : B) [is_prop B] :
+  definition fiber_equiv_of_is_contr [constructor] {A B : Type} (f : A → B) (b : B) [is_contr B] :
     fiber f b ≃ A :=
-  begin
-    fapply equiv.MK,
-    { intro f, cases f with a H, exact a },
-    { intro a, apply fiber.mk a, apply is_prop.elim },
-    { intro a, reflexivity },
-    { intro f, cases f with a H, apply ap (fiber.mk a) !is_prop.elim }
-  end
+  !fiber.sigma_char ⬝e !sigma_equiv_of_is_contr_right
 
-  definition pfiber_pequiv_of_is_prop [constructor] {A B : Type*} (f : A →* B) [is_prop B] :
+  definition pfiber_pequiv_of_is_contr [constructor] {A B : Type*} (f : A →* B) [is_contr B] :
     pfiber f ≃* A :=
-  pequiv_of_equiv (fiber_equiv_of_is_prop f pt) idp
+  pequiv_of_equiv (fiber_equiv_of_is_contr f pt) idp
 
 end fiber
 
@@ -1180,6 +1175,103 @@ namespace is_conn
     intro k a H2, revert a, apply is_conn.elim -1,
     cases A with A a, exact H k H2
   end
+
+  /- move! -/
+  open sigma.ops pointed
+  definition merely_constant {A B : Type} (f : A → B) : Type :=
+  Σb, Πa, merely (f a = b)
+
+  definition merely_constant_pmap {A B : Type*} {f : A →* B} (H : merely_constant f) (a : A) :
+    merely (f a = pt) :=
+  tconcat (tconcat (H.2 a) (tinverse (H.2 pt))) (tr (respect_pt f))
+
+  definition merely_constant_of_is_conn {A B : Type*} (f : A →* B) [is_conn 0 A] : merely_constant f :=
+  ⟨pt, is_conn.elim -1 _ (tr (respect_pt f))⟩
+
+  open sigma
+  definition component [constructor] (A : Type*) : Type* :=
+  pType.mk (Σ(a : A), merely (pt = a)) ⟨pt, tr idp⟩
+
+  lemma is_conn_component [instance] (A : Type*) : is_conn 0 (component A) :=
+  is_contr.mk (tr pt)
+    begin
+      intro x, induction x with x, induction x with a p, induction p with p, induction p, reflexivity
+    end
+
+  definition component_incl [constructor] (A : Type*) : component A →* A :=
+  pmap.mk pr1 idp
+
+  definition component_intro [constructor] {A B : Type*} (f : A →* B) (H : merely_constant f) :
+    A →* component B :=
+  begin
+    fapply pmap.mk,
+    { intro a, refine ⟨f a, _⟩, exact tinverse (merely_constant_pmap H a) },
+    exact subtype_eq !respect_pt
+  end
+
+  definition component_functor [constructor] {A B : Type*} (f : A →* B) : component A →* component B :=
+  component_intro (f ∘* component_incl A) !merely_constant_of_is_conn
+
+  -- definition component_elim [constructor] {A B : Type*} (f : A →* B) (H : merely_constant f) :
+  --   A →* component B :=
+  -- begin
+  --   fapply pmap.mk,
+  --   { intro a, refine ⟨f a, _⟩, exact tinverse (merely_constant_pmap H a) },
+  --   exact subtype_eq !respect_pt
+  -- end
+
+  /- move!-/
+  lemma is_equiv_ap1_of_is_embedding {A B : Type*} (f : A →* B) [is_embedding f] :
+    is_equiv (Ω→ f) :=
+  sorry
+
+  definition loop_pequiv_loop_of_is_embedding [constructor] {A B : Type*} (f : A →* B) [is_embedding f] :
+    Ω A ≃* Ω B :=
+  pequiv_of_pmap (Ω→ f) (is_equiv_ap1_of_is_embedding f)
+
+  definition loop_component (A : Type*) : Ω (component A) ≃* Ω A :=
+  have is_embedding (component_incl A), from is_embedding_pr1 _,
+  loop_pequiv_loop_of_is_embedding (component_incl A)
+
+  lemma loopn_component (n : ℕ) (A : Type*) : Ω[n+1] (component A) ≃* Ω[n+1] A :=
+  !loopn_succ_in ⬝e* loopn_pequiv_loopn n (loop_component A) ⬝e* !loopn_succ_in⁻¹ᵉ*
+
+  -- lemma fundamental_group_component (A : Type*) : π₁ (component A) ≃g π₁ A :=
+  -- isomorphism_of_equiv (trunc_equiv_trunc 0 (loop_component A)) _
+
+  lemma homotopy_group_component (n : ℕ) (A : Type*) : πg[n+1] (component A) ≃g πg[n+1] A :=
+  sorry
+
+  definition is_trunc_component [instance] (n : ℕ₋₂) (A : Type*) [is_trunc n A] : is_trunc n (component A) :=
+  begin
+    apply @is_trunc_sigma, intro a, cases n with n,
+    { apply is_contr_of_inhabited_prop, exact tr !is_prop.elim },
+    { apply is_trunc_succ_of_is_prop },
+  end
+
+  definition ptrunc_component' (n : ℕ₋₂) (A : Type*) :
+    ptrunc (n.+2) (component A) ≃* component (ptrunc (n.+2) A) :=
+  begin
+    fapply pequiv.MK,
+    { exact ptrunc.elim (n.+2) (component_functor !ptr) },
+    { intro x, cases x with x p, induction x with a,
+      refine tr ⟨a, _⟩,
+      note q := trunc_functor -1 !tr_eq_tr_equiv p,
+      exact trunc_trunc_equiv_left _ !minus_one_le_succ q },
+    { exact sorry },
+    { exact sorry }
+  end
+
+  definition ptrunc_component (n : ℕ₋₂) (A : Type*) : ptrunc n (component A) ≃* component (ptrunc n A) :=
+  begin
+    cases n with n, exact sorry,
+    cases n with n, exact sorry,
+    exact ptrunc_component' n A
+  end
+
+  definition pfiber_pequiv_component_of_is_contr [constructor] {A B : Type*} (f : A →* B) [is_contr B]
+    /- extra condition, something like trunc_functor 0 f is an embedding -/ : pfiber f ≃* component A :=
+  sorry
 
 end is_conn
 
