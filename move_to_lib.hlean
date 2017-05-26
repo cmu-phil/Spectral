@@ -997,6 +997,28 @@ namespace fiber
     refine !pequiv_postcompose_ppoint⁻¹*,
   end
 
+  definition is_trunc_fiber [instance] (n : ℕ₋₂) {A B : Type} (f : A → B) (b : B)
+    [is_trunc n A] [is_trunc (n.+1) B] : is_trunc n (fiber f b) :=
+  is_trunc_equiv_closed_rev n !fiber.sigma_char
+
+  definition is_trunc_pfiber [instance] (n : ℕ₋₂) {A B : Type*} (f : A →* B)
+    [is_trunc n A] [is_trunc (n.+1) B] : is_trunc n (pfiber f) :=
+  is_trunc_fiber n f pt
+
+  definition fiber_equiv_of_is_prop [constructor] {A B : Type} (f : A → B) (b : B) [is_prop B] :
+    fiber f b ≃ A :=
+  begin
+    fapply equiv.MK,
+    { intro f, cases f with a H, exact a },
+    { intro a, apply fiber.mk a, apply is_prop.elim },
+    { intro a, reflexivity },
+    { intro f, cases f with a H, apply ap (fiber.mk a) !is_prop.elim }
+  end
+
+  definition pfiber_pequiv_of_is_prop [constructor] {A B : Type*} (f : A →* B) [is_prop B] :
+    pfiber f ≃* A :=
+  pequiv_of_equiv (fiber_equiv_of_is_prop f pt) idp
+
 end fiber
 
 namespace is_trunc
@@ -1020,11 +1042,114 @@ begin
   { apply is_trunc_succ_of_is_prop }
 end
 
+  -- don't make is_prop_is_trunc an instance
+  definition is_trunc_succ_is_trunc [instance] (n m : ℕ₋₂) (A : Type) :
+    is_trunc (n.+1) (is_trunc m A) :=
+  !is_trunc_succ_of_is_prop
+
 end is_trunc
 
 namespace is_conn
 
   open unit trunc_index nat is_trunc pointed.ops
+
+  definition is_conn_equiv_closed_rev (n : ℕ₋₂) {A B : Type} (f : A ≃ B) (H : is_conn n B) :
+    is_conn n A :=
+  is_conn_equiv_closed n f⁻¹ᵉ _
+
+  definition is_conn_succ_intro {n : ℕ₋₂} {A : Type} (a : trunc (n.+1) A)
+    (H2 : Π(a a' : A), is_conn n (a = a')) : is_conn (n.+1) A :=
+  begin
+    apply @is_contr_of_inhabited_prop,
+    { apply is_trunc_succ_intro,
+      refine trunc.rec _, intro a, refine trunc.rec _, intro a',
+      apply is_contr_equiv_closed !tr_eq_tr_equiv⁻¹ᵉ },
+    exact a
+  end
+
+  definition is_conn_pathover (n : ℕ₋₂) {A : Type} {B : A → Type} {a a' : A} (p : a = a') (b : B a)
+    (b' : B a') [is_conn (n.+1) (B a')] : is_conn n (b =[p] b') :=
+  is_conn_equiv_closed_rev n !pathover_equiv_tr_eq _
+
+  lemma is_conn_sigma [instance] {A : Type} (B : A → Type) (n : ℕ₋₂)
+    [HA : is_conn n A] [HB : Πa, is_conn n (B a)] : is_conn n (Σa, B a) :=
+  begin
+    revert A B HA HB, induction n with n IH: intro A B HA HB,
+    { apply is_conn_minus_two },
+    apply is_conn_succ_intro,
+    { induction center (trunc (n.+1) A) with a, induction center (trunc (n.+1) (B a)) with b,
+      exact tr ⟨a, b⟩ },
+    intro a a', refine is_conn_equiv_closed_rev n !sigma_eq_equiv _,
+    apply IH, apply is_conn_eq, intro p, apply is_conn_pathover
+    /- an alternative proof of the successor case -/
+    -- induction center (trunc (n.+1) A) with a₀,
+    -- induction center (trunc (n.+1) (B a₀)) with b₀,
+    -- apply is_contr.mk (tr ⟨a₀, b₀⟩),
+    -- intro ab, induction ab with ab, induction ab with a b,
+    -- induction tr_eq_tr_equiv n a₀ a !is_prop.elim with p, induction p,
+    -- induction tr_eq_tr_equiv n b₀ b !is_prop.elim with q, induction q,
+    -- reflexivity
+  end
+
+  lemma is_conn_prod [instance] (A B : Type) (n : ℕ₋₂) [is_conn n A] [is_conn n B] :
+    is_conn n (A × B) :=
+  is_conn_equiv_closed n !sigma.equiv_prod _
+
+  lemma is_conn_fun_of_is_conn {A B : Type} (n : ℕ₋₂) (f : A → B)
+    [HA : is_conn n A] [HB : is_conn (n.+1) B] : is_conn_fun n f :=
+  λb, is_conn_equiv_closed_rev n !fiber.sigma_char _
+
+  lemma is_conn_pfiber {A B : Type*} (n : ℕ₋₂) (f : A →* B)
+    [HA : is_conn n A] [HB : is_conn (n.+1) B] : is_conn n (pfiber f) :=
+  is_conn_fun_of_is_conn n f pt
+
+  definition is_conn_fun_trunc_elim_of_le {n k : ℕ₋₂} {A B : Type} [is_trunc n B] (f : A → B)
+    (H : k ≤ n) [H2 : is_conn_fun k f] : is_conn_fun k (trunc.elim f : trunc n A → B) :=
+  begin
+    apply is_conn_fun.intro,
+    intro P, have Πb, is_trunc n (P b), from (λb, is_trunc_of_le _ H),
+    fconstructor,
+    { intro f' b,
+      refine is_conn_fun.elim k H2 _ _ b, intro a, exact f' (tr a) },
+    { intro f', apply eq_of_homotopy, intro a,
+      induction a with a, esimp, rewrite [is_conn_fun.elim_β] }
+  end
+
+  definition is_conn_fun_trunc_elim_of_ge {n k : ℕ₋₂} {A B : Type} [is_trunc n B] (f : A → B)
+    (H : n ≤ k) [H2 : is_conn_fun k f] : is_conn_fun k (trunc.elim f : trunc n A → B) :=
+  begin
+   apply is_conn_fun_of_is_equiv,
+   have H3 : is_equiv (trunc_functor k f), from !is_equiv_trunc_functor_of_is_conn_fun,
+   have H4 : is_equiv (trunc_functor n f), from is_equiv_trunc_functor_of_le _ H,
+   apply is_equiv_of_equiv_of_homotopy (equiv.mk (trunc_functor n f) _ ⬝e !trunc_equiv),
+   intro x, induction x, reflexivity
+  end
+
+  definition is_conn_fun_trunc_elim {n k : ℕ₋₂} {A B : Type} [is_trunc n B] (f : A → B)
+    [H2 : is_conn_fun k f] : is_conn_fun k (trunc.elim f : trunc n A → B) :=
+  begin
+    eapply algebra.le_by_cases k n: intro H,
+    { exact is_conn_fun_trunc_elim_of_le f H },
+    { exact is_conn_fun_trunc_elim_of_ge f H }
+  end
+
+  lemma is_conn_fun_tr (n : ℕ₋₂) (A : Type) : is_conn_fun n (tr : A → trunc n A) :=
+  begin
+    apply is_conn_fun.intro,
+    intro P,
+    fconstructor,
+    { intro f' b, induction b with a, exact f' a },
+    { intro f', reflexivity }
+  end
+
+
+  definition is_contr_of_is_conn_of_is_trunc {n : ℕ₋₂} {A : Type} (H : is_trunc n A)
+    (K : is_conn n A) : is_contr A :=
+  is_contr_equiv_closed (trunc_equiv n A)
+
+  definition is_conn_fun_compose {n : ℕ₋₂} {A B C : Type} (g : B → C) (f : A → B)
+    (H : is_conn_fun n g) (K : is_conn_fun n f) : is_conn_fun n (g ∘ f) :=
+  sorry
 
   definition is_contr_of_trivial_homotopy' (n : ℕ₋₂) (A : Type) [is_trunc n A] [is_conn -1 A]
     (H : Πk a, is_contr (π[k] (pointed.MK A a))) : is_contr A :=
@@ -1035,10 +1160,6 @@ namespace is_conn
     { induction aa with a, exact H 0 a },
     exact is_contr_of_trivial_homotopy n A H
   end
-
-  -- don't make is_prop_is_trunc an instance
-  definition is_trunc_succ_is_trunc [instance] (n m : ℕ₋₂) (A : Type) : is_trunc (n.+1) (is_trunc m A) :=
-  is_trunc_of_le _ !minus_one_le_succ
 
   definition is_conn_of_trivial_homotopy (n : ℕ₋₂) (m : ℕ) (A : Type) [is_trunc n A] [is_conn 0 A]
     (H : Π(k : ℕ) a, k ≤ m → is_contr (π[k] (pointed.MK A a))) : is_conn m A :=

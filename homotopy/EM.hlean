@@ -362,6 +362,7 @@ namespace EM
 
   end
 
+  section category
   /- category -/
   structure ptruncconntype' (n : ℕ₋₂) : Type :=
    (A : Type*)
@@ -496,5 +497,40 @@ namespace EM
 
   definition AbGrp_equivalence_cptruncconntype' [constructor] (n : ℕ) : AbGrp ≃c cType*[n+2.-1] :=
   equivalence.mk (EM_cfunctor (n+2)) (is_equivalence_EM_cfunctor n)
+  end category
+
+  /- Eilenberg MacLane spaces are the fibers of the Postnikov system of a type -/
+
+  definition postnikov_map [constructor] (A : Type*) (n : ℕ₋₂) : ptrunc (n.+1) A →* ptrunc n A :=
+  ptrunc.elim (n.+1) !ptr
+
+  open fiber EM.ops
+
+  definition loopn_succ_pfiber_postnikov_map (A : Type*) (k : ℕ) (n : ℕ₋₂) :
+    Ω[k+1] (pfiber (postnikov_map A (n.+1))) ≃* Ω[k] (pfiber (postnikov_map A n)) :=
+  begin
+    exact sorry
+  end
+
+  definition loopn_pfiber_postnikov_map (A : Type*) (n : ℕ) :
+    Ω[n+1] (pfiber (postnikov_map A n)) ≃* ptrunc 0 A :=
+  begin
+    induction n with n IH,
+    { exact loopn_succ_pfiber_postnikov_map A 0 -1 ⬝e* !pfiber_pequiv_of_is_prop },
+    exact loopn_succ_pfiber_postnikov_map A (n+1) n ⬝e* IH
+  end
+
+  definition pfiber_postnikov_map_succ (A : Type*) (n : ℕ) :
+    pfiber (postnikov_map A (n+1)) ≃* EMadd1 (πag[n+2] A) (n+1) :=
+  begin
+    symmetry, apply EMadd1_pequiv,
+    { },
+    { apply @is_conn_fun_trunc_elim, apply is_conn_fun_tr }
+  end
+
+  definition pfiber_postnikov_map_zero (A : Type*) : pfiber (postnikov_map A 0) ≃* EM1 (πg[1] A) :=
+  begin
+    exact sorry
+  end
 
 end EM
