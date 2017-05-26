@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2016 Jakob von Raumer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Jakob von Raumer, Ulrik Buchholtz
+Authors: Floris van Doorn
 
 The Wedge Sum of a family of Pointed Types
 -/

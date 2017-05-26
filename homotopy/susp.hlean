@@ -1,82 +1,9 @@
 import ..pointed
 
 open susp eq pointed function is_equiv
-  variables {X X' Y Y' Z : Type*}
-
--- move
-  definition pap1 [constructor] (X Y : Type*) : ppmap X Y →* ppmap (Ω X) (Ω Y) :=
-  pmap.mk ap1 (eq_of_phomotopy !ap1_pconst)
-
-  definition ap1_gen_const {A B : Type} {a₁ a₂ : A} (b : B) (p : a₁ = a₂) :
-    ap1_gen (const A b) idp idp p = idp :=
-  ap1_gen_idp_left (const A b) p ⬝ ap_constant p b
-
-  definition ap1_gen_compose_const_left
-    {A B C : Type} (c : C) (f : A → B) {a₁ a₂ : A} (p : a₁ = a₂) :
-    ap1_gen_compose (const B c) f idp idp idp idp p ⬝
-    ap1_gen_const c (ap1_gen f idp idp p) =
-    ap1_gen_const c p :=
-  begin induction p, reflexivity end
-
-  definition ap1_gen_compose_const_right
-    {A B C : Type} (g : B → C) (b : B) {a₁ a₂ : A} (p : a₁ = a₂) :
-    ap1_gen_compose g (const A b) idp idp idp idp p ⬝
-    ap (ap1_gen g idp idp) (ap1_gen_const b p) =
-    ap1_gen_const (g b) p :=
-  begin induction p, reflexivity end
-
-  definition ap1_pcompose_pconst_left {A B C : Type*} (f : A →* B) :
-    phsquare (ap1_pcompose (pconst B C) f)
-             (ap1_pconst A C)
-             (ap1_phomotopy (pconst_pcompose f))
-             (pwhisker_right (Ω→ f) (ap1_pconst B C) ⬝* pconst_pcompose (Ω→ f)) :=
-  begin
-    induction A with A a₀, induction B with B b₀, induction C with C c₀, induction f with f f₀,
-    esimp at *, induction f₀,
-    refine idp ◾** !trans_refl ⬝ _ ⬝ !refl_trans⁻¹ ⬝ !ap1_phomotopy_refl⁻¹ ◾** idp,
-    fapply phomotopy_eq,
-    { exact ap1_gen_compose_const_left c₀ f },
-    { reflexivity }
-  end
-
-  definition ap1_pcompose_pconst_right {A B C : Type*} (g : B →* C) :
-    phsquare (ap1_pcompose g (pconst A B))
-             (ap1_pconst A C)
-             (ap1_phomotopy (pcompose_pconst g))
-             (pwhisker_left (Ω→ g) (ap1_pconst A B) ⬝* pcompose_pconst (Ω→ g)) :=
-  begin
-    induction A with A a₀, induction B with B b₀, induction C with C c₀, induction g with g g₀,
-    esimp at *, induction g₀,
-    refine idp ◾** !trans_refl ⬝ _ ⬝ !refl_trans⁻¹ ⬝ !ap1_phomotopy_refl⁻¹ ◾** idp,
-    fapply phomotopy_eq,
-    { exact ap1_gen_compose_const_right g b₀ },
-    { reflexivity }
-  end
-
-  definition pap1_natural_left [constructor] (f : X' →* X) :
-    psquare (pap1 X Y) (pap1 X' Y) (ppcompose_right f) (ppcompose_right (Ω→ f)) :=
-  begin
-    fapply phomotopy_mk_ppmap,
-    { intro g, exact !ap1_pcompose⁻¹* },
-    { refine idp ◾** (ap phomotopy_of_eq (!ap1_eq_of_phomotopy  ◾ idp ⬝ !eq_of_phomotopy_trans⁻¹) ⬝
-      !phomotopy_of_eq_of_phomotopy)  ⬝ _ ⬝ (ap phomotopy_of_eq (!pcompose_right_eq_of_phomotopy ◾
-      idp ⬝ !eq_of_phomotopy_trans⁻¹) ⬝ !phomotopy_of_eq_of_phomotopy)⁻¹,
-      apply symm_trans_eq_of_eq_trans, exact (ap1_pcompose_pconst_left f)⁻¹ }
-  end
-
-  definition pap1_natural_right [constructor] (f : Y →* Y') :
-    psquare (pap1 X Y) (pap1 X Y') (ppcompose_left f) (ppcompose_left (Ω→ f)) :=
-  begin
-    fapply phomotopy_mk_ppmap,
-    { intro g, exact !ap1_pcompose⁻¹* },
-    { refine idp ◾** (ap phomotopy_of_eq (!ap1_eq_of_phomotopy  ◾ idp ⬝ !eq_of_phomotopy_trans⁻¹) ⬝
-      !phomotopy_of_eq_of_phomotopy)  ⬝ _ ⬝ (ap phomotopy_of_eq (!pcompose_left_eq_of_phomotopy ◾
-      idp ⬝ !eq_of_phomotopy_trans⁻¹) ⬝ !phomotopy_of_eq_of_phomotopy)⁻¹,
-      apply symm_trans_eq_of_eq_trans, exact (ap1_pcompose_pconst_right f)⁻¹ }
-  end
 
 namespace susp
-
+  variables {X X' Y Y' Z : Type*}
   definition susp_functor_pconst_homotopy [unfold 3] {X Y : Type*} (x : psusp X) :
     psusp_functor (pconst X Y) x = pt :=
   begin

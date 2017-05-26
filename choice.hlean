@@ -54,7 +54,7 @@ begin
   { intro f, induction f, apply eq_of_homotopy, intro x, esimp, induction x with a b: reflexivity }
 end
 
-/- currently we prove it using univalence -/
+/- currently we prove it using univalence, which means we cannot apply it to lift. TODO: change -/
 definition has_choice_equiv_closed.{u} (n : ℕ₋₂) {A B : Type.{u}} (f : A ≃ B) (hA : has_choice n B)
   : has_choice n A :=
 begin

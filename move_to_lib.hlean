@@ -899,7 +899,41 @@ namespace function
     is_surjective f' :=
   is_surjective_homotopy_closed p⁻¹ʰᵗʸ H
 
-end function
+  definition is_equiv_ap1_gen_of_is_embedding {A B : Type} (f : A → B) [is_embedding f]
+    {a a' : A} {b b' : B} (q : f a = b) (q' : f a' = b') : is_equiv (ap1_gen f q q') :=
+  begin
+    induction q, induction q',
+    exact is_equiv.homotopy_closed _ (ap1_gen_idp_left f)⁻¹ʰᵗʸ,
+  end
+
+  definition is_equiv_ap1_of_is_embedding {A B : Type*} (f : A →* B) [is_embedding f] :
+    is_equiv (Ω→ f) :=
+  is_equiv_ap1_gen_of_is_embedding f (respect_pt f) (respect_pt f)
+
+  definition loop_pequiv_loop_of_is_embedding [constructor] {A B : Type*} (f : A →* B)
+    [is_embedding f] : Ω A ≃* Ω B :=
+  pequiv_of_pmap (Ω→ f) (is_equiv_ap1_of_is_embedding f)
+
+  definition loopn_pequiv_loopn_of_is_embedding [constructor] (n : ℕ) [H : is_succ n]
+    {A B : Type*} (f : A →* B) [is_embedding f] : Ω[n] A ≃* Ω[n] B :=
+  begin
+    induction H with n,
+    exact !loopn_succ_in ⬝e*
+      loopn_pequiv_loopn n (loop_pequiv_loop_of_is_embedding f) ⬝e*
+      !loopn_succ_in⁻¹ᵉ*
+  end
+
+  definition homotopy_group_isomorphism_of_is_embedding (n : ℕ) [H : is_succ n] {A B : Type*}
+    (f : A →* B) [H2 : is_embedding f] : πg[n] A ≃g πg[n] B :=
+  begin
+    apply isomorphism.mk (homotopy_group_homomorphism n f),
+    induction H with n,
+    apply is_equiv_of_equiv_of_homotopy
+      (ptrunc_pequiv_ptrunc 0 (loopn_pequiv_loopn_of_is_embedding (n+1) f)),
+    exact sorry
+  end
+
+end function open function
 
 namespace fiber
   open pointed
@@ -1201,6 +1235,9 @@ namespace is_conn
   definition component_incl [constructor] (A : Type*) : component A →* A :=
   pmap.mk pr1 idp
 
+  definition is_embedding_component_incl [instance] (A : Type*) : is_embedding (component_incl A) :=
+  is_embedding_pr1 _
+
   definition component_intro [constructor] {A B : Type*} (f : A →* B) (H : merely_constant f) :
     A →* component B :=
   begin
@@ -1220,17 +1257,7 @@ namespace is_conn
   --   exact subtype_eq !respect_pt
   -- end
 
-  /- move!-/
-  lemma is_equiv_ap1_of_is_embedding {A B : Type*} (f : A →* B) [is_embedding f] :
-    is_equiv (Ω→ f) :=
-  sorry
-
-  definition loop_pequiv_loop_of_is_embedding [constructor] {A B : Type*} (f : A →* B) [is_embedding f] :
-    Ω A ≃* Ω B :=
-  pequiv_of_pmap (Ω→ f) (is_equiv_ap1_of_is_embedding f)
-
   definition loop_component (A : Type*) : Ω (component A) ≃* Ω A :=
-  have is_embedding (component_incl A), from is_embedding_pr1 _,
   loop_pequiv_loop_of_is_embedding (component_incl A)
 
   lemma loopn_component (n : ℕ) (A : Type*) : Ω[n+1] (component A) ≃* Ω[n+1] A :=
@@ -1240,9 +1267,10 @@ namespace is_conn
   -- isomorphism_of_equiv (trunc_equiv_trunc 0 (loop_component A)) _
 
   lemma homotopy_group_component (n : ℕ) (A : Type*) : πg[n+1] (component A) ≃g πg[n+1] A :=
-  sorry
+  homotopy_group_isomorphism_of_is_embedding (n+1) (component_incl A)
 
-  definition is_trunc_component [instance] (n : ℕ₋₂) (A : Type*) [is_trunc n A] : is_trunc n (component A) :=
+  definition is_trunc_component [instance] (n : ℕ₋₂) (A : Type*) [is_trunc n A] :
+    is_trunc n (component A) :=
   begin
     apply @is_trunc_sigma, intro a, cases n with n,
     { apply is_contr_of_inhabited_prop, exact tr !is_prop.elim },
@@ -1262,7 +1290,8 @@ namespace is_conn
     { exact sorry }
   end
 
-  definition ptrunc_component (n : ℕ₋₂) (A : Type*) : ptrunc n (component A) ≃* component (ptrunc n A) :=
+  definition ptrunc_component (n : ℕ₋₂) (A : Type*) :
+    ptrunc n (component A) ≃* component (ptrunc n A) :=
   begin
     cases n with n, exact sorry,
     cases n with n, exact sorry,
