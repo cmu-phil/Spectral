@@ -565,32 +565,59 @@ namespace EM
 
   open fiber EM.ops
 
-  definition loopn_succ_pfiber_postnikov_map (A : Type*) (k : ℕ) (n : ℕ₋₂) :
-    Ω[k+1] (pfiber (postnikov_map A (n.+1))) ≃* Ω[k] (pfiber (postnikov_map (Ω A) n)) :=
+  -- definition loopn_succ_pfiber_postnikov_map (A : Type*) (k : ℕ) (n : ℕ₋₂) :
+  --   Ω[k+1] (pfiber (postnikov_map A (n.+1))) ≃* Ω[k] (pfiber (postnikov_map (Ω A) n)) :=
+  -- begin
+  --   exact sorry
+  -- end
+
+  -- definition loopn_pfiber_postnikov_map (A : Type*) (n : ℕ) :
+  --   Ω[n] (pfiber (postnikov_map A n)) ≃* EM1 (πg[n+1] A) :=
+  -- begin
+  --   revert A, induction n with n IH: intro A,
+  --   { apply pfiber_postnikov_map_zero },
+  --   exact loopn_succ_pfiber_postnikov_map A n n ⬝e* IH (Ω A) ⬝e*
+  --         EM1_pequiv_EM1 !ghomotopy_group_succ_in⁻¹ᵍ
+  -- end
+
+  -- move
+
+  definition pgroup_of_Group (X : Group) : pgroup X :=
+  pgroup_of_group _ idp
+
+  open prod chain_complex succ_str fin
+  definition isomorphism_of_trivial_LES {A B : Type*} (f : A →* B) (n : ℕ)
+    (k : fin (nat.succ 2)) (HX1 : is_contr (homotopy_groups f (n+1, k)))
+    (HX2 : is_contr (homotopy_groups f (n+2, k))) :
+    Group_LES_of_homotopy_groups f (@S +3ℕ (S (n, k))) ≃g Group_LES_of_homotopy_groups f (S (n, k)) :=
   begin
-    exact sorry
+    induction k with k Hk,
+    cases k with k, rotate 1, cases k with k, rotate 1, cases k with k, rotate 1,
+    exfalso, apply lt_le_antisymm Hk, apply le_add_left,
+    all_goals exact let k := fin.mk _ Hk in let x : +3ℕ := (n, k) in let S : +3ℕ → +3ℕ := succ_str.S in
+      let z :=
+      @is_equiv_of_trivial _
+        (LES_of_homotopy_groups f) _
+        (is_exact_LES_of_homotopy_groups f (n+1, k))
+        (is_exact_LES_of_homotopy_groups f (S (n+1, k)))
+        HX1 HX2
+        (pgroup_of_Group (Group_LES_of_homotopy_groups f (S x)))
+        (pgroup_of_Group (Group_LES_of_homotopy_groups f (S (S x))))
+        (homomorphism.struct (homomorphism_LES_of_homotopy_groups_fun f (S x))) in
+      isomorphism.mk (homomorphism_LES_of_homotopy_groups_fun f _) z
   end
+
 
   definition pfiber_postnikov_map_zero (A : Type*) :
     pfiber (postnikov_map A 0) ≃* EM1 (πg[1] A) :=
   begin
     symmetry, apply EM1_pequiv,
-    { refine !homotopy_group_component⁻¹ᵍ ⬝g _,
-      apply homotopy_group_isomorphism_of_ptrunc_pequiv, exact le.refl 1, symmetry,
-      refine !ptrunc_pequiv ⬝e* _,
-      exact sorry
+    { symmetry, note z := isomorphism_of_trivial_LES (postnikov_map A 0) 1 0
+      (trivial_homotopy_group_of_is_trunc (ptrunc 0 A) !zero_lt_succ)
+      (trivial_homotopy_group_of_is_trunc (ptrunc 0 A) !zero_lt_succ), exact sorry
+--      rexact isomorphism_of_equiv (equiv_of_isomorphism z) sorry
       },
     { apply @is_conn_fun_trunc_elim, apply is_conn_fun_tr }
-  end
-
-
-  definition loopn_pfiber_postnikov_map (A : Type*) (n : ℕ) :
-    Ω[n] (pfiber (postnikov_map A n)) ≃* EM1 (πg[n+1] A) :=
-  begin
-    revert A, induction n with n IH: intro A,
-    { apply pfiber_postnikov_map_zero },
-    exact loopn_succ_pfiber_postnikov_map A n n ⬝e* IH (Ω A) ⬝e*
-          EM1_pequiv_EM1 !ghomotopy_group_succ_in⁻¹ᵍ
   end
 
   definition pfiber_postnikov_map_succ (A : Type*) (n : ℕ) :
