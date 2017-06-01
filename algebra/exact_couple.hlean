@@ -175,12 +175,16 @@ definition subgroup_iso_exact_at_A_triangle : ab_kernel_incl i ~ ab_image_incl k
 
 definition subgroup_homom_ker_to_im : ab_kernel i →g ab_image d :=
   (image_homomorphism k j) ∘g subgroup_iso_exact_at_A
+
 open eq
+
 definition left_square_derived_ses : j_factor ∘g (ab_kernel_incl i) ~ (SES.f (SES_of_differential d H)) ∘g subgroup_homom_ker_to_im :=
   begin
   intro x,
   fapply subtype_eq,
-  refine sorry --(ap (j_factor) subgroup_iso_exact_at_A_triangle) ⬝ _,
+  refine sorry 
+-- fapply ab_hom_factors_through_lift _ _ ,
+--(ap (j_factor) subgroup_iso_exact_at_A_triangle) ⬝ _,
   end
 
 /-definition derived_couple_j : derived_couple_A EC →g derived_couple_B EC :=
