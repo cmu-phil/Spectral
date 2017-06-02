@@ -71,8 +71,8 @@ namespace group
       (r : ∥dirsum_rel g∥) : free_ab_group_elim (λv, f v.1 v.2) g = 1 :=
     begin
       induction r with r, induction r,
-      rewrite [to_respect_add, to_respect_neg], apply add_neg_eq_of_eq_add,
-      rewrite [zero_add, to_respect_add, ▸*, ↑foldl, +one_mul, to_respect_add']
+      rewrite [to_respect_add, to_respect_neg, to_respect_add, ▸*, ↑foldl, +one_mul,
+        to_respect_add'], apply mul.right_inv
     end
 
     definition dirsum_elim [constructor] (f : Πi, Y i →a A') : dirsum →a A' :=

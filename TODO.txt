@@ -2,3 +2,9 @@
 - define pmap in terms of ppi
 
 - move move_to_lib and pointed to library
+
+talk with Favonia about:
+- dependent pointed maps
+- higher cube filling strategies
+- HIT equivalences
+- algebra

@@ -20,7 +20,7 @@ section short_five
 
   include short_exact₀ short_exact₁ hsquare₁ hsquare₂
 
-  open is_short_exact
+  open algebra.is_short_exact
 
   lemma short_five_mono [embh : is_embedding h] [embl : is_embedding l] :
     is_embedding k :=
@@ -56,7 +56,7 @@ section short_five
   assume ha₀ : h a₀ = a₁,
   have k (f₀ a₀) = k b₀ - b₁, by rewrite [hsquare₁, ▸*, ha₀, f₁a₁],
   have k (b₀ - f₀ a₀) = b₁, by rewrite [respect_sub, this, sub_sub_self],
-  image.intro this))))
+  image.mk _ this))))
 end short_five
 
 section short_exact

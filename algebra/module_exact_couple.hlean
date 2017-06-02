@@ -136,6 +136,7 @@ namespace left_module
   definition deg_k' : deg k' ~ deg k := by reflexivity
 
   open group
+  set_option pp.coercions true
   lemma i'j' : is_exact_gmod i' j' :=
   begin
     intro x, refine equiv_rect (deg i) _ _,
@@ -165,7 +166,7 @@ namespace left_module
       { exact is_exact.ker_in_im (exact_couple.ij X _ _) _ s },
       refine image.mk ⟨m - k x n, t⟩ _,
       apply subtype_eq, refine !i'_eq ⬝ !to_respect_sub ⬝ _,
-      refine ap (sub _) _ ⬝ !sub_zero,
+      refine ap (@sub (D (deg i (deg k x))) _ _) _ ⬝ @sub_zero _ _ _,
       apply is_exact.im_in_ker (exact_couple.ki X _ _) }
   end
 
@@ -314,7 +315,7 @@ namespace left_module
   definition deg_j_inv (r : ℕ) :
     (deg (j (page r)))⁻¹ ~ iterate (deg (i X)) r ∘ (deg (j X))⁻¹ :=
   have H : deg (j (page r)) ~ iterate_equiv (deg (i X))⁻¹ᵉ r ⬝e deg (j X), from deg_j r,
-  λx, to_inv_homotopy_to_inv H x ⬝ iterate_inv (deg (i X))⁻¹ᵉ r ((deg (j X))⁻¹ x)
+  λx, to_inv_homotopy_inv H x ⬝ iterate_inv (deg (i X))⁻¹ᵉ r ((deg (j X))⁻¹ x)
 
   definition deg_d (r : ℕ) :
     deg (d (page r)) ~ deg (j X) ∘ iterate (deg (i X))⁻¹ r ∘ deg (k X) :=
@@ -322,7 +323,7 @@ namespace left_module
 
   definition deg_d_inv (r : ℕ) :
     (deg (d (page r)))⁻¹ ~ (deg (k X))⁻¹ ∘ iterate (deg (i X)) r ∘ (deg (j X))⁻¹ :=
-  compose2 (to_inv_homotopy_to_inv (deg_k r)) (deg_j_inv r)
+  compose2 (to_inv_homotopy_inv (deg_k r)) (deg_j_inv r)
 
   definition B3 (x : I) : ℕ :=
   max (B (deg (j X) (deg (k X) x))) (B2 ((deg (k X))⁻¹ ((deg (j X))⁻¹ x)))
@@ -468,15 +469,15 @@ namespace pointed
   definition homotopy_group_conn_nat_functor (n : ℕ) {A B : Type*[1]} (f : A →* B) :
     homotopy_group_conn_nat n A →g homotopy_group_conn_nat n B :=
   begin
-    cases n with n, { apply homomorphism_of_is_contr_right },
-    cases n with n, { apply homomorphism_of_is_contr_right },
+    cases n with n, { apply trivial_homomorphism },
+    cases n with n, { apply trivial_homomorphism },
     exact π→g[n+2] f
   end
 
   definition homotopy_group_conn_functor :
     Π(n : ℤ) {A B : Type*[1]} (f : A →* B), πc[n] A →g πc[n] B
   | (of_nat n) A B f := homotopy_group_conn_nat_functor n f
-  | (-[1+ n])  A B f := homomorphism_of_is_contr_right _ _
+  | (-[1+ n])  A B f := trivial_homomorphism _ _
 
   notation `π→c[`:95 n:0 `]`:0 := homotopy_group_conn_functor n
 

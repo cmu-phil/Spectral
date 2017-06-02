@@ -5,7 +5,7 @@ Authors: Michael Shulman, Floris van Doorn
 
 -/
 
-import homotopy.LES_of_homotopy_groups .splice homotopy.susp ..colim ..pointed .EM ..pointed_pi
+import homotopy.LES_of_homotopy_groups .splice ..colim types.pointed2 .EM ..pointed_pi
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
      seq_colim succ_str EM EM.ops
 
@@ -234,7 +234,7 @@ namespace spectrum
 
   definition sp_cotensor [constructor] {N : succ_str} (A : Type*) (B : gen_spectrum N) : gen_spectrum N :=
     spectrum.MK (λn, ppmap A (B n))
-      (λn, (loop_pmap_commute A (B (S n)))⁻¹ᵉ* ∘*ᵉ (pequiv_ppcompose_left (equiv_glue B n)))
+      (λn, (loop_ppmap_commute A (B (S n)))⁻¹ᵉ* ∘*ᵉ (pequiv_ppcompose_left (equiv_glue B n)))
 
   ----------------------------------------
   -- Sections of parametrized spectra
@@ -250,7 +250,7 @@ namespace spectrum
 
   definition sfiber {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y) : gen_spectrum N :=
     spectrum.MK (λn, pfiber (f n))
-       (λn, (loop_pfiber (f (S n)))⁻¹ᵉ* ∘*ᵉ pfiber_equiv_of_square _ _ (sglue_square f n))
+       (λn, (loop_pfiber (f (S n)))⁻¹ᵉ* ∘*ᵉ pfiber_pequiv_of_square _ _ (sglue_square f n))
 
   /- the map from the fiber to the domain -/
   definition spoint {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y) : sfiber f →ₛ X :=
@@ -259,7 +259,7 @@ namespace spectrum
       intro n,
       refine _ ⬝* !passoc,
       refine _ ⬝* pwhisker_right _ !ppoint_loop_pfiber_inv⁻¹*,
-      rexact (pfiber_equiv_of_square_ppoint (equiv_glue X n) (equiv_glue Y n) (sglue_square f n))⁻¹*
+      rexact (pfiber_pequiv_of_square_ppoint (equiv_glue X n) (equiv_glue Y n) (sglue_square f n))⁻¹*
     end
 
   definition scompose_spoint {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y)

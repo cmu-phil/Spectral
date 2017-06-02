@@ -1,6 +1,6 @@
 -- Authors: Floris van Doorn
 
-import homotopy.smash ..pointed .pushout homotopy.red_susp
+import homotopy.smash types.pointed2 .pushout homotopy.red_susp
 
 open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops wedge is_trunc
      function red_susp unit

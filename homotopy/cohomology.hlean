@@ -87,7 +87,7 @@ definition cohomology_psusp_2 (Y : spectrum) (n : ℤ) :
   Ω (Ω[2] (Y ((n+1)+2))) ≃* Ω[2] (Y (n+2)) :=
 begin
   apply loopn_pequiv_loopn 2,
-  exact loop_pequiv_loop (pequiv_of_eq (ap Y (add_comm_right n 1 2))) ⬝e* !equiv_glue⁻¹ᵉ*
+  exact loop_pequiv_loop (pequiv_of_eq (ap Y (add.right_comm n 1 2))) ⬝e* !equiv_glue⁻¹ᵉ*
 end
 
 definition cohomology_psusp_1 (X : Type*) (Y : spectrum) (n : ℤ) :

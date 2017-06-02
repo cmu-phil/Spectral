@@ -1,5 +1,5 @@
 
-import ..move_to_lib
+import algebra.exactness homotopy.cofiber homotopy.wedge
 
 open eq function is_trunc sigma prod lift is_equiv equiv pointed sum unit bool cofiber
 
@@ -24,7 +24,6 @@ namespace pushout
     pequiv_of_equiv (pushout.equiv _ _ _ _ tl bl tr fh gh) (ap inl (respect_pt bl))
 
   end
-
 
   /-
     WIP: proving that satisfying the universal property of the pushout is equivalent to

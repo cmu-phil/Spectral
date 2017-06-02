@@ -8,7 +8,7 @@ Basic facts about short exact sequences.
 At the moment, it only covers short exact sequences of abelian groups, but this should be extended to short exact sequences in any abelian category.
 -/
 
-import algebra.group_theory hit.set_quotient types.sigma types.list types.sum .quotient_group .subgroup
+import algebra.group_theory hit.set_quotient types.sigma types.list types.sum .quotient_group .subgroup .exactness
 
 open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function group trunc
      equiv is_equiv
@@ -111,7 +111,7 @@ parameters {A B C : AbGroup} (ses : SES A B C)
 
 definition SES_iso_stable {A' B' C' : AbGroup} (f' : A' →g B') (g' : B' →g C') (α : A' ≃g A) (β : B' ≃g B) (γ : C' ≃g C) (Hαβ : f ∘g α ~ β ∘g f') (Hβγ : g ∘g β ~ γ ∘g g') : SES A' B' C' :=
   begin
-    fapply SES.mk, 
+    fapply SES.mk,
     exact f',
     exact g',
     fapply is_embedding_of_is_injective,
@@ -120,10 +120,10 @@ definition SES_iso_stable {A' B' C' : AbGroup} (f' : A' →g B') (g' : B' →g C
       f (α x) = β (f' x) : Hαβ x
           ... = β (f' y) : ap β p
           ... = f (α y)  : (Hαβ y)⁻¹,
-    have path' : α x = α y, by exact @is_injective_of_is_embedding _ _ f (SES.Hf ses) _ _ path, 
+    have path' : α x = α y, by exact @is_injective_of_is_embedding _ _ f (SES.Hf ses) _ _ path,
     exact @is_injective_of_is_embedding _ _ α (is_embedding_of_is_equiv α) _ _ path',
   exact sorry,
-  exact sorry, 
+  exact sorry,
   end
 
 definition SES_of_triangle_left {A' : AbGroup} (α : A' ≃g A) (f' : A' →g B) (H : Π a' : A', f (α a') = f' a') : SES A' B C :=
@@ -132,7 +132,7 @@ begin
   exact f',
   exact g,
   fapply is_embedding_of_is_injective,
-  intro x y p, 
+  intro x y p,
   fapply eq_of_fn_eq_fn (equiv_of_isomorphism α),
   fapply @is_injective_of_is_embedding _ _ f (SES.Hf ses) (α x) (α y),
   rewrite [H x], rewrite [H y], exact p,
@@ -143,7 +143,7 @@ begin
   fapply is_exact.im_in_ker (SES.ex ses),
   intro b p,
   have  t : trunctype.carrier (subgroup_to_rel (image_subgroup f) b), from is_exact.ker_in_im (SES.ex ses) b p,
-  induction t, fapply tr, induction a with a q, fapply fiber.mk, exact α⁻¹ᵍ a, rewrite [(H (α⁻¹ᵍ a))⁻¹], 
+  induction t, fapply tr, induction a with a q, fapply fiber.mk, exact α⁻¹ᵍ a, rewrite [(H (α⁻¹ᵍ a))⁻¹],
   krewrite [right_inv (equiv_of_isomorphism α) a], assumption
 end
 

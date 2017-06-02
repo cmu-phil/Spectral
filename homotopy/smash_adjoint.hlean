@@ -2,7 +2,7 @@
 -- in collaboration with Egbert, Stefano, Robin, Ulrik
 
 /- the adjunction between the smash product and pointed maps -/
-import .smash .susp
+import .smash .susp ..pointed
 
 open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops wedge is_trunc
      function unit sigma susp sphere
@@ -510,7 +510,7 @@ namespace smash
   calc
     ppmap (A ∧ psusp B) X ≃* ppmap (psusp B) (ppmap A X) : smash_adjoint_pmap A (psusp B) X
     ... ≃* ppmap B (Ω (ppmap A X)) : psusp_adjoint_loop' B (ppmap A X)
-    ... ≃* ppmap B (ppmap A (Ω X)) : pequiv_ppcompose_left (loop_pmap_commute A X)
+    ... ≃* ppmap B (ppmap A (Ω X)) : pequiv_ppcompose_left (loop_ppmap_commute A X)
     ... ≃* ppmap (A ∧ B) (Ω X) : smash_adjoint_pmap A B (Ω X)
     ... ≃* ppmap (psusp (A ∧ B)) X : psusp_adjoint_loop' (A ∧ B) X
 

@@ -1,7 +1,7 @@
 /-
 Author: Jeremy Avigad
 -/
-import homotopy.chain_complex .left_module .is_short_exact ..move_to_lib
+import homotopy.chain_complex .left_module .exactness ..move_to_lib
 open eq pointed sigma fiber equiv is_equiv sigma.ops is_trunc nat trunc
 open algebra function
 open chain_complex
@@ -53,5 +53,5 @@ namespace left_module
   variables {A₀ B₀ C₀ : LeftModule R}
   variables (f₀ : A₀ →lm B₀) (g₀ : B₀ →lm C₀)
 
-  definition is_short_exact := @_root_.is_short_exact  _ _ C₀ f₀ g₀
+  definition is_short_exact := @algebra.is_short_exact  _ _ C₀ f₀ g₀
 end left_module

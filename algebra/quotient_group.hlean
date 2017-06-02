@@ -551,7 +551,7 @@ definition ab_group_kernel_quotient_to_image_codomain_triangle {A B : AbGroup} (
 definition is_surjective_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
            : is_surjective (ab_group_kernel_quotient_to_image f) :=
   begin
-    fapply @is_surjective_factor A _ (image f) _ _ _ (group_fun (ab_qg_map (kernel_subgroup f))),
+    fapply is_surjective_factor (group_fun (ab_qg_map (kernel_subgroup f))),
 exact image_lift f,
 apply quotient_group_compute,
 exact is_surjective_image_lift f
@@ -560,7 +560,7 @@ exact is_surjective_image_lift f
 definition is_embedding_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
            : is_embedding (ab_group_kernel_quotient_to_image f) :=
   begin
-    fapply @is_embedding_factor _ (image f) B _ _ _ (ab_group_kernel_quotient_to_image f) (image_incl f) (kernel_quotient_extension f),
+    fapply is_embedding_factor (ab_group_kernel_quotient_to_image f) (image_incl f) (kernel_quotient_extension f),
     exact ab_group_kernel_quotient_to_image_codomain_triangle f,
     exact is_embedding_kernel_quotient_extension f
   end

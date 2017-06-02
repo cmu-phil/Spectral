@@ -38,9 +38,9 @@ definition homology_ugly {B : AbGroup} (d : B →g B) (H : is_differential d) : 
 
 definition homology_iso_ugly {B : AbGroup} (d : B →g B) (H : is_differential d) : (homology d H) ≃g (homology_ugly d H) :=
   begin
-  fapply @iso_of_ab_qg_group (ab_kernel d), 
+  fapply @iso_of_ab_qg_group (ab_kernel d),
   intro a,
-  intro p, induction p with f, induction f with b p, 
+  intro p, induction p with f, induction f with b p,
   fapply tr, fapply fiber.mk, fapply sigma.mk, exact d b, fapply tr, fapply fiber.mk, exact b, reflexivity,
   induction a with c q, fapply subtype_eq, refine p ⬝ _, reflexivity,
   intro b p, induction p with f, induction f with c p, induction p,
@@ -50,7 +50,7 @@ definition homology_iso_ugly {B : AbGroup} (d : B →g B) (H : is_differential d
 
 
 definition SES_iso_C {A B C C' : AbGroup} (ses : SES A B C) (k : C ≃g C') : SES A B C' :=
-  begin 
+  begin
   fapply SES.mk,
   exact SES.f ses,
   exact k ∘g SES.g ses,
@@ -139,14 +139,14 @@ definition SES_of_exact_couple_at_i : SES (ab_kernel i) A (ab_image i) :=
   fapply ab_group_first_iso_thm i,
   end
 
-definition kj_zero (a : A) : k (j a) = 1 := 
+definition kj_zero (a : A) : k (j a) = 1 :=
 is_exact.im_in_ker (exact_couple.exact_jk EC) a
- 
-definition j_factor : A →g (ab_kernel d) := 
+
+definition j_factor : A →g (ab_kernel d) :=
 begin
   fapply ab_hom_lift j,
-  intro a, 
-  unfold kernel_subgroup, 
+  intro a,
+  unfold kernel_subgroup,
   exact calc
     d (j a) = j (k (j a)) : rfl
        ...  = j 1 : by exact ap j (kj_zero a)
@@ -164,7 +164,7 @@ definition subgroup_iso_exact_at_A : ab_kernel i ≃g ab_image k :=
   induction EC,
   induction exact_ki,
   exact im_in_ker b,
-  end  
+  end
 
 definition subgroup_iso_exact_at_A_triangle : ab_kernel_incl i ~ ab_image_incl k ∘g subgroup_iso_exact_at_A :=
   begin
@@ -183,10 +183,10 @@ definition left_square_derived_ses : j_factor ∘g (ab_kernel_incl i) ~ (SES.f (
   refine sorry --(ap (j_factor) subgroup_iso_exact_at_A_triangle) ⬝ _,
   end
 
-definition derived_couple_j : derived_couple_A EC →g derived_couple_B EC :=
+/-definition derived_couple_j : derived_couple_A EC →g derived_couple_B EC :=
   begin
   exact sorry,
 --    refine (comm_gq_map (comm_kernel (boundary CC)) (image_subgroup_of_bd (boundary CC) (boundary_is_boundary CC))) ∘g _,
-  end
+  end-/
 
 end derived_couple

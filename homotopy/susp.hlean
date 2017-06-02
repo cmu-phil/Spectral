@@ -1,4 +1,4 @@
-import ..pointed
+import homotopy.susp types.pointed2
 
 open susp eq pointed function is_equiv
 

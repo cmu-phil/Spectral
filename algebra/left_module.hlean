@@ -7,7 +7,7 @@ Modules prod vector spaces over a ring.
 
 (We use "left_module," which is more precise, because "module" is a keyword.)
 -/
-import algebra.field ..move_to_lib .is_short_exact algebra.group_power
+import algebra.field ..move_to_lib .exactness algebra.group_power
 open is_trunc pointed function sigma eq algebra prod is_equiv equiv group
 
 structure has_scalar [class] (F V : Type) :=
@@ -273,7 +273,7 @@ section
   definition homomorphism_eq (φ₁ φ₂ : M₁ →lm M₂) (p : φ₁ ~ φ₂) : φ₁ = φ₂ :=
   begin
     induction φ₁ with φ₁ q₁, induction φ₂ with φ₂ q₂, esimp at p, induction p,
-    exact ap (homomorphism.mk φ₂) !is_prop.elim
+    exact ap (homomorphism.mk φ₁) !is_prop.elim
   end
 end
 
