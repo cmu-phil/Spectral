@@ -1,6 +1,6 @@
 -- Authors: Floris van Doorn
 
-import homotopy.EM algebra.category.functor.equivalence ..pointed ..pointed_pi
+import homotopy.EM algebra.category.functor.equivalence types.pointed2 ..pointed_pi ..pointed
 
 open eq equiv is_equiv algebra group nat pointed EM.ops is_trunc trunc susp function is_conn
 
@@ -617,7 +617,8 @@ namespace EM
       (trivial_homotopy_group_of_is_trunc (ptrunc 0 A) !zero_lt_succ), exact sorry
 --      rexact isomorphism_of_equiv (equiv_of_isomorphism z) sorry
       },
-    { apply @is_conn_fun_trunc_elim, apply is_conn_fun_tr }
+    { apply @is_conn_fun_trunc_elim, apply is_conn_fun_tr },
+    { apply is_trunc_pfiber }
   end
 
   definition pfiber_postnikov_map_succ (A : Type*) (n : ℕ) :

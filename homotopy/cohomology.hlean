@@ -15,7 +15,7 @@ namespace cohomology
 
 /- The cohomology of X with coefficients in Y is
    trunc 0 (A →* Ω[2] (Y (n+2)))
-   In the file arrow_group (in algebra) we construct the group structor on this type.
+   In the file arrow_group (in algebra) we construct the group structure on this type.
 -/
 definition cohomology (X : Type*) (Y : spectrum) (n : ℤ) : AbGroup :=
 AbGroup_trunc_pmap X (Y (n+2))
