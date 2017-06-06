@@ -1,6 +1,6 @@
 import homotopy.susp types.pointed2
 
-open susp eq pointed function is_equiv
+open susp eq pointed function is_equiv lift equiv
 
 namespace susp
   variables {X X' Y Y' Z : Type*}
@@ -81,5 +81,13 @@ namespace susp
   definition iterate_psusp_iterate_psusp (n m : ℕ) (A : Type*) :
     iterate_psusp n (iterate_psusp m A) ≃* iterate_psusp (n + m) A :=
   iterate_psusp_iterate_psusp_rev n m A ⬝e* pequiv_of_eq (ap (λk, iterate_psusp k A) (add.comm m n))
+
+  definition plift_psusp.{u v} : Π(A : Type*), plift.{u v} (psusp A) ≃* psusp (plift.{u v} A) :=
+  begin
+    intro A,
+    calc
+      plift.{u v} (psusp A) ≃* psusp A               : by exact (pequiv_plift (psusp A))⁻¹ᵉ*
+                        ... ≃* psusp (plift.{u v} A) : by exact psusp_pequiv (pequiv_plift.{u v} A)
+  end
 
 end susp
