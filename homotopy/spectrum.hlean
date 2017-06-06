@@ -5,7 +5,7 @@ Authors: Michael Shulman, Floris van Doorn
 
 -/
 
-import homotopy.LES_of_homotopy_groups .splice ..colim types.pointed2 .EM ..pointed_pi
+import homotopy.LES_of_homotopy_groups .splice ..colim types.pointed2 .EM ..pointed_pi .smash_adjoint
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
      seq_colim succ_str EM EM.ops
 
@@ -443,6 +443,17 @@ namespace spectrum
   /- Tensor by spaces -/
 
   /- Smash product of spectra -/
+
+open smash
+
+definition smash_prespectrum (X : Type*) (Y : prespectrum) : prespectrum :=
+prespectrum.mk (λ z, X ∧ Y z) begin
+  intro n, refine loop_psusp_pintro (X ∧ Y n) (X ∧ Y (n + 1)) _,
+  refine _ ∘* (smash_psusp X (Y n))⁻¹ᵉ*,
+  refine smash_functor !pid _,
+  refine psusp_pelim (Y n) (Y (n + 1)) _,
+  exact !glue
+end
 
   /- Cofibers and stability -/
 
