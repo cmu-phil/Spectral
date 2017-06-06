@@ -422,8 +422,7 @@ namespace spectrum
   by induction k with k f; reflexivity; exact f ⬝e* loopn_pequiv_loopn k (equiv_glue X (n +' k))
                                                 ⬝e* !loopn_succ_in⁻¹ᵉ*
 
-  definition spectrify_map {N : succ_str} {X : gen_prespectrum N} {Y : gen_spectrum N}
-    (f : X →ₛ Y) : X →ₛ spectrify X :=
+  definition spectrify_map {N : succ_str} {X : gen_prespectrum N} : X →ₛ spectrify X :=
   begin
     fapply smap.mk,
     { intro n, exact pinclusion _ 0 },

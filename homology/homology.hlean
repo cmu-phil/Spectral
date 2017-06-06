@@ -1,11 +1,12 @@
-import .spectrum .EM ..algebra.arrow_group ..algebra.direct_sum .fwedge ..choice .pushout ..move_to_lib ..algebra.product_group
+import ..homotopy.spectrum ..homotopy.EM ..algebra.arrow_group ..algebra.direct_sum ..homotopy.fwedge ..choice ..homotopy.pushout ..move_to_lib
 
 open eq spectrum int trunc pointed EM group algebra circle sphere nat EM.ops equiv susp is_trunc
-     function fwedge cofiber bool lift sigma is_equiv choice pushout algebra unit pi
+     function fwedge cofiber bool lift sigma is_equiv choice pushout algebra unit pi smash
 
 namespace homology
 
 /- homology theory -/
+
 structure homology_theory.{u} : Type.{u+1} :=
   (HH : ℤ → pType.{u} → AbGroup.{u})
   (Hh : Π(n : ℤ) {X Y : Type*} (f : X →* Y), HH n X →g HH n Y)
