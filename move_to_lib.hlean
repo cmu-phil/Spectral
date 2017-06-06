@@ -95,13 +95,6 @@ namespace eq
 
 end eq open eq
 
-namespace group
-
-  definition isomorphism_ap {A : Type} (F : A → Group) {a b : A} (p : a = b) : F a ≃g F b :=
-    isomorphism_of_eq (ap F p)
-
-end group
-
 namespace pmap
 
   definition eta {A B : Type*} (f : A →* B) : pmap.mk f (respect_pt f) = f :=
@@ -183,6 +176,9 @@ namespace group
   -- definition is_mul_hom_comm_homomorphism2 [instance] {G G' : AbGroup} (φ : G →g G')
   --   : @is_mul_hom G G' (@ab_group.to_group _ (AbGroup.struct G)) _ φ :=
   -- homomorphism.struct φ
+
+  definition isomorphism_ap {A : Type} (F : A → Group) {a b : A} (p : a = b) : F a ≃g F b :=
+    isomorphism_of_eq (ap F p)
 
 end group open group
 
