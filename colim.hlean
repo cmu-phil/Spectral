@@ -13,7 +13,7 @@ namespace seq_colim
   begin
     induction n with n p,
       reflexivity,
-      exact (ap (sι f) (respect_pt _))⁻¹ᵖ ⬝ !glue ⬝ p
+      exact (ap (sι f) (respect_pt _))⁻¹ᵖ ⬝ (!glue ⬝ p)
   end
 
   definition pinclusion [constructor] {X : ℕ → Type*} (f : Πn, X n →* X (n+1)) (n : ℕ)
@@ -251,7 +251,21 @@ namespace seq_colim
 
   definition pshift_equiv_pinclusion {A : ℕ → Type*} (f : Πn, A n →* A (succ n)) (n : ℕ) :
     psquare (pinclusion f n) (pinclusion (λn, f (n+1)) n) (f n) (pshift_equiv f)  :=
-  phomotopy.mk homotopy.rfl begin refine !idp_con ⬝ _, esimp, exact sorry end
+  phomotopy.mk homotopy.rfl begin 
+    refine !idp_con ⬝ _, esimp,
+    induction n with n IH,
+    { esimp[inclusion_pt], esimp[shift_diag], exact !idp_con⁻¹ },
+    { esimp[inclusion_pt], refine !con_inv_cancel_left ⬝ _,
+      rewrite ap_con, rewrite ap_con,
+      refine _ ⬝ whisker_right _ !con.assoc,
+      refine _ ⬝ (con.assoc (_ ⬝ _) _ _)⁻¹,
+      xrewrite [-IH], 
+      esimp[shift_up], rewrite [elim_glue,  ap_inv, -ap_compose'], esimp,
+      rewrite [-+con.assoc], apply whisker_right,
+      rewrite con.assoc, apply !eq_inv_con_of_con_eq,
+      symmetry, exact eq_of_square !natural_square
+  }
+  end
 
   section functor
   variable {f}
