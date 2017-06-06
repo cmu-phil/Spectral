@@ -385,7 +385,7 @@ namespace spectrum
   pseq_colim (spectrify_type_fun X n)
 
   /-
-    Let Y = spectify X. Then
+    Let Y = spectify X ≡ colim_k Ω^k X (n + k). Then
     Ω Y (n+1) ≡ Ω colim_k Ω^k X ((n + 1) + k)
           ... = colim_k Ω^{k+1} X ((n + 1) + k)
           ... = colim_k Ω^{k+1} X (n + (k + 1))

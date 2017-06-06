@@ -1,5 +1,5 @@
 
-import algebra.exactness homotopy.cofiber homotopy.wedge
+import ..algebra.exactness homotopy.cofiber homotopy.wedge
 
 open eq function is_trunc sigma prod lift is_equiv equiv pointed sum unit bool cofiber
 
