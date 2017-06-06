@@ -102,6 +102,13 @@ namespace group
 
 end group
 
+namespace pmap
+
+  definition eta {A B : Type*} (f : A →* B) : pmap.mk f (respect_pt f) = f :=
+  begin induction f, reflexivity end
+
+end pmap
+
 namespace trunc
 
   -- TODO: redefine loopn_ptrunc_pequiv
