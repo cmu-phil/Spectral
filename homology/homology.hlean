@@ -47,8 +47,11 @@ namespace homology
          ... = Hh theory n (pmap.mk f (h pt ⬝ respect_pt g)) x : by exact Hh_homotopy' n f (respect_pt f) (h pt ⬝ respect_pt g) x
          ... = Hh theory n g x : by exact ap (λ f, Hh theory n f x) (@pmap_eq _ _ (pmap.mk f (h pt ⬝ respect_pt g)) _ h (refl (h pt ⬝ respect_pt g)))
 
-    definition is_equiv_Hh (n : ℤ) {A B : Type*} (e : A ≃* B) : is_equiv (Hh theory n e) :=
+    definition HH_isomorphism (n : ℤ) {A B : Type*} (e : A ≃* B)
+      : HH theory n A ≃g HH theory n B :=
     begin
+      fapply isomorphism.mk,
+      { exact Hh theory n e },
       fapply adjointify,
       { exact Hh theory n e⁻¹ᵉ* },
       { intro x, exact calc
