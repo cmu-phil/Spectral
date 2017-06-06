@@ -396,8 +396,8 @@ namespace spectrum
   definition spectrify_pequiv {N : succ_str} (X : gen_prespectrum N) (n : N) :
     spectrify_type X n ≃* Ω (spectrify_type X (S n)) :=
   begin
-    refine _ ⬝e* !pseq_colim_loop⁻¹ᵉ*,
     refine !pshift_equiv ⬝e* _,
+    refine _ ⬝e* !pseq_colim_loop⁻¹ᵉ*,
     transitivity pseq_colim (λk, spectrify_type_fun' X (succ k) (S n +' k)), rotate 1,
     refine pseq_colim_equiv_constant (λn, !ap1_pcompose⁻¹*),
     fapply pseq_colim_pequiv,
@@ -426,7 +426,13 @@ namespace spectrum
   begin
     fapply smap.mk,
     { intro n, exact pinclusion _ 0 },
-    { intro n, exact sorry }
+    { intro n, apply phomotopy_of_psquare, refine !pid_pcompose⁻¹* ⬝ph* _,
+      refine !pid_pcompose⁻¹* ⬝ph* _,
+      --pshift_equiv_pinclusion (spectrify_type_fun X n) 0
+      refine _ ⬝v* _,
+      rotate 1, exact pshift_equiv_pinclusion (spectrify_type_fun X n) 0,
+      exact sorry
+}
   end
 
   definition spectrify.elim {N : succ_str} {X : gen_prespectrum N} {Y : gen_spectrum N}
