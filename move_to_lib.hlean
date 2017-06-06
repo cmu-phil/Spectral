@@ -95,6 +95,13 @@ namespace eq
 
 end eq open eq
 
+namespace group
+
+  definition isomorphism_ap (A : Type) (F : A → Group) {a b : A} (p : a = b) : F a ≃g F b :=
+    isomorphism_of_eq (ap F p)
+
+end group
+
 namespace trunc
 
   -- TODO: redefine loopn_ptrunc_pequiv
