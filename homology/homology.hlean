@@ -1,7 +1,7 @@
 import ..homotopy.spectrum ..homotopy.EM ..algebra.arrow_group ..algebra.direct_sum ..homotopy.fwedge ..choice ..homotopy.pushout ..move_to_lib
 
-open eq spectrum int trunc pointed EM group algebra circle sphere nat EM.ops equiv susp is_trunc
-     function fwedge cofiber bool lift sigma is_equiv choice pushout algebra unit pi smash
+open eq spectrum int pointed group algebra sphere nat equiv susp is_trunc
+     function fwedge cofiber lift is_equiv choice algebra pi smash
 
 namespace homology
 
