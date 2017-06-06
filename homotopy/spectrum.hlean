@@ -40,7 +40,7 @@ abbreviation prespectrum := gen_prespectrum +ℤ
 definition prespectrum.mk (Y : ℤ → Type*) (e : Π(n : ℤ), Y n →* Ω (Y (n+1))) : prespectrum :=
 gen_prespectrum.mk Y e
 abbreviation spectrum := gen_spectrum +ℤ
-abbreviation spectrum.mk (Y : ℤ → Type*) (e : Π(n : ℤ), Y n ≃* Ω (Y (n+1))) : prespectrum :=
+abbreviation spectrum.mk (Y : prespectrum) (e : is_spectrum Y) : spectrum :=
 gen_spectrum.mk Y e
 
 namespace spectrum
@@ -108,7 +108,7 @@ namespace spectrum
   end
 
   protected definition of_gen_indexed [constructor] {N : succ_str} (z : N) (E : gen_spectrum N) : spectrum :=
-    spectrum.mk (psp_of_gen_indexed z E) (is_spectrum_of_gen_indexed z E)
+    gen_spectrum.mk (psp_of_gen_indexed z E) (is_spectrum_of_gen_indexed z E)
 
   -- Generally it's easiest to define a spectrum by giving 'equiv's
   -- directly.  This works for any indexing succ_str.
