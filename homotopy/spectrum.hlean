@@ -37,9 +37,11 @@ attribute gen_spectrum.to_is_spectrum [instance]
 -- But we will use +ℤ instead, to reduce case analysis later on.
 
 abbreviation prespectrum := gen_prespectrum +ℤ
-abbreviation prespectrum.mk := @gen_prespectrum.mk +ℤ
+definition prespectrum.mk (Y : ℤ → Type*) (e : Π(n : ℤ), Y n →* Ω (Y (n+1))) : prespectrum :=
+gen_prespectrum.mk Y e
 abbreviation spectrum := gen_spectrum +ℤ
-abbreviation spectrum.mk := @gen_spectrum.mk +ℤ
+abbreviation spectrum.mk (Y : ℤ → Type*) (e : Π(n : ℤ), Y n ≃* Ω (Y (n+1))) : prespectrum :=
+gen_spectrum.mk Y e
 
 namespace spectrum
 
