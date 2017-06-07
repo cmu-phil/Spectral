@@ -1,4 +1,9 @@
--- Author: Kuen-Bang Hou (Favonia)
+/-
+Copyright (c) 2017 Kuen-Bang Hou (Favonia).
+Released under Apache 2.0 license as described in the file LICENSE.
+
+Author: Kuen-Bang Hou (Favonia)
+-/
 
 import core
 import .homology
