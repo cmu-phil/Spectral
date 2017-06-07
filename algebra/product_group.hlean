@@ -61,6 +61,12 @@ namespace group
   infix ` ×g `:60 := group.product
   infix ` ×ag `:60 := group.ab_product
 
+  definition product_inl (G H : Group) : G →g G ×g H :=
+    homomorphism.mk (λx, (x, one)) (λx y, prod_eq !refl !one_mul⁻¹)
+
+  definition product_inr (G H : Group) : H →g G ×g H :=
+    homomorphism.mk (λx, (one, x)) (λx y, prod_eq !one_mul⁻¹ !refl)
+
   definition product_functor [constructor] {G G' H H' : Group} (φ : G →g H) (ψ : G' →g H') :
     G ×g G' →g H ×g H' :=
   homomorphism.mk (λx, (φ x.1, ψ x.2)) (λx y, prod_eq !to_respect_mul !to_respect_mul)
