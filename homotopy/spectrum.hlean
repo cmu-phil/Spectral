@@ -454,6 +454,23 @@ prespectrum.mk (λ z, X ∧ Y z) begin
   exact !glue
 end
 
+definition smash_prespectrum_fun {X X' : Type*} {Y Y' : prespectrum} (f : X →* X') (g : Y →ₛ Y') : smash_prespectrum X Y →ₛ smash_prespectrum X' Y' :=
+begin
+  refine smap.mk (λn, smash_functor f (g n)) _,
+  intro n,
+  refine susp_to_loop_psquare _ _ _ _ _,
+  refine pvconcat (psquare_transpose (phinverse (smash_psusp_natural f (g n)))) _,
+  refine vconcat_phomotopy _ (smash_functor_split f (g (S n))),
+  refine phomotopy_vconcat (smash_functor_split f (psusp_functor (g n))) _,
+  refine phconcat _ _,
+  let glue_adjoint := psusp_pelim (Y n) (Y (S n)) (glue Y n),
+  exact pid X' ∧→ glue_adjoint,
+  exact smash_functor_psquare (pvrefl f) (phrefl glue_adjoint),
+  refine smash_functor_psquare (phrefl (pid X')) _,
+  refine loop_to_susp_square _ _ _ _ _,
+  exact smap.glue_square g n
+end
+
   /- Cofibers and stability -/
 
   /- The Eilenberg-MacLane spectrum -/
