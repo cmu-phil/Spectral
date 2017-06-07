@@ -396,17 +396,17 @@ namespace spectrum
   definition spectrify_pequiv {N : succ_str} (X : gen_prespectrum N) (n : N) :
     spectrify_type X n ≃* Ω (spectrify_type X (S n)) :=
   begin
-    refine _ ⬝e* !pseq_colim_loop⁻¹ᵉ*,
     refine !pshift_equiv ⬝e* _,
-    transitivity pseq_colim (λk, spectrify_type_fun' X (succ k) (S n +' k)), rotate 1,
-    refine pseq_colim_equiv_constant (λn, !ap1_pcompose⁻¹*),
+    transitivity pseq_colim (λk, spectrify_type_fun' X (succ k) (S n +' k)),
     fapply pseq_colim_pequiv,
     { intro n, apply loopn_pequiv_loopn, apply pequiv_ap X, apply succ_str.add_succ },
     { intro k, apply to_homotopy,
       refine !passoc⁻¹* ⬝* _, refine pwhisker_right _ (loopn_succ_in_inv_natural (succ k) _) ⬝* _,
       refine !passoc ⬝* _ ⬝* !passoc⁻¹*, apply pwhisker_left,
       refine !apn_pcompose⁻¹* ⬝* _ ⬝* !apn_pcompose, apply apn_phomotopy,
-      exact !glue_ptransport⁻¹* }
+      exact !glue_ptransport⁻¹* },
+    refine _ ⬝e* !pseq_colim_loop⁻¹ᵉ*,
+    refine pseq_colim_equiv_constant (λn, !ap1_pcompose⁻¹*),
   end
 
   definition spectrify [constructor] {N : succ_str} (X : gen_prespectrum N) : gen_spectrum N :=
@@ -426,7 +426,14 @@ namespace spectrum
   begin
     fapply smap.mk,
     { intro n, exact pinclusion _ 0 },
-    { intro n, exact sorry }
+    { intro n, apply phomotopy_of_psquare, refine !pid_pcompose⁻¹* ⬝ph* _,
+      refine !pid_pcompose⁻¹* ⬝ph* _,
+      --pshift_equiv_pinclusion (spectrify_type_fun X n) 0
+      refine _ ⬝v* _,
+      rotate 1, exact pshift_equiv_pinclusion (spectrify_type_fun X n) 0,
+--      refine !passoc⁻¹* ⬝* pwhisker_left _ _ ⬝* _,
+      exact sorry
+}
   end
 
   definition spectrify.elim {N : succ_str} {X : gen_prespectrum N} {Y : gen_spectrum N}

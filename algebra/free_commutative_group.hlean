@@ -15,7 +15,7 @@ namespace group
 
   variables {G G' : Group} {g g' h h' k : G} {A B : AbGroup}
 
-  variables (X : Set) {Y : Set} {l l' : list (X ⊎ X)}
+  variables (X : Type) {Y : Type} [is_set X] [is_set Y] {l l' : list (X ⊎ X)}
 
   /- Free Abelian Group of a set -/
   namespace free_ab_group

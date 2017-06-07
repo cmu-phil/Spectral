@@ -1,6 +1,6 @@
 -- authors: Floris van Doorn, Egbert Rijke
 
-import hit.colimit types.fin homotopy.chain_complex .move_to_lib
+import hit.colimit types.fin homotopy.chain_complex types.pointed2
 open seq_colim pointed algebra eq is_trunc nat is_equiv equiv sigma sigma.ops chain_complex
 
 namespace seq_colim
@@ -8,12 +8,12 @@ namespace seq_colim
   definition pseq_colim [constructor] {X : ℕ → Type*} (f : Πn, X n →* X (n+1)) : Type* :=
   pointed.MK (seq_colim f) (@sι _ _ 0 pt)
 
-  definition inclusion_pt [constructor] {X : ℕ → Type*} (f : Πn, X n →* X (n+1)) (n : ℕ)
+  definition inclusion_pt {X : ℕ → Type*} (f : Πn, X n →* X (n+1)) (n : ℕ)
     : inclusion f (Point (X n)) = Point (pseq_colim f) :=
   begin
     induction n with n p,
       reflexivity,
-      exact (ap (sι f) (respect_pt _))⁻¹ᵖ ⬝ !glue ⬝ p
+      exact (ap (sι f) (respect_pt _))⁻¹ᵖ ⬝ (!glue ⬝ p)
   end
 
   definition pinclusion [constructor] {X : ℕ → Type*} (f : Πn, X n →* X (n+1)) (n : ℕ)
@@ -249,6 +249,24 @@ namespace seq_colim
     { exact ap (ι _) !respect_pt }
   end
 
+  definition pshift_equiv_pinclusion {A : ℕ → Type*} (f : Πn, A n →* A (succ n)) (n : ℕ) :
+    psquare (pinclusion f n) (pinclusion (λn, f (n+1)) n) (f n) (pshift_equiv f)  :=
+  phomotopy.mk homotopy.rfl begin 
+    refine !idp_con ⬝ _, esimp,
+    induction n with n IH,
+    { esimp[inclusion_pt], esimp[shift_diag], exact !idp_con⁻¹ },
+    { esimp[inclusion_pt], refine !con_inv_cancel_left ⬝ _,
+      rewrite ap_con, rewrite ap_con,
+      refine _ ⬝ whisker_right _ !con.assoc,
+      refine _ ⬝ (con.assoc (_ ⬝ _) _ _)⁻¹,
+      xrewrite [-IH], 
+      esimp[shift_up], rewrite [elim_glue,  ap_inv, -ap_compose'], esimp,
+      rewrite [-+con.assoc], apply whisker_right,
+      rewrite con.assoc, apply !eq_inv_con_of_con_eq,
+      symmetry, exact eq_of_square !natural_square
+  }
+  end
+
   section functor
   variable {f}
   variables {A' : ℕ → Type} {f' : seq_diagram A'}
@@ -305,6 +323,30 @@ namespace seq_colim
     : Π(x : seq_colim f), P x :=
   by induction v with Pincl Pglue; exact seq_colim.rec f Pincl Pglue
 
+  definition pseq_colim_pequiv [constructor] {A A' : ℕ → Type*} {f : Π{n}, A n →* A (n+1)}
+    {f' : Π{n}, A' n →* A' (n+1)} (g : Π{n}, A n ≃* A' n)
+    (p : Π⦃n⦄, g ∘* f ~ f' ∘* g) : pseq_colim @f ≃* pseq_colim @f' :=
+  pequiv_of_equiv (seq_colim_equiv @g p) (ap (ι _) (respect_pt g))
+
+  definition seq_colim_equiv_constant [constructor] {A : ℕ → Type*} {f f' : Π⦃n⦄, A n → A (n+1)}
+    (p : Π⦃n⦄ (a : A n), f a = f' a) : seq_colim f ≃ seq_colim f' :=
+  seq_colim_equiv (λn, erfl) p
+
+  definition pseq_colim_equiv_constant [constructor] {A : ℕ → Type*} {f f' : Π{n}, A n →* A (n+1)}
+    (p : Π⦃n⦄, f ~ f') : pseq_colim @f ≃* pseq_colim @f' :=
+  pseq_colim_pequiv (λn, pequiv.rfl) p
+
+  definition pseq_colim_pequiv_pinclusion {A A' : ℕ → Type*} {f : Π(n), A n →* A (n+1)}
+    {f' : Π(n), A' n →* A' (n+1)} (g : Π(n), A n ≃* A' n)
+    (p : Π⦃n⦄, g (n+1) ∘* f n ~ f' n ∘* g n) (n : ℕ) :
+    psquare (pinclusion f n) (pinclusion f' n) (g n) (pseq_colim_pequiv g p) :=
+  sorry
+
+  definition seq_colim_equiv_constant_pinclusion {A : ℕ → Type*} {f f' : Π⦃n⦄, A n →* A (n+1)}
+    (p : Π⦃n⦄ (a : A n), f a = f' a) (n : ℕ) :
+    pseq_colim_equiv_constant p ∘* pinclusion f n ~* pinclusion f' n  :=
+  sorry
+
   definition is_equiv_seq_colim_rec (P : seq_colim f → Type) :
     is_equiv (seq_colim_rec_unc :
       (Σ(Pincl : Π ⦃n : ℕ⦄ (a : A n), P (ι f a)),
@@ -327,19 +369,6 @@ namespace seq_colim
   equiv.mk _ !is_equiv_seq_colim_rec
   end functor
 
-  definition pseq_colim_pequiv [constructor] {A A' : ℕ → Type*} {f : Π{n}, A n →* A (n+1)}
-    {f' : Π{n}, A' n →* A' (n+1)} (g : Π{n}, A n ≃* A' n)
-    (p : Π⦃n⦄, g ∘* f ~ f' ∘* g) : pseq_colim @f ≃* pseq_colim @f' :=
-  pequiv_of_equiv (seq_colim_equiv @g p) (ap (ι _) (respect_pt g))
-
-  definition seq_colim_equiv_constant [constructor] {A : ℕ → Type*} {f f' : Π⦃n⦄, A n → A (n+1)}
-    (p : Π⦃n⦄ (a : A n), f a = f' a) : seq_colim f ≃ seq_colim f' :=
-  seq_colim_equiv (λn, erfl) p
-
-  definition pseq_colim_equiv_constant [constructor] {A : ℕ → Type*} {f f' : Π{n}, A n →* A (n+1)}
-    (p : Π⦃n⦄, f ~ f') : pseq_colim @f ≃* pseq_colim @f' :=
-  pseq_colim_pequiv (λn, pequiv.rfl) p
-
   definition pseq_colim.elim [constructor] {A : ℕ → Type*} {B : Type*} {f : Π{n}, A n →* A (n+1)}
     (g : Πn, A n →* B) (p : Πn, g (n+1) ∘* f ~ g n) : pseq_colim @f →* B :=
   begin
@@ -361,6 +390,7 @@ namespace seq_colim
   theorem prep0_succ_lemma {A : ℕ → Type*} (f : pseq_diagram A) (n : ℕ)
     (p : rep0 (λn x, f x) n pt = rep0 (λn x, f x) n pt)
     (q : prep0 f n (Point (A 0)) = Point (A n))
+
     : loop_equiv_eq_closed (ap (@f n) q ⬝ respect_pt (@f n))
     (ap (@f n) p) = Ω→(@f n) (loop_equiv_eq_closed q p) :=
   by rewrite [▸*, con_inv, ↑ap1_gen, +ap_con, ap_inv, +con.assoc]
@@ -465,6 +495,10 @@ namespace seq_colim
       { intro n p, apply prep0_succ_lemma }},
     { exact sorry }
   end
+
+  definition pseq_colim_loop_pinclusion {X : ℕ → Type*} (f : Πn, X n →* X (n+1)) (n : ℕ) :
+    pseq_colim_loop f ∘* Ω→ (pinclusion f n) ~* pinclusion (λn, Ω→(f n)) n :=
+  sorry
 
   -- open succ_str
   -- definition pseq_colim_succ_str_change_index' {N : succ_str} {B : N → Type*} (n : N) (m : ℕ)
