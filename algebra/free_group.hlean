@@ -15,7 +15,7 @@ namespace group
   variables {G G' : Group} {g g' h h' k : G} {A B : AbGroup}
 
   /- Free Group of a set -/
-  variables (X : Set) {l l' : list (X ⊎ X)}
+  variables (X : Type) [is_set X] {l l' : list (X ⊎ X)}
   namespace free_group
 
   inductive free_group_rel : list (X ⊎ X) → list (X ⊎ X) → Type :=
@@ -60,10 +60,10 @@ namespace group
   end
 
   definition free_group_one [constructor] : FG X := class_of []
-  definition free_group_inv [unfold 3] : FG X → FG X :=
+  definition free_group_inv [unfold 4] : FG X → FG X :=
   quotient_unary_map (reverse ∘ map sum.flip)
                      (λl l', trunc_functor -1 (rel_respect_reverse ∘ rel_respect_flip))
-  definition free_group_mul [unfold 3 4] : FG X → FG X → FG X :=
+  definition free_group_mul [unfold 4 5] : FG X → FG X → FG X :=
   quotient_binary_map append (λl l', trunc.elim (λr m m', trunc.elim (λs, tr (resp_append r s))))
 
   section
@@ -123,7 +123,7 @@ namespace group
   definition free_group_inclusion [constructor] (x : X) : free_group X :=
   class_of [inl x]
 
-  definition fgh_helper [unfold 5] (f : X → G) (g : G) (x : X + X) : G :=
+  definition fgh_helper [unfold 6] (f : X → G) (g : G) (x : X + X) : G :=
   g * sum.rec (λx, f x) (λx, (f x)⁻¹) x
 
   theorem fgh_helper_respect_rel (f : X → G) (r : free_group_rel X l l')

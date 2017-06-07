@@ -14,10 +14,10 @@ namespace group
 
   section
 
-    parameters {I : Set} (Y : I → AbGroup)
+    parameters {I : Type} [is_set I] (Y : I → AbGroup)
     variables {A' : AbGroup} {Y' : I → AbGroup}
 
-    definition dirsum_carrier : AbGroup := free_ab_group (trunctype.mk (Σi, Y i) _)
+    definition dirsum_carrier : AbGroup := free_ab_group (Σi, Y i)
     local abbreviation ι [constructor] := @free_ab_group_inclusion
     inductive dirsum_rel : dirsum_carrier → Type :=
     | rmk : Πi y₁ y₂, dirsum_rel (ι ⟨i, y₁⟩ * ι ⟨i, y₂⟩ *  (ι ⟨i, y₁ * y₂⟩)⁻¹)
