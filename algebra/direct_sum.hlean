@@ -73,10 +73,10 @@ namespace group
     definition dirsum_elim [constructor] (f : Πi, Y i →g A') : dirsum →g A' :=
     gqg_elim _ (free_ab_group_elim (λv, f v.1 v.2)) (dirsum_elim_resp_quotient f)
 
-    definition dirsum_elim_compute (f : Πi, Y i →g A') (i : I) :
-      dirsum_elim f ∘g dirsum_incl i ~ f i :=
+    definition dirsum_elim_compute (f : Πi, Y i →g A') (i : I) (y : Y i) :
+      dirsum_elim f (dirsum_incl i y) = f i y :=
     begin
-      intro g, apply one_mul
+      apply one_mul
     end
 
     definition dirsum_elim_unique (f : Πi, Y i →g A') (k : dirsum →g A')
