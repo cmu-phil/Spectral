@@ -338,9 +338,32 @@ namespace seq_colim
 
   definition pseq_colim_pequiv_pinclusion {A A' : ℕ → Type*} {f : Π(n), A n →* A (n+1)}
     {f' : Π(n), A' n →* A' (n+1)} (g : Π(n), A n ≃* A' n)
-    (p : Π⦃n⦄, g (n+1) ∘* f n ~ f' n ∘* g n) (n : ℕ) :
+    (p : Π⦃n⦄, g (n+1) ∘* f n ~* f' n ∘* g n) (n : ℕ) :
     psquare (pinclusion f n) (pinclusion f' n) (g n) (pseq_colim_pequiv g p) :=
-  sorry
+  phomotopy.mk homotopy.rfl begin 
+    esimp, refine !idp_con ⬝ _, 
+    induction n with n IH,
+    { esimp[inclusion_pt], exact !idp_con⁻¹ },
+    { esimp[inclusion_pt], rewrite [+ap_con, -+ap_inv, +con.assoc, +seq_colim_functor_glue],
+      xrewrite[-IH],
+      rewrite[-+ap_compose', -+con.assoc],
+      apply whisker_right, esimp,
+      rewrite[(eq_con_inv_of_con_eq (!to_homotopy_pt))],
+      rewrite[ap_con], esimp,
+      rewrite[-+con.assoc],
+      rewrite[ap_con], rewrite[-ap_compose'],
+      rewrite[+ap_inv],
+      rewrite[-+con.assoc],
+      refine _ ⬝ whisker_right _ (whisker_right _ (whisker_right _ (whisker_right _ !con.left_inv⁻¹))),
+      rewrite[idp_con],
+      rewrite[+con.assoc], apply whisker_left,
+      rewrite[ap_con], rewrite[-ap_compose'],
+      rewrite[con_inv],
+      rewrite[+con.assoc], apply whisker_left,
+      refine eq_inv_con_of_con_eq _,
+      symmetry, exact eq_of_square !natural_square
+    }
+  end
 
   definition seq_colim_equiv_constant_pinclusion {A : ℕ → Type*} {f f' : Π⦃n⦄, A n →* A (n+1)}
     (p : Π⦃n⦄ (a : A n), f a = f' a) (n : ℕ) :
