@@ -67,6 +67,13 @@ namespace group
   definition product_inr (G H : Group) : H →g G ×g H :=
     homomorphism.mk (λx, (one, x)) (λx y, prod_eq !one_mul⁻¹ !refl)
 
+  definition Group_sum_elim (G H : Group) (I : AbGroup) (φ : G →g I) (ψ : H →g I) : G ×g H →g I :=
+    homomorphism.mk (λx, φ x.1 * ψ x.2) (λx y, calc
+      φ (x.1 * y.1) * ψ (x.2 * y.2) = (φ x.1 * φ y.1) * (ψ x.2 * ψ y.2)
+                                      : by exact ap011 mul (to_respect_mul φ x.1 y.1) (to_respect_mul ψ x.2 y.2)
+                                ... = (φ x.1 * ψ x.2) * (φ y.1 * ψ y.2)
+                                      : by exact interchange I (φ x.1) (φ y.1) (ψ x.2) (ψ y.2))
+
   definition product_functor [constructor] {G G' H H' : Group} (φ : G →g H) (ψ : G' →g H') :
     G ×g G' →g H ×g H' :=
   homomorphism.mk (λx, (φ x.1, ψ x.2)) (λx y, prod_eq !to_respect_mul !to_respect_mul)
