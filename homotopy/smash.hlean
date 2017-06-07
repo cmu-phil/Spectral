@@ -5,7 +5,7 @@ import homotopy.smash types.pointed2 .pushout homotopy.red_susp
 open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops wedge is_trunc
      function red_susp unit
 
-  /- To prove: Σ(X × Y) ≃ ΣX ∨ ΣY ∨ Σ(X ∧ Y) (?) (notation means suspension, wedge, smash) -/
+  /- To prove: Σ(X × Y) ≃ ΣX ∨ ΣY ∨ Σ(X ∧ Y) (notation means suspension, wedge, smash) -/
 
   /- To prove: Σ(X ∧ Y) ≃ X ★ Y (?) (notation means suspension, smash, join) -/
 
