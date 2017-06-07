@@ -24,12 +24,12 @@ namespace homology
     parameter (theory : homology_theory)
     open homology_theory
 
-    definition HH_base_indep (n : ℤ) {A : Type} (a b : A)
+    theorem HH_base_indep (n : ℤ) {A : Type} (a b : A)
       : HH theory n (pType.mk A a) ≃g HH theory n (pType.mk A b) :=
       calc HH theory n (pType.mk A a) ≃g HH theory (int.succ n) (psusp A) : by exact (Hsusp theory n (pType.mk A a)) ⁻¹ᵍ
                                   ... ≃g HH theory n (pType.mk A b)       : by exact Hsusp theory n (pType.mk A b)
 
-    definition Hh_homotopy' (n : ℤ) {A B : Type*} (f : A → B) (p q : f pt = pt)
+    theorem Hh_homotopy' (n : ℤ) {A B : Type*} (f : A → B) (p q : f pt = pt)
       : Hh theory n (pmap.mk f p) ~ Hh theory n (pmap.mk f q) := λ x,
     calc       Hh theory n (pmap.mk f p) x
              = Hh theory n (pmap.mk f p) (Hsusp theory n A ((Hsusp theory n A)⁻¹ᵍ x))
@@ -41,7 +41,7 @@ namespace homology
          ... = Hh theory n (pmap.mk f q) x
                : by exact ap (Hh theory n (pmap.mk f q)) (equiv.to_right_inv (equiv_of_isomorphism (Hsusp theory n A)) x)
 
-    definition Hh_homotopy (n : ℤ) {A B : Type*} (f g : A →* B) (h : f ~ g) : Hh theory n f ~ Hh theory n g := λ x,
+    theorem Hh_homotopy (n : ℤ) {A B : Type*} (f g : A →* B) (h : f ~ g) : Hh theory n f ~ Hh theory n g := λ x,
     calc       Hh theory n f x
              = Hh theory n (pmap.mk f (respect_pt f)) x : by exact ap (λ f, Hh theory n f x) (pmap.eta f)⁻¹
          ... = Hh theory n (pmap.mk f (h pt ⬝ respect_pt g)) x : by exact Hh_homotopy' n f (respect_pt f) (h pt ⬝ respect_pt g) x
