@@ -2,7 +2,7 @@
 
 import homotopy.wedge
 
-open wedge pushout eq prod sum pointed equiv is_equiv unit
+open wedge pushout eq prod sum pointed equiv is_equiv unit lift
 
 namespace wedge
 
@@ -37,5 +37,16 @@ namespace wedge
   end
 
   -- TODO: wedge is associative
+
+  definition pwedge_pequiv [constructor] {A A' B B' : Type*} (a : A ≃* A') (b : B ≃* B') : A ∨ B ≃* A' ∨ B' :=
+  begin
+    fapply pequiv_of_equiv,
+    exact pushout.equiv !pconst !pconst !pconst !pconst !pequiv.refl a b (λdummy, respect_pt a) (λdummy, respect_pt b),
+    exact ap pushout.inl (respect_pt a)
+  end
+
+  definition plift_pwedge.{u v} (A B : Type*) : plift.{u v} (A ∨ B) ≃* plift.{u v} A ∨ plift.{u v} B :=
+  calc plift.{u v} (A ∨ B) ≃* A ∨ B : by exact !pequiv_plift⁻¹ᵉ*
+                       ... ≃* plift.{u v} A ∨ plift.{u v} B : by exact pwedge_pequiv !pequiv_plift !pequiv_plift
 
 end wedge
