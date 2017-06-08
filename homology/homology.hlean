@@ -79,6 +79,14 @@ namespace homology
       }
     end
 
+    definition Hfwehce (n : ℤ) {I : Set} (X : I → Type*): HH theory n (⋁ X) ≃g dirsum (λi, HH theory n (X i)) :=
+      (isomorphism.mk _ (Hadditive theory n X))⁻¹ᵍ
+
+    definition Hpwedge (n : ℤ) (A B : Type*) : HH theory n (pwedge A B) ≃g HH theory n A ×g HH theory n B :=
+    calc HH theory n (pwedge A B) ≃g HH theory n (fwedge (bool.rec A B)) : by exact sorry
+                              ... ≃g dirsum (λb, HH theory n (bool.rec A B b)) : by exact sorry
+                              ... ≃g HH theory n A ×g HH theory n B : by exact sorry
+
   end
 
 /- homology theory associated to a spectrum -/
