@@ -431,8 +431,15 @@ namespace spectrum
   -- note: the forward map is (currently) not definitionally equal to gluen. Is that a problem?
   definition equiv_gluen {N : succ_str} (X : gen_spectrum N) (n : N) (k : ℕ)
     : X n ≃* Ω[k] (X (n +' k)) :=
-  by induction k with k f; reflexivity; exact f ⬝e* loopn_pequiv_loopn k (equiv_glue X (n +' k))
-                                                ⬝e* !loopn_succ_in⁻¹ᵉ*
+  by induction k with k f; reflexivity; exact f ⬝e* (loopn_pequiv_loopn k (equiv_glue X (n +' k))
+                                                ⬝e* !loopn_succ_in⁻¹ᵉ*)
+
+  definition equiv_gluen_inv_succ {N : succ_str} (X : gen_spectrum N) (n : N) (k : ℕ) :
+    (equiv_gluen X n (k+1))⁻¹ᵉ* ~*
+    (equiv_gluen X n k)⁻¹ᵉ* ∘* Ω→[k] (equiv_glue X (n +' k))⁻¹ᵉ* ∘* !loopn_succ_in :=
+  begin
+    refine !trans_pinv ⬝* pwhisker_left _ _, refine !trans_pinv ⬝* _, refine !to_pinv_pequiv_MK2 ◾* !pinv_pinv
+  end
 
   definition spectrify_map {N : succ_str} {X : gen_prespectrum N} : X →ₛ spectrify X :=
   begin
@@ -457,7 +464,9 @@ namespace spectrum
     fapply smap.mk,
     { intro n, fapply pseq_colim.elim,
       { intro k, refine !equiv_gluen⁻¹ᵉ* ∘* apn k (f (n +' k)) },
-      { intro k, apply to_homotopy, exact sorry }},
+      { intro k, refine !passoc ⬝* pwhisker_right _ !equiv_gluen_inv_succ ⬝* _,
+        refine !passoc ⬝* _, apply pwhisker_left,
+        refine !passoc ⬝* _, exact sorry }},
     { intro n, exact sorry }
   end
 

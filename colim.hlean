@@ -399,7 +399,7 @@ namespace seq_colim
   equiv.mk _ !is_equiv_seq_colim_rec
   end functor
 
-  definition pseq_colim.elim [constructor] {A : ℕ → Type*} {B : Type*} {f : Π{n}, A n →* A (n+1)}
+  definition pseq_colim.elim' [constructor] {A : ℕ → Type*} {B : Type*} {f : Π{n}, A n →* A (n+1)}
     (g : Πn, A n →* B) (p : Πn, g (n+1) ∘* f ~ g n) : pseq_colim @f →* B :=
   begin
     fapply pmap.mk,
@@ -408,6 +408,10 @@ namespace seq_colim
       { exact p n a }},
     { esimp, apply respect_pt }
   end
+
+  definition pseq_colim.elim [constructor] {A : ℕ → Type*} {B : Type*} {f : Π{n}, A n →* A (n+1)}
+    (g : Πn, A n →* B) (p : Πn, g (n+1) ∘* f ~* g n) : pseq_colim @f →* B :=
+  pseq_colim.elim' g p
 
   definition prep0 [constructor] {A : ℕ → Type*} (f : pseq_diagram A) (k : ℕ) : A 0 →* A k :=
   pmap.mk (rep0 (λn x, f x) k)
