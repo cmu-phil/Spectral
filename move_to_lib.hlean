@@ -187,7 +187,7 @@ namespace group
                      ... = a * (c * (b * d)) : by exact ap (λ bcd, a * bcd) (mul.assoc c b d)
                      ... = (a * c) * (b * d) : by exact (mul.assoc a c (b * d))⁻¹
 
-  definition grp_comp_comp {G H K : Group} (g : H →g K) (f : G →g H) (x : G) : (g ∘g f) x = g (f x) :=
+  definition homomorphism_comp_compute {G H K : Group} (g : H →g K) (f : G →g H) (x : G) : (g ∘g f) x = g (f x) :=
   begin
     reflexivity
   end
