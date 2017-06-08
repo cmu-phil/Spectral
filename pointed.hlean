@@ -142,5 +142,14 @@ namespace pointed
   -- definition phomotopy_eq_equiv_phomotopy2 : p = q ≃ p ~*2 q :=
   -- sorry
 
+/- Homotopy between a function and its eta expansion -/
+
+  definition pmap_eta {X Y : Type*} (f : X →* Y) : f ~* pmap.mk f (pmap.resp_pt f) :=
+  begin
+    fapply phomotopy.mk,
+    reflexivity,
+    esimp, exact !idp_con
+  end
+
 
 end pointed
