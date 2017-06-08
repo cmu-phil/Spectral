@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2015 Floris van Doorn. All rights reserved.
+Copyright (c) 2015 Floris van Doorn, Egbert Rijke, Favonia. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Floris van Doorn, Egbert Rijke
+Authors: Floris van Doorn, Egbert Rijke, Favonia
 
 Constructions with groups
 -/
@@ -155,5 +155,31 @@ namespace group
 
   definition dirsum_functor_left [constructor] (f : J → I) : dirsum (Y ∘ f) →g dirsum Y :=
   dirsum_elim (λj, dirsum_incl Y (f j))
+
+  definition dirsum_functor_isomorphism [constructor] (f : Πi, Y i ≃g Y' i) : dirsum Y ≃g dirsum Y' :=
+  let to_hom := dirsum_functor (λ i, f i) in
+  let from_hom := dirsum_functor (λ i, (f i)⁻¹ᵍ) in
+  begin
+    fapply isomorphism.mk,
+    exact dirsum_functor (λ i, f i),
+    fapply is_equiv.adjointify,
+    exact dirsum_functor (λ i, (f i)⁻¹ᵍ),
+    { intro ds,
+      refine (homomorphism_comp_compute (dirsum_functor (λ i, f i)) (dirsum_functor (λ i, (f i)⁻¹ᵍ)) _)⁻¹ ⬝ _,
+      refine dirsum_functor_compose (λ i, f i) (λ i, (f i)⁻¹ᵍ) ds ⬝ _,
+      refine @dirsum_functor_homotopy I Y' Y' _ (λ i, !gid) (λ i, to_right_inv (equiv_of_isomorphism (f i))) ds ⬝ _,
+      exact !dirsum_functor_gid
+    },
+    { intro ds,
+      refine (homomorphism_comp_compute (dirsum_functor (λ i, (f i)⁻¹ᵍ)) (dirsum_functor (λ i, f i)) _)⁻¹ ⬝ _,
+      refine dirsum_functor_compose (λ i, (f i)⁻¹ᵍ) (λ i, f i) ds ⬝ _,
+      refine @dirsum_functor_homotopy I Y Y _ (λ i, !gid) (λ i x,
+        proof
+          to_left_inv (equiv_of_isomorphism (f i)) x
+        qed
+      ) ds ⬝ _,
+      exact !dirsum_functor_gid
+    }
+  end
 
 end group
