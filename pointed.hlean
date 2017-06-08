@@ -151,5 +151,4 @@ namespace pointed
     esimp, exact !idp_con
   end
 
-
 end pointed

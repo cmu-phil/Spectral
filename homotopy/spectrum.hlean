@@ -466,7 +466,17 @@ namespace spectrum
       { intro k, refine !equiv_gluen⁻¹ᵉ* ∘* apn k (f (n +' k)) },
       { intro k, refine !passoc ⬝* pwhisker_right _ !equiv_gluen_inv_succ ⬝* _,
         refine !passoc ⬝* _, apply pwhisker_left,
-        refine !passoc ⬝* _, exact sorry }},
+        refine !passoc ⬝* _,
+        refine pwhisker_left _ ((passoc _ _ (_ ∘* _))⁻¹*) ⬝* _,
+        refine pwhisker_left _ !passoc⁻¹* ⬝* _,
+        refine pwhisker_left _ (pwhisker_right _ (phomotopy_pinv_right_of_phomotopy (!loopn_succ_in_natural)⁻¹*)⁻¹*) ⬝* _,
+        refine pwhisker_right _ !apn_pinv ⬝* _,
+        refine (phomotopy_pinv_left_of_phomotopy _)⁻¹*,
+        refine pwhisker_right _ !pmap_eta⁻¹* ⬝* _,
+        refine apn_psquare k _,
+        refine pwhisker_right _ _  ⬝* psquare_of_phomotopy !smap.glue_square,
+        exact !pmap_eta⁻¹*
+      }},
     { intro n, exact sorry }
   end
 
