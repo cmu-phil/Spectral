@@ -70,4 +70,57 @@ namespace homology
 
   end
 
+/- homology theory associated to a spectrum -/
+definition homology (X : Type*) (E : spectrum) (n : ℤ) : AbGroup :=
+shomotopy_group n (smash_spectrum X E)
+
+definition parametrized_homology {X : Type*} (E : X → spectrum) (n : ℤ) : AbGroup :=
+sorry
+
+definition ordinary_homology [reducible] (X : Type*) (G : AbGroup) (n : ℤ) : AbGroup :=
+homology X (EM_spectrum G) n
+
+definition ordinary_homology_Z [reducible] (X : Type*) (n : ℤ) : AbGroup :=
+ordinary_homology X agℤ n
+
+notation `H_` n `[`:0 X:0 `, ` E:0 `]`:0 := homology X E n
+notation `H_` n `[`:0 X:0 `]`:0 := ordinary_homology_Z X n
+notation `pH_` n `[`:0 binders `, ` r:(scoped E, parametrized_homology E n) `]`:0 := r
+
+definition unpointed_homology (X : Type) (E : spectrum) (n : ℤ) : AbGroup :=
+H_ n[X₊, E]
+
+definition homology_functor [constructor] {X Y : Type*} {E F : spectrum} (f : X →* Y) (g : E →ₛ F) (n : ℤ) : homology X E n →g homology Y F n :=
+shomotopy_group_fun n (smash_spectrum_fun f g)
+
+definition homology_theory_spectrum.{u} [constructor] (E : spectrum.{u}) : homology_theory.{u} :=
+begin
+  refine homology_theory.mk _ _ _ _ _ _ _ _,
+  exact (λn X, H_ n[X, E]),
+  exact (λn X Y f, homology_functor f (sid E) n),
+  exact sorry, -- Hid is uninteresting but potentially very hard to prove
+  exact sorry,
+  exact sorry,
+  exact sorry,
+  exact sorry,
+  exact sorry
+  -- sorry
+  -- sorry
+  -- sorry
+  -- sorry
+  -- sorry
+  -- sorry
+--  (λn A, H^n[A, Y])
+--  (λn A B f, cohomology_isomorphism f Y n)
+--  (λn A, cohomology_isomorphism_refl A Y n)
+--  (λn A B f, cohomology_functor f Y n)
+--  (λn A B f g p, cohomology_functor_phomotopy p Y n)
+--  (λn A B f x, cohomology_functor_phomotopy_refl f Y n x)
+--  (λn A x, cohomology_functor_pid A Y n x)
+--  (λn A B C g f x, cohomology_functor_pcompose g f Y n x)
+--  (λn A, cohomology_psusp A Y n)
+--  (λn A B f, cohomology_psusp_natural f Y n)
+--  (λn A B f, cohomology_exact f Y n)
+--  (λn I A H, spectrum_additive H A Y n)
+end
 end homology
