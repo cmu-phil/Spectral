@@ -438,14 +438,17 @@ namespace spectrum
   begin
     fapply smap.mk,
     { intro n, exact pinclusion _ 0 },
-    { intro n, apply phomotopy_of_psquare, refine !pid_pcompose⁻¹* ⬝ph* _,
+    { intro n, apply phomotopy_of_psquare,
       refine !pid_pcompose⁻¹* ⬝ph* _,
-      --pshift_equiv_pinclusion (spectrify_type_fun X n) 0
       refine !passoc ⬝* pwhisker_left _ (pshift_equiv_pinclusion (spectrify_type_fun X n) 0) ⬝* _,
-      --refine !passoc ⬝* pwhisker_left _ _ ⬝* _,
-      --rotate 1, exact phomotopy_of_psquare !pseq_colim_pequiv_pinclusion
-      exact sorry
-}
+      refine !passoc⁻¹* ⬝* _,
+      refine _ ◾* (spectrify_type_fun_zero X n ⬝* !pid_pcompose⁻¹*),
+      refine !passoc ⬝* pwhisker_left _ !pseq_colim_pequiv_pinclusion ⬝* _,
+      refine pwhisker_left _ (pwhisker_left _ (ap1_pid) ⬝* !pcompose_pid) ⬝* _,
+      refine !passoc ⬝* pwhisker_left _ !seq_colim_equiv_constant_pinclusion ⬝* _, 
+      apply pinv_left_phomotopy_of_phomotopy,
+      exact !pseq_colim_loop_pinclusion⁻¹*
+    }
   end
 
   definition spectrify.elim {N : succ_str} {X : gen_prespectrum N} {Y : gen_spectrum N}
