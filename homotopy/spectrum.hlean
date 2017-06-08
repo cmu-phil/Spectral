@@ -381,6 +381,10 @@ namespace spectrum
     spectrify_type_term X n k →* spectrify_type_term X n (k+1) :=
   spectrify_type_fun' X k (n +' k)
 
+  definition spectrify_type_fun_zero {N : succ_str} (X : gen_prespectrum N) (n : N) :
+    spectrify_type_fun X n 0 ~* glue X n :=
+  !pid_pcompose
+
   definition spectrify_type {N : succ_str} (X : gen_prespectrum N) (n : N) : Type* :=
   pseq_colim (spectrify_type_fun X n)
 
@@ -400,11 +404,11 @@ namespace spectrum
     transitivity pseq_colim (λk, spectrify_type_fun' X (succ k) (S n +' k)),
     fapply pseq_colim_pequiv,
     { intro n, apply loopn_pequiv_loopn, apply pequiv_ap X, apply succ_str.add_succ },
-    { intro k, apply to_homotopy,
+    { exact abstract begin intro k, apply to_homotopy,
       refine !passoc⁻¹* ⬝* _, refine pwhisker_right _ (loopn_succ_in_inv_natural (succ k) _) ⬝* _,
       refine !passoc ⬝* _ ⬝* !passoc⁻¹*, apply pwhisker_left,
       refine !apn_pcompose⁻¹* ⬝* _ ⬝* !apn_pcompose, apply apn_phomotopy,
-      exact !glue_ptransport⁻¹* },
+      exact !glue_ptransport⁻¹* end end },
     refine _ ⬝e* !pseq_colim_loop⁻¹ᵉ*,
     refine pseq_colim_equiv_constant (λn, !ap1_pcompose⁻¹*),
   end
@@ -429,10 +433,9 @@ namespace spectrum
     { intro n, apply phomotopy_of_psquare, refine !pid_pcompose⁻¹* ⬝ph* _,
       refine !pid_pcompose⁻¹* ⬝ph* _,
       --pshift_equiv_pinclusion (spectrify_type_fun X n) 0
-      refine _ ⬝v* _,
-      rotate 1, exact pshift_equiv_pinclusion (spectrify_type_fun X n) 0,
---      refine !passoc⁻¹* ⬝* pwhisker_left _ _ ⬝* _,
-      exact sorry
+      refine !passoc ⬝* pwhisker_left _ (pshift_equiv_pinclusion (spectrify_type_fun X n) 0) ⬝* _,
+      --refine !passoc ⬝* pwhisker_left _ _ ⬝* _,
+      --rotate 1, exact phomotopy_of_psquare !pseq_colim_pequiv_pinclusion
 }
   end
 

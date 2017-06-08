@@ -8,7 +8,7 @@ Constructions with groups
 
 import algebra.group_theory hit.set_quotient types.list types.sum .subgroup .quotient_group
 
-open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function
+open eq algebra is_trunc set_quotient relation sigma prod prod.ops sum list trunc function
      equiv
 namespace group
 
@@ -78,5 +78,8 @@ namespace group
   isomorphism.mk (φ ×→g ψ) !is_equiv_prod_functor
 
   infix ` ×≃g `:60 := group.product_isomorphism
+
+  definition product_group_mul_eq {G H : Group} (g h : G ×g H) : g * h = product_mul g h :=
+  idp
 
 end group
