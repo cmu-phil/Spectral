@@ -350,16 +350,11 @@ namespace seq_colim
       apply whisker_right, esimp,
       rewrite[(eq_con_inv_of_con_eq (!to_homotopy_pt))],
       rewrite[ap_con], esimp,
-      rewrite[-+con.assoc],
-      rewrite[ap_con], rewrite[-ap_compose'],
-      rewrite[+ap_inv],
+      rewrite[-+con.assoc, ap_con, -ap_compose', +ap_inv],
       rewrite[-+con.assoc],
       refine _ ⬝ whisker_right _ (whisker_right _ (whisker_right _ (whisker_right _ !con.left_inv⁻¹))),
-      rewrite[idp_con],
-      rewrite[+con.assoc], apply whisker_left,
-      rewrite[ap_con], rewrite[-ap_compose'],
-      rewrite[con_inv],
-      rewrite[+con.assoc], apply whisker_left,
+      rewrite[idp_con, +con.assoc], apply whisker_left,
+      rewrite[ap_con, -ap_compose', con_inv, +con.assoc], apply whisker_left,
       refine eq_inv_con_of_con_eq _,
       symmetry, exact eq_of_square !natural_square
     }
@@ -368,7 +363,9 @@ namespace seq_colim
   definition seq_colim_equiv_constant_pinclusion {A : ℕ → Type*} {f f' : Π⦃n⦄, A n →* A (n+1)}
     (p : Π⦃n⦄ (a : A n), f a = f' a) (n : ℕ) :
     pseq_colim_equiv_constant p ∘* pinclusion f n ~* pinclusion f' n  :=
-  sorry
+  begin
+    sorry
+  end
 
   definition is_equiv_seq_colim_rec (P : seq_colim f → Type) :
     is_equiv (seq_colim_rec_unc :
