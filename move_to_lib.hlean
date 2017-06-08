@@ -1,6 +1,6 @@
 -- definitions, theorems and attributes which should be moved to files in the HoTT library
 
-import homotopy.sphere2 homotopy.cofiber homotopy.wedge hit.prop_trunc hit.set_quotient eq2
+import homotopy.sphere2 homotopy.cofiber homotopy.wedge hit.prop_trunc hit.set_quotient eq2 types.pointed2 .homotopy.smash_adjoint
 
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
      is_trunc function sphere unit sum prod bool
@@ -558,3 +558,32 @@ open trunc fiber image
   end
 
 end injective_surjective
+
+-- Yuri Sulyma's code from HoTT MRC
+
+notation `⅀→`:(max+5) := psusp_functor
+
+namespace pointed
+  variables {A₀₀ A₂₀ A₀₂ A₂₂ : Type*}
+            {f₁₀ : A₀₀ →* A₂₀} {f₁₂ : A₀₂ →* A₂₂}
+            {f₀₁ : A₀₀ →* A₀₂} {f₂₁ : A₂₀ →* A₂₂}
+
+  definition psquare_transpose (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : psquare f₀₁ f₂₁ f₁₀ f₁₂ := p⁻¹*
+
+  definition suspend_psquare (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : psquare (⅀→ f₁₀) (⅀→ f₁₂) (⅀→ f₀₁) (⅀→ f₂₁) :=
+sorry
+
+  definition susp_to_loop_psquare (f₁₀ : A₀₀ →* A₂₀) (f₁₂ : A₀₂ →* A₂₂) (f₀₁ : psusp A₀₀ →* A₀₂) (f₂₁ : psusp A₂₀ →* A₂₂) : (psquare (⅀→ f₁₀) f₁₂ f₀₁ f₂₁) → (psquare f₁₀ (Ω→ f₁₂) ((loop_psusp_pintro A₀₀ A₀₂) f₀₁) ((loop_psusp_pintro A₂₀ A₂₂) f₂₁)) :=
+  begin
+    intro p,
+    refine pvconcat _ (ap1_psquare p),
+    exact loop_psusp_unit_natural f₁₀
+  end
+
+  definition loop_to_susp_square (f₁₀ : A₀₀ →* A₂₀) (f₁₂ : A₀₂ →* A₂₂) (f₀₁ : A₀₀ →* Ω A₀₂) (f₂₁ : A₂₀ →* Ω A₂₂) : (psquare f₁₀ (Ω→ f₁₂) f₀₁ f₂₁) → (psquare (⅀→ f₁₀) f₁₂ ((psusp_pelim A₀₀ A₀₂) f₀₁) ((psusp_pelim A₂₀ A₂₂) f₂₁)) :=
+  begin
+    intro p,
+    refine pvconcat (suspend_psquare p) _,
+    exact psquare_transpose (loop_psusp_counit_natural f₁₂)
+  end
+end pointed

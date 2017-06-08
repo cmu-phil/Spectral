@@ -146,7 +146,7 @@ namespace spectrum
     -- I guess this manual eta-expansion is necessary because structures lack definitional eta?
     := phomotopy.mk (glue_square f n) (to_homotopy_pt (glue_square f n))
 
-  definition sid {N : succ_str} (E : gen_spectrum N) : E →ₛ E :=
+  definition sid {N : succ_str} (E : gen_prespectrum N) : E →ₛ E :=
     smap.mk (λn, pid (E n))
     (λn, calc glue E n ∘* pid (E n) ~* glue E n                   : pcompose_pid
                               ...   ~* pid (Ω(E (S n))) ∘* glue E n : pid_pcompose
@@ -373,13 +373,17 @@ namespace spectrum
   definition spectrify_type_term {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ) : Type* :=
   Ω[k] (X (n +' k))
 
-  definition spectrify_type_fun' {N : succ_str} (X : gen_prespectrum N) (k : ℕ) (n : N) :
+  definition spectrify_type_fun' {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ) :
     Ω[k] (X n) →* Ω[k+1] (X (S n)) :=
   !loopn_succ_in⁻¹ᵉ* ∘* Ω→[k] (glue X n)
 
   definition spectrify_type_fun {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ) :
     spectrify_type_term X n k →* spectrify_type_term X n (k+1) :=
-  spectrify_type_fun' X k (n +' k)
+  spectrify_type_fun' X (n +' k) k
+
+  definition spectrify_type_fun_zero {N : succ_str} (X : gen_prespectrum N) (n : N) :
+    spectrify_type_fun X n 0 ~* glue X n :=
+  !pid_pcompose
 
   definition spectrify_type {N : succ_str} (X : gen_prespectrum N) (n : N) : Type* :=
   pseq_colim (spectrify_type_fun X n)
@@ -393,20 +397,28 @@ namespace spectrum
           ... ≡ Y n
   -/
 
+  definition spectrify_type_fun'_succ {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ) :
+    spectrify_type_fun' X n (succ k) ~* Ω→ (spectrify_type_fun' X n k) :=
+  begin
+    refine _ ⬝* !ap1_pcompose⁻¹*,
+    apply !pwhisker_right, 
+    refine !to_pinv_pequiv_MK2
+  end
+
   definition spectrify_pequiv {N : succ_str} (X : gen_prespectrum N) (n : N) :
     spectrify_type X n ≃* Ω (spectrify_type X (S n)) :=
   begin
     refine !pshift_equiv ⬝e* _,
-    transitivity pseq_colim (λk, spectrify_type_fun' X (succ k) (S n +' k)),
+    transitivity pseq_colim (λk, spectrify_type_fun' X (S n +' k) (succ k)),
     fapply pseq_colim_pequiv,
     { intro n, apply loopn_pequiv_loopn, apply pequiv_ap X, apply succ_str.add_succ },
-    { intro k, apply to_homotopy,
+    { exact abstract begin intro k,
       refine !passoc⁻¹* ⬝* _, refine pwhisker_right _ (loopn_succ_in_inv_natural (succ k) _) ⬝* _,
       refine !passoc ⬝* _ ⬝* !passoc⁻¹*, apply pwhisker_left,
       refine !apn_pcompose⁻¹* ⬝* _ ⬝* !apn_pcompose, apply apn_phomotopy,
-      exact !glue_ptransport⁻¹* },
+      exact !glue_ptransport⁻¹* end end },
     refine _ ⬝e* !pseq_colim_loop⁻¹ᵉ*,
-    refine pseq_colim_equiv_constant (λn, !ap1_pcompose⁻¹*),
+    exact pseq_colim_equiv_constant (λn, !spectrify_type_fun'_succ),
   end
 
   definition spectrify [constructor] {N : succ_str} (X : gen_prespectrum N) : gen_spectrum N :=
@@ -419,21 +431,31 @@ namespace spectrum
   -- note: the forward map is (currently) not definitionally equal to gluen. Is that a problem?
   definition equiv_gluen {N : succ_str} (X : gen_spectrum N) (n : N) (k : ℕ)
     : X n ≃* Ω[k] (X (n +' k)) :=
-  by induction k with k f; reflexivity; exact f ⬝e* loopn_pequiv_loopn k (equiv_glue X (n +' k))
-                                                ⬝e* !loopn_succ_in⁻¹ᵉ*
+  by induction k with k f; reflexivity; exact f ⬝e* (loopn_pequiv_loopn k (equiv_glue X (n +' k))
+                                                ⬝e* !loopn_succ_in⁻¹ᵉ*)
+
+  definition equiv_gluen_inv_succ {N : succ_str} (X : gen_spectrum N) (n : N) (k : ℕ) :
+    (equiv_gluen X n (k+1))⁻¹ᵉ* ~*
+    (equiv_gluen X n k)⁻¹ᵉ* ∘* Ω→[k] (equiv_glue X (n +' k))⁻¹ᵉ* ∘* !loopn_succ_in :=
+  begin
+    refine !trans_pinv ⬝* pwhisker_left _ _, refine !trans_pinv ⬝* _, refine !to_pinv_pequiv_MK2 ◾* !pinv_pinv
+  end
 
   definition spectrify_map {N : succ_str} {X : gen_prespectrum N} : X →ₛ spectrify X :=
   begin
     fapply smap.mk,
     { intro n, exact pinclusion _ 0 },
-    { intro n, apply phomotopy_of_psquare, refine !pid_pcompose⁻¹* ⬝ph* _,
+    { intro n, apply phomotopy_of_psquare,
       refine !pid_pcompose⁻¹* ⬝ph* _,
-      --pshift_equiv_pinclusion (spectrify_type_fun X n) 0
-      refine _ ⬝v* _,
-      rotate 1, exact pshift_equiv_pinclusion (spectrify_type_fun X n) 0,
---      refine !passoc⁻¹* ⬝* pwhisker_left _ _ ⬝* _,
-      exact sorry
-}
+      refine !passoc ⬝* pwhisker_left _ (pshift_equiv_pinclusion (spectrify_type_fun X n) 0) ⬝* _,
+      refine !passoc⁻¹* ⬝* _,
+      refine _ ◾* (spectrify_type_fun_zero X n ⬝* !pid_pcompose⁻¹*),
+      refine !passoc ⬝* pwhisker_left _ !pseq_colim_pequiv_pinclusion ⬝* _,
+      refine pwhisker_left _ (pwhisker_left _ (ap1_pid) ⬝* !pcompose_pid) ⬝* _,
+      refine !passoc ⬝* pwhisker_left _ !seq_colim_equiv_constant_pinclusion ⬝* _, 
+      apply pinv_left_phomotopy_of_phomotopy,
+      exact !pseq_colim_loop_pinclusion⁻¹*
+    }
   end
 
   definition spectrify.elim {N : succ_str} {X : gen_prespectrum N} {Y : gen_spectrum N}
@@ -442,9 +464,24 @@ namespace spectrum
     fapply smap.mk,
     { intro n, fapply pseq_colim.elim,
       { intro k, refine !equiv_gluen⁻¹ᵉ* ∘* apn k (f (n +' k)) },
-      { intro k, apply to_homotopy, exact sorry }},
+      { intro k, refine !passoc ⬝* pwhisker_right _ !equiv_gluen_inv_succ ⬝* _,
+        refine !passoc ⬝* _, apply pwhisker_left,
+        refine !passoc ⬝* _,
+        refine pwhisker_left _ ((passoc _ _ (_ ∘* _))⁻¹*) ⬝* _,
+        refine pwhisker_left _ !passoc⁻¹* ⬝* _,
+        refine pwhisker_left _ (pwhisker_right _ (phomotopy_pinv_right_of_phomotopy (!loopn_succ_in_natural)⁻¹*)⁻¹*) ⬝* _,
+        refine pwhisker_right _ !apn_pinv ⬝* _,
+        refine (phomotopy_pinv_left_of_phomotopy _)⁻¹*,
+        refine pwhisker_right _ !pmap_eta⁻¹* ⬝* _,
+        refine apn_psquare k _,
+        refine pwhisker_right _ _  ⬝* psquare_of_phomotopy !smap.glue_square,
+        exact !pmap_eta⁻¹*
+      }},
     { intro n, exact sorry }
   end
+
+  definition spectrify_fun {N : succ_str} {X Y : gen_prespectrum N} (f : X →ₛ Y) : spectrify X →ₛ spectrify Y :=
+  spectrify.elim ((@spectrify_map _ Y) ∘ₛ f)
 
   /- Tensor by spaces -/
 
@@ -460,6 +497,28 @@ prespectrum.mk (λ z, X ∧ Y z) begin
   refine psusp_pelim (Y n) (Y (n + 1)) _,
   exact !glue
 end
+
+definition smash_prespectrum_fun {X X' : Type*} {Y Y' : prespectrum} (f : X →* X') (g : Y →ₛ Y') : smash_prespectrum X Y →ₛ smash_prespectrum X' Y' :=
+smap.mk (λn, smash_functor f (g n)) begin
+  intro n,
+  refine susp_to_loop_psquare _ _ _ _ _,
+  refine pvconcat (psquare_transpose (phinverse (smash_psusp_natural f (g n)))) _,
+  refine vconcat_phomotopy _ (smash_functor_split f (g (S n))),
+  refine phomotopy_vconcat (smash_functor_split f (psusp_functor (g n))) _,
+  refine phconcat _ _,
+  let glue_adjoint := psusp_pelim (Y n) (Y (S n)) (glue Y n),
+  exact pid X' ∧→ glue_adjoint,
+  exact smash_functor_psquare (pvrefl f) (phrefl glue_adjoint),
+  refine smash_functor_psquare (phrefl (pid X')) _,
+  refine loop_to_susp_square _ _ _ _ _,
+  exact smap.glue_square g n
+end
+
+definition smash_spectrum (X : Type*) (Y : spectrum) : spectrum :=
+spectrify (smash_prespectrum X Y)
+
+definition smash_spectrum_fun {X X' : Type*} {Y Y' : spectrum} (f : X →* X') (g : Y →ₛ Y') : smash_spectrum X Y →ₛ smash_spectrum X' Y' :=
+spectrify_fun (smash_prespectrum_fun f g)
 
   /- Cofibers and stability -/
 
