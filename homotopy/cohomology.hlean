@@ -270,7 +270,7 @@ cohomology_theory.mk
 -- print has_choice_lift
 -- print equiv_lift
 -- print has_choice_equiv_closed
-definition ordinary_cohomology_theory_EM [constructor] (G : AbGroup) : ordinary_theory :=
-⦃ordinary_theory, cohomology_theory_spectrum (EM_spectrum G), Hdimension := EM_dimension G ⦄
+definition ordinary_cohomology_theory_EM [constructor] (G : AbGroup) : ordinary_cohomology_theory :=
+⦃ordinary_cohomology_theory, cohomology_theory_spectrum (EM_spectrum G), Hdimension := EM_dimension G ⦄
 
 end cohomology
