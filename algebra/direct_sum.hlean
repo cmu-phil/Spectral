@@ -124,7 +124,7 @@ namespace group
   dirsum_elim (λi, dirsum_incl Y' i ∘g f i)
 
   theorem dirsum_functor_compose (f' : Πi, Y' i →g Y'' i) (f : Πi, Y i →g Y' i) :
-    dirsum_functor f' ∘a dirsum_functor f ~ dirsum_functor (λi, f' i ∘a f i) :=
+    dirsum_functor f' ∘g dirsum_functor f ~ dirsum_functor (λi, f' i ∘g f i) :=
   begin
     apply dirsum_homotopy,
     intro i y, reflexivity,
