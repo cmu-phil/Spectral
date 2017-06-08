@@ -372,7 +372,9 @@ namespace seq_colim
     (p : Πn, f n ~* f' n) (n : ℕ) :
     pseq_colim_equiv_constant p ∘* pinclusion f n ~* pinclusion f' n  :=
   begin
-    sorry
+    transitivity pinclusion f' n ∘* !pid,
+    refine phomotopy_of_psquare !pseq_colim_pequiv_pinclusion,
+    exact !pcompose_pid
   end
 
   definition is_equiv_seq_colim_rec (P : seq_colim f → Type) :
