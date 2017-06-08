@@ -1,3 +1,11 @@
+/-
+Copyright (c) 2017 Yuri Sulyma, Favonia
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Yuri Sulyma, Favonia
+
+Reduced homology theories
+-/
+
 import ..homotopy.spectrum ..homotopy.EM ..algebra.arrow_group ..algebra.direct_sum ..homotopy.fwedge ..choice ..homotopy.pushout ..move_to_lib
 
 open eq spectrum int pointed group algebra sphere nat equiv susp is_trunc
@@ -19,6 +27,9 @@ namespace homology
     (Hexact : Π(n : ℤ) {X Y : Type*} (f : X →* Y), is_exact_g (Hh n f) (Hh n (pcod f)))
     (Hadditive : Π(n : ℤ) {I : Set.{u}} (X : I → Type*), is_equiv
       (dirsum_elim (λi, Hh n (pinl i)) : dirsum (λi, HH n (X i)) → HH n (⋁ X)))
+
+  structure ordinary_homology_theory.{u} extends homology_theory.{u} : Type.{u+1} :=
+    (Hdimension : Π(n : ℤ), n ≠ 0 → is_contr (HH n (plift (psphere 0))))
 
   section
     parameter (theory : homology_theory)
