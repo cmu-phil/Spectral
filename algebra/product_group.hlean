@@ -61,18 +61,18 @@ namespace group
   infix ` ×g `:60 := group.product
   infix ` ×ag `:60 := group.ab_product
 
-  definition product_inl (G H : Group) : G →g G ×g H :=
+  definition product_inl [constructor] (G H : Group) : G →g G ×g H :=
     homomorphism.mk (λx, (x, one)) (λx y, prod_eq !refl !one_mul⁻¹)
 
-  definition product_inr (G H : Group) : H →g G ×g H :=
+  definition product_inr [constructor] (G H : Group) : H →g G ×g H :=
     homomorphism.mk (λx, (one, x)) (λx y, prod_eq !one_mul⁻¹ !refl)
 
-  definition Group_sum_elim (G H : Group) (I : AbGroup) (φ : G →g I) (ψ : H →g I) : G ×g H →g I :=
-    homomorphism.mk (λx, φ x.1 * ψ x.2) (λx y, calc
+  definition Group_sum_elim [constructor] {G H : Group} (I : AbGroup) (φ : G →g I) (ψ : H →g I) : G ×g H →g I :=
+    homomorphism.mk (λx, φ x.1 * ψ x.2) abstract (λx y, calc
       φ (x.1 * y.1) * ψ (x.2 * y.2) = (φ x.1 * φ y.1) * (ψ x.2 * ψ y.2)
                                       : by exact ap011 mul (to_respect_mul φ x.1 y.1) (to_respect_mul ψ x.2 y.2)
                                 ... = (φ x.1 * ψ x.2) * (φ y.1 * ψ y.2)
-                                      : by exact interchange I (φ x.1) (φ y.1) (ψ x.2) (ψ y.2))
+                                      : by exact interchange I (φ x.1) (φ y.1) (ψ x.2) (ψ y.2)) end
 
   definition product_functor [constructor] {G G' H H' : Group} (φ : G →g H) (ψ : G' →g H') :
     G ×g G' →g H ×g H' :=

@@ -93,7 +93,7 @@ namespace group
   let branch := bool.rec G H in
   let to_hom := (dirsum_elim (bool.rec (product_inl G H) (product_inr G H))
                 : dirsum (bool.rec G H) →g G ×ag H) in
-  let from_hom := (Group_sum_elim G H (dirsum (bool.rec G H))
+  let from_hom := (Group_sum_elim (dirsum (bool.rec G H))
                     (dirsum_incl branch bool.ff) (dirsum_incl branch bool.tt)
                   : G ×g H →g dirsum branch) in
   begin
