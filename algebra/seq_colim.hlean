@@ -18,14 +18,21 @@ namespace group
     definition seq_colim_incl [constructor] (i : ℕ) : A i →g seq_colim :=
       qg_map _ ∘g dirsum_incl A i
 
-    definition seq_colim_quotient (h : Πi, A i →g A') (k : Πi a, h i a = h (i + 1) (f i a))
+    definition seq_colim_quotient (h : Πi, A i →g A') (k : Πi a, h i a = h (succ i) (f i a))
                                   (v : seq_colim_carrier) (r : ∥seq_colim_rel v∥) : dirsum_elim h v = 1 :=
       begin
-        induction r with r, induction r, exact sorry
+        induction r with r, induction r, 
+        refine !to_respect_mul ⬝ _,
+        refine ap (λγ, group_fun (dirsum_elim h) (group_fun (dirsum_incl A i) a) * group_fun (dirsum_elim h) γ) (!to_respect_inv)⁻¹ ⬝ _,
+        refine ap (λγ, γ * group_fun (dirsum_elim h) (group_fun (dirsum_incl A (succ i)) (f i a)⁻¹)) !dirsum_elim_compute ⬝ _,
+        refine ap (λγ, (h i a) * γ) !dirsum_elim_compute ⬝ _,
+        refine ap (λγ, γ * group_fun (h (succ i)) (f i a)⁻¹) !k ⬝ _,
+        refine ap (λγ, group_fun (h (succ i)) (f i a) * γ) (!to_respect_inv) ⬝ _,
+        exact !mul.right_inv
       end
 
     definition seq_colim_elim [constructor] (h : Πi, A i →g A')
-                                            (k : Πi a, h i a = h (i + 1) (f i a)) : seq_colim →g A' :=
+                                            (k : Πi a, h i a = h (succ i) (f i a)) : seq_colim →g A' :=
       gqg_elim _ (dirsum_elim h) (seq_colim_quotient h k)
 
   end

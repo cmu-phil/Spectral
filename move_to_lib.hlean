@@ -180,6 +180,13 @@ namespace group
   definition isomorphism_ap {A : Type} (F : A → Group) {a b : A} (p : a = b) : F a ≃g F b :=
     isomorphism_of_eq (ap F p)
 
+  definition interchange (G : AbGroup) (a b c d : G) : (a * b) * (c * d) = (a * c) * (b * d) :=
+  calc (a * b) * (c * d) = a * (b * (c * d)) : by exact mul.assoc a b (c * d)
+                     ... = a * ((b * c) * d) : by exact ap (λ bcd, a * bcd) (mul.assoc b c d)⁻¹
+                     ... = a * ((c * b) * d) : by exact ap (λ bc, a * (bc * d)) (mul.comm b c)
+                     ... = a * (c * (b * d)) : by exact ap (λ bcd, a * bcd) (mul.assoc c b d)
+                     ... = (a * c) * (b * d) : by exact (mul.assoc a c (b * d))⁻¹
+
 end group open group
 
 namespace function

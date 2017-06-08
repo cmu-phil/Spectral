@@ -227,10 +227,10 @@ namespace group
       unfold qg_map, esimp, exact to_respect_mul f g h }
   end
 
-  definition quotient_group_compute (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) :
-    quotient_group_elim f H ∘g qg_map N ~ f :=
+  definition quotient_group_compute (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) (g : G) :
+    quotient_group_elim f H (qg_map N g) = f g :=
   begin
-    intro g, reflexivity
+    reflexivity
   end
 
   definition gelim_unique (f : G →g G') (H : Π⦃g⦄, N g → f g = 1) (k : quotient_group N →g G')
@@ -247,7 +247,7 @@ namespace group
   end
 
   definition qg_universal_property (f : G →g G') (H : Π⦃g⦄, N g → f g = 1)  :
-    is_contr (Σ(g : quotient_group N →g G'), g ∘g qg_map N ~ f) :=
+    is_contr (Σ(g : quotient_group N →g G'), g ∘ qg_map N ~ f) :=
   begin
     fapply is_contr.mk,
       -- give center of contraction
@@ -442,7 +442,7 @@ definition kernel_quotient_extension {A B : AbGroup} (f : A →g B) : quotient_a
   end
 
 definition kernel_quotient_extension_triangle {A B : AbGroup} (f : A →g B) :
-  kernel_quotient_extension f ∘g ab_qg_map (kernel_subgroup f) ~ f :=
+  kernel_quotient_extension f ∘ ab_qg_map (kernel_subgroup f) ~ f :=
   begin
     intro a,
     apply quotient_group_compute

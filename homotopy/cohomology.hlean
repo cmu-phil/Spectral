@@ -189,7 +189,7 @@ structure cohomology_theory.{u} : Type.{u+1} :=
   (Hadditive : Π(n : ℤ) {I : Type.{u}} (X : I → Type*), has_choice 0 I →
     is_equiv (Group_pi_intro (λi, Hh n (pinl i)) : HH n (⋁ X) → Πᵍ i, HH n (X i)))
 
-structure ordinary_theory.{u} extends cohomology_theory.{u} : Type.{u+1} :=
+structure ordinary_cohomology_theory.{u} extends cohomology_theory.{u} : Type.{u+1} :=
  (Hdimension : Π(n : ℤ), n ≠ 0 → is_contr (HH n (plift pbool)))
 
 attribute cohomology_theory.HH [coercion]
@@ -270,7 +270,7 @@ cohomology_theory.mk
 -- print has_choice_lift
 -- print equiv_lift
 -- print has_choice_equiv_closed
-definition ordinary_theory_EM [constructor] (G : AbGroup) : ordinary_theory :=
-⦃ordinary_theory, cohomology_theory_spectrum (EM_spectrum G), Hdimension := EM_dimension G ⦄
+definition ordinary_cohomology_theory_EM [constructor] (G : AbGroup) : ordinary_cohomology_theory :=
+⦃ordinary_cohomology_theory, cohomology_theory_spectrum (EM_spectrum G), Hdimension := EM_dimension G ⦄
 
 end cohomology

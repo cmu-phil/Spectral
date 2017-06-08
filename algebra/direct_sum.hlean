@@ -6,9 +6,9 @@ Authors: Floris van Doorn, Egbert Rijke
 Constructions with groups
 -/
 
-import .quotient_group .free_commutative_group
+import .quotient_group .free_commutative_group .product_group
 
-open eq algebra is_trunc set_quotient relation sigma prod sum list trunc function equiv sigma.ops
+open eq is_equiv algebra is_trunc set_quotient relation sigma prod sum list trunc function equiv sigma.ops
 
 namespace group
 
@@ -73,10 +73,10 @@ namespace group
     definition dirsum_elim [constructor] (f : Πi, Y i →g A') : dirsum →g A' :=
     gqg_elim _ (free_ab_group_elim (λv, f v.1 v.2)) (dirsum_elim_resp_quotient f)
 
-    definition dirsum_elim_compute (f : Πi, Y i →g A') (i : I) :
-      dirsum_elim f ∘g dirsum_incl i ~ f i :=
+    definition dirsum_elim_compute (f : Πi, Y i →g A') (i : I) (y : Y i) :
+      dirsum_elim f (dirsum_incl i y) = f i y :=
     begin
-      intro g, apply one_mul
+      apply one_mul
     end
 
     definition dirsum_elim_unique (f : Πi, Y i →g A') (k : dirsum →g A')
@@ -87,6 +87,35 @@ namespace group
       intro x, induction x with i y, exact H i y
     end
 
+  end
+
+  definition binary_dirsum (G H : AbGroup) : dirsum (bool.rec G H) ≃g G ×ag H :=
+  let branch := bool.rec G H in
+  let to_hom := (dirsum_elim (bool.rec (product_inl G H) (product_inr G H))
+                : dirsum (bool.rec G H) →g G ×ag H) in
+  let from_hom := (Group_sum_elim (dirsum (bool.rec G H))
+                    (dirsum_incl branch bool.ff) (dirsum_incl branch bool.tt)
+                  : G ×g H →g dirsum branch) in
+  begin
+    fapply isomorphism.mk,
+    { exact dirsum_elim (bool.rec (product_inl G H) (product_inr G H)) },
+    fapply adjointify,
+    { exact from_hom },
+    { intro gh, induction gh with g h,
+        exact prod_eq (mul_one (1 * g) ⬝ one_mul g) (ap (λ o, o * h) (mul_one 1) ⬝ one_mul h) },
+    { refine dirsum.rec _ _ _,
+      { intro b x,
+        refine ap from_hom (dirsum_elim_compute (bool.rec (product_inl G H) (product_inr G H)) b x) ⬝ _,
+        induction b,
+        { exact ap (λ y, dirsum_incl branch bool.ff x * y) (to_respect_one (dirsum_incl branch bool.tt)) ⬝ mul_one _ },
+        { exact ap (λ y, y * dirsum_incl branch bool.tt x) (to_respect_one (dirsum_incl branch bool.ff)) ⬝ one_mul _ }
+      },
+      { refine ap from_hom (to_respect_one to_hom) ⬝ to_respect_one from_hom },
+      { intro g h gβ hβ,
+        refine ap from_hom (to_respect_mul to_hom _ _) ⬝ to_respect_mul from_hom _ _ ⬝ _,
+        exact ap011 mul gβ hβ
+      }
+    }
   end
 
   variables {I J : Set} {Y Y' Y'' : I → AbGroup}
