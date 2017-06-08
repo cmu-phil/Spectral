@@ -373,13 +373,13 @@ namespace spectrum
   definition spectrify_type_term {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ) : Type* :=
   Ω[k] (X (n +' k))
 
-  definition spectrify_type_fun' {N : succ_str} (X : gen_prespectrum N) (k : ℕ) (n : N) :
+  definition spectrify_type_fun' {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ) :
     Ω[k] (X n) →* Ω[k+1] (X (S n)) :=
   !loopn_succ_in⁻¹ᵉ* ∘* Ω→[k] (glue X n)
 
   definition spectrify_type_fun {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ) :
     spectrify_type_term X n k →* spectrify_type_term X n (k+1) :=
-  spectrify_type_fun' X k (n +' k)
+  spectrify_type_fun' X (n +' k) k
 
   definition spectrify_type_fun_zero {N : succ_str} (X : gen_prespectrum N) (n : N) :
     spectrify_type_fun X n 0 ~* glue X n :=
@@ -397,20 +397,28 @@ namespace spectrum
           ... ≡ Y n
   -/
 
+  definition spectrify_type_fun'_succ {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ) :
+    spectrify_type_fun' X n (succ k) ~* Ω→ (spectrify_type_fun' X n k) :=
+  begin
+    refine _ ⬝* !ap1_pcompose⁻¹*,
+    apply !pwhisker_right, 
+    refine !to_pinv_pequiv_MK2
+  end
+
   definition spectrify_pequiv {N : succ_str} (X : gen_prespectrum N) (n : N) :
     spectrify_type X n ≃* Ω (spectrify_type X (S n)) :=
   begin
     refine !pshift_equiv ⬝e* _,
-    transitivity pseq_colim (λk, spectrify_type_fun' X (succ k) (S n +' k)),
-    fapply pseq_colim_pequiv',
+    transitivity pseq_colim (λk, spectrify_type_fun' X (S n +' k) (succ k)),
+    fapply pseq_colim_pequiv,
     { intro n, apply loopn_pequiv_loopn, apply pequiv_ap X, apply succ_str.add_succ },
-    { exact abstract begin intro k, apply to_homotopy,
+    { exact abstract begin intro k,
       refine !passoc⁻¹* ⬝* _, refine pwhisker_right _ (loopn_succ_in_inv_natural (succ k) _) ⬝* _,
       refine !passoc ⬝* _ ⬝* !passoc⁻¹*, apply pwhisker_left,
       refine !apn_pcompose⁻¹* ⬝* _ ⬝* !apn_pcompose, apply apn_phomotopy,
       exact !glue_ptransport⁻¹* end end },
     refine _ ⬝e* !pseq_colim_loop⁻¹ᵉ*,
-    exact pseq_colim_equiv_constant (λn, begin unfold [spectrify_type_fun], refine sorry ⬝* !ap1_pcompose⁻¹* end),
+    exact pseq_colim_equiv_constant (λn, !spectrify_type_fun'_succ),
   end
 
   definition spectrify [constructor] {N : succ_str} (X : gen_prespectrum N) : gen_spectrum N :=
