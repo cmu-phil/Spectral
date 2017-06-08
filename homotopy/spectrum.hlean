@@ -146,7 +146,7 @@ namespace spectrum
     -- I guess this manual eta-expansion is necessary because structures lack definitional eta?
     := phomotopy.mk (glue_square f n) (to_homotopy_pt (glue_square f n))
 
-  definition sid {N : succ_str} (E : gen_spectrum N) : E →ₛ E :=
+  definition sid {N : succ_str} (E : gen_prespectrum N) : E →ₛ E :=
     smap.mk (λn, pid (E n))
     (λn, calc glue E n ∘* pid (E n) ~* glue E n                   : pcompose_pid
                               ...   ~* pid (Ω(E (S n))) ∘* glue E n : pid_pcompose
@@ -446,6 +446,9 @@ namespace spectrum
     { intro n, exact sorry }
   end
 
+  definition spectrify_fun {N : succ_str} {X Y : gen_prespectrum N} (f : X →ₛ Y) : spectrify X →ₛ spectrify Y :=
+  spectrify.elim ((@spectrify_map _ Y) ∘ₛ f)
+
   /- Tensor by spaces -/
 
   /- Smash product of spectra -/
@@ -462,8 +465,7 @@ prespectrum.mk (λ z, X ∧ Y z) begin
 end
 
 definition smash_prespectrum_fun {X X' : Type*} {Y Y' : prespectrum} (f : X →* X') (g : Y →ₛ Y') : smash_prespectrum X Y →ₛ smash_prespectrum X' Y' :=
-begin
-  refine smap.mk (λn, smash_functor f (g n)) _,
+smap.mk (λn, smash_functor f (g n)) begin
   intro n,
   refine susp_to_loop_psquare _ _ _ _ _,
   refine pvconcat (psquare_transpose (phinverse (smash_psusp_natural f (g n)))) _,
@@ -477,6 +479,12 @@ begin
   refine loop_to_susp_square _ _ _ _ _,
   exact smap.glue_square g n
 end
+
+definition smash_spectrum (X : Type*) (Y : spectrum) : spectrum :=
+spectrify (smash_prespectrum X Y)
+
+definition smash_spectrum_fun {X X' : Type*} {Y Y' : spectrum} (f : X →* X') (g : Y →ₛ Y') : smash_spectrum X Y →ₛ smash_spectrum X' Y' :=
+spectrify_fun (smash_prespectrum_fun f g)
 
   /- Cofibers and stability -/
 
