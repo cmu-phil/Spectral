@@ -644,7 +644,7 @@ definition codomain_surjection_is_quotient_triangle {A B : AbGroup} (f : A →g 
     end
 
     definition gqg_elim_compute (f : A₁ →g A₂) (H : Π⦃g⦄, S g → f g = 1)
-      : gqg_elim f H ∘g gqg_map ~ f :=
+      : gqg_elim f H ∘ gqg_map ~ f :=
     begin
       intro g, reflexivity
     end
