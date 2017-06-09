@@ -5,7 +5,7 @@ Authors: Michael Shulman, Floris van Doorn
 
 -/
 
-import homotopy.LES_of_homotopy_groups .splice ..colim types.pointed2 .EM ..pointed_pi .smash_adjoint ..algebra.seq_colim
+import homotopy.LES_of_homotopy_groups .splice ..colim types.pointed2 .EM ..pointed_pi .smash_adjoint ..algebra.seq_colim .fwedge
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
      seq_colim succ_str EM EM.ops function
 
@@ -593,5 +593,17 @@ spectrify_fun (smash_prespectrum_fun f g)
   definition EM_spectrum /-[constructor]-/ (G : AbGroup) : spectrum :=
   spectrum.Mk (K G) (λn, (loop_EM G n)⁻¹ᵉ*)
 
+  /- Wedge of prespectra -/
+
+open fwedge
+
+  definition fwedge_prespectrum.{u v} {I : Type.{v}} (X : I -> prespectrum.{u}) : prespectrum.{max u v} :=
+  begin
+    fconstructor,
+    { intro n, exact fwedge (λ i, X i n) },
+    { intro n, fapply fwedge_pmap,
+      intro i, exact Ω→ !pinl ∘* !glue 
+  }
+  end
 
 end spectrum
