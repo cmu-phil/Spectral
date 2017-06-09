@@ -6,10 +6,10 @@ Authors: Yuri Sulyma, Favonia
 Reduced homology theories
 -/
 
-import ..homotopy.spectrum ..homotopy.EM ..algebra.arrow_group ..algebra.direct_sum ..homotopy.fwedge ..choice ..homotopy.pushout ..move_to_lib
+import ..homotopy.spectrum ..homotopy.EM ..algebra.arrow_group ..algebra.direct_sum ..homotopy.fwedge ..homotopy.wedge ..choice ..homotopy.pushout ..move_to_lib
 
 open eq spectrum int pointed group algebra sphere nat equiv susp is_trunc
-     function fwedge cofiber lift is_equiv choice algebra pi smash
+     function fwedge cofiber lift is_equiv choice algebra pi smash wedge
 
 namespace homology
 
@@ -127,6 +127,20 @@ namespace homology
                          ... ≃g dirsum (λb, HH theory n (bool.rec A B b)) : by exact (Hadditive'_equiv n (bool.rec A B))⁻¹ᵍ
                          ... ≃g dirsum (bool.rec (HH theory n A) (HH theory n B)) : by exact dirsum_isomorphism (bool.rec !isomorphism.refl !isomorphism.refl)
                          ... ≃g HH theory n A ×g HH theory n B : by exact binary_dirsum (HH theory n A) (HH theory n B)
+
+  end
+  section
+    universe variables u v
+    parameter (theory : homology_theory.{max u v})
+    open homology_theory
+
+    definition Hplift_psusp (n : ℤ) (A : Type*): HH theory (n + 1) (plift.{u v} (psusp A)) ≃g HH theory n (plift.{u v} A) :=
+    calc HH theory (n + 1) (plift.{u v} (psusp A)) ≃g HH theory (n + 1) (psusp (plift.{u v} A)) : by exact HH_isomorphism theory (n + 1) (plift_psusp _)
+                                               ... ≃g HH theory n (plift.{u v} A) : by exact Hpsusp theory n (plift.{u v} A)
+
+    definition Hplift_pwedge (n : ℤ) (A B : Type*): HH theory n (plift.{u v} (A ∨ B)) ≃g HH theory n (plift.{u v} A) ×g HH theory n (plift.{u v} B) :=
+    calc HH theory n (plift.{u v} (A ∨ B)) ≃g HH theory n (plift.{u v} A ∨ plift.{u v} B) : by exact HH_isomorphism theory n (plift_pwedge A B)
+                                       ... ≃g HH theory n (plift.{u v} A) ×g HH theory n (plift.{u v} B) : by exact Hpwedge theory n (plift.{u v} A) (plift.{u v} B)
 
   end
 
