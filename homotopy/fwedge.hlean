@@ -167,7 +167,7 @@ namespace fwedge
                                      ... ~* fwedge_pmap (λ i, !pid ∘* pinl i) : by exact fwedge_pmap_phomotopy (λ i, phomotopy.symm (pid_pcompose (pinl i)))
                                      ... ~* !pid : by exact fwedge_pmap_eta !pid
 
-  definition fwedge_functor_compose {I : Type} {F F' F'' : I → Type*} (g : Π i, F' i →* F'' i)
+  definition fwedge_functor_pcompose {I : Type} {F F' F'' : I → Type*} (g : Π i, F' i →* F'' i)
     (f : Π i, F i →* F' i) : fwedge_functor (λ i, g i ∘* f i) ~* fwedge_functor g ∘* fwedge_functor f :=
   calc        fwedge_functor (λ i, g i ∘* f i)
            ~* fwedge_pmap (λ i, (pinl i ∘* g i) ∘* f i)
@@ -183,7 +183,7 @@ namespace fwedge
        ... ~* fwedge_functor g ∘* fwedge_functor f
               : by exact fwedge_pmap_eta (fwedge_functor g ∘* fwedge_functor f)
 
-  definition fwedge_functor_homotopy {I : Type} {F F' : I → Type*} {f g : Π i, F i →* F' i}
+  definition fwedge_functor_phomotopy {I : Type} {F F' : I → Type*} {f g : Π i, F i →* F' i}
     (h : Π i, f i ~* g i) : fwedge_functor f ~* fwedge_functor g :=
     fwedge_pmap_phomotopy (λ i, pwhisker_left (pinl i) (h i))
 
@@ -192,13 +192,13 @@ namespace fwedge
   let pfrom := fwedge_functor (λ i, (f i)⁻¹ᵉ*) in
   begin
     fapply pequiv_of_pmap, exact pto,
-    fapply is_equiv.adjointify, exact pfrom,
-    { intro y, refine (fwedge_functor_compose (λ i, f i) (λ i, (f i)⁻¹ᵉ*) y)⁻¹ ⬝ _,
-      refine fwedge_functor_homotopy (λ i, pright_inv (f i)) y ⬝ _,
+    fapply adjointify, exact pfrom,
+    { intro y, refine (fwedge_functor_pcompose (λ i, f i) (λ i, (f i)⁻¹ᵉ*) y)⁻¹ ⬝ _,
+      refine fwedge_functor_phomotopy (λ i, pright_inv (f i)) y ⬝ _,
       exact fwedge_functor_pid y
     },
-    { intro y, refine (fwedge_functor_compose (λ i, (f i)⁻¹ᵉ*) (λ i, f i) y)⁻¹ ⬝ _,
-      refine fwedge_functor_homotopy (λ i, pleft_inv (f i)) y ⬝ _,
+    { intro y, refine (fwedge_functor_pcompose (λ i, (f i)⁻¹ᵉ*) (λ i, f i) y)⁻¹ ⬝ _,
+      refine fwedge_functor_phomotopy (λ i, pleft_inv (f i)) y ⬝ _,
       exact fwedge_functor_pid y
     }
   end
