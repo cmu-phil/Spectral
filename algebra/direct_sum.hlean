@@ -156,7 +156,7 @@ namespace group
   definition dirsum_functor_left [constructor] (f : J → I) : dirsum (Y ∘ f) →g dirsum Y :=
   dirsum_elim (λj, dirsum_incl Y (f j))
 
-  definition dirsum_functor_isomorphism [constructor] (f : Πi, Y i ≃g Y' i) : dirsum Y ≃g dirsum Y' :=
+  definition dirsum_isomorphism [constructor] (f : Πi, Y i ≃g Y' i) : dirsum Y ≃g dirsum Y' :=
   let to_hom := dirsum_functor (λ i, f i) in
   let from_hom := dirsum_functor (λ i, (f i)⁻¹ᵍ) in
   begin
