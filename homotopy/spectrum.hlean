@@ -214,6 +214,19 @@ namespace spectrum
     exact phhinverse ((shomotopy.glue_homotopy p) n)
   end
 
+  -- incoherent homotopies. this is a bit gross, but
+  -- a) we don't need the higher coherences for most basic things
+  --   (you need it for higher algebra, e.g. power operations)
+  -- b) homotopies of maps between spectra are really hard
+
+  structure shomotopy_incoh {N : succ_str} {E F : gen_prespectrum N} (f g : E →ₛ F) :=
+  (to_phomotopy : Πn, f n ~* g n)
+
+  infix ` ~ₛi `:50 := shomotopy_incoh
+
+  definition shomotopy_to_incoh [coercion] {N : succ_str} {E F : gen_prespectrum N} {f g : E →ₛ F} (p : f ~ₛ g) : shomotopy_incoh f g :=
+  shomotopy_incoh.mk (λn, (shomotopy.to_phomotopy p) n)
+
   ------------------------------
   -- Suspension prespectra
   ------------------------------
@@ -254,6 +267,13 @@ namespace spectrum
   π→g[2] (f (2 - n))
 
   notation `πₛ→[`:95 n:0 `]`:0 := shomotopy_group_fun n
+
+  -- what an awful name
+  definition shomotopy_group_fun_shomotopy_incoh {E F : spectrum} {f g : E →ₛ F} (n : ℤ) (p : f ~ₛi g) : πₛ→[n] f ~ πₛ→[n] g :=
+  begin
+    refine homotopy_group_functor_phomotopy 2 _,
+    exact (shomotopy_incoh.to_phomotopy p) (2 - n)
+  end
 
   /- homotopy group of a prespectrum -/
 
