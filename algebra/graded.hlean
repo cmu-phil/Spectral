@@ -391,14 +391,14 @@ dirsum_functor (λi, smul_homomorphism (N i) r)
 definition dirsum_smul_right_distrib (r s : R) (n : dirsum' N) :
   dirsum_smul (r + s) n = dirsum_smul r n + dirsum_smul s n :=
 begin
-  refine dirsum_functor_homotopy _ n ⬝ !dirsum_functor_mul⁻¹,
+  refine dirsum_functor_homotopy _ _ _ n ⬝ !dirsum_functor_mul⁻¹,
   intro i ni, exact to_smul_right_distrib r s ni
 end
 
 definition dirsum_mul_smul' (r s : R) (n : dirsum' N) :
   dirsum_smul (r * s) n = (dirsum_smul r ∘a dirsum_smul s) n :=
 begin
-  refine dirsum_functor_homotopy _ n ⬝ (dirsum_functor_compose _ _ n)⁻¹ᵖ,
+  refine dirsum_functor_homotopy _ _ _ n ⬝ (dirsum_functor_compose _ _ n)⁻¹ᵖ,
   intro i ni, exact to_mul_smul r s ni
 end
 
@@ -408,7 +408,7 @@ proof dirsum_mul_smul' r s n qed
 
 definition dirsum_one_smul (n : dirsum' N) : dirsum_smul 1 n = n :=
 begin
-  refine dirsum_functor_homotopy _ n ⬝ !dirsum_functor_gid,
+  refine dirsum_functor_homotopy _ _ _ n ⬝ !dirsum_functor_gid,
   intro i ni, exact to_one_smul ni
 end
 
