@@ -232,6 +232,7 @@ namespace fwedge
                      ... ≃* ⋁ (λ i, plift.{u v} (F i)) : by exact fwedge_pequiv (λ i, !pequiv_plift)
 
   definition fwedge_down_left.{u v} {I : Type} (F : I → pType) : ⋁ (F ∘ down.{u v}) ≃* ⋁ F :=
+  proof
   let pto := @fwedge_pmap (lift.{u v} I) (F ∘ down) (⋁ F) (λ i, pinl (down i)) in
   let pfrom := @fwedge_pmap I F (⋁ (F ∘ down.{u v})) (λ i, pinl (up.{u v} i)) in
   begin
@@ -257,5 +258,6 @@ namespace fwedge
     }
 
   end
+  qed
 
 end fwedge

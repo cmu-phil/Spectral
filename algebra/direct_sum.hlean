@@ -186,10 +186,11 @@ end group
 
 namespace group
 
-  definition dirsum_down_left.{u v} {I : Type.{u}} [is_set I] {Y : I → AbGroup}
+  definition dirsum_down_left.{u v w} {I : Type.{u}} [is_set I] (Y : I → AbGroup.{w})
     : dirsum (Y ∘ down.{u v}) ≃g dirsum Y :=
+  proof
   let to_hom := @dirsum_functor_left _ _ _ _ Y down.{u v} in
-  let from_hom := dirsum_elim (λi, dirsum_incl (Y ∘ down) (up i)) in
+  let from_hom := dirsum_elim (λi, dirsum_incl (Y ∘ down.{u v}) (up.{u v} i)) in
   begin
     fapply isomorphism.mk,
     { exact to_hom },
@@ -200,19 +201,20 @@ namespace group
       refine @dirsum_homotopy I _ Y (dirsum Y) (to_hom ∘g from_hom) !gid _ ds,
       intro i y,
       refine homomorphism_comp_compute to_hom from_hom _ ⬝ _,
-      refine ap to_hom (dirsum_elim_compute (λi, dirsum_incl (Y ∘ down) (up i)) i y) ⬝ _,
-      refine dirsum_elim_compute _ (up i) y ⬝ _,
+      refine ap to_hom (dirsum_elim_compute (λi, dirsum_incl (Y ∘ down.{u v}) (up.{u v} i)) i y) ⬝ _,
+      refine dirsum_elim_compute _ (up.{u v} i) y ⬝ _,
       reflexivity
     },
     { intro ds,
       refine (homomorphism_comp_compute from_hom to_hom ds)⁻¹ ⬝ _,
-      refine @dirsum_homotopy _ _ (Y ∘ down) (dirsum (Y ∘ down)) (from_hom ∘g to_hom) !gid _ ds,
+      refine @dirsum_homotopy _ _ (Y ∘ down.{u v}) (dirsum (Y ∘ down.{u v})) (from_hom ∘g to_hom) !gid _ ds,
       intro i y, induction i with i,
       refine homomorphism_comp_compute from_hom to_hom _ ⬝ _,
-      refine ap from_hom (dirsum_elim_compute (λi, dirsum_incl Y (down i)) (up i) y) ⬝ _,
+      refine ap from_hom (dirsum_elim_compute (λi, dirsum_incl Y (down.{u v} i)) (up.{u v} i) y) ⬝ _,
       refine dirsum_elim_compute _ i y ⬝ _,
       reflexivity
     }
   end
+  qed
 
 end group

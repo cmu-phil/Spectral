@@ -31,7 +31,8 @@ namespace homology
     (Hdimension : Π(n : ℤ), n ≠ 0 → is_contr (HH n (plift (psphere 0))))
 
   section
-    parameter (theory : homology_theory)
+    universe variable u
+    parameter (theory : homology_theory.{u})
     open homology_theory
 
     theorem HH_base_indep (n : ℤ) {A : Type} (a b : A)
@@ -78,13 +79,54 @@ namespace homology
       }
     end
 
+    definition Hadditive_equiv (n : ℤ) {I : Type} [is_set I] (X : I → Type*)
+      : dirsum (λi, HH theory n (X i)) ≃g HH theory n (⋁ X) :=
+    isomorphism.mk (dirsum_elim (λi, Hh theory n (fwedge.pinl i))) (Hadditive theory n X)
+
+    definition Hadditive' (n : ℤ) {I : Type₀} [is_set I] (X : I → pType.{u}) : is_equiv
+      (dirsum_elim (λi, Hh theory n (pinl i)) : dirsum (λi, HH theory n (X i)) → HH theory n (⋁ X)) :=
+    let iso3 := HH_isomorphism n (fwedge_down_left.{0 u} X) in
+    let iso2 := Hadditive_equiv n (X ∘ down.{0 u}) in
+    let iso1 := (dirsum_down_left.{0 u} (λ i, HH theory n (X i)))⁻¹ᵍ in
+    let iso := calc dirsum (λ i, HH theory n (X i))
+                 ≃g dirsum (λ i, HH theory n (X (down.{0 u} i))) : by exact iso1
+             ... ≃g HH theory n (⋁ (X ∘ down.{0 u})) : by exact iso2
+             ... ≃g HH theory n (⋁ X) : by exact iso3
+    in
+    begin
+      fapply is_equiv_of_equiv_of_homotopy,
+      { exact equiv_of_isomorphism iso  },
+      { refine dirsum_homotopy _, intro i y,
+        refine homomorphism_comp_compute iso3 (iso2 ∘g iso1) _ ⬝ _,
+        refine ap iso3 (homomorphism_comp_compute iso2 iso1 _) ⬝ _,
+        refine ap (iso3 ∘ iso2) _ ⬝ _,
+        { exact dirsum_incl (λ i, HH theory n (X (down i))) (up i) y },
+        { refine _ ⬝ dirsum_elim_compute (λi, dirsum_incl (λ i, HH theory n (X (down.{0 u} i))) (up i)) i y,
+          reflexivity
+        },
+        refine ap iso3 _ ⬝ _,
+        { exact Hh theory n (fwedge.pinl (up i)) y },
+        { refine _ ⬝ dirsum_elim_compute (λi, Hh theory n (fwedge.pinl i)) (up i) y,
+          reflexivity
+        },
+        refine (Hpcompose theory n (fwedge_down_left X) (fwedge.pinl (up i)) y)⁻¹ ⬝ _,
+        refine Hh_homotopy n (fwedge_down_left.{0 u} X ∘* fwedge.pinl (up i)) (fwedge.pinl i) (fwedge_pmap_beta (λ i, pinl (down i)) (up i)) y ⬝ _,
+        refine (dirsum_elim_compute (λ i, Hh theory n (pinl i)) i y)⁻¹
+      }
+    end
+
+    definition Hadditive'_equiv (n : ℤ) {I : Type₀} [is_set I] (X : I → Type*)
+      : dirsum (λi, HH theory n (X i)) ≃g HH theory n (⋁ X) :=
+    isomorphism.mk (dirsum_elim (λi, Hh theory n (fwedge.pinl i))) (Hadditive' n X)
+
     definition Hfwedge (n : ℤ) {I : Type} [is_set I] (X : I → Type*): HH theory n (⋁ X) ≃g dirsum (λi, HH theory n (X i)) :=
       (isomorphism.mk _ (Hadditive theory n X))⁻¹ᵍ
 
     definition Hpwedge (n : ℤ) (A B : Type*) : HH theory n (pwedge A B) ≃g HH theory n A ×g HH theory n B :=
-    calc HH theory n (pwedge A B) ≃g HH theory n (fwedge (bool.rec A B)) : by exact sorry
-                              ... ≃g dirsum (λb, HH theory n (bool.rec A B b)) : by exact sorry
-                              ... ≃g HH theory n A ×g HH theory n B : by exact sorry
+    calc HH theory n (A ∨ B) ≃g HH theory n (⋁ (bool.rec A B)) : by exact HH_isomorphism n (pwedge_pequiv_fwedge A B)
+                         ... ≃g dirsum (λb, HH theory n (bool.rec A B b)) : by exact (Hadditive'_equiv n (bool.rec A B))⁻¹ᵍ
+                         ... ≃g dirsum (bool.rec (HH theory n A) (HH theory n B)) : by exact dirsum_isomorphism (bool.rec !isomorphism.refl !isomorphism.refl)
+                         ... ≃g HH theory n A ×g HH theory n B : by exact binary_dirsum (HH theory n A) (HH theory n B)
 
   end
 
