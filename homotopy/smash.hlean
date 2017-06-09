@@ -664,7 +664,7 @@ namespace smash
   (!smash_functor_phomotopy_refl ◾** idp ⬝ !refl_trans) ⬝pv**
   smash_functor_pconst_pcompose (pid A) (pid A) g
 
-  /- these lemmas are use to show that smash_functor_right is natural in all arguments -/
+  /- Using these lemmas we show that smash_functor_right is natural in all arguments -/
   definition smash_functor_right_natural_right (f : C →* C') :
     psquare (smash_functor_right A B C) (smash_functor_right A B C')
             (ppcompose_left f) (ppcompose_left (pid A ∧→ f)) :=
@@ -926,8 +926,8 @@ namespace smash
       refine _ ⬝hp (!ap_con ⬝ !ap_compose'⁻¹ ◾ !elim_gluer)⁻¹, exact hrfl },
   end
 
-  definition smash_flip_smash_functor (f : A →* C) (g : B →* D) : psquare
-    (smash_flip A B) (smash_flip C D) (f ∧→ g) (g ∧→ f) :=
+  definition smash_flip_smash_functor (f : A →* C) (g : B →* D) :
+    psquare (smash_flip A B) (smash_flip C D) (f ∧→ g) (g ∧→ f) :=
   begin
     apply phomotopy.mk (smash_flip_smash_functor' f g), refine !idp_con ⬝ _ ⬝ !idp_con⁻¹,
     refine !ap_ap011 ⬝ _, apply ap011_flip,

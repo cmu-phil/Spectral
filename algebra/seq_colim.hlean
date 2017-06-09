@@ -6,7 +6,7 @@ namespace group
 
   section
 
-    parameters (A : ℕ → AbGroup) (f : Πi , A i → A (i + 1))
+    parameters (A : ℕ → AbGroup) (f : Πi , A i →g A (i + 1))
     variables {A' : AbGroup}
 
     definition seq_colim_carrier : AbGroup := dirsum A
@@ -72,8 +72,21 @@ namespace group
 
   definition seq_colim_functor [constructor] {A A' : ℕ → AbGroup}
     {f : Πi , A i →g A (i + 1)} {f' : Πi , A' i →g A' (i + 1)}
-    (h : Πi, A i →g A' i) : seq_colim A f →g seq_colim A' f' :=
-  sorry --_ ∘g _
+    (h : Πi, A i →g A' i) (p : Πi, hsquare (f i) (f' i) (h i) (h (i+1))) :
+    seq_colim A f →g seq_colim A' f' :=
+  seq_colim_elim (λi, seq_colim_incl i ∘g h i)
+    begin
+      intro i a,
+      refine !homomorphism_comp_compute ⬝ _ ⬝ !homomorphism_comp_compute⁻¹,
+      refine _ ⬝ ap (seq_colim_incl (succ i)) (p i a)⁻¹,
+      apply seq_colim_glue
+    end
 
+  -- definition seq_colim_functor_compose [constructor] {A A' A'' : ℕ → AbGroup}
+  --   {f : Πi , A i →g A (i + 1)} {f' : Πi , A' i →g A' (i + 1)} {f'' : Πi , A'' i →g A'' (i + 1)}
+  --   (h : Πi, A i →g A' i) (p : Πi (a : A i), h (i+1) (f i a) = f' i (h i a))
+  --   (h : Πi, A i →g A' i) (p : Πi (a : A i), h (i+1) (f i a) = f' i (h i a)) :
+  --   seq_colim A f →g seq_colim A' f' :=
+  -- sorry
 
 end group

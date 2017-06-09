@@ -112,8 +112,8 @@ notation `pH_` n `[`:0 binders `, ` r:(scoped E, parametrized_homology E n) `]`:
 definition unpointed_homology (X : Type) (E : spectrum) (n : ℤ) : AbGroup :=
 H_ n[X₊, E]
 
-definition homology_functor [constructor] {X Y : Type*} {E F : spectrum} (f : X →* Y) (g : E →ₛ F) (n : ℤ)
-  : homology X E n →g homology Y F n :=
+definition homology_functor [constructor] {X Y : Type*} {E F : prespectrum} (f : X →* Y)
+  (g : E →ₛ F) (n : ℤ) : homology X E n →g homology Y F n :=
 pshomotopy_group_fun n (smash_prespectrum_fun f g)
 
 definition homology_theory_spectrum.{u} [constructor] (E : spectrum.{u}) : homology_theory.{u} :=

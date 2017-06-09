@@ -377,6 +377,12 @@ namespace seq_colim
     exact !pcompose_pid
   end
 
+  definition seq_colim_equiv_zigzag (g : Π⦃n⦄, A n → A' n) (h : Π⦃n⦄, A' n → A (succ n))
+    (p : Π⦃n⦄ (a : A n), h (g a) = f a) (q : Π⦃n⦄ (a : A' n), g (h a) = f' a) :
+    seq_colim f ≃ seq_colim f' :=
+  sorry
+
+
   definition is_equiv_seq_colim_rec (P : seq_colim f → Type) :
     is_equiv (seq_colim_rec_unc :
       (Σ(Pincl : Π ⦃n : ℕ⦄ (a : A n), P (ι f a)),
