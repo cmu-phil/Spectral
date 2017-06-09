@@ -5,7 +5,7 @@ Authors: Floris van Doorn
 
 The Wedge Sum of a family of Pointed Types
 -/
-import homotopy.wedge ..move_to_lib ..choice
+import homotopy.wedge ..move_to_lib ..choice ..pointed_pi
 
 open eq is_equiv pushout pointed unit trunc_index sigma bool equiv trunc choice unit is_trunc sigma.ops lift function
 
@@ -142,6 +142,20 @@ namespace fwedge
     { intro g, apply eq_of_phomotopy, exact fwedge_pmap_eta g }
   end
 
+  definition fwedge_pmap_nat₂ {I : Type}(F : I → Type*){X Y : Type*}
+                              (f : X →* Y) (h : Πi, F i →* X) (w : fwedge F) : 
+             (f ∘* (fwedge_pmap h)) w = fwedge_pmap (λi, f ∘* (h i)) w :=
+  begin
+      induction w, reflexivity,
+      refine !respect_pt,
+      apply eq_pathover,
+      refine ap_compose f (fwedge_pmap h) _ ⬝ph _,
+      refine ap (ap f) !elim_glue ⬝ph _, 
+      refine _ ⬝hp !elim_glue⁻¹, esimp,
+      apply whisker_br,
+      apply !hrefl
+  end
+
   definition fwedge_pmap_phomotopy {I : Type} {F : I → Type*} {X : Type*} {f g : Π i, F i →* X}
     (h : Π i, f i ~* g i) : fwedge_pmap f ~* fwedge_pmap g :=
   begin
@@ -166,6 +180,7 @@ namespace fwedge
   definition trunc_fwedge_pmap_equiv.{u} {n : ℕ₋₂} {I : Type.{u}} (H : has_choice n I)
     (F : I → pType.{u}) (X : pType.{u}) : trunc n (⋁F →* X) ≃ Πi, trunc n (F i →* X) :=
   trunc_equiv_trunc n (fwedge_pmap_equiv F X) ⬝e choice_equiv (λi, F i →* X)
+
 
   definition fwedge_functor [constructor] {I : Type} {F F' : I → Type*} (f : Π i, F i →* F' i)
     : ⋁ F →* ⋁ F' := fwedge_pmap (λ i, pinl i ∘* f i)
@@ -240,6 +255,7 @@ namespace fwedge
                                           ) x
                                     ... = x : by exact fwedge_pmap_pinl x
     }
+
   end
 
 end fwedge
