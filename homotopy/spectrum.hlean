@@ -477,26 +477,39 @@ namespace spectrum
     }
   end
 
+  definition spectrify.elim_n {N : succ_str} {X : gen_prespectrum N} {Y : gen_spectrum N}
+    (f : X →ₛ Y) (n : N) : (spectrify X) n →* Y n :=
+  begin
+    fapply pseq_colim.elim,
+    { intro k, refine !equiv_gluen⁻¹ᵉ* ∘* apn k (f (n +' k)) },
+    { intro k, refine !passoc ⬝* pwhisker_right _ !equiv_gluen_inv_succ ⬝* _,
+      refine !passoc ⬝* _, apply pwhisker_left,
+      refine !passoc ⬝* _,
+      refine pwhisker_left _ ((passoc _ _ (_ ∘* _))⁻¹*) ⬝* _,
+      refine pwhisker_left _ !passoc⁻¹* ⬝* _,
+      refine pwhisker_left _ (pwhisker_right _ (phomotopy_pinv_right_of_phomotopy (!loopn_succ_in_natural)⁻¹*)⁻¹*) ⬝* _,
+      refine pwhisker_right _ !apn_pinv ⬝* _,
+      refine (phomotopy_pinv_left_of_phomotopy _)⁻¹*,
+      refine pwhisker_right _ !pmap_eta⁻¹* ⬝* _,
+      refine apn_psquare k _,
+      refine pwhisker_right _ _  ⬝* psquare_of_phomotopy !smap.glue_square,
+      exact !pmap_eta⁻¹*
+    }
+  end
+
   definition spectrify.elim {N : succ_str} {X : gen_prespectrum N} {Y : gen_spectrum N}
     (f : X →ₛ Y) : spectrify X →ₛ Y :=
   begin
     fapply smap.mk,
-    { intro n, fapply pseq_colim.elim,
-      { intro k, refine !equiv_gluen⁻¹ᵉ* ∘* apn k (f (n +' k)) },
-      { intro k, refine !passoc ⬝* pwhisker_right _ !equiv_gluen_inv_succ ⬝* _,
-        refine !passoc ⬝* _, apply pwhisker_left,
-        refine !passoc ⬝* _,
-        refine pwhisker_left _ ((passoc _ _ (_ ∘* _))⁻¹*) ⬝* _,
-        refine pwhisker_left _ !passoc⁻¹* ⬝* _,
-        refine pwhisker_left _ (pwhisker_right _ (phomotopy_pinv_right_of_phomotopy (!loopn_succ_in_natural)⁻¹*)⁻¹*) ⬝* _,
-        refine pwhisker_right _ !apn_pinv ⬝* _,
-        refine (phomotopy_pinv_left_of_phomotopy _)⁻¹*,
-        refine pwhisker_right _ !pmap_eta⁻¹* ⬝* _,
-        refine apn_psquare k _,
-        refine pwhisker_right _ _  ⬝* psquare_of_phomotopy !smap.glue_square,
-        exact !pmap_eta⁻¹*
-      }},
+    { intro n, exact spectrify.elim_n f n },
     { intro n, exact sorry }
+  end
+
+  definition phomotopy_spectrify.elim {N : succ_str} {X : gen_prespectrum N} {Y : gen_spectrum N}
+    (f : X →ₛ Y) (n : N) : spectrify.elim_n f n ∘* spectrify_map n ~* f n :=
+  begin
+    refine pseq_colim.elim_pinclusion _ _ 0 ⬝* _,
+    exact !pid_pcompose
   end
 
   definition spectrify_fun {N : succ_str} {X Y : gen_prespectrum N} (f : X →ₛ Y) : spectrify X →ₛ spectrify Y :=
