@@ -93,6 +93,24 @@ namespace eq
   --   (p : f ~ g) (q : a = a') : natural_square p q = square_of_pathover (apd p q) :=
   -- idp
 
+  section hsquare
+  variables {A₀₀ A₂₀ A₄₀ A₀₂ A₂₂ A₄₂ A₀₄ A₂₄ A₄₄ : Type}
+            {f₁₀ : A₀₀ → A₂₀} {f₃₀ : A₂₀ → A₄₀}
+            {f₀₁ : A₀₀ → A₀₂} {f₂₁ : A₂₀ → A₂₂} {f₄₁ : A₄₀ → A₄₂}
+            {f₁₂ : A₀₂ → A₂₂} {f₃₂ : A₂₂ → A₄₂}
+            {f₀₃ : A₀₂ → A₀₄} {f₂₃ : A₂₂ → A₂₄} {f₄₃ : A₄₂ → A₄₄}
+            {f₁₄ : A₀₄ → A₂₄} {f₃₄ : A₂₄ → A₄₄}
+
+  definition trunc_functor_hsquare (n : ℕ₋₂) (h : hsquare f₁₀ f₁₂ f₀₁ f₂₁) :
+    hsquare (trunc_functor n f₁₀) (trunc_functor n f₁₂)
+            (trunc_functor n f₀₁) (trunc_functor n f₂₁) :=
+  λa, !trunc_functor_compose⁻¹ ⬝ trunc_functor_homotopy n h a ⬝ !trunc_functor_compose
+
+  end hsquare
+  definition homotopy_group_succ_in_natural (n : ℕ) {A B : Type*} (f : A →* B) :
+    hsquare (homotopy_group_succ_in A n) (homotopy_group_succ_in B n) (π→[n+1] f) (π→[n] (Ω→ f)) :=
+  trunc_functor_hsquare _ (loopn_succ_in_natural n f)⁻¹*
+
 end eq open eq
 
 namespace pmap

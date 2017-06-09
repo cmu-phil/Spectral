@@ -151,4 +151,35 @@ namespace pointed
     esimp, exact !idp_con
   end
 
+  -- this should replace pnatural_square
+  definition pnatural_square2 {A B : Type} (X : B → Type*) (Y : B → Type*) {f g : A → B}
+    (h : Πa, X (f a) →* Y (g a)) {a a' : A} (p : a = a') :
+    h a' ∘* ptransport X (ap f p) ~* ptransport Y (ap g p) ∘* h a :=
+  by induction p; exact !pcompose_pid ⬝* !pid_pcompose⁻¹*
+
+  definition ptransport_natural {A : Type} (X : A → Type*) (Y : A → Type*)
+    (h : Πa, X a →* Y a) {a a' : A} (p : a = a') :
+    h a' ∘* ptransport X p ~* ptransport Y p ∘* h a :=
+  by induction p; exact !pcompose_pid ⬝* !pid_pcompose⁻¹*
+
+  section psquare
+  variables {A A' A₀₀ A₂₀ A₄₀ A₀₂ A₂₂ A₄₂ A₀₄ A₂₄ A₄₄ : Type*}
+            {f₁₀ f₁₀' : A₀₀ →* A₂₀} {f₃₀ : A₂₀ →* A₄₀}
+            {f₀₁ f₀₁' : A₀₀ →* A₀₂} {f₂₁ f₂₁' : A₂₀ →* A₂₂} {f₄₁ : A₄₀ →* A₄₂}
+            {f₁₂ f₁₂' : A₀₂ →* A₂₂} {f₃₂ : A₂₂ →* A₄₂}
+            {f₀₃ : A₀₂ →* A₀₄} {f₂₃ : A₂₂ →* A₂₄} {f₄₃ : A₄₂ →* A₄₄}
+            {f₁₄ : A₀₄ →* A₂₄} {f₃₄ : A₂₄ →* A₄₄}
+
+  definition ptranspose (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : psquare f₀₁ f₂₁ f₁₀ f₁₂ :=
+  p⁻¹*
+
+  definition hsquare_of_psquare (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : hsquare f₁₀ f₁₂ f₀₁ f₂₁ :=
+  p
+
+  definition homotopy_group_functor_hsquare (n : ℕ) (h : psquare f₁₀ f₁₂ f₀₁ f₂₁) :
+    psquare (π→[n] f₁₀) (π→[n] f₁₂)
+            (π→[n] f₀₁) (π→[n] f₂₁) :=
+  sorry
+
+  end psquare
 end pointed
