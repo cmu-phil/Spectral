@@ -399,8 +399,8 @@ namespace seq_colim
   equiv.mk _ !is_equiv_seq_colim_rec
   end functor
 
-  definition pseq_colim.elim' [constructor] {A : ℕ → Type*} {B : Type*} {f : Π{n}, A n →* A (n+1)}
-    (g : Πn, A n →* B) (p : Πn, g (n+1) ∘* f ~ g n) : pseq_colim @f →* B :=
+  definition pseq_colim.elim' [constructor] {A : ℕ → Type*} {B : Type*} {f : Πn, A n →* A (n+1)}
+    (g : Πn, A n →* B) (p : Πn, g (n+1) ∘* f n ~ g n) : pseq_colim f →* B :=
   begin
     fapply pmap.mk,
     { intro x, induction x with n a n a,
@@ -409,9 +409,37 @@ namespace seq_colim
     { esimp, apply respect_pt }
   end
 
-  definition pseq_colim.elim [constructor] {A : ℕ → Type*} {B : Type*} {f : Π{n}, A n →* A (n+1)}
-    (g : Πn, A n →* B) (p : Πn, g (n+1) ∘* f ~* g n) : pseq_colim @f →* B :=
+  definition pseq_colim.elim [constructor] {A : ℕ → Type*} {B : Type*} {f : Πn, A n →* A (n+1)}
+    (g : Πn, A n →* B) (p : Πn, g (n+1) ∘* f n ~* g n) : pseq_colim @f →* B :=
   pseq_colim.elim' g p
+
+  definition pseq_colim.elim_pinclusion {A : ℕ → Type*} {B : Type*} {f : Πn, A n →* A (n+1)}
+    (g : Πn, A n →* B) (p : Πn, g (n+1) ∘* f n ~* g n) (n : ℕ) :
+  pseq_colim.elim g p ∘* pinclusion f n ~* g n :=
+  begin
+    refine phomotopy.mk phomotopy.rfl _,
+    refine !idp_con ⬝ _,
+    esimp,
+    induction n with n IH,
+    { esimp, esimp[inclusion_pt], exact !idp_con⁻¹ },
+    { esimp, esimp[inclusion_pt],
+      rewrite ap_con, rewrite ap_con,
+      rewrite elim_glue,
+      rewrite [-ap_inv],
+      rewrite [-ap_compose'], esimp,
+      rewrite [(eq_con_inv_of_con_eq (!to_homotopy_pt))],
+      rewrite [IH],
+      rewrite [con_inv],
+      rewrite [-+con.assoc],
+      refine _ ⬝ whisker_right _ !con.assoc⁻¹,
+      rewrite [con.left_inv], esimp,
+      refine _ ⬝ !con.assoc⁻¹,
+      rewrite [con.left_inv], esimp,
+      rewrite [ap_inv],
+      rewrite [-con.assoc],
+      refine !idp_con⁻¹ ⬝ whisker_right _ !con.left_inv⁻¹,
+    }
+  end
 
   definition prep0 [constructor] {A : ℕ → Type*} (f : pseq_diagram A) (k : ℕ) : A 0 →* A k :=
   pmap.mk (rep0 (λn x, f x) k)

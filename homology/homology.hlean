@@ -14,7 +14,6 @@ open eq spectrum int pointed group algebra sphere nat equiv susp is_trunc
 namespace homology
 
   /- homology theory -/
-
   structure homology_theory.{u} : Type.{u+1} :=
     (HH : ℤ → pType.{u} → AbGroup.{u})
     (Hh : Π(n : ℤ) {X Y : Type*} (f : X →* Y), HH n X →g HH n Y)
@@ -89,8 +88,12 @@ namespace homology
 
   end
 
-/- homology theory associated to a spectrum -/
-definition homology (X : Type*) (E : spectrum) (n : ℤ) : AbGroup :=
+/- homology theory associated to a prespectrum -/
+definition homology (X : Type*) (E : prespectrum) (n : ℤ) : AbGroup :=
+pshomotopy_group n (smash_prespectrum X E)
+
+/- an alternative definition, which might be a bit harder to work with -/
+definition homology_spectrum (X : Type*) (E : spectrum) (n : ℤ) : AbGroup :=
 shomotopy_group n (smash_spectrum X E)
 
 definition parametrized_homology {X : Type*} (E : X → spectrum) (n : ℤ) : AbGroup :=
@@ -109,12 +112,13 @@ notation `pH_` n `[`:0 binders `, ` r:(scoped E, parametrized_homology E n) `]`:
 definition unpointed_homology (X : Type) (E : spectrum) (n : ℤ) : AbGroup :=
 H_ n[X₊, E]
 
-definition homology_functor [constructor] {X Y : Type*} {E F : spectrum} (f : X →* Y) (g : E →ₛ F) (n : ℤ) : homology X E n →g homology Y F n :=
-shomotopy_group_fun n (smash_spectrum_fun f g)
+definition homology_functor [constructor] {X Y : Type*} {E F : spectrum} (f : X →* Y) (g : E →ₛ F) (n : ℤ)
+  : homology X E n →g homology Y F n :=
+pshomotopy_group_fun n (smash_prespectrum_fun f g)
 
 definition homology_theory_spectrum.{u} [constructor] (E : spectrum.{u}) : homology_theory.{u} :=
 begin
-  refine homology_theory.mk _ _ _ _ _ _ _ _,
+  fapply homology_theory.mk,
   exact (λn X, H_ n[X, E]),
   exact (λn X Y f, homology_functor f (sid E) n),
   exact sorry, -- Hid is uninteresting but potentially very hard to prove
