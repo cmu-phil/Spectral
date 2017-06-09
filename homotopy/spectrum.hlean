@@ -194,6 +194,26 @@ namespace spectrum
 
   infix ` ~ₛ `:50 := shomotopy
 
+  definition shomotopy_compose {N : succ_str} {E F : gen_prespectrum N} {f g h : E →ₛ F} (p : g ~ₛ h) (q : f ~ₛ g) : f ~ₛ h :=
+  shomotopy.mk
+    (λn, (shomotopy.to_phomotopy q n) ⬝* (shomotopy.to_phomotopy p n))
+    begin
+      intro n,
+      rewrite (pwhisker_left_trans _),
+      rewrite ap1_phomotopy_trans,
+      rewrite (pwhisker_right_trans _),
+      exact phhconcat ((shomotopy.glue_homotopy q) n) ((shomotopy.glue_homotopy p) n)
+    end
+
+  definition shomotopy_inverse {N : succ_str} {E F : gen_prespectrum N} {f g : E →ₛ F} (p : f ~ₛ g) : g ~ₛ f :=
+  shomotopy.mk (λn, (shomotopy.to_phomotopy p n)⁻¹*) begin
+    intro n,
+    rewrite (pwhisker_left_symm _ _),
+    rewrite [-ap1_phomotopy_symm],
+    rewrite (pwhisker_right_symm _ _),
+    exact phhinverse ((shomotopy.glue_homotopy p) n)
+  end
+
   ------------------------------
   -- Suspension prespectra
   ------------------------------

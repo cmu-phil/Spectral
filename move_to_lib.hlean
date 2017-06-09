@@ -562,6 +562,28 @@ end injective_surjective
 -- Yuri Sulyma's code from HoTT MRC
 
 notation `⅀→`:(max+5) := psusp_functor
+notation `⅀⇒`:(max+5) := psusp_functor_phomotopy
+notation `Ω⇒`:(max+5) := ap1_phomotopy
+
+definition ap1_phomotopy_symm {A B : Type*} {f g : A →* B} (p : f ~* g) : (Ω⇒ p)⁻¹* = Ω⇒ (p⁻¹*) :=
+begin
+  induction p using phomotopy_rec_on_idp,
+  rewrite ap1_phomotopy_refl,
+  rewrite [+refl_symm],
+  rewrite ap1_phomotopy_refl
+end
+
+definition ap1_phomotopy_trans {A B : Type*} {f g h : A →* B} (q : g ~* h) (p : f ~* g) : Ω⇒ (p ⬝* q) = Ω⇒ p ⬝* Ω⇒ q :=
+begin
+  induction p using phomotopy_rec_on_idp,
+  induction q using phomotopy_rec_on_idp,
+  rewrite trans_refl,
+  rewrite [+ap1_phomotopy_refl],
+  rewrite trans_refl
+end
+
+definition psusp_pelim2 {X Y : Type*} {f g : ⅀ X →* Y} (p : f ~* g) : ((loop_psusp_pintro X Y) f) ~* ((loop_psusp_pintro X Y) g) :=
+pwhisker_right (loop_psusp_unit X) (Ω⇒ p)
 
 namespace pointed
   variables {A₀₀ A₂₀ A₀₂ A₂₂ : Type*}
