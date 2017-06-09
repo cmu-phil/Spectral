@@ -8,7 +8,7 @@ Constructions with groups
 
 import .quotient_group .free_commutative_group .product_group
 
-open eq is_equiv algebra is_trunc set_quotient relation sigma prod sum list trunc function equiv sigma.ops
+open eq is_equiv algebra is_trunc set_quotient relation sigma prod sum list trunc function equiv sigma.ops lift
 
 namespace group
 
@@ -118,7 +118,7 @@ namespace group
     }
   end
 
-  variables {I J : Set} {Y Y' Y'' : I → AbGroup}
+  variables {I J : Type} [is_set I] [is_set J] {Y Y' Y'' : I → AbGroup}
 
   definition dirsum_functor [constructor] (f : Πi, Y i →g Y' i) : dirsum Y →g dirsum Y' :=
   dirsum_elim (λi, dirsum_incl Y' i ∘g f i)
@@ -146,7 +146,7 @@ namespace group
     intro i y, exact sorry
   end
 
-  definition dirsum_functor_homotopy {f f' : Πi, Y i →g Y' i} (p : f ~2 f') :
+  definition dirsum_functor_homotopy (f f' : Πi, Y i →g Y' i) (p : f ~2 f') :
     dirsum_functor f ~ dirsum_functor f' :=
   begin
     apply dirsum_homotopy,
@@ -167,18 +167,51 @@ namespace group
     { intro ds,
       refine (homomorphism_comp_compute (dirsum_functor (λ i, f i)) (dirsum_functor (λ i, (f i)⁻¹ᵍ)) _)⁻¹ ⬝ _,
       refine dirsum_functor_compose (λ i, f i) (λ i, (f i)⁻¹ᵍ) ds ⬝ _,
-      refine @dirsum_functor_homotopy I Y' Y' _ (λ i, !gid) (λ i, to_right_inv (equiv_of_isomorphism (f i))) ds ⬝ _,
+      refine dirsum_functor_homotopy _ (λ i, !gid) (λ i, to_right_inv (equiv_of_isomorphism (f i))) ds ⬝ _,
       exact !dirsum_functor_gid
     },
     { intro ds,
       refine (homomorphism_comp_compute (dirsum_functor (λ i, (f i)⁻¹ᵍ)) (dirsum_functor (λ i, f i)) _)⁻¹ ⬝ _,
       refine dirsum_functor_compose (λ i, (f i)⁻¹ᵍ) (λ i, f i) ds ⬝ _,
-      refine @dirsum_functor_homotopy I Y Y _ (λ i, !gid) (λ i x,
+      refine dirsum_functor_homotopy _ (λ i, !gid) (λ i x,
         proof
           to_left_inv (equiv_of_isomorphism (f i)) x
         qed
       ) ds ⬝ _,
       exact !dirsum_functor_gid
+    }
+  end
+
+end group
+
+namespace group
+
+  definition dirsum_down_left.{u v} {I : Type.{u}} [is_set I] {Y : I → AbGroup}
+    : dirsum (Y ∘ down.{u v}) ≃g dirsum Y :=
+  let to_hom := @dirsum_functor_left _ _ _ _ Y down.{u v} in
+  let from_hom := dirsum_elim (λi, dirsum_incl (Y ∘ down) (up i)) in
+  begin
+    fapply isomorphism.mk,
+    { exact to_hom },
+    fapply adjointify,
+    { exact from_hom },
+    { intro ds,
+      refine (homomorphism_comp_compute to_hom from_hom ds)⁻¹ ⬝ _,
+      refine @dirsum_homotopy I _ Y (dirsum Y) (to_hom ∘g from_hom) !gid _ ds,
+      intro i y,
+      refine homomorphism_comp_compute to_hom from_hom _ ⬝ _,
+      refine ap to_hom (dirsum_elim_compute (λi, dirsum_incl (Y ∘ down) (up i)) i y) ⬝ _,
+      refine dirsum_elim_compute _ (up i) y ⬝ _,
+      reflexivity
+    },
+    { intro ds,
+      refine (homomorphism_comp_compute from_hom to_hom ds)⁻¹ ⬝ _,
+      refine @dirsum_homotopy _ _ (Y ∘ down) (dirsum (Y ∘ down)) (from_hom ∘g to_hom) !gid _ ds,
+      intro i y, induction i with i,
+      refine homomorphism_comp_compute from_hom to_hom _ ⬝ _,
+      refine ap from_hom (dirsum_elim_compute (λi, dirsum_incl Y (down i)) (up i) y) ⬝ _,
+      refine dirsum_elim_compute _ i y ⬝ _,
+      reflexivity
     }
   end
 
