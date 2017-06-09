@@ -22,7 +22,7 @@ section
     calc        HH theory n (plift (psphere m ×* psphere m))
              ≃g HH theory (n + 1) (plift (⅀ (psphere m ×* psphere m))) : by exact (Hplift_psusp theory n (psphere m ×* psphere m))⁻¹ᵍ
          ... ≃g HH theory (n + 1) (plift (⅀ (psphere m) ∨ (⅀ (psphere m) ∨ ⅀ (psphere m ∧ psphere m))))
-                   : by exact HH_isomorphism theory (n + 1) (!pequiv_plift⁻¹ᵉ* ⬝e* susp_product (psphere m) (psphere m) ⬝e* !pequiv_plift)
+                   : by exact Hplift_isomorphism theory (n + 1) (susp_product (psphere m) (psphere m))
          ... ≃g HH theory (n + 1) (plift (⅀ (psphere m))) ×g HH theory (n + 1) (plift (⅀ (psphere m) ∨ (⅀ (psphere m ∧ psphere m))))
                    : by exact Hplift_pwedge theory (n + 1) (⅀ (psphere m)) (⅀ (psphere m) ∨ (⅀ (psphere m ∧ psphere m)))
          ... ≃g HH theory n (plift (psphere m)) ×g (HH theory n (plift (psphere m)) ×g HH theory n (plift (psphere (m + m))))
@@ -33,7 +33,7 @@ section
                      : by exact Hplift_pwedge theory (n + 1) (⅀ (psphere m)) (⅀ (psphere m ∧ psphere m))
               ... ≃g HH theory n (plift (psphere m)) ×g HH theory n (plift (psphere (m + m)))
                      : by exact product_isomorphism (Hplift_psusp theory n (psphere m))
-                                  (Hplift_psusp theory n (psphere m ∧ psphere m) ⬝g HH_isomorphism theory n (!pequiv_plift⁻¹ᵉ* ⬝e* (sphere_smash_sphere m m) ⬝e* !pequiv_plift)))
+                                  (Hplift_psusp theory n (psphere m ∧ psphere m) ⬝g Hplift_isomorphism theory n (sphere_smash_sphere m m)))
 
 end
 

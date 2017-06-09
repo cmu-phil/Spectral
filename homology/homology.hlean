@@ -142,6 +142,9 @@ namespace homology
     calc HH theory n (plift.{u v} (A ∨ B)) ≃g HH theory n (plift.{u v} A ∨ plift.{u v} B) : by exact HH_isomorphism theory n (plift_pwedge A B)
                                        ... ≃g HH theory n (plift.{u v} A) ×g HH theory n (plift.{u v} B) : by exact Hpwedge theory n (plift.{u v} A) (plift.{u v} B)
 
+    definition Hplift_isomorphism (n : ℤ) {A B : Type*} (e : A ≃* B) : HH theory n (plift.{u v} A) ≃g HH theory n (plift.{u v} B) :=
+      HH_isomorphism theory n (!pequiv_plift⁻¹ᵉ* ⬝e* e ⬝e* !pequiv_plift)
+
   end
 
 /- homology theory associated to a prespectrum -/
