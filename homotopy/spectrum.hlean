@@ -133,7 +133,12 @@ namespace spectrum
 
   structure smap {N : succ_str} (E F : gen_prespectrum N) :=
     (to_fun : Π(n:N), E n →* F n)
-    (glue_square : Π(n:N), glue F n ∘* to_fun n ~* Ω→ (to_fun (S n)) ∘* glue E n)
+    (glue_square : Π(n:N), psquare
+      (to_fun n)
+      (Ω→ (to_fun (S n)))
+      (glue E n)
+      (glue F n)
+    )
 
   open smap
   infix ` →ₛ `:30 := smap
@@ -180,9 +185,12 @@ namespace spectrum
 
   structure shomotopy {N : succ_str} {E F : gen_prespectrum N} (f g : E →ₛ F) :=
     (to_phomotopy : Πn, f n ~* g n)
-    (glue_homotopy : Πn, pwhisker_left (glue F n) (to_phomotopy n) ⬝* glue_square g n
-                         =      -- Ideally this should be a "phomotopy2"
-                         glue_square f n ⬝* pwhisker_right (glue E n) (ap1_phomotopy (to_phomotopy (S n))))
+    (glue_homotopy : Πn, phsquare
+                         (pwhisker_left (glue F n) (to_phomotopy n))
+                         (pwhisker_right (glue E n) (ap1_phomotopy (to_phomotopy (S n))))
+                         (glue_square f n)
+                         (glue_square g n)
+    )
 
   infix ` ~ₛ `:50 := shomotopy
 
