@@ -5,7 +5,7 @@ Authors: Michael Shulman, Floris van Doorn
 
 -/
 
-import homotopy.LES_of_homotopy_groups .splice ..colim types.pointed2 .EM ..pointed_pi .smash_adjoint ..algebra.seq_colim
+import homotopy.LES_of_homotopy_groups .splice ..colim types.pointed2 .EM ..pointed_pi .smash_adjoint ..algebra.seq_colim .fwedge
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
      seq_colim succ_str EM EM.ops function
 
@@ -98,7 +98,7 @@ namespace spectrum
   | succ_str.of_nat zero   := z
   | succ_str.of_nat (succ k) := S (succ_str.of_nat k)
 
-  definition psp_of_gen_indexed [constructor] {N : succ_str} (z : N) (E : gen_prespectrum N) : gen_prespectrum +ℤ :=
+  definition psp_of_gen_indexed [constructor] {N : succ_str} (z : N) (E : gen_prespectrum N) : prespectrum :=
     psp_of_nat_indexed (gen_prespectrum.mk (λn, E (succ_str.of_nat z n)) (λn, gen_prespectrum.glue E (succ_str.of_nat z n)))
 
   definition is_spectrum_of_gen_indexed [instance] {N : succ_str} (z : N) (E : gen_prespectrum N) [H : is_spectrum E]
@@ -277,20 +277,26 @@ namespace spectrum
 
   /- homotopy group of a prespectrum -/
 
-  definition pshomotopy_group (n : ℤ) (E : prespectrum) : AbGroup :=
-  group.seq_colim (λ(k : ℕ), πag[k+2] (E (-n - 2 + k)))
+  definition pshomotopy_group_hom (n : ℤ) (E : prespectrum) (k : ℕ)
+    : πag[k + 2] (E (-n - 2 + k)) →g πag[k + 3] (E (-n - 2 + (k + 1))) :=
   begin
-    intro k,
-    refine _ ∘ π→g[k+2] (glue E _),
-    refine (homotopy_group_succ_in _ (k+2))⁻¹ᵉ* ∘ _,
-    refine homotopy_group_pequiv (k+2) (loop_pequiv_loop (pequiv_of_eq (ap E !add.assoc)))
+    refine _ ∘g π→g[k+2] (glue E _),
+    refine (ghomotopy_group_succ_in _ (k+1))⁻¹ᵍ ∘g _,
+    refine homotopy_group_isomorphism_of_pequiv (k+1)
+      (loop_pequiv_loop (pequiv_of_eq (ap E !add.assoc)))
   end
+
+  definition pshomotopy_group (n : ℤ) (E : prespectrum) : AbGroup :=
+  group.seq_colim (λ(k : ℕ), πag[k+2] (E (-n - 2 + k))) (pshomotopy_group_hom n E)
 
   notation `πₚₛ[`:95 n:0 `]`:0 := pshomotopy_group n
 
   definition pshomotopy_group_fun (n : ℤ) {E F : prespectrum} (f : E →ₛ F) :
     πₚₛ[n] E →g πₚₛ[n] F :=
-  sorry --group.seq_colim_functor _ _
+  group.seq_colim_functor (λk, π→g[k+2] (f (-n - 2 +[ℤ] k)))
+    begin
+      exact sorry
+    end
 
   notation `πₚₛ→[`:95 n:0 `]`:0 := pshomotopy_group_fun n
 
@@ -607,5 +613,17 @@ spectrify_fun (smash_prespectrum_fun f g)
   definition EM_spectrum /-[constructor]-/ (G : AbGroup) : spectrum :=
   spectrum.Mk (K G) (λn, (loop_EM G n)⁻¹ᵉ*)
 
+  /- Wedge of prespectra -/
+
+open fwedge
+
+  definition fwedge_prespectrum.{u v} {I : Type.{v}} (X : I -> prespectrum.{u}) : prespectrum.{max u v} :=
+  begin
+    fconstructor,
+    { intro n, exact fwedge (λ i, X i n) },
+    { intro n, fapply fwedge_pmap,
+      intro i, exact Ω→ !pinl ∘* !glue 
+  }
+  end
 
 end spectrum

@@ -7,7 +7,7 @@ The Wedge Sum of a family of Pointed Types
 -/
 import homotopy.wedge ..move_to_lib ..choice
 
-open eq pushout pointed unit trunc_index sigma bool equiv trunc choice unit is_trunc sigma.ops lift
+open eq is_equiv pushout pointed unit trunc_index sigma bool equiv trunc choice unit is_trunc sigma.ops lift function
 
 definition fwedge' {I : Type} (F : I → Type*) : Type := pushout (λi, ⟨i, Point (F i)⟩) (λi, ⋆)
 definition pt' [constructor] {I : Type} {F : I → Type*} : fwedge' F := inr ⋆
@@ -123,6 +123,15 @@ namespace fwedge
     { exact con.left_inv (respect_pt g) }
   end
 
+  definition fwedge_pmap_pinl [constructor] {I : Type} {F : I → Type*} : fwedge_pmap (λi, pinl i) ~* pid (⋁ F) :=
+  begin
+    fconstructor,
+    { intro x, induction x,
+        reflexivity, reflexivity,
+        apply eq_pathover, apply hdeg_square, refine !elim_glue ⬝ !ap_id⁻¹ },
+    { reflexivity }
+  end
+
   definition fwedge_pmap_equiv [constructor] {I : Type} (F : I → Type*) (X : Type*) :
     ⋁F →* X ≃ Πi, F i →* X :=
   begin
@@ -167,7 +176,7 @@ namespace fwedge
                                      ... ~* fwedge_pmap (λ i, !pid ∘* pinl i) : by exact fwedge_pmap_phomotopy (λ i, phomotopy.symm (pid_pcompose (pinl i)))
                                      ... ~* !pid : by exact fwedge_pmap_eta !pid
 
-  definition fwedge_functor_compose {I : Type} {F F' F'' : I → Type*} (g : Π i, F' i →* F'' i)
+  definition fwedge_functor_pcompose {I : Type} {F F' F'' : I → Type*} (g : Π i, F' i →* F'' i)
     (f : Π i, F i →* F' i) : fwedge_functor (λ i, g i ∘* f i) ~* fwedge_functor g ∘* fwedge_functor f :=
   calc        fwedge_functor (λ i, g i ∘* f i)
            ~* fwedge_pmap (λ i, (pinl i ∘* g i) ∘* f i)
@@ -183,7 +192,7 @@ namespace fwedge
        ... ~* fwedge_functor g ∘* fwedge_functor f
               : by exact fwedge_pmap_eta (fwedge_functor g ∘* fwedge_functor f)
 
-  definition fwedge_functor_homotopy {I : Type} {F F' : I → Type*} {f g : Π i, F i →* F' i}
+  definition fwedge_functor_phomotopy {I : Type} {F F' : I → Type*} {f g : Π i, F i →* F' i}
     (h : Π i, f i ~* g i) : fwedge_functor f ~* fwedge_functor g :=
     fwedge_pmap_phomotopy (λ i, pwhisker_left (pinl i) (h i))
 
@@ -192,19 +201,45 @@ namespace fwedge
   let pfrom := fwedge_functor (λ i, (f i)⁻¹ᵉ*) in
   begin
     fapply pequiv_of_pmap, exact pto,
-    fapply is_equiv.adjointify, exact pfrom,
-    { intro y, refine (fwedge_functor_compose (λ i, f i) (λ i, (f i)⁻¹ᵉ*) y)⁻¹ ⬝ _,
-      refine fwedge_functor_homotopy (λ i, pright_inv (f i)) y ⬝ _,
+    fapply adjointify, exact pfrom,
+    { intro y, refine (fwedge_functor_pcompose (λ i, f i) (λ i, (f i)⁻¹ᵉ*) y)⁻¹ ⬝ _,
+      refine fwedge_functor_phomotopy (λ i, pright_inv (f i)) y ⬝ _,
       exact fwedge_functor_pid y
     },
-    { intro y, refine (fwedge_functor_compose (λ i, (f i)⁻¹ᵉ*) (λ i, f i) y)⁻¹ ⬝ _,
-      refine fwedge_functor_homotopy (λ i, pleft_inv (f i)) y ⬝ _,
+    { intro y, refine (fwedge_functor_pcompose (λ i, (f i)⁻¹ᵉ*) (λ i, f i) y)⁻¹ ⬝ _,
+      refine fwedge_functor_phomotopy (λ i, pleft_inv (f i)) y ⬝ _,
       exact fwedge_functor_pid y
     }
   end
 
-  definition plift_fwedge.{u v} {I : Type} {F : I → pType.{u}} : plift.{u v} (⋁ F) ≃* ⋁ (λ i, plift.{u v} (F i)) :=
+  definition plift_fwedge.{u v} {I : Type} (F : I → pType.{u}) : plift.{u v} (⋁ F) ≃* ⋁ (plift.{u v} ∘ F) :=
   calc plift.{u v} (⋁ F) ≃* ⋁ F : by exact !pequiv_plift ⁻¹ᵉ*
-                      ... ≃* ⋁ (λ i, plift.{u v} (F i)) : by exact fwedge_pequiv (λ i, !pequiv_plift)
+                     ... ≃* ⋁ (λ i, plift.{u v} (F i)) : by exact fwedge_pequiv (λ i, !pequiv_plift)
+
+  definition fwedge_down_left.{u v} {I : Type} (F : I → pType) : ⋁ (F ∘ down.{u v}) ≃* ⋁ F :=
+  let pto := @fwedge_pmap (lift.{u v} I) (F ∘ down) (⋁ F) (λ i, pinl (down i)) in
+  let pfrom := @fwedge_pmap I F (⋁ (F ∘ down.{u v})) (λ i, pinl (up.{u v} i)) in
+  begin
+    fapply pequiv_of_pmap,
+    { exact pto },
+    fapply adjointify,
+    { exact pfrom },
+    { intro x, exact calc pto (pfrom x) = fwedge_pmap (λ i, (pto ∘* pfrom) ∘* pinl i) x : by exact (fwedge_pmap_eta (pto ∘* pfrom) x)⁻¹
+                                    ... = fwedge_pmap (λ i, pto ∘* (pfrom ∘* pinl i)) x : by exact fwedge_pmap_phomotopy (λ i, passoc pto pfrom (pinl i)) x
+                                    ... = fwedge_pmap (λ i, pto ∘* pinl (up.{u v} i)) x : by exact fwedge_pmap_phomotopy (λ i, pwhisker_left pto (fwedge_pmap_beta (λ i, pinl (up.{u v} i)) i)) x
+                                    ... = fwedge_pmap pinl x : by exact fwedge_pmap_phomotopy (λ i, fwedge_pmap_beta (λ i, (pinl (down.{u v} i))) (up.{u v} i)) x
+                                    ... = x : by exact fwedge_pmap_pinl x
+    },
+    { intro x, exact calc pfrom (pto x) = fwedge_pmap (λ i, (pfrom ∘* pto) ∘* pinl i) x : by exact (fwedge_pmap_eta (pfrom ∘* pto) x)⁻¹
+                                    ... = fwedge_pmap (λ i, pfrom ∘* (pto ∘* pinl i)) x : by exact fwedge_pmap_phomotopy (λ i, passoc pfrom pto (pinl i)) x
+                                    ... = fwedge_pmap (λ i, pfrom ∘* pinl (down.{u v} i)) x : by exact fwedge_pmap_phomotopy (λ i, pwhisker_left pfrom (fwedge_pmap_beta (λ i, pinl (down.{u v} i)) i)) x
+                                    ... = fwedge_pmap pinl x : by exact fwedge_pmap_phomotopy (λ i,
+                                            begin induction i with i,
+                                              exact fwedge_pmap_beta (λ i, (pinl (up.{u v} i))) i
+                                            end
+                                          ) x
+                                    ... = x : by exact fwedge_pmap_pinl x
+    }
+  end
 
 end fwedge
