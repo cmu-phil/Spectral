@@ -116,6 +116,17 @@ definition homology_functor [constructor] {X Y : Type*} {E F : prespectrum} (f :
   (g : E →ₛ F) (n : ℤ) : homology X E n →g homology Y F n :=
 pshomotopy_group_fun n (smash_prespectrum_fun f g)
 
+definition homology_theory_spectrum_is_exact.{u} (E : spectrum.{u}) (n : ℤ) {X Y : Type*} (f : X →* Y) :
+  is_exact_g (homology_functor f (sid (gen_spectrum.to_prespectrum E)) n)
+      (homology_functor (pcod f) (sid (gen_spectrum.to_prespectrum E)) n) :=
+begin
+  esimp[is_exact_g],
+  -- fconstructor,
+  -- { intro a, exact sorry },
+  -- { intro a, exact sorry }
+  exact sorry
+end
+
 definition homology_theory_spectrum.{u} [constructor] (E : spectrum.{u}) : homology_theory.{u} :=
 begin
   fapply homology_theory.mk,
@@ -125,7 +136,7 @@ begin
   exact sorry,
   exact sorry,
   exact sorry,
-  exact sorry,
+  apply homology_theory_spectrum_is_exact,
   exact sorry
   -- sorry
   -- sorry
