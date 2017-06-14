@@ -277,12 +277,13 @@ begin
 end
 
 variables {ψ : M₂ →lm M₃} {φ : M₁ →lm M₂} {θ : M₁ →lm M₃}
+
 definition image_elim [constructor] (θ : M₁ →lm M₃) (h : Π⦃g⦄, φ g = 0 → θ g = 0) :
   image_module φ →lm M₃ :=
 begin
   refine homomorphism.mk (image_elim (group_homomorphism_of_lm_homomorphism θ) h) _,
   split,
-  { apply homomorphism.addstruct },
+  { exact homomorphism.struct (image_elim (group_homomorphism_of_lm_homomorphism θ) _) },
   { intro r, refine @total_image.rec _ _ _ _ (λx, !is_trunc_eq) _, intro g,
     apply to_respect_smul }
 end

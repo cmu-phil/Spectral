@@ -47,16 +47,15 @@ namespace group
       end
 
     definition seq_colim_glue {i : @trunctype.mk 0 ℕ _} {a : A i} : seq_colim_incl i a = seq_colim_incl (succ i) (f i a) :=
-   begin
-     refine !homomorphism_comp_compute ⬝ _,
-     refine gqg_eq_of_rel _ _ ⬝ (!homomorphism_comp_compute)⁻¹,
-     exact tr (seq_colim_rel.rmk _ _)
-   end
+    begin
+      refine gqg_eq_of_rel _ _,
+      exact tr (seq_colim_rel.rmk _ _)
+    end
 
     section
       local abbreviation h (m : seq_colim →g A') : Πi, A i →g A' := λi, m ∘g (seq_colim_incl i)
       local abbreviation k (m : seq_colim →g A') : Πi a, h m i a = h m (succ i) (f i a) :=
-        λ i a, !homomorphism_comp_compute ⬝ ap m (@seq_colim_glue i a) ⬝ !homomorphism_comp_compute⁻¹
+      λ i a, ap m (@seq_colim_glue i a)
 
       definition seq_colim_unique (m : seq_colim →g A') :
         Πv, seq_colim_elim (h m) (k m) v = m v :=
@@ -77,7 +76,6 @@ namespace group
   seq_colim_elim (λi, seq_colim_incl i ∘g h i)
     begin
       intro i a,
-      refine !homomorphism_comp_compute ⬝ _ ⬝ !homomorphism_comp_compute⁻¹,
       refine _ ⬝ ap (seq_colim_incl (succ i)) (p i a)⁻¹,
       apply seq_colim_glue
     end

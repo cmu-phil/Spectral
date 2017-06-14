@@ -414,10 +414,10 @@ end
 
 definition dirsum : LeftModule R :=
 LeftModule_of_AddAbGroup (dirsum' N) (λr n, dirsum_smul r n)
-  (λr, homomorphism.addstruct (dirsum_smul r))
-  dirsum_smul_right_distrib
-  dirsum_mul_smul
-  dirsum_one_smul
+  proof (λr, homomorphism.addstruct (dirsum_smul r)) qed
+  proof dirsum_smul_right_distrib qed
+  proof dirsum_mul_smul qed
+  proof dirsum_one_smul qed
 
 /- graded variants of left-module constructions -/
 
