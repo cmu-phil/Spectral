@@ -29,7 +29,7 @@ namespace wedge
 
   definition pwedge_comm [constructor] (A B : Type*) : A ∨ B ≃* B ∨ A :=
   begin
-    fapply pequiv.MK,
+    fapply pequiv.MK',
     { exact pwedge_flip A B },
     { exact wedge_flip },
     { exact wedge_flip_wedge_flip },

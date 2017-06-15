@@ -309,7 +309,7 @@ namespace misc
   definition ptrunc_component' (n : ℕ₋₂) (A : Type*) :
     ptrunc (n.+2) (component A) ≃* component (ptrunc (n.+2) A) :=
   begin
-    fapply pequiv.MK,
+    fapply pequiv.MK',
     { exact ptrunc.elim (n.+2) (component_functor !ptr) },
     { intro x, cases x with x p, induction x with a,
       refine tr ⟨a, _⟩,

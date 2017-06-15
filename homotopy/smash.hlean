@@ -905,7 +905,7 @@ namespace smash
 
   definition smash_comm [constructor] : smash A B ≃* smash B A :=
   begin
-    apply pequiv.MK2, do 2 apply smash_flip_smash_flip
+    apply pequiv.MK, do 2 apply smash_flip_smash_flip
   end
 
   variables {A B}

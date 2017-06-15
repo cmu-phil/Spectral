@@ -404,7 +404,7 @@ namespace smash
   definition smash_adjoint_pmap_natural_lm (C : Type*) (f : A →* A') (g : B →* B') :
     psquare (smash_adjoint_pmap A' B' C) (smash_adjoint_pmap A B C)
             (ppcompose_right (f ∧→ g)) (ppcompose_left (ppcompose_right f) ∘* ppcompose_right g) :=
-  (smash_pelim_natural_lm C g f)⁻¹ʰ*
+  proof (!smash_pelim_natural_lm)⁻¹ʰ* qed
 
   /- Corollary: associativity of smash -/
 
@@ -460,7 +460,7 @@ namespace smash
     refine !smash_functor_pid_pcompose⁻¹* ⬝* _,
     apply smash_functor_phomotopy phomotopy.rfl,
     refine !passoc⁻¹* ⬝* _,
-    refine pwhisker_right _ !smash_adjoint_pmap_natural_right ⬝* _,
+    refine pwhisker_right _ (smash_adjoint_pmap_natural_right f) ⬝* _,
     refine !passoc ⬝* _,
     apply pwhisker_left,
     apply smash_elim_inv_natural_right
@@ -468,7 +468,7 @@ namespace smash
 
   definition smash_assoc (A B C : Type*) : A ∧ (B ∧ C) ≃* (A ∧ B) ∧ C :=
   begin
-    fapply pequiv.MK2,
+    fapply pequiv.MK,
     { exact !smash_assoc_elim_equiv⁻¹ᵉ* !pid },
     { exact !smash_assoc_elim_equiv !pid },
     { refine !smash_assoc_elim_inv_natural_right_pt ⬝* _,
@@ -538,7 +538,7 @@ namespace smash
 
   definition smash_psusp (A B : Type*) : A ∧ ⅀ B ≃* ⅀(A ∧ B) :=
   begin
-    fapply pequiv.MK2,
+    fapply pequiv.MK,
     { exact !smash_psusp_elim_equiv⁻¹ᵉ* !pid },
     { exact !smash_psusp_elim_equiv !pid },
     { refine phomotopy_of_eq (!smash_psusp_elim_natural_right⁻¹ʰ* _) ⬝* _,

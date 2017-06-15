@@ -97,7 +97,7 @@ namespace EM
 
   definition EM_equiv_EM [constructor] {G H : AbGroup} (φ : G ≃g H) (n : ℕ) : K G n ≃* K H n :=
   begin
-    fapply pequiv.MK,
+    fapply pequiv.MK',
     { exact EM_functor φ n },
     { exact EM_functor φ⁻¹ᵍ n },
     { intro x, refine (EM_functor_gcompose φ⁻¹ᵍ φ n)⁻¹* x ⬝ _,

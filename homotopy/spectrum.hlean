@@ -189,8 +189,7 @@ namespace spectrum
                          (pwhisker_left (glue F n) (to_phomotopy n))
                          (pwhisker_right (glue E n) (ap1_phomotopy (to_phomotopy (S n))))
                          (glue_square f n)
-                         (glue_square g n)
-    )
+                         (glue_square g n))
 
   infix ` ~ₛ `:50 := shomotopy
 
@@ -344,7 +343,7 @@ namespace spectrum
     end
 
   definition scompose_spoint {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y)
-    : f ∘ₛ spoint f ~ₛ szero (sfiber f) Y :=
+    : f ∘ₛ spoint f ~ₛ !szero :=
   begin
     fapply shomotopy.mk,
     { intro n, exact pcompose_ppoint (f n) },
@@ -479,9 +478,7 @@ namespace spectrum
   definition spectrify_type_fun'_succ {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ) :
     spectrify_type_fun' X n (succ k) ~* Ω→ (spectrify_type_fun' X n k) :=
   begin
-    refine _ ⬝* !ap1_pcompose⁻¹*,
-    apply !pwhisker_right,
-    refine !to_pinv_pequiv_MK2
+    refine !ap1_pcompose⁻¹*
   end
 
   definition spectrify_pequiv {N : succ_str} (X : gen_prespectrum N) (n : N) :
@@ -517,7 +514,7 @@ namespace spectrum
     (equiv_gluen X n (k+1))⁻¹ᵉ* ~*
     (equiv_gluen X n k)⁻¹ᵉ* ∘* Ω→[k] (equiv_glue X (n +' k))⁻¹ᵉ* ∘* !loopn_succ_in :=
   begin
-    refine !trans_pinv ⬝* pwhisker_left _ _, refine !trans_pinv ⬝* _, refine !to_pinv_pequiv_MK2 ◾* !pinv_pinv
+    refine !trans_pinv ⬝* pwhisker_left _ _, refine !trans_pinv ⬝* _, refine pwhisker_left _ !pinv_pinv
   end
 
   definition spectrify_map {N : succ_str} {X : gen_prespectrum N} : X →ₛ spectrify X :=
@@ -550,11 +547,8 @@ namespace spectrum
       refine pwhisker_left _ (pwhisker_right _ (phomotopy_pinv_right_of_phomotopy (!loopn_succ_in_natural)⁻¹*)⁻¹*) ⬝* _,
       refine pwhisker_right _ !apn_pinv ⬝* _,
       refine (phomotopy_pinv_left_of_phomotopy _)⁻¹*,
-      refine pwhisker_right _ !pmap_eta⁻¹* ⬝* _,
       refine apn_psquare k _,
-      refine pwhisker_right _ _  ⬝* psquare_of_phomotopy !smap.glue_square,
-      exact !pmap_eta⁻¹*
-    }
+      refine psquare_of_phomotopy !smap.glue_square }
   end
 
   definition spectrify.elim {N : succ_str} {X : gen_prespectrum N} {Y : gen_spectrum N}
