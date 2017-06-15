@@ -2,8 +2,8 @@
 
 import homotopy.sphere2 homotopy.cofiber homotopy.wedge hit.prop_trunc hit.set_quotient eq2 types.pointed2 .homotopy.smash_adjoint
 
-open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
-     is_trunc function sphere unit sum prod bool
+open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc pi group
+     is_trunc function sphere unit prod bool
 
 namespace eq
 
@@ -93,6 +93,12 @@ namespace eq
   --   (p : f ~ g) (q : a = a') : natural_square p q = square_of_pathover (apd p q) :=
   -- idp
 
+  lemma homotopy_group_isomorphism_of_ptrunc_pequiv {A B : Type*}
+    (n k : ℕ) (H : n+1 ≤[ℕ] k) (f : ptrunc k A ≃* ptrunc k B) : πg[n+1] A ≃g πg[n+1] B :=
+  (ghomotopy_group_ptrunc_of_le H A)⁻¹ᵍ ⬝g
+  homotopy_group_isomorphism_of_pequiv n f ⬝g
+  ghomotopy_group_ptrunc_of_le H B
+
   section hsquare
   variables {A₀₀ A₂₀ A₄₀ A₀₂ A₂₂ A₄₂ A₀₄ A₂₄ A₄₄ : Type}
             {f₁₀ : A₀₀ → A₂₀} {f₃₀ : A₂₀ → A₄₀}
@@ -158,6 +164,13 @@ namespace trunc
 
 end trunc
 
+namespace trunc_index
+  open is_conn nat trunc is_trunc
+  lemma minus_two_add_plus_two (n : ℕ₋₂) : -2+2+n = n :=
+  by induction n with n p; reflexivity; exact ap succ p
+
+end trunc_index
+
 namespace sigma
 
   -- definition sigma_pathover_equiv_of_is_prop {A : Type} {B : A → Type} {C : Πa, B a → Type}
@@ -195,6 +208,9 @@ namespace group
   --   : @is_mul_hom G G' (@ab_group.to_group _ (AbGroup.struct G)) _ φ :=
   -- homomorphism.struct φ
 
+  definition pgroup_of_Group (X : Group) : pgroup X :=
+  pgroup_of_group _ idp
+
   definition isomorphism_ap {A : Type} (F : A → Group) {a b : A} (p : a = b) : F a ≃g F b :=
     isomorphism_of_eq (ap F p)
 
@@ -214,6 +230,17 @@ end group open group
 
 namespace function
   variables {A B : Type} {f f' : A → B}
+  open is_conn sigma.ops
+
+  definition merely_constant {A B : Type} (f : A → B) : Type :=
+  Σb, Πa, merely (f a = b)
+
+  definition merely_constant_pmap {A B : Type*} {f : A →* B} (H : merely_constant f) (a : A) :
+    merely (f a = pt) :=
+  tconcat (tconcat (H.2 a) (tinverse (H.2 pt))) (tr (respect_pt f))
+
+  definition merely_constant_of_is_conn {A B : Type*} (f : A →* B) [is_conn 0 A] : merely_constant f :=
+  ⟨pt, is_conn.elim -1 _ (tr (respect_pt f))⟩
 
   definition homotopy_group_isomorphism_of_is_embedding (n : ℕ) [H : is_succ n] {A B : Type*}
     (f : A →* B) [H2 : is_embedding f] : πg[n] A ≃g πg[n] B :=
@@ -237,21 +264,40 @@ namespace is_conn
 
 end is_conn
 
+namespace is_trunc
+
+open trunc_index is_conn
+
+  definition is_trunc_succ_succ_of_is_trunc_loop (n : ℕ₋₂) (A : Type*) (H : is_trunc (n.+1) (Ω A))
+    (H2 : is_conn 0 A) : is_trunc (n.+2) A :=
+  begin
+    apply is_trunc_succ_of_is_trunc_loop, apply minus_one_le_succ,
+    refine is_conn.elim -1 _ _, exact H
+  end
+  lemma is_trunc_of_is_trunc_loopn (m n : ℕ) (A : Type*) (H : is_trunc n (Ω[m] A))
+    (H2 : is_conn m A) : is_trunc (m +[ℕ] n) A :=
+  begin
+    revert A H H2; induction m with m IH: intro A H H2,
+    { rewrite [nat.zero_add], exact H },
+    rewrite [succ_add],
+    apply is_trunc_succ_succ_of_is_trunc_loop,
+    { apply IH,
+      { apply is_trunc_equiv_closed _ !loopn_succ_in },
+      apply is_conn_loop },
+    exact is_conn_of_le _ (zero_le_of_nat (succ m))
+  end
+
+  lemma is_trunc_of_is_set_loopn (m : ℕ) (A : Type*) (H : is_set (Ω[m] A))
+    (H2 : is_conn m A) : is_trunc m A :=
+  is_trunc_of_is_trunc_loopn m 0 A H H2
+
+end is_trunc
+
 namespace misc
   open is_conn
-  /- move! -/
-  open sigma.ops pointed
-  definition merely_constant {A B : Type} (f : A → B) : Type :=
-  Σb, Πa, merely (f a = b)
 
-  definition merely_constant_pmap {A B : Type*} {f : A →* B} (H : merely_constant f) (a : A) :
-    merely (f a = pt) :=
-  tconcat (tconcat (H.2 a) (tinverse (H.2 pt))) (tr (respect_pt f))
+  open sigma.ops pointed trunc_index
 
-  definition merely_constant_of_is_conn {A B : Type*} (f : A →* B) [is_conn 0 A] : merely_constant f :=
-  ⟨pt, is_conn.elim -1 _ (tr (respect_pt f))⟩
-
-  open sigma
   definition component [constructor] (A : Type*) : Type* :=
   pType.mk (Σ(a : A), merely (pt = a)) ⟨pt, tr idp⟩
 

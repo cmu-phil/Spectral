@@ -4,6 +4,8 @@ import homotopy.EM algebra.category.functor.equivalence types.pointed2 ..pointed
 
 open eq equiv is_equiv algebra group nat pointed EM.ops is_trunc trunc susp function is_conn
 
+/- TODO: try to fix up this file -/
+
 namespace EM
 
   definition EMadd1_functor_succ [unfold_full] {G H : AbGroup} (φ : G →g H) (n : ℕ) :
@@ -300,6 +302,24 @@ namespace EM
   EMadd1_pequiv_succ_natural f n !isomorphism.refl !isomorphism.refl (π→g[n+2] f)
     proof λa, idp qed
 
+  /- The Eilenberg-MacLane space K(G,n) with the same homotopy group as X on level n -/
+  definition EM_type (X : Type*) : ℕ → Type*
+  | 0     := ptrunc 0 X
+  | 1     := EM1 (π₁ X)
+  | (n+2) := EMadd1 (πag[n+2] X) (n+1)
+
+  definition EM_type_pequiv.{u} {X Y : pType.{u}} (n : ℕ) [Hn : is_succ n] (e : πg[n] Y ≃g πg[n] X)
+    [H1 : is_conn (n.-1) X] [H2 : is_trunc n X] : EM_type Y n ≃* X :=
+  begin
+    induction Hn with n, cases n with n,
+    { have is_conn 0 X, from H1,
+      have is_trunc 1 X, from H2,
+      exact EM1_pequiv e },
+    { have is_conn (n+1) X, from H1,
+      have is_trunc ((n+1).+1) X, from H2,
+      exact EMadd1_pequiv (n+1) e⁻¹ᵍ }
+  end
+
   -- definition EM1_functor_equiv' (X Y : Type*) [H1 : is_conn 0 X] [H2 : is_trunc 1 X]
   --   [H3 : is_conn 0 Y] [H4 : is_trunc 1 Y] : (X →* Y) ≃ (π₁ X →g π₁ Y) :=
   -- begin
@@ -387,7 +407,8 @@ namespace EM
     exact is_trunc_pmap_of_is_conn X n -1 (ptrunctype.mk Y _ y₀),
   end
 
-  open category
+  open category functor nat_trans
+
   definition precategory_ptruncconntype'.{u} [constructor] (n : ℕ₋₂) :
     precategory.{u+1 u} (ptruncconntype' n) :=
   begin
@@ -411,8 +432,6 @@ namespace EM
 
   definition tEM [constructor] (G : AbGroup) (n : ℕ) : ptruncconntype' (n.-1) :=
   ptruncconntype'.mk (EM G n) _ !is_trunc_EM
-
-  open functor
 
   definition EM1_cfunctor : Grp ⇒ cType*[0] :=
   functor.mk
@@ -442,7 +461,6 @@ namespace EM
     begin intro, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_pid end
     begin intros, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_compose end
 
-  open nat_trans category
 
   definition is_equivalence_EM1_cfunctor.{u} : is_equivalence EM1_cfunctor.{u} :=
   begin
@@ -500,23 +518,8 @@ namespace EM
   end category
 
   /- move -/
-  -- switch arguments in homotopy_group_trunc_of_le
-  lemma ghomotopy_group_trunc_of_le (k n : ℕ) (A : Type*) [Hk : is_succ k] (H : k ≤[ℕ] n)
-    : πg[k] (ptrunc n A) ≃g πg[k] A :=
-  begin
-    exact sorry
-  end
-
-  lemma homotopy_group_isomorphism_of_ptrunc_pequiv {A B : Type*}
-    (n k : ℕ) (H : n+1 ≤[ℕ] k) (f : ptrunc k A ≃* ptrunc k B) : πg[n+1] A ≃g πg[n+1] B :=
-  (ghomotopy_group_trunc_of_le _ k A H)⁻¹ᵍ ⬝g
-  homotopy_group_isomorphism_of_pequiv n f ⬝g
-  ghomotopy_group_trunc_of_le _ k B H
 
   open trunc_index
-  lemma minus_two_add_plus_two (n : ℕ₋₂) : -2+2+n = n :=
-  by induction n with n p; reflexivity; exact ap succ p
-
   definition is_trunc_succ_of_is_trunc_loop (n : ℕ₋₂) (A : Type*) (H : is_trunc (n.+1) (Ω A))
     (H2 : is_conn 0 A) : is_trunc (n.+2) A :=
   begin
@@ -553,69 +556,37 @@ namespace EM
   end
 
   definition EM1_pequiv_EM1 {G H : Group} (φ : G ≃g H) : EM1 G ≃* EM1 H :=
-  sorry
+  pequiv.MK (EM1_functor φ) (EM1_functor φ⁻¹ᵍ)
+    abstract (EM1_functor_gcompose φ⁻¹ᵍ φ)⁻¹* ⬝* EM1_functor_phomotopy proof left_inv φ qed ⬝*
+             EM1_functor_gid G end
+    abstract (EM1_functor_gcompose φ φ⁻¹ᵍ)⁻¹* ⬝* EM1_functor_phomotopy proof right_inv φ qed ⬝*
+             EM1_functor_gid H end
 
   definition EMadd1_pequiv_EMadd1 (n : ℕ) {G H : AbGroup} (φ : G ≃g H) : EMadd1 G n ≃* EMadd1 H n :=
-  sorry
+  pequiv.MK (EMadd1_functor φ n) (EMadd1_functor φ⁻¹ᵍ n)
+    abstract (EMadd1_functor_gcompose φ⁻¹ᵍ φ n)⁻¹* ⬝* EMadd1_functor_phomotopy proof left_inv φ qed n ⬝*
+             EMadd1_functor_gid G n end
+    abstract (EMadd1_functor_gcompose φ φ⁻¹ᵍ n)⁻¹* ⬝* EMadd1_functor_phomotopy proof right_inv φ qed n ⬝*
+             EMadd1_functor_gid H n end
 
   /- Eilenberg MacLane spaces are the fibers of the Postnikov system of a type -/
 
   definition postnikov_map [constructor] (A : Type*) (n : ℕ₋₂) : ptrunc (n.+1) A →* ptrunc n A :=
   ptrunc.elim (n.+1) !ptr
 
-  open fiber EM.ops
+  open fiber
 
-  -- move
-
-  definition pgroup_of_Group (X : Group) : pgroup X :=
-  pgroup_of_group _ idp
-
-  -- open prod chain_complex succ_str fin
-  -- definition isomorphism_of_trivial_LES {A B : Type*} (f : A →* B) (n : ℕ)
-  --   (k : fin (nat.succ 2)) (HX1 : is_contr (homotopy_groups f (n+1, k)))
-  --   (HX2 : is_contr (homotopy_groups f (n+2, k))) :
-  --   Group_LES_of_homotopy_groups f (@S +3ℕ (S (n, k))) ≃g Group_LES_of_homotopy_groups f (S (n, k)) :=
-  -- begin
-  --   induction k with k Hk,
-  --   cases k with k, rotate 1, cases k with k, rotate 1, cases k with k, rotate 1,
-  --   exfalso, apply lt_le_antisymm Hk, apply le_add_left,
-  --   all_goals exact let k := fin.mk _ Hk in let x : +3ℕ := (n, k) in let S : +3ℕ → +3ℕ := succ_str.S in
-  --     let z :=
-  --     @is_equiv_of_trivial _
-  --       (LES_of_homotopy_groups f) _
-  --       (is_exact_LES_of_homotopy_groups f (n+1, k))
-  --       (is_exact_LES_of_homotopy_groups f (S (n+1, k)))
-  --       HX1 HX2
-  --       (pgroup_of_Group (Group_LES_of_homotopy_groups f (S x)))
-  --       (pgroup_of_Group (Group_LES_of_homotopy_groups f (S (S x))))
-  --       (homomorphism.struct (homomorphism_LES_of_homotopy_groups_fun f (S x))) in
-  --     isomorphism.mk (homomorphism_LES_of_homotopy_groups_fun f _) z
-  -- end
-
-
-  definition pfiber_postnikov_map_zero (A : Type*) :
-    pfiber (postnikov_map A 0) ≃* EM1 (πg[1] A) :=
+  definition pfiber_postnikov_map (A : Type*) (n : ℕ) : pfiber (postnikov_map A n) ≃* EM_type A (n+1) :=
   begin
-    symmetry, apply EM1_pequiv,
-    { symmetry, refine _ ⬝g ghomotopy_group_ptrunc 1 A,
+    symmetry, apply EM_type_pequiv,
+    { symmetry, refine _ ⬝g ghomotopy_group_ptrunc (n+1) A,
       exact chain_complex.LES_isomorphism_of_trivial_cod _ _
-        (trivial_homotopy_group_of_is_trunc _ !zero_lt_one)
-        (trivial_homotopy_group_of_is_trunc _ (zero_lt_succ 1)) },
-    { apply @is_conn_fun_trunc_elim, apply is_conn_fun_tr },
-    { apply is_trunc_pfiber }
-  end
-
-  definition pfiber_postnikov_map_succ (A : Type*) (n : ℕ) :
-    pfiber (postnikov_map A (n+1)) ≃* EMadd1 (πag[n+2] A) (n+1) :=
-  begin
-    symmetry, apply EMadd1_pequiv,
-    { refine _ ⬝g ghomotopy_group_ptrunc (n+2) A,
-      exact chain_complex.LES_isomorphism_of_trivial_cod _ _
-        (trivial_homotopy_group_of_is_trunc _ (self_lt_succ (n+1)))
+        (trivial_homotopy_group_of_is_trunc _ (self_lt_succ n))
         (trivial_homotopy_group_of_is_trunc _ (le_succ _)) },
     { apply is_conn_fun_trunc_elim,  apply is_conn_fun_tr },
-    { apply is_trunc_pfiber }
+    { have is_trunc (n+1) (ptrunc n.+1 A), from !is_trunc_trunc,
+      have is_trunc ((n+1).+1) (ptrunc n A), by do 2 apply is_trunc_succ, apply is_trunc_trunc,
+      apply is_trunc_pfiber }
   end
-
 
 end EM
