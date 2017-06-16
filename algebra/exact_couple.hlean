@@ -129,6 +129,9 @@ definition derived_couple_A : AbGroup :=
 definition derived_couple_B : AbGroup :=
   homology (differential EC) (differential_is_differential EC)
 
+print homology
+
+
 definition derived_couple_i : derived_couple_A →g derived_couple_A :=
   (image_lift (exact_couple.i EC)) ∘g (image_incl (exact_couple.i EC))
 
