@@ -178,14 +178,38 @@ definition subgroup_homom_ker_to_im : ab_kernel i →g ab_image d :=
 
 open eq
 
+definition left_square_derived_ses_aux : j_factor ∘g ab_image_incl k ~ (SES.f (SES_of_differential d H)) ∘g (image_homomorphism k j) :=
+  begin
+    intro x,
+    induction x with a p, induction p with f, induction f with b p, induction p, 
+    fapply subtype_eq, 
+    reflexivity,
+  end
+
 definition left_square_derived_ses : j_factor ∘g (ab_kernel_incl i) ~ (SES.f (SES_of_differential d H)) ∘g subgroup_homom_ker_to_im :=
   begin
-  intro x,
-  fapply subtype_eq,
-  refine sorry 
--- fapply ab_hom_factors_through_lift _ _ ,
---(ap (j_factor) subgroup_iso_exact_at_A_triangle) ⬝ _,
+    intro x,
+    exact (ap j_factor (subgroup_iso_exact_at_A_triangle x)) ⬝ (left_square_derived_ses_aux (subgroup_iso_exact_at_A x)),
   end
+
+print quotient_extend_unique_SES
+check quotient_extend_unique_SES (SES_of_exact_couple_at_i) (SES_of_differential d H) (subgroup_homom_ker_to_im) (j_factor) (left_square_derived_ses)
+
+definition derived_couple_j_unique :   
+    is_contr (Σ hC, group_fun (hC ∘g SES.g SES_of_exact_couple_at_i) ~ group_fun
+       (SES.g (SES_of_differential d H) ∘g j_factor)) :=
+quotient_extend_unique_SES (SES_of_exact_couple_at_i) (SES_of_differential d H) (subgroup_homom_ker_to_im) (j_factor) (left_square_derived_ses)
+
+definition derived_couple_j : derived_couple_A →g derived_couple_B :=
+   begin
+     exact pr1 (center' (derived_couple_j_unique)),
+   end
+
+definition derived_couple_j_htpy : group_fun (derived_couple_j ∘g SES.g SES_of_exact_couple_at_i) ~ group_fun
+       (SES.g (SES_of_differential d H) ∘g j_factor) :=
+   begin
+     exact pr2 (center' (derived_couple_j_unique)),
+   end
 
 /-definition derived_couple_j : derived_couple_A EC →g derived_couple_B EC :=
   begin
