@@ -332,6 +332,20 @@ f = incl_of_subgroup K ∘g hom_lift f K Hyp :=
     reflexivity
   end
 
+definition ab_hom_lift_kernel [constructor] {A B C : AbGroup} (f : A →g B) (g : B →g C) (Hyp : Π (a : A), g (f a) = 1) : A →g ab_kernel g :=
+  begin
+    fapply ab_hom_lift,
+    exact f,
+    intro a,
+    exact Hyp a, 
+  end
+
+definition ab_hom_lift_kernel_factors {A B C : AbGroup} (f : A →g B) (g : B →g C) (Hyp : Π (a : A), g (f a) = 1) : 
+f = ab_kernel_incl g ∘g ab_hom_lift_kernel f g Hyp :=
+  begin
+    fapply ab_hom_factors_through_lift,
+  end
+
   definition image_lift [constructor] {G H : Group} (f : G →g H) : G →g image f :=
   begin
     fapply hom_lift f,

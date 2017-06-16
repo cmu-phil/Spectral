@@ -11,6 +11,18 @@ import algebra.group_theory hit.set_quotient types.sigma types.list types.sum .q
 open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function group trunc
      equiv is_equiv
 
+-- This definition needs to be moved to exactness.hlean. However we had trouble doing so. Please help.
+definition iso_ker_im_of_exact {A B C : AbGroup} (f : A →g B) (g : B →g C) (E : is_exact f g) : ab_kernel g ≃g ab_image f :=
+  begin
+  fapply ab_subgroup_iso,
+  intro a,
+  induction E,
+  exact ker_in_im a,
+  intro a b, induction b with q, induction q with b p, induction p,
+  induction E,
+  exact im_in_ker b,
+  end
+
 definition is_differential {B : AbGroup} (d : B →g B) := Π(b:B), d (d b) = 1
 
 definition image_subgroup_of_diff {B : AbGroup} (d : B →g B) (H : is_differential d) : subgroup_rel (ab_kernel d) :=
@@ -214,10 +226,57 @@ definition derived_couple_j_htpy : group_fun (derived_couple_j ∘g SES.g SES_of
      exact pr2 (center' (derived_couple_j_unique)),
    end
 
-/-definition derived_couple_j : derived_couple_A EC →g derived_couple_B EC :=
+definition SES_im_i_trivial : SES trivial_ab_group derived_couple_A derived_couple_A :=
   begin
-  exact sorry,
---    refine (comm_gq_map (comm_kernel (boundary CC)) (image_subgroup_of_bd (boundary CC) (boundary_is_boundary CC))) ∘g _,
-  end-/
+    fapply SES_of_isomorphism_right,
+    fapply isomorphism.refl, 
+  end
+
+definition subgroup_iso_exact_kerj_imi : ab_kernel j ≃g ab_image i :=
+  begin
+    fapply iso_ker_im_of_exact,
+    induction EC,
+    exact exact_ij,
+  end
+
+definition k_restrict_aux : ab_kernel d →g ab_kernel j :=
+  begin
+    fapply ab_hom_lift_kernel,
+    exact k ∘g ab_kernel_incl d,
+    intro p, induction p with b p, exact p,
+  end
+
+definition k_restrict : ab_kernel d →g derived_couple_A :=
+  subgroup_iso_exact_kerj_imi ∘g k_restrict_aux
+
+definition k_restrict_square_left : k_restrict ∘g (SES.f (SES_of_differential d H)) ~ λ x, 1 :=
+  begin
+    intro x,
+    induction x with b' p, 
+    induction p with q,
+    induction q with b p,
+    induction p,
+    fapply subtype_eq,
+    induction EC,
+    induction exact_jk,
+    fapply im_in_ker,
+  end 
+
+definition derived_couple_k_unique :   is_contr
+    (Σ hC, group_fun (hC ∘g SES.g (SES_of_differential d H)) ~ group_fun
+       (SES.g SES_im_i_trivial ∘g k_restrict))
+  :=
+quotient_extend_unique_SES (SES_of_differential d H) (SES_im_i_trivial) (trivial_homomorphism (ab_image d) trivial_ab_group) (k_restrict) (k_restrict_square_left)
+
+definition derived_couple_k : derived_couple_B →g derived_couple_A :=
+   begin
+     exact pr1 (center' (derived_couple_k_unique)),
+   end
+
+definition derived_couple_k_htpy : group_fun (derived_couple_k ∘g SES.g (SES_of_differential d H)) ~ group_fun
+       (SES.g (SES_im_i_trivial) ∘g k_restrict) :=
+   begin
+     exact pr2 (center' (derived_couple_k_unique)),
+   end
 
 end derived_couple
