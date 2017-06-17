@@ -3,7 +3,7 @@
 
 --author: Floris van Doorn
 
-import algebra.group_theory ..pointed ..pointed_pi eq2
+import algebra.group_theory ..pointed ..pointed_pi eq2 homotopy.susp
 open pi pointed algebra group eq equiv is_trunc trunc susp
 namespace group
 
@@ -21,7 +21,7 @@ namespace group
   definition ap1_pmap_mul {X Y : Type*} (f g : X →* Ω Y) :
     Ω→ (pmap_mul f g) ~* pmap_mul (Ω→ f) (Ω→ g) :=
   begin
-    fconstructor,
+    fapply phomotopy.mk,
     { intro p, esimp,
       refine ap1_gen_con_left (respect_pt f) (respect_pt f)
                (respect_pt g) (respect_pt g) p ⬝ _,
@@ -38,7 +38,7 @@ namespace group
   definition pmap_mul_pcompose {A B C : Type*} (g h : B →* Ω C) (f : A →* B) :
     pmap_mul g h ∘* f ~* pmap_mul (g ∘* f) (h ∘* f) :=
   begin
-    fconstructor,
+    fapply phomotopy.mk,
     { intro p, reflexivity },
     { esimp, refine !idp_con ⬝ _, refine !con2_con_con2⁻¹ ⬝ whisker_right _ _,
       refine !ap_eq_ap011⁻¹ }
@@ -47,7 +47,7 @@ namespace group
   definition pcompose_pmap_mul {A B C : Type*} (h : B →* C) (f g : A →* Ω B) :
     Ω→ h ∘* pmap_mul f g ~* pmap_mul (Ω→ h ∘* f) (Ω→ h ∘* g) :=
   begin
-    fconstructor,
+    fapply phomotopy.mk,
     { intro p, exact ap1_con h (f p) (g p) },
     { refine whisker_left _ !con2_con_con2⁻¹ ⬝ _, refine !con.assoc⁻¹ ⬝ _,
       refine whisker_right _ (eq_of_square !ap1_gen_con_natural) ⬝ _,
@@ -203,20 +203,20 @@ namespace group
   begin
     fapply inf_group.mk,
     { exact ppi_mul },
-    { intro f g h, fapply ppi_eq,
+    { intro f g h, apply ppi_eq, fapply ppi_homotopy.mk,
       { intro a, exact con.assoc (f a) (g a) (h a) },
-      { rexact eq_of_square (con2_assoc (ppi_resp_pt f) (ppi_resp_pt g) (ppi_resp_pt h)) }},
+      { symmetry, rexact eq_of_square (con2_assoc (ppi_resp_pt f) (ppi_resp_pt g) (ppi_resp_pt h)) }},
     { apply ppi_const },
-    { intros f, fapply ppi_eq,
+    { intros f, apply ppi_eq, fapply ppi_homotopy.mk,
       { intro a, exact one_mul (f a) },
-      { esimp, apply eq_of_square, refine _ ⬝vp !ap_id, apply natural_square_tr }},
-    { intros f, fapply ppi_eq,
+      { symmetry, apply eq_of_square, refine _ ⬝vp !ap_id, apply natural_square_tr }},
+    { intros f, apply ppi_eq, fapply ppi_homotopy.mk,
       { intro a, exact mul_one (f a) },
       { reflexivity }},
     { exact ppi_inv },
-    { intro f, fapply ppi_eq,
+    { intro f, apply ppi_eq, fapply ppi_homotopy.mk,
       { intro a, exact con.left_inv (f a) },
-      { exact !con_left_inv_idp⁻¹ }},
+      { exact !con_left_inv_idp }},
   end
 
   definition group_trunc_ppi [constructor] [instance] {A : Type*} (B : A → Type*) :
@@ -230,9 +230,9 @@ namespace group
     ab_inf_group (Π*a, Ω (Ω (B a))) :=
   ⦃ab_inf_group, inf_group_ppi (λa, Ω (B a)), mul_comm :=
     begin
-      intro f g, fapply ppi_eq,
+      intro f g, apply ppi_eq, fapply ppi_homotopy.mk,
       { intro a, exact eckmann_hilton (f a) (g a) },
-      { rexact eq_of_square (eckmann_hilton_con2 (ppi_resp_pt f) (ppi_resp_pt g)) }
+      { symmetry, rexact eq_of_square (eckmann_hilton_con2 (ppi_resp_pt f) (ppi_resp_pt g)) }
     end⦄
 
   definition ab_group_trunc_ppi [constructor] [instance] {A : Type*} (B : A → Type*) :

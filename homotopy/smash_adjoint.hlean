@@ -2,7 +2,7 @@
 -- in collaboration with Egbert, Stefano, Robin, Ulrik
 
 /- the adjunction between the smash product and pointed maps -/
-import .smash .susp ..pointed
+import .smash .susp ..pointed ..move_to_lib
 
 open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops wedge is_trunc
      function unit sigma susp sphere
@@ -29,7 +29,7 @@ namespace smash
   definition smash_pmap_unit_pt [constructor] (A B : Type*)
     : pinl A pt ~* pconst A (A ∧ B) :=
   begin
-    fconstructor,
+    fapply phomotopy.mk,
     { intro a, exact gluel' a pt },
     { rexact con.right_inv (gluel pt) ⬝ (con.right_inv (gluer pt))⁻¹ }
   end
@@ -70,6 +70,7 @@ namespace smash
       rotate 1, rexact (functor_gluel'2_same (pid A) f pt),
       refine whisker_right _ !idp_con ⬝pv _,
       refine !con.assoc⁻¹ ⬝ph _, apply whisker_bl,
+      refine whisker_left _ !to_homotopy_pt_mk ⬝pv _,
       refine !con.assoc⁻¹ ⬝ whisker_right _ _ ⬝pv _,
       rotate 1, esimp, apply whisker_left_idp_con,
       refine !con.assoc ⬝pv _, apply whisker_tl,
@@ -174,7 +175,7 @@ namespace smash
   definition smash_pmap_unit_counit (A B : Type*) :
     smash_pmap_counit A (A ∧ B) ∘* smash_functor (pid A) (smash_pmap_unit A B) ~* pid (A ∧ B) :=
   begin
-    fconstructor,
+    fapply phomotopy.mk,
     { intro x,
       induction x with a b a b,
       { reflexivity },
@@ -197,7 +198,7 @@ namespace smash
   definition smash_pmap_counit_unit_pt [constructor] (f : A →* B) :
     smash_pmap_counit A B ∘* pinl A f ~* f :=
   begin
-    fconstructor,
+    fapply phomotopy.mk,
     { intro a, reflexivity },
     { refine !idp_con ⬝ !elim_gluer'⁻¹ }
   end

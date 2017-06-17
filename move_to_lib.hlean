@@ -1,6 +1,7 @@
 -- definitions, theorems and attributes which should be moved to files in the HoTT library
 
-import homotopy.sphere2 homotopy.cofiber homotopy.wedge hit.prop_trunc hit.set_quotient eq2 types.pointed2 .homotopy.smash_adjoint
+import homotopy.sphere2 homotopy.cofiber homotopy.wedge hit.prop_trunc hit.set_quotient eq2 types.pointed2
+       .homotopy.susp
 
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc pi group
      is_trunc function sphere unit prod bool
@@ -650,6 +651,10 @@ definition psusp_pelim2 {X Y : Type*} {f g : ⅀ X →* Y} (p : f ~* g) : ((loop
 pwhisker_right (loop_psusp_unit X) (Ω⇒ p)
 
 namespace pointed
+  definition to_homotopy_pt_mk {A B : Type*} {f g : A →* B} (h : f ~ g)
+    (p : h pt ⬝ respect_pt g = respect_pt f) : to_homotopy_pt (phomotopy.mk h p) = p :=
+  to_right_inv !eq_con_inv_equiv_con_eq p
+
   variables {A₀₀ A₂₀ A₀₂ A₂₂ : Type*}
             {f₁₀ : A₀₀ →* A₂₀} {f₁₂ : A₀₂ →* A₂₂}
             {f₀₁ : A₀₀ →* A₀₂} {f₂₁ : A₂₀ →* A₂₂}
