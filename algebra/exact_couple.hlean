@@ -273,10 +273,21 @@ definition derived_couple_k : derived_couple_B →g derived_couple_A :=
      exact pr1 (center' (derived_couple_k_unique)),
    end
 
+print conter_internal.center
+
 definition derived_couple_k_htpy : group_fun (derived_couple_k ∘g SES.g (SES_of_differential d H)) ~ group_fun
        (SES.g (SES_im_i_trivial) ∘g k_restrict) :=
    begin
      exact pr2 (center' (derived_couple_k_unique)),
    end
+
+definition derived_couple_exact_ij : is_exact_ag derived_couple_i derived_couple_j :=
+  begin
+    fapply is_exact.mk,
+    intro a,
+    induction a with a' t,
+    induction t with q, induction q with a p, induction p, 
+    repeat exact sorry, 
+  end
 
 end derived_couple
