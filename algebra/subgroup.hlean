@@ -5,9 +5,9 @@ Authors: Floris van Doorn, Egbert Rijke, Jeremy Avigad
 
 Basic concepts of group theory
 -/
-import algebra.group_theory ..move_to_lib ..set
+import algebra.group_theory ..move_to_lib ..property
 
-open eq algebra is_trunc sigma sigma.ops prod trunc set
+open eq algebra is_trunc sigma sigma.ops prod trunc property
 
 namespace group
 
@@ -17,7 +17,7 @@ namespace group
       group G to be a family of mere propositions over (the underlying
      type of) G, closed under the constants and operations --/
 
-  structure is_subgroup [class] (G : Group) (H : set G) : Type :=
+  structure is_subgroup [class] (G : Group) (H : property G) : Type :=
     (one_mem : 1 ∈ H)
     (mul_mem : Π{g h}, g ∈ H → h ∈ H → g * h ∈ H)
     (inv_mem : Π{g}, g ∈ H → g⁻¹ ∈ H)
@@ -50,14 +50,14 @@ namespace group
     is_subgroup H (image f) :=
     begin
       fapply is_subgroup.mk,
-        -- subset contains 1
+        -- subproperty contains 1
       { fapply image.mk, exact 1, apply respect_one},
-        -- subset is closed under multiplication
+        -- subproperty is closed under multiplication
       { intro h h', intro u v,
         induction u with x p, induction v with y q,
         induction p, induction q,
         apply image.mk (x * y), apply respect_mul},
-        -- subset is closed under inverses
+        -- subproperty is closed under inverses
       { intro g, intro t, induction t with x p, induction p,
         apply image.mk x⁻¹, apply respect_inv }
     end
@@ -66,8 +66,8 @@ namespace group
 
   variables {G₁ G₂ : Group}
 
-  -- TODO: maybe define this in more generality for pointed sets?
-  definition kernel [constructor] (φ : G₁ →g G₂) : set G₁ := { g | trunctype.mk (φ g = 1) _}
+  -- TODO: maybe define this in more generality for pointed propertys?
+  definition kernel [constructor] (φ : G₁ →g G₂) : property G₁ := { g | trunctype.mk (φ g = 1) _}
 
   theorem mul_mem_kernel (φ : G₁ →g G₂) (g h : G₁) (H₁ : g ∈ kernel φ) (H₂ : h ∈ kernel φ) : g * h ∈ kernel φ :=
   calc
@@ -103,10 +103,10 @@ namespace group
   /-- Next, we formalize some aspects of normal subgroups. Recall that a normal subgroup H of a
       group G is a subgroup which is invariant under all inner automorophisms on G. --/
 
-  definition is_normal [constructor] (G : Group) (N : set G) : Prop :=
+  definition is_normal [constructor] (G : Group) (N : property G) : Prop :=
   trunctype.mk (Π{g} h, g ∈ N → h * g * h⁻¹ ∈ N) _
 
-  structure is_normal_subgroup [class] (G : Group) (N : set G) extends is_subgroup G N :=
+  structure is_normal_subgroup [class] (G : Group) (N : property G) extends is_subgroup G N :=
     (is_normal : is_normal G N)
 
   abbreviation subgroup_one_mem   [unfold 2] := @is_subgroup.one_mem
@@ -115,14 +115,14 @@ namespace group
   abbreviation subgroup_is_normal [unfold 2] := @is_normal_subgroup.is_normal
 
 section
-  variables {G G' G₁ G₂ G₃ : Group} {H N : set G} [is_subgroup G H]
+  variables {G G' G₁ G₂ G₃ : Group} {H N : property G} [is_subgroup G H]
             [is_normal_subgroup G N] {g g' h h' k : G}
             {A B : AbGroup}
 
   theorem is_normal_subgroup' (h : G) (r : g ∈ N) : h⁻¹ * g * h ∈ N :=
   inv_inv h ▸ subgroup_is_normal N h⁻¹ r
 
-  definition is_normal_subgroup_ab.{u} [constructor] {C : set A} (subgrpA : is_subgroup A C)
+  definition is_normal_subgroup_ab.{u} [constructor] {C : property A} (subgrpA : is_subgroup A C)
     : is_normal_subgroup A C :=
   ⦃ is_normal_subgroup, subgrpA,
     is_normal := abstract begin
@@ -164,7 +164,7 @@ section
   end
 
   -- this is just (Σ(g : G), H g), but only defined if (H g) is a prop
-  definition sg {G : Group} (H : set G) : Type := {g : G | g ∈ H}
+  definition sg {G : Group} (H : property G) : Type := {g : G | g ∈ H}
   local attribute sg [reducible]
 
   definition subgroup_one [constructor] : sg H := ⟨one, subgroup_one_mem H⟩
@@ -192,7 +192,7 @@ section
   theorem subgroup_mul_left_inv (g : sg H) : g⁻¹ * g = 1 :=
   subtype_eq !mul.left_inv
 
-  theorem subgroup_mul_comm {G : AbGroup} {H : set G} [subgrpH : is_subgroup G H] (g h : sg H)
+  theorem subgroup_mul_comm {G : AbGroup} {H : property G} [subgrpH : is_subgroup G H] (g h : sg H)
     : subgroup_mul g h = subgroup_mul h g :=
   subtype_eq !mul.comm
 
@@ -209,11 +209,11 @@ section
 
   variable {H}
 
-  definition ab_group_sg [constructor] {G : AbGroup} (H : set G) [is_subgroup G H]
+  definition ab_group_sg [constructor] {G : AbGroup} (H : property G) [is_subgroup G H]
     : ab_group (sg H) :=
   ⦃ab_group, (group_sg H), mul_comm := subgroup_mul_comm⦄
 
-  definition ab_subgroup [constructor] {G : AbGroup} (H : set G) [is_subgroup G H]
+  definition ab_subgroup [constructor] {G : AbGroup} (H : property G) [is_subgroup G H]
     : AbGroup :=
   AbGroup.mk _ (ab_group_sg H)
 
@@ -221,7 +221,7 @@ section
 
   definition ab_kernel {G H : AbGroup} (f : G →g H) : AbGroup := ab_subgroup (kernel f)
 
-  definition incl_of_subgroup [constructor] {G : Group} (H : set G) [is_subgroup G H] :
+  definition incl_of_subgroup [constructor] {G : Group} (H : property G) [is_subgroup G H] :
     subgroup H →g G :=
   begin
     fapply homomorphism.mk,
@@ -231,7 +231,7 @@ section
     intro g h, reflexivity
   end
 
-  definition is_embedding_incl_of_subgroup {G : Group} (H : set G) [is_subgroup G H] :
+  definition is_embedding_incl_of_subgroup {G : Group} (H : property G) [is_subgroup G H] :
     is_embedding (incl_of_subgroup H) :=
   begin
     fapply function.is_embedding_of_is_injective,
@@ -249,20 +249,20 @@ section
     fapply is_embedding_incl_of_subgroup,
   end
 
-  definition is_subgroup_of_subgroup {G : Group} {H1 H2 : set G} [is_subgroup G H1]
+  definition is_subgroup_of_subgroup {G : Group} {H1 H2 : property G} [is_subgroup G H1]
     [is_subgroup G H2] (hyp : Π (g : G), g ∈ H1 → g ∈ H2) :
       is_subgroup (subgroup H2) {h | incl_of_subgroup H2 h ∈ H1} :=
   is_subgroup.mk
     (subgroup_one_mem H1)
     (begin
       intros g h p q,
-      apply mem_set_of,
-      apply subgroup_mul_mem (of_mem_set_of p) (of_mem_set_of q),
+      apply mem_property_of,
+      apply subgroup_mul_mem (of_mem_property_of p) (of_mem_property_of q),
     end)
     (begin
       intros h p,
-      apply mem_set_of,
-      apply subgroup_inv_mem (of_mem_set_of p)
+      apply mem_property_of,
+      apply subgroup_inv_mem (of_mem_property_of p)
     end)
 
   definition Image {G H : Group} (f : G →g H) : Group :=
@@ -306,7 +306,7 @@ definition iso_surjection_ab_image_incl [constructor] {A B : AbGroup} (f : A →
     exact is_equiv_surjection_ab_image_incl f H
   end
 
-  definition hom_lift [constructor] {G H : Group} (f : G →g H) (K : set H) [is_subgroup H K] (Hyp : Π (g : G), K (f g)) : G →g subgroup K :=
+  definition hom_lift [constructor] {G H : Group} (f : G →g H) (K : property H) [is_subgroup H K] (Hyp : Π (g : G), K (f g)) : G →g subgroup K :=
   begin
     fapply homomorphism.mk,
     intro g,
@@ -316,14 +316,14 @@ definition iso_surjection_ab_image_incl [constructor] {A B : AbGroup} (f : A →
     intro g h, apply subtype_eq, esimp, apply respect_mul
   end
 
-definition hom_factors_through_lift {G H : Group} (f : G →g H) (K : set H) [is_subgroup H K]  (Hyp : Π (g : G), K (f g)) :
+definition hom_factors_through_lift {G H : Group} (f : G →g H) (K : property H) [is_subgroup H K]  (Hyp : Π (g : G), K (f g)) :
 f = incl_of_subgroup K ∘g hom_lift f K Hyp :=
   begin
   fapply homomorphism_eq,
     reflexivity
   end
 
-definition ab_hom_lift [constructor] {G H : AbGroup} (f : G →g H) (K : set H) [is_subgroup H K] (Hyp : Π (g : G), K (f g)) : G →g ab_subgroup K :=
+definition ab_hom_lift [constructor] {G H : AbGroup} (f : G →g H) (K : property H) [is_subgroup H K] (Hyp : Π (g : G), K (f g)) : G →g ab_subgroup K :=
   begin
     fapply homomorphism.mk,
     intro g,
@@ -333,7 +333,7 @@ definition ab_hom_lift [constructor] {G H : AbGroup} (f : G →g H) (K : set H) 
     intro g h, apply subtype_eq, apply respect_mul,
   end
 
-definition ab_hom_factors_through_lift {G H : AbGroup} (f : G →g H) (K : set H) [is_subgroup H K] (Hyp : Π (g : G), K (f g)) :
+definition ab_hom_factors_through_lift {G H : AbGroup} (f : G →g H) (K : property H) [is_subgroup H K] (Hyp : Π (g : G), K (f g)) :
 f = incl_of_subgroup K ∘g hom_lift f K Hyp :=
   begin
   fapply homomorphism_eq,
@@ -438,8 +438,8 @@ end
     intro x, induction x with b p, induction p with x, induction p, reflexivity
   end
 
-  variables {G H K : Group} {R : set G} [is_subgroup G R]
-            {S : set H} [is_subgroup H S] {T : set K} [is_subgroup K T]
+  variables {G H K : Group} {R : property G} [is_subgroup G R]
+            {S : property H} [is_subgroup H S] {T : property K} [is_subgroup K T]
   open function
 
   definition subgroup_functor_fun [unfold 7] (φ : G →g H) (h : Πg, g ∈ R → φ g ∈ S)
@@ -460,8 +460,8 @@ end
   end
 
   definition ab_subgroup_functor [constructor] {G H : AbGroup}
-    {R : set G} [is_subgroup G R]
-    {S : set H} [is_subgroup H S]
+    {R : property G} [is_subgroup G R]
+    {S : property H} [is_subgroup H S]
     (φ : G →g H)
     (h : Πg, g ∈ R → φ g ∈ S) : ab_subgroup R →g ab_subgroup S :=
   subgroup_functor φ h
@@ -479,8 +479,8 @@ end
     intro g, induction g with g hg, reflexivity
   end
 
-  definition subgroup_functor_mul {G H : AbGroup} {R : set G} [subgroupR : is_subgroup G R]
-    {S : set H} [subgroupS : is_subgroup H S]
+  definition subgroup_functor_mul {G H : AbGroup} {R : property G} [subgroupR : is_subgroup G R]
+    {S : property H} [subgroupS : is_subgroup H S]
     (ψ φ : G →g H) (hψ : Πg, g ∈ R → ψ g ∈ S) (hφ : Πg, g ∈ R → φ g ∈ S) :
     homomorphism_mul (ab_subgroup_functor ψ hψ) (ab_subgroup_functor φ hφ) ~
     ab_subgroup_functor (homomorphism_mul ψ φ)
@@ -497,12 +497,12 @@ end
     exact subtype_eq (p g)
   end
 
-  definition subgroup_of_subgroup_incl {R S : set G} [is_subgroup G R] [is_subgroup G S]
+  definition subgroup_of_subgroup_incl {R S : property G} [is_subgroup G R] [is_subgroup G S]
     (H : Π (g : G), g ∈ R → g ∈ S) : subgroup R →g subgroup S
   :=
   subgroup_functor (gid G) H
 
-  definition is_embedding_subgroup_of_subgroup_incl {R S : set G} [is_subgroup G R] [is_subgroup G S]
+  definition is_embedding_subgroup_of_subgroup_incl {R S : property G} [is_subgroup G R] [is_subgroup G S]
     (H : Π (g : G), g ∈ R -> g ∈ S) : is_embedding (subgroup_of_subgroup_incl H) :=
   begin
     fapply is_embedding_of_is_injective,
@@ -512,18 +512,18 @@ end
     unfold subgroup_of_subgroup_incl at p, exact ap pr1 p,
   end
 
-  definition ab_subgroup_of_subgroup_incl {A : AbGroup} {R S : set A} [is_subgroup A R] [is_subgroup A S]
+  definition ab_subgroup_of_subgroup_incl {A : AbGroup} {R S : property A} [is_subgroup A R] [is_subgroup A S]
     (H : Π (a : A), a ∈ R → a ∈ S) : ab_subgroup R →g ab_subgroup S
   :=
   ab_subgroup_functor (gid A) H
 
-  definition is_embedding_ab_subgroup_of_subgroup_incl {A : AbGroup} {R S : set A} [is_subgroup A R] [is_subgroup A S]
+  definition is_embedding_ab_subgroup_of_subgroup_incl {A : AbGroup} {R S : property A} [is_subgroup A R] [is_subgroup A S]
     (H : Π (a : A), a ∈ R → a ∈ S) : is_embedding (ab_subgroup_of_subgroup_incl H) :=
   begin
     fapply is_embedding_subgroup_of_subgroup_incl
   end
 
-  definition ab_subgroup_iso {A : AbGroup} {R S : set A} [is_subgroup A R] [is_subgroup A S]
+  definition ab_subgroup_iso {A : AbGroup} {R S : property A} [is_subgroup A R] [is_subgroup A S]
       (H : Π (a : A), R a -> S a) (K : Π (a : A), S a -> R a) :
     ab_subgroup R ≃g ab_subgroup S :=
   begin
@@ -535,7 +535,7 @@ end
     intro r, induction r with a p, fapply subtype_eq, reflexivity
   end
 
-  definition ab_subgroup_iso_triangle {A : AbGroup} {R S : set A} [is_subgroup A R] [is_subgroup A S]
+  definition ab_subgroup_iso_triangle {A : AbGroup} {R S : property A} [is_subgroup A R] [is_subgroup A S]
       (H : Π (a : A), R a -> S a) (K : Π (a : A), S a -> R a) :
     incl_of_subgroup R  ~ incl_of_subgroup S ∘g ab_subgroup_iso H K :=
   begin
