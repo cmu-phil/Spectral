@@ -45,7 +45,7 @@ gen_spectrum.mk Y e
 
 namespace spectrum
 
-  definition glue {{N : succ_str}} := @gen_prespectrum.glue N
+  definition glue [unfold 2] {{N : succ_str}} := @gen_prespectrum.glue N
   --definition glue := (@gen_prespectrum.glue +ℤ)
   definition equiv_glue {N : succ_str} (E : gen_prespectrum N) [H : is_spectrum E] (n:N) : (E n) ≃* (Ω (E (S n))) :=
     pequiv_of_pmap (glue E n) (is_spectrum.is_equiv_glue E n)
@@ -239,6 +239,10 @@ namespace spectrum
   -- Suspension prespectra are one that's naturally indexed on the natural numbers
   definition psp_susp (X : Type*) : gen_prespectrum +ℕ :=
     gen_prespectrum.mk (λn, psuspn n X) (λn, loop_psusp_unit (psuspn n X))
+
+  -- The sphere prespectrum
+  definition psp_sphere : gen_prespectrum +ℕ :=
+    psp_susp bool.pbool
 
   /- Truncations -/
 
@@ -445,6 +449,44 @@ namespace spectrum
   /- Mapping spectra -/
   -- note: see also cotensor above
 
+  /- Prespectrification -/
+
+  definition prespectrify [constructor] {N : succ_str} (X : gen_prespectrum N) : gen_prespectrum N :=
+  gen_prespectrum.mk (λ n, Ω (X (S n))) (λ n, Ω→ (glue X (S n)))
+
+  definition to_prespectrify {N : succ_str} (X : gen_prespectrum N) : X →ₛ prespectrify X :=
+  begin
+    fapply smap.mk,
+    exact glue X,
+    intro n, fapply psquare_of_phomotopy, reflexivity
+  end
+
+  definition is_leftmap_to_prespectrify_inv {N : succ_str} (X : gen_prespectrum N) (E : gen_spectrum N) : X →ₛ gen_spectrum.to_prespectrum E → prespectrify X →ₛ gen_spectrum.to_prespectrum E :=
+  begin
+    intro f,
+    fapply smap.mk,
+    intro n, exact (equiv_glue E n)⁻¹ᵉ* ∘* Ω→ (f (S n)), 
+    intro n, fapply psquare_of_phomotopy,
+    refine (passoc (glue (gen_spectrum.to_prespectrum E) n) (pequiv.to_pmap
+    (equiv_glue (gen_spectrum.to_prespectrum E) n)⁻¹ᵉ*) (Ω→ (to_fun f (S n))))⁻¹* ⬝* _,
+    refine pwhisker_right (Ω→ (to_fun f (S n))) (pright_inv (equiv_glue E n)) ⬝* _,
+    
+    repeat exact sorry
+  end
+
+  definition is_leftmap_to_prespectrify {N : succ_str} (X : gen_prespectrum N) (E : gen_spectrum N) :
+  is_equiv (λ (f : prespectrify X →ₛ E), f ∘ₛ to_prespectrify X) :=
+  begin
+    fapply adjointify,
+    exact is_leftmap_to_prespectrify_inv X E,
+    repeat exact sorry
+  end
+
+  -- Conjecture
+  definition is_spectrum_of_local (E : gen_spectrum +ℕ) (Hyp : is_equiv (λ (f : prespectrify (psp_sphere) →ₛ E), f ∘ₛ to_prespectrify (psp_sphere))) : is_spectrum E :=
+  begin
+    exact sorry
+  end
 
   /- Spectrification -/
 
