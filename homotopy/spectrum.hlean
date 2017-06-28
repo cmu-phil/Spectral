@@ -151,13 +151,14 @@ namespace spectrum
     -- I guess this manual eta-expansion is necessary because structures lack definitional eta?
     := phomotopy.mk (glue_square f n) (to_homotopy_pt (glue_square f n))
 
-  definition sid {N : succ_str} (E : gen_prespectrum N) : E →ₛ E :=
+  definition sid [constructor] [refl] {N : succ_str} (E : gen_prespectrum N) : E →ₛ E :=
     smap.mk (λn, pid (E n))
     (λn, calc glue E n ∘* pid (E n) ~* glue E n                   : pcompose_pid
                               ...   ~* pid (Ω(E (S n))) ∘* glue E n : pid_pcompose
                               ...   ~* Ω→(pid (E (S n))) ∘* glue E n : pwhisker_right (glue E n) ap1_pid⁻¹*)
 
-  definition scompose {N : succ_str} {X Y Z : gen_prespectrum N} (g : Y →ₛ Z) (f : X →ₛ Y) : X →ₛ Z :=
+  definition scompose [trans] {N : succ_str} {X Y Z : gen_prespectrum N}
+    (g : Y →ₛ Z) (f : X →ₛ Y) : X →ₛ Z :=
     smap.mk (λn, g n ∘* f n)
       (λn, calc glue Z n ∘* to_fun g n ∘* to_fun f n
              ~* (glue Z n ∘* to_fun g n) ∘* to_fun f n                 : passoc

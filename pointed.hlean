@@ -182,4 +182,25 @@ namespace pointed
   sorry
 
   end psquare
+
+  definition ap1_pequiv_ap {A : Type} (B : A → Type*) {a a' : A} (p : a = a') :
+    Ω→ (pequiv_ap B p) ~* pequiv_ap (Ω ∘ B) p :=
+  begin induction p, apply ap1_pid end
+
+  definition pequiv_ap_natural {A : Type} (B C : A → Type*) {a a' : A} (p : a = a')
+    (f : Πa, B a →* C a) :
+    psquare (pequiv_ap B p) (pequiv_ap C p) (f a) (f a') :=
+  begin induction p, exact phrfl end
+
+  definition pequiv_ap_natural2 {A : Type} (B C : A → Type*) {a a' : A} (p : a = a')
+    (f : Πa, B a →* C a) :
+    psquare (pequiv_ap B p) (pequiv_ap C p) (f a) (f a') :=
+  begin induction p, exact phrfl end
+
+  definition loop_pequiv_punit_of_is_set (X : Type*) [is_set X] : Ω X ≃* punit :=
+  pequiv_punit_of_is_contr _ (is_contr_of_inhabited_prop pt)
+
+  definition loop_punit : Ω punit ≃* punit :=
+  loop_pequiv_punit_of_is_set punit
+
 end pointed

@@ -63,21 +63,21 @@ namespace pointed
 
   variable (k)
   protected definition ppi_homotopy.refl : k ~~* k :=
-  sorry
+  ppi_homotopy.mk homotopy.rfl !idp_con
   variable {k}
   protected definition ppi_homotopy.rfl [refl] : k ~~* k :=
   ppi_homotopy.refl k
 
   protected definition ppi_homotopy.symm [symm] (p : k ~~* l) : l ~~* k :=
-  sorry
+  ppi_homotopy.mk p⁻¹ʰᵗʸ (inv_con_eq_of_eq_con (ppi_to_homotopy_pt p)⁻¹)
 
   protected definition ppi_homotopy.trans [trans] (p : k ~~* l) (q : l ~~* m) : k ~~* m :=
-  sorry
+  ppi_homotopy.mk (λa, p a ⬝ q a) (!con.assoc ⬝ whisker_left (p pt) (ppi_to_homotopy_pt q) ⬝ ppi_to_homotopy_pt p)
 
   infix ` ⬝*' `:75 := ppi_homotopy.trans
   postfix `⁻¹*'`:(max+1) := ppi_homotopy.symm
 
-  definition ppi_equiv_pmap (A B : Type*) : (Π*(a : A), B) ≃ (A →* B) :=
+  definition ppi_equiv_pmap [constructor] (A B : Type*) : (Π*(a : A), B) ≃ (A →* B) :=
   begin
     fapply equiv.MK,
     { intro k, induction k with k p, exact pmap.mk k p },
@@ -86,8 +86,18 @@ namespace pointed
     { intro k, induction k with k p, reflexivity }
   end
 
-  definition pppi_pequiv_ppmap (A B : Type*) : (Π*(a : A), B) ≃* ppmap A B :=
+  definition pppi_pequiv_ppmap [constructor] (A B : Type*) : (Π*(a : A), B) ≃* ppmap A B :=
   pequiv_of_equiv (ppi_equiv_pmap A B) idp
+
+  protected definition ppi_gen.sigma_char [constructor] {A : Type*} (B : A → Type) (b₀ : B pt) :
+    ppi_gen B b₀ ≃ Σ(k : Πa, B a), k pt = b₀ :=
+  begin
+    fapply equiv.MK: intro x,
+    { constructor, exact ppi_gen.resp_pt x },
+    { induction x, constructor, assumption },
+    { induction x, reflexivity },
+    { induction x, reflexivity }
+  end
 
   definition ppi.sigma_char [constructor] {A : Type*} (B : A → Type*)
     : (Π*(a : A), B a) ≃ Σ(k : (Π (a : A), B a)), k pt = pt :=
@@ -99,15 +109,6 @@ namespace pointed
     all_goals reflexivity
   end
 
-  protected definition ppi_gen.sigma_char [constructor] {A : Type*} (B : A → Type) (b₀ : B pt) :
-    ppi_gen B b₀ ≃ Σ(k : Πa, B a), k pt = b₀ :=
-  begin
-    fapply equiv.MK: intro x,
-    { constructor, exact ppi_gen.resp_pt x },
-    { induction x, constructor, assumption },
-    { induction x, reflexivity },
-    { induction x, reflexivity }
-  end
 
   variables (k l)
 
@@ -206,7 +207,7 @@ namespace pointed
 
   definition pmap_compose_ppi_const_left (f : Π*(a : A), P a) :
     pmap_compose_ppi (λa, pconst (P a) (Q a)) f ~~* ppi_const Q :=
-  sorry
+  ppi_homotopy.mk homotopy.rfl !ap_constant⁻¹
 
   definition ppi_compose_left [constructor] (g : Π(a : A), ppmap (P a) (Q a)) :
     (Π*(a : A), P a) →* Π*(a : A), Q a :=
@@ -214,16 +215,19 @@ namespace pointed
 
   definition pmap_compose_ppi_phomotopy_left [constructor] {g g' : Π(a : A), ppmap (P a) (Q a)}
     (f : Π*(a : A), P a) (p : Πa, g a ~* g' a) : pmap_compose_ppi g f ~~* pmap_compose_ppi g' f :=
-  sorry
+  ppi_homotopy.mk (λa, p a (f a))
+    abstract !con.assoc⁻¹ ⬝ whisker_right _ !ap_con_eq_con_ap⁻¹ ⬝ !con.assoc ⬝
+             whisker_left _ (to_homotopy_pt (p pt)) end
 
   definition pmap_compose_ppi_pid_left [constructor]
     (f : Π*(a : A), P a) : pmap_compose_ppi (λa, pid (P a)) f ~~* f :=
-  sorry
+  ppi_homotopy.mk homotopy.rfl idp
 
-  definition pmap_compose_pmap_compose_ppi [constructor] (h : Π(a : A), ppmap (Q a) (R a))
+  definition pmap_compose_ppi_pcompose [constructor] (h : Π(a : A), ppmap (Q a) (R a))
     (g : Π(a : A), ppmap (P a) (Q a)) :
-    pmap_compose_ppi h (pmap_compose_ppi g f) ~~* pmap_compose_ppi (λa, h a ∘* g a) f :=
-  sorry
+    pmap_compose_ppi (λa, h a ∘* g a) f ~~* pmap_compose_ppi h (pmap_compose_ppi g f)  :=
+  ppi_homotopy.mk homotopy.rfl
+    abstract !idp_con ⬝ whisker_right _ (!ap_con ⬝ whisker_right _ !ap_compose'⁻¹) ⬝ !con.assoc end
 
   definition ppi_pequiv_right [constructor] (g : Π(a : A), P a ≃* Q a) :
     (Π*(a : A), P a) ≃* Π*(a : A), Q a :=
@@ -231,11 +235,11 @@ namespace pointed
     apply pequiv_of_pmap (ppi_compose_left g),
     apply adjointify _ (ppi_compose_left (λa, (g a)⁻¹ᵉ*)),
     { intro f, apply ppi_eq,
-      refine !pmap_compose_pmap_compose_ppi ⬝*' _,
+      refine !pmap_compose_ppi_pcompose⁻¹*' ⬝*' _,
       refine pmap_compose_ppi_phomotopy_left _ (λa, !pright_inv) ⬝*' _,
       apply pmap_compose_ppi_pid_left },
     { intro f, apply ppi_eq,
-      refine !pmap_compose_pmap_compose_ppi ⬝*' _,
+      refine !pmap_compose_ppi_pcompose⁻¹*' ⬝*' _,
       refine pmap_compose_ppi_phomotopy_left _ (λa, !pleft_inv) ⬝*' _,
       apply pmap_compose_ppi_pid_left }
   end
@@ -255,28 +259,41 @@ namespace pointed
   pequiv_of_equiv (fiber.sigma_char f pt) idp
 
   /- the pointed type of unpointed (nondependent) maps -/
-  definition parrow [constructor] (A : Type) (B : Type*) : Type* :=
+  definition upmap [constructor] (A : Type) (B : Type*) : Type* :=
   pointed.MK (A → B) (const A pt)
 
   /- the pointed type of unpointed dependent maps -/
-  definition p_pi [constructor] {A : Type} (B : A → Type*) : Type* :=
+  definition uppi [constructor] {A : Type} (B : A → Type*) : Type* :=
   pointed.MK (Πa, B a) (λa, pt)
 
-  definition ppmap.sigma_char (A B : Type*) :
-    ppmap A B ≃* @psigma_gen (parrow A B) (λf, f pt = pt) idp :=
+  notation `Πᵘ*` binders `, ` r:(scoped P, uppi P) := r
+  infix ` →ᵘ* `:30 := upmap
+
+  definition ppmap.sigma_char [constructor] (A B : Type*) :
+    ppmap A B ≃* @psigma_gen (A →ᵘ* B) (λf, f pt = pt) idp :=
   pequiv_of_equiv pmap.sigma_char idp
 
-  definition pppi.sigma_char {A : Type*} {B : A → Type*} :
-    (Π*(a : A), B a) ≃* @psigma_gen (p_pi B) (λf, f pt = pt) idp :=
+  definition pppi.sigma_char [constructor] {A : Type*} (B : A → Type*) :
+    (Π*(a : A), B a) ≃* @psigma_gen (Πᵘ*a, B a) (λf, f pt = pt) idp :=
   proof pequiv_of_equiv !ppi.sigma_char idp qed
 
-  definition psigma_gen_pequiv_psigma_gen_right {A : Type*} {B B' : A → Type}
+  definition psigma_gen_pequiv_psigma_gen [constructor] {A A' : Type*} {B : A → Type}
+    {B' : A' → Type} {b : B pt} {b' : B' pt} (f : A ≃* A')
+    (g : Πa, B a ≃ B' (f a)) (p : g pt b =[respect_pt f] b') : psigma_gen B b ≃* psigma_gen B' b' :=
+  pequiv_of_equiv (sigma_equiv_sigma f g) (sigma_eq (respect_pt f) p)
+
+  definition psigma_gen_pequiv_psigma_gen_left [constructor] {A A' : Type*} {B : A' → Type}
+    {b : B pt} (f : A ≃* A') {b' : B (f pt)} (q : b' =[respect_pt f] b) :
+    psigma_gen (B ∘ f) b' ≃* psigma_gen B b :=
+  psigma_gen_pequiv_psigma_gen f (λa, erfl) q
+
+  definition psigma_gen_pequiv_psigma_gen_right [constructor] {A : Type*} {B B' : A → Type}
     {b : B pt} {b' : B' pt} (f : Πa, B a ≃ B' a) (p : f pt b = b') :
     psigma_gen B b ≃* psigma_gen B' b' :=
-  pequiv_of_equiv (sigma_equiv_sigma_right f) (ap (dpair pt) p)
+  psigma_gen_pequiv_psigma_gen pequiv.rfl f (pathover_idp_of_eq p)
 
-  definition psigma_gen_pequiv_psigma_gen_basepoint {A : Type*} {B : A → Type} {b b' : B pt}
-    (p : b = b') : psigma_gen B b ≃* psigma_gen B b' :=
+  definition psigma_gen_pequiv_psigma_gen_basepoint [constructor] {A : Type*} {B : A → Type}
+    {b b' : B pt} (p : b = b') : psigma_gen B b ≃* psigma_gen B b' :=
   psigma_gen_pequiv_psigma_gen_right (λa, erfl) p
 
   definition ppi_gen_functor_right [constructor] {A : Type*} {B B' : A → Type}
@@ -336,23 +353,59 @@ namespace pointed
     (p : b = b') : ppi_gen B b ≃ ppi_gen B b' :=
   ppi_gen_equiv_ppi_gen_right (λa, erfl) p
 
-  definition ppi_psigma {A : Type*} {B : A → Type*} (C : Πa, B a → Type) (c : Πa, C a pt) :
-    (Π*(a : A), (psigma_gen (C a) (c a))) ≃*
+  open sigma.ops
+
+  definition psigma_gen_pi_pequiv_uppi_psigma_gen [constructor] {A : Type*} {B : A → Type*}
+    (C : Πa, B a → Type) (c : Πa, C a pt) :
+    @psigma_gen (Πᵘ*a, B a) (λf, Πa, C a (f a)) c ≃* Πᵘ*a, psigma_gen (C a) (c a) :=
+  pequiv_of_equiv sigma_pi_equiv_pi_sigma idp
+
+  definition uppi_psigma_gen_pequiv_psigma_gen_pi [constructor] {A : Type*} {B : A → Type*}
+    (C : Πa, B a → Type) (c : Πa, C a pt) :
+    (Πᵘ*a, psigma_gen (C a) (c a)) ≃* @psigma_gen (Πᵘ*a, B a) (λf, Πa, C a (f a)) c :=
+  pequiv_of_equiv sigma_pi_equiv_pi_sigma⁻¹ᵉ idp
+
+  definition psigma_gen_assoc [constructor] {A : Type*} {B : A → Type} (C : Πa, B a → Type)
+    (b₀ : B pt) (c₀ : C pt b₀) :
+    psigma_gen (λa, Σb, C a b) ⟨b₀, c₀⟩ ≃* @psigma_gen (psigma_gen B b₀) (λv, C v.1 v.2) c₀ :=
+  pequiv_of_equiv !sigma_assoc_equiv idp
+
+  definition psigma_gen_swap [constructor] {A : Type*} {B B' : A → Type}
+    (C : Π⦃a⦄, B a → B' a → Type) (b₀ : B pt) (b₀' : B' pt) (c₀ : C b₀ b₀') :
+    @psigma_gen (psigma_gen B  b₀ ) (λv, Σb', C v.2 b') ⟨b₀', c₀⟩ ≃*
+    @psigma_gen (psigma_gen B' b₀') (λv, Σb , C b  v.2) ⟨b₀ , c₀⟩ :=
+  !psigma_gen_assoc⁻¹ᵉ* ⬝e* psigma_gen_pequiv_psigma_gen_right (λa, !sigma_comm_equiv) idp ⬝e*
+  !psigma_gen_assoc
+
+  definition ppi_psigma.{u v w} {A : pType.{u}} {B : A → pType.{v}} (C : Πa, B a → Type.{w})
+    (c : Πa, C a pt) : (Π*(a : A), (psigma_gen (C a) (c a))) ≃*
     psigma_gen (λ(f : Π*(a : A), B a), ppi_gen (λa, C a (f a))
-                                               (transport (C pt) (ppi.resp_pt f)⁻¹ (c pt)))
-               (ppi_const _) :=
+                 (transport (C pt) (ppi.resp_pt f)⁻¹ (c pt))) (ppi_const _) :=
+  proof
   calc (Π*(a : A), psigma_gen (C a) (c a))
-          ≃* @psigma_gen (p_pi (λa, psigma_gen (C a) (c a))) (λf, f pt = pt) idp : pppi.sigma_char
+          ≃* @psigma_gen (Πᵘ*a, psigma_gen (C a) (c a)) (λf, f pt = pt) idp : pppi.sigma_char
+      ... ≃* @psigma_gen (@psigma_gen (Πᵘ*a, B a) (λf, Πa, C a (f a)) c)
+                         (λv, Σ(p : v.1 pt = pt), v.2 pt =[p] c pt) ⟨idp, idpo⟩ :
+             by exact psigma_gen_pequiv_psigma_gen (uppi_psigma_gen_pequiv_psigma_gen_pi C c)
+                        (λf, sigma_eq_equiv _ _) idpo
+      ... ≃* @psigma_gen (@psigma_gen (Πᵘ*a, B a) (λf, f pt = pt) idp)
+                         (λv, Σ(g : Πa, C a (v.1 a)), g pt =[v.2] c pt) ⟨c, idpo⟩ :
+             by apply psigma_gen_swap
       ... ≃* psigma_gen (λ(f : Π*(a : A), B a), ppi_gen (λa, C a (f a))
                                                         (transport (C pt) (ppi.resp_pt f)⁻¹ (c pt)))
-                        (ppi_const _) : sorry
+                        (ppi_const _) :
+             by exact (psigma_gen_pequiv_psigma_gen (pppi.sigma_char B)
+                (λf, !ppi_gen.sigma_char ⬝e sigma_equiv_sigma_right (λg, !pathover_equiv_eq_tr⁻¹ᵉ))
+                idpo)⁻¹ᵉ*
+  qed
 
   definition pmap_psigma {A B : Type*} (C : B → Type) (c : C pt) :
     ppmap A (psigma_gen C c) ≃*
     psigma_gen (λ(f : ppmap A B), ppi_gen (C ∘ f) (transport C (respect_pt f)⁻¹ c))
                 (ppi_const _) :=
-  !pppi_pequiv_ppmap⁻¹ᵉ* ⬝e* !ppi_psigma ⬝e* sorry
-
+  !pppi_pequiv_ppmap⁻¹ᵉ* ⬝e* !ppi_psigma ⬝e*
+  sorry
+--  psigma_gen_pequiv_psigma_gen (pppi_pequiv_ppmap A B) (λf, begin esimp, exact ppi_gen_equiv_ppi_gen_right (λa, _) _ end) _
 
   definition pfiber_ppcompose_left (f : B →* C) :
     pfiber (@ppcompose_left A B C f) ≃* ppmap A (pfiber f) :=
