@@ -1,10 +1,11 @@
 -- Authors: Floris van Doorn
 
 import homotopy.EM algebra.category.functor.equivalence types.pointed2 ..pointed_pi ..pointed
+       ..move_to_lib
 
 open eq equiv is_equiv algebra group nat pointed EM.ops is_trunc trunc susp function is_conn
 
-/- TODO: try to fix up this file -/
+/- TODO: try to fix the speed of this file -/
 
 namespace EM
 

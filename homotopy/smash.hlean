@@ -185,7 +185,7 @@ namespace smash
   !ap_con ⬝ whisker_left _ !ap_inv ⬝ !functor_gluer2 ◾ !functor_gluer2⁻²
 
   lemma functor_gluel'2_same {C D : Type} (f : A → C) (g : B → D) (a : A) :
-    functor_gluel'2 f (pmap_of_map g pt) a a =
+    functor_gluel'2 f g a a =
     ap02 (pmap_of_map f pt ∧→ pmap_of_map g pt) (con.right_inv (gluel a)) ⬝
     (con.right_inv (gluel (f a)))⁻¹ :=
   begin
@@ -557,11 +557,14 @@ namespace smash
       exact smash_functor_pcompose_pconst_homotopy a₀ b₀ d₀ f' f g x, },
     { refine _ ⬝ !idp_con⁻¹,
       refine whisker_right _ (!whisker_right_idp ⬝ !eq_of_square_hrfl_hconcat_eq) ⬝ _,
-      refine !con.assoc ⬝ _, apply con_eq_of_eq_inv_con, esimp,
-      refine whisker_right _ !functor_gluel'2_same ⬝ _,
+      refine !con.assoc ⬝ _, apply con_eq_of_eq_inv_con,
+      refine whisker_right _ _ ⬝ _, rotate 1, rexact functor_gluel'2_same f' g (f a₀),
       refine !inv_con_cancel_right ⬝ _,
-      refine _ ⬝ idp ◾ ap (whisker_left _) (!idp_con ⬝ !idp_con ⬝ !whisker_right_idp ⬝ !idp_con)⁻¹,
-      symmetry, apply whisker_left_idp }
+      exact sorry, -- TODO: FIX, the proof below should work
+      -- refine _ ⬝ whisker_left _ _,
+      -- rotate 2, refine ap (whisker_left _) _, symmetry, exact !idp_con ⬝ !idp_con ⬝ !whisker_right_idp ⬝ !idp_con,
+      -- symmetry, apply whisker_left_idp
+      }
   end
 
   /- a version where the left maps are identities -/

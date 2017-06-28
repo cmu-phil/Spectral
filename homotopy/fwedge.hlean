@@ -107,7 +107,7 @@ namespace fwedge
   definition fwedge_pmap_beta [constructor] {I : Type} {F : I → Type*} {X : Type*} (f : Πi, F i →* X) (i : I) :
     fwedge_pmap f ∘* pinl i ~* f i :=
   begin
-    fconstructor,
+    fapply phomotopy.mk,
     { reflexivity },
     { exact !idp_con ⬝ !fwedge.elim_glue⁻¹ }
   end
@@ -115,7 +115,7 @@ namespace fwedge
   definition fwedge_pmap_eta [constructor] {I : Type} {F : I → Type*} {X : Type*} (g : ⋁F →* X) :
     fwedge_pmap (λi, g ∘* pinl i) ~* g :=
   begin
-    fconstructor,
+    fapply phomotopy.mk,
     { intro x, induction x,
         reflexivity,
         exact (respect_pt g)⁻¹,
@@ -125,7 +125,7 @@ namespace fwedge
 
   definition fwedge_pmap_pinl [constructor] {I : Type} {F : I → Type*} : fwedge_pmap (λi, pinl i) ~* pid (⋁ F) :=
   begin
-    fconstructor,
+    fapply phomotopy.mk,
     { intro x, induction x,
         reflexivity, reflexivity,
         apply eq_pathover, apply hdeg_square, refine !elim_glue ⬝ !ap_id⁻¹ },
@@ -143,14 +143,14 @@ namespace fwedge
   end
 
   definition fwedge_pmap_nat₂ {I : Type}(F : I → Type*){X Y : Type*}
-                              (f : X →* Y) (h : Πi, F i →* X) (w : fwedge F) : 
+                              (f : X →* Y) (h : Πi, F i →* X) (w : fwedge F) :
              (f ∘* (fwedge_pmap h)) w = fwedge_pmap (λi, f ∘* (h i)) w :=
   begin
       induction w, reflexivity,
       refine !respect_pt,
       apply eq_pathover,
       refine ap_compose f (fwedge_pmap h) _ ⬝ph _,
-      refine ap (ap f) !elim_glue ⬝ph _, 
+      refine ap (ap f) !elim_glue ⬝ph _,
       refine _ ⬝hp !elim_glue⁻¹, esimp,
       apply whisker_br,
       apply !hrefl
