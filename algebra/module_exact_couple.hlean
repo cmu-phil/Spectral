@@ -485,13 +485,14 @@ namespace pointed
   open prod prod.ops fiber
   parameters {A : ℤ → Type*[1]} (f : Π(n : ℤ), A n →* A (n - 1)) [Hf : Πn, is_conn_fun 1 (f n)]
   include Hf
-  definition I [constructor] : Set := trunctype.mk (ℤ × ℤ) !is_trunc_prod
+  protected definition I [constructor] : Set := trunctype.mk (gℤ ×g gℤ) !is_trunc_prod
+  local abbreviation I := @pointed.I
 
-  definition D_sequence : graded_module rℤ I :=
-  λv, LeftModule_int_of_AbGroup (πc[v.2] (A (v.1)))
+  -- definition D_sequence : graded_module rℤ I :=
+  -- λv, LeftModule_int_of_AbGroup (πc[v.2] (A (v.1)))
 
-  definition E_sequence : graded_module rℤ I :=
-  λv, LeftModule_int_of_AbGroup (πc[v.2] (pconntype.mk (pfiber (f (v.1))) !Hf pt))
+  -- definition E_sequence : graded_module rℤ I :=
+  -- λv, LeftModule_int_of_AbGroup (πc[v.2] (pconntype.mk (pfiber (f (v.1))) !Hf pt))
 
   /- first need LES of these connected homotopy groups -/
 
@@ -509,7 +510,8 @@ namespace spectrum
 
   parameters {A : ℤ → spectrum} (f : Π(s : ℤ), A s →ₛ A (s - 1))
 
-  definition I [constructor] : Set := trunctype.mk (gℤ ×g gℤ) !is_trunc_prod
+  protected definition I [constructor] : Set := trunctype.mk (gℤ ×g gℤ) !is_trunc_prod
+  local abbreviation I := @spectrum.I
 
   definition D_sequence : graded_module rℤ I :=
   λv, LeftModule_int_of_AbGroup (πₛ[v.1] (A (v.2)))
