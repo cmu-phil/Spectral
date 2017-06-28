@@ -229,6 +229,30 @@ namespace spectrum
   shomotopy_incoh.mk (λn, (shomotopy.to_phomotopy p) n)
 
   ------------------------------
+  -- Equivalences of prespectra
+  ------------------------------
+
+  structure is_sequiv {N : succ_str} {E F : gen_prespectrum N} (f : E →ₛ F) : Type :=
+  (to_linv : F →ₛ E)
+  (is_retr : to_linv ∘ₛf ~ₛ sid E) 
+  (to_rinv : F →ₛ E)
+  (is_sec  : f ∘ₛ to_rinv ~ₛ sid F)
+
+  structure sequiv {N : succ_str} (E F : gen_prespectrum N) : Type :=
+  (to_fun  : E →ₛ F)
+  (to_is_sequiv : is_sequiv to_fun)
+
+  infix ` ≃ₛ ` : 25 := sequiv
+
+  definition is_sequiv_of_smap {N : succ_str} {E F : gen_prespectrum N} (f : E →ₛ F) (H : Π (n : N), is_equiv (f n)) : is_sequiv f :=
+  begin
+    repeat exact sorry
+  end
+
+--  definition is_sequiv_psimple {N : succ_str} {E F : gen_prespectrum N} (f : E →ₛ F) : Type :=
+--  Π (n : N), is_pequiv
+
+  ------------------------------
   -- Suspension prespectra
   ------------------------------
 
@@ -461,7 +485,7 @@ namespace spectrum
     refine (passoc (glue (gen_spectrum.to_prespectrum E) n) (pequiv.to_pmap
     (equiv_glue (gen_spectrum.to_prespectrum E) n)⁻¹ᵉ*) (Ω→ (to_fun f (S n))))⁻¹* ⬝* _,
     refine pwhisker_right (Ω→ (to_fun f (S n))) (pright_inv (equiv_glue E n)) ⬝* _,
-    
+    refine _ ⬝* pwhisker_right (glue (prespectrify X) n) ((ap1_pcompose (pequiv.to_pmap (equiv_glue (gen_spectrum.to_prespectrum E) (S n))⁻¹ᵉ*) (Ω→ (to_fun f (S (S n)))))⁻¹*),
     repeat exact sorry
   end
 
