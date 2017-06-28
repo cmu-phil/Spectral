@@ -32,6 +32,7 @@ structure gen_spectrum (N : succ_str) :=
 
 attribute gen_spectrum.to_prespectrum [coercion]
 attribute gen_spectrum.to_is_spectrum [instance]
+attribute gen_spectrum._trans_of_to_prespectrum [unfold 2]
 
 -- Classically, spectra and prespectra use the successor structure +ℕ.
 -- But we will use +ℤ instead, to reduce case analysis later on.
@@ -239,16 +240,6 @@ namespace spectrum
   -- Suspension prespectra are one that's naturally indexed on the natural numbers
   definition psp_susp (X : Type*) : gen_prespectrum +ℕ :=
     gen_prespectrum.mk (λn, psuspn n X) (λn, loop_psusp_unit (psuspn n X))
-
-  /- Truncations -/
-
-  -- We could truncate prespectra too, but since the operation
-  -- preserves spectra and isn't "correct" acting on prespectra
-  -- without spectrifying them first anyway, why bother?
-  definition strunc (k : ℕ₋₂) (E : spectrum) : spectrum :=
-    spectrum.Mk (λ(n:ℕ), ptrunc (k + n) (E n))
-      (λ(n:ℕ), (loop_ptrunc_pequiv (k + n) (E (succ n)))⁻¹ᵉ*
-               ∘*ᵉ (ptrunc_pequiv_ptrunc (k + n) (equiv_glue E (int.of_nat n))))
 
   /---------------------
     Homotopy groups
