@@ -32,6 +32,10 @@ end
 -- NB the carrier of ptrunc_int k X is not definitionally 
 -- equal to trunc_int k (carrier X)
 
+definition ptr_int (k : ℤ) (X : pType) : X →* ptrunc_int k X :=
+pmap.mk (λ x, int.cases_on k (λ k', tr x) (λ k', up star))
+  (int.cases_on k (λ k', idp) (λ k', idp))
+
 definition ptrunc_int_pequiv_ptrunc_int (k : ℤ) {X Y : Type*} (e : X ≃* Y) :
   ptrunc_int k X ≃* ptrunc_int k Y :=
 begin
@@ -166,5 +170,9 @@ have I : m < 2, from
 @trivial_homotopy_group_of_is_trunc (E (2 - k)) (max0 m) 2
   (is_trunc_of_is_trunc_int m (E (2 - k)) (K (2 - k)))
   (nat.succ_le_succ (max0_le_of_le (le_sub_one_of_lt I)))
+
+definition str [constructor] (k : ℤ) (E : spectrum) : E →ₛ strunc k E :=
+smap.mk (λ n, ptr_int (k + n) (E n))
+  sorry
 
 end spectrum
