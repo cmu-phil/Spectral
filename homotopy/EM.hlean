@@ -570,24 +570,4 @@ namespace EM
     abstract (EMadd1_functor_gcompose φ φ⁻¹ᵍ n)⁻¹* ⬝* EMadd1_functor_phomotopy proof right_inv φ qed n ⬝*
              EMadd1_functor_gid H n end
 
-  /- Eilenberg MacLane spaces are the fibers of the Postnikov system of a type -/
-
-  definition postnikov_map [constructor] (A : Type*) (n : ℕ₋₂) : ptrunc (n.+1) A →* ptrunc n A :=
-  ptrunc.elim (n.+1) !ptr
-
-  open fiber
-
-  definition pfiber_postnikov_map (A : Type*) (n : ℕ) : pfiber (postnikov_map A n) ≃* EM_type A (n+1) :=
-  begin
-    symmetry, apply EM_type_pequiv,
-    { symmetry, refine _ ⬝g ghomotopy_group_ptrunc (n+1) A,
-      exact chain_complex.LES_isomorphism_of_trivial_cod _ _
-        (trivial_homotopy_group_of_is_trunc _ (self_lt_succ n))
-        (trivial_homotopy_group_of_is_trunc _ (le_succ _)) },
-    { apply is_conn_fun_trunc_elim,  apply is_conn_fun_tr },
-    { have is_trunc (n+1) (ptrunc n.+1 A), from !is_trunc_trunc,
-      have is_trunc ((n+1).+1) (ptrunc n A), by do 2 apply is_trunc_succ, apply is_trunc_trunc,
-      apply is_trunc_pfiber }
-  end
-
 end EM

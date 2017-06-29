@@ -570,6 +570,9 @@ namespace smash
   smash_iterate_psusp n A pbool ⬝e*
   iterate_psusp_pequiv n (smash_pbool_pequiv A)
 
+  definition smash_pcircle (A : Type*) : A ∧ pcircle ≃* psusp A :=
+  smash_sphere A 1
+
   definition sphere_smash_sphere (n m : ℕ) : psphere n ∧ psphere m ≃* psphere (n+m) :=
   smash_sphere (psphere n) m ⬝e*
   iterate_psusp_pequiv m (psphere_pequiv_iterate_psusp n) ⬝e*

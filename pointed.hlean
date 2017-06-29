@@ -192,15 +192,14 @@ namespace pointed
     psquare (pequiv_ap B p) (pequiv_ap C p) (f a) (f a') :=
   begin induction p, exact phrfl end
 
-  definition pequiv_ap_natural2 {A : Type} (B C : A → Type*) {a a' : A} (p : a = a')
-    (f : Πa, B a →* C a) :
-    psquare (pequiv_ap B p) (pequiv_ap C p) (f a) (f a') :=
-  begin induction p, exact phrfl end
-
   definition loop_pequiv_punit_of_is_set (X : Type*) [is_set X] : Ω X ≃* punit :=
   pequiv_punit_of_is_contr _ (is_contr_of_inhabited_prop pt)
 
   definition loop_punit : Ω punit ≃* punit :=
   loop_pequiv_punit_of_is_set punit
+
+  definition phomotopy_of_is_contr [constructor] {X Y: Type*} (f g : X →* Y) [is_contr Y] :
+    f ~* g :=
+  phomotopy.mk (λa, !eq_of_is_contr) !eq_of_is_contr
 
 end pointed

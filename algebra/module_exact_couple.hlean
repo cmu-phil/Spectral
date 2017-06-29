@@ -633,8 +633,8 @@ namespace spectrum
 
   open int
   parameters (ub : ℤ) (lb : ℤ → ℤ)
-    (Aub : Πs n, s ≥ ub + 1 → is_equiv (f s n))
-    (Alb : Πs n, s ≤ lb n → is_contr (πₛ[n] (A s)))
+    (Aub : Π(s n : ℤ), s ≥ ub + 1 → is_equiv (f s n))
+    (Alb : Π(s n : ℤ), s ≤ lb n → is_contr (πₛ[n] (A s)))
 
   definition B : I → ℕ
   | (n, s) := max0 (s - lb n)
