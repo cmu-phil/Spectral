@@ -485,6 +485,11 @@ namespace pushout
       apply eq_inv_con_of_con_eq, exact (to_homotopy_pt p)⁻¹ }
   end
 
+  /-
+    The maps  Z^{C_f} --> Z^Y --> Z^X  are exact at Z^Y.
+    Here Y^X means pointed maps from X to Y and C_f is the cofiber of f.
+    The maps are given by precomposing with (pcod f) and f.
+  -/
   definition cofiber_exact {X Y Z : Type*} (f : X →* Y) :
     is_exact_t (@ppcompose_right _ _ Z (pcod f)) (ppcompose_right f) :=
   begin
