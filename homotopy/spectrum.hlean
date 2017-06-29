@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2016 Michael Shulman. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Michael Shulman, Floris van Doorn
+Authors: Michael Shulman, Floris van Doorn, Stefano Piceghello, Yuri Sulyma
 
 -/
 
