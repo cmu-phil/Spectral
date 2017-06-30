@@ -5,19 +5,18 @@ open trunc_index nat
 
 namespace int
 
-  definition maxm2 : ℤ → ℕ₋₂ :=
-  λ n, int.cases_on n trunc_index.of_nat
-    (λ m, nat.cases_on m -1 (λ a, -2))
-
-  attribute maxm2 [unfold 1]
+  /-
+    The function from integers to truncation indices which sends positive numbers to themselves, and negative
+    numbers to negative 2. In particular -1 is sent to -2, but since we only work with pointed types, that
+    doesn't matter for us -/
+  definition maxm2 [unfold 1] : ℤ → ℕ₋₂ :=
+  λ n, int.cases_on n trunc_index.of_nat (λk, -2)
 
   definition maxm2_le_maxm0 (n : ℤ) : maxm2 n ≤ max0 n :=
   begin
     induction n with n n,
     { exact le.tr_refl n },
-    { cases n with n,
-      { exact le.step (le.tr_refl -1) },
-      { exact minus_two_le 0 } }
+    { exact minus_two_le 0 }
   end
 
   definition max0_le_of_le {n : ℤ} {m : ℕ} (H : n ≤ of_nat m)
@@ -43,14 +42,11 @@ definition loop_ptrunc_maxm2_pequiv (k : ℤ) (X : Type*) :
 begin
   induction k with k k,
   { exact loop_ptrunc_pequiv k X },
-  { cases k with k,
-    { exact loop_ptrunc_pequiv -1 X },
-    { cases k with k,
-      { exact loop_ptrunc_pequiv -2 X },
-      { exact loop_pequiv_punit_of_is_set (pType.mk (trunc -2 X) (tr pt))
-          ⬝e* (pequiv_punit_of_is_contr
-                (pType.mk (trunc -2 (Point X = Point X)) (tr idp))
-                (is_trunc_trunc -2 (Point X = Point X)))⁻¹ᵉ* } } }
+  { refine _ ⬝e* (pequiv_punit_of_is_contr _ !is_trunc_trunc)⁻¹ᵉ*,
+    apply @loop_pequiv_punit_of_is_set,
+    cases k with k,
+    { change is_set (trunc 0 X), apply _ },
+    { change is_set (trunc -2 X), apply _ }}
 end
 
 definition is_trunc_of_is_trunc_maxm2 (k : ℤ) (X : Type)
@@ -73,14 +69,12 @@ definition is_trunc_maxm2_loop (A : pType) (k : ℤ)
 begin
   intro H, induction k with k k,
   { apply is_trunc_loop, exact H },
-  { cases k with k,
-    { apply is_trunc_loop, exact H},
-    { apply is_trunc_loop, cases k with k,
-      { exact H },
-      { apply is_trunc_succ, exact H } } }
+  { apply is_contr_loop, cases k with k,
+    { exact H },
+    { have H2 : is_contr A, from H, apply _ } }
 end
 
-definition is_strunc (k : ℤ) (E : spectrum) : Type :=
+definition is_strunc [reducible] (k : ℤ) (E : spectrum) : Type :=
 Π (n : ℤ), is_trunc (maxm2 (k + n)) (E n)
 
 definition is_strunc_change_int {k l : ℤ} (E : spectrum) (p : k = l)
@@ -95,6 +89,10 @@ definition is_trunc_maxm2_change_int {k l : ℤ} (X : pType) (p : k = l)
   : is_trunc (maxm2 k) X → is_trunc (maxm2 l) X :=
 by induction p; exact id
 
+definition strunc_functor [constructor] (k : ℤ) {E F : spectrum} (f : E →ₛ F) :
+  strunc k E →ₛ strunc k F :=
+smap.mk (λn, ptrunc_functor (maxm2 (k + n)) (f n)) sorry
+
 definition is_strunc_EM_spectrum (G : AbGroup)
   : is_strunc 0 (EM_spectrum G) :=
 begin
@@ -102,12 +100,18 @@ begin
   { -- case ≥ 0
     apply is_trunc_maxm2_change_int (EM G n) (zero_add n)⁻¹,
     apply is_trunc_EM },
-  { induction n with n IH,
+  { change is_contr (EM_spectrum G (-[1+n])),
+    induction n with n IH,
     { -- case = -1
-      apply is_trunc_loop, exact ab_group.is_set_carrier G },
+      apply is_contr_loop, exact is_trunc_EM G 0 },
     { -- case < -1
-      apply is_trunc_maxm2_loop, exact IH }}
+      apply is_trunc_loop, apply is_trunc_succ, exact IH }}
 end
+
+definition strunc_elim [constructor] {k : ℤ} {E F : spectrum} (f : E →ₛ F)
+  (H : is_strunc k F) : strunc k E →ₛ F :=
+smap.mk (λn, ptrunc.elim (maxm2 (k + n)) (f n))
+        (λn, sorry)
 
 definition trivial_shomotopy_group_of_is_strunc (E : spectrum)
   {n k : ℤ} (K : is_strunc n E) (H : n < k)
