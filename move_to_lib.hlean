@@ -120,6 +120,25 @@ namespace eq
 
 end eq open eq
 
+namespace nat
+
+  protected definition rec_down (P : ℕ → Type) (s : ℕ) (H0 : P s) (Hs : Πn, P (n+1) → P n) : P 0 :=
+  have Hp : Πn, P n → P (pred n),
+  begin
+    intro n p, cases n with n,
+    { exact p },
+    { exact Hs n p }
+  end,
+  have H : Πn, P (s - n),
+  begin
+    intro n, induction n with n p,
+    { exact H0 },
+    { exact Hp (s - n) p }
+  end,
+  transport P (nat.sub_self s) (H s)
+
+end nat
+
 namespace pmap
 
   definition eta {A B : Type*} (f : A →* B) : pmap.mk f (respect_pt f) = f :=

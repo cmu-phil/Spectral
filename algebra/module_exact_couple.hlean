@@ -451,6 +451,52 @@ namespace left_module
   -- print axioms Dinfdiag0
   -- print axioms Dinfdiag_stable
 
+  open int group prod convergence_theorem prod.ops
+
+  definition Z2 [constructor] : Set := gℤ ×g gℤ
+
+  structure converges_to.{u v w} {R : Ring} (E' : gℤ → gℤ → LeftModule.{u v} R)
+                                 (Dinf : graded_module.{u 0 w} R gℤ) : Type.{max u (v+1) (w+1)} :=
+    (X : exact_couple.{u 0 v w} R Z2)
+    (HH : is_bounded X)
+    (e : Π(x : gℤ ×g gℤ), exact_couple.E X x ≃lm E' x.1 x.2)
+    (s₀ : gℤ)
+    (p : Π(n : gℤ), is_bounded.B' HH (deg (k X) (n, s₀)) = 0)
+    (f : Π(n : gℤ), exact_couple.D X (deg (k X) (n, s₀)) ≃lm Dinf n)
+
+  infix ` ⟹ `:25 := converges_to
+
+  definition converges_to_g [reducible] (E' : gℤ → gℤ → AbGroup) (Dinf : gℤ → AbGroup) : Type :=
+  (λn s, LeftModule_int_of_AbGroup (E' n s)) ⟹ (λn, LeftModule_int_of_AbGroup (Dinf n))
+
+  infix ` ⟹ᵍ `:25 := converges_to_g
+
+  section
+  open converges_to
+  parameters {R : Ring} {E' : gℤ → gℤ → LeftModule R} {Dinf : graded_module R gℤ} (c : E' ⟹ Dinf)
+  local abbreviation X := X c
+  local abbreviation HH := HH c
+  local abbreviation s₀ := s₀ c
+  local abbreviation Dinfdiag (n : gℤ) (k : ℕ) := Dinfdiag X HH (n, s₀) k
+  local abbreviation Einfdiag (n : gℤ) (k : ℕ) := Einfdiag X HH (n, s₀) k
+
+  include c
+
+  theorem is_contr_converges_to (H : Π(n s : gℤ), is_contr (E' n s)) (n : gℤ) : is_contr (Dinf n) :=
+  begin
+    assert H2 : Π(m : gℤ) (k : ℕ), is_contr (Einfdiag m k),
+    { intro m k, apply is_contr_E, exact is_trunc_equiv_closed_rev -2 (equiv_of_isomorphism (e c _)) },
+    assert H3 : Π(m : gℤ), is_contr (Dinfdiag m 0),
+    { intro m, fapply nat.rec_down (λk, is_contr (Dinfdiag m k)),
+      { exact is_bounded.B HH (deg (k X) (m, s₀)) },
+      { apply Dinfdiag_stable, reflexivity },
+      { intro k H, exact sorry /-note zz := is_contr_middle_of_is_exact (short_exact_mod_infpage k)-/ }},
+    refine @is_trunc_equiv_closed _ _ _ _ (H3 n),
+    apply equiv_of_isomorphism,
+    exact Dinfdiag0 X HH (n, s₀) (p c n) ⬝lm f c n
+  end
+  end
+
 end left_module
 open left_module
 namespace pointed
@@ -485,8 +531,7 @@ namespace pointed
   open prod prod.ops fiber
   parameters {A : ℤ → Type*[1]} (f : Π(n : ℤ), A n →* A (n - 1)) [Hf : Πn, is_conn_fun 1 (f n)]
   include Hf
-  protected definition I [constructor] : Set := trunctype.mk (gℤ ×g gℤ) !is_trunc_prod
-  local abbreviation I := @pointed.I
+  local abbreviation I [constructor] := Z2
 
   -- definition D_sequence : graded_module rℤ I :=
   -- λv, LeftModule_int_of_AbGroup (πc[v.2] (A (v.1)))
@@ -510,8 +555,8 @@ namespace spectrum
 
   parameters {A : ℤ → spectrum} (f : Π(s : ℤ), A s →ₛ A (s - 1))
 
-  protected definition I [constructor] : Set := trunctype.mk (gℤ ×g gℤ) !is_trunc_prod
-  local abbreviation I := @spectrum.I
+--  protected definition I [constructor] : Set := gℤ ×g gℤ
+  local abbreviation I [constructor] := Z2
 
   definition D_sequence : graded_module rℤ I :=
   λv, LeftModule_int_of_AbGroup (πₛ[v.1] (A (v.2)))
@@ -651,6 +696,17 @@ namespace spectrum
       intro x, induction x with n s, apply pair_eq, esimp, esimp, esimp [j_sequence, i_sequence],
       refine !add.assoc ⬝ ap (add s) !add.comm ⬝ !add.assoc⁻¹,
     end
+
+  definition converges_to_sequence : (λn s, πₛ[n] (sfiber (f s))) ⟹ᵍ (λn, πₛ[n] (A ub)) :=
+  begin
+    fapply converges_to.mk,
+    { exact exact_couple_sequence },
+    { exact is_bounded_sequence },
+    { intros, reflexivity },
+    { exact ub },
+    { intro n, change max0 (ub - ub) = 0, exact ap max0 (sub_self ub) },
+    { intro n, reflexivity }
+  end
 
   end
 
