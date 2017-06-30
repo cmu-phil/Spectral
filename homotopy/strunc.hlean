@@ -42,8 +42,8 @@ definition loop_ptrunc_maxm2_pequiv (k : ℤ) (X : Type*) :
 begin
   induction k with k k,
   { exact loop_ptrunc_pequiv k X },
-  { refine _ ⬝e* (pequiv_punit_of_is_contr _ !is_trunc_trunc)⁻¹ᵉ*,
-    apply @loop_pequiv_punit_of_is_set,
+  { refine pequiv_of_is_contr _ _ _ !is_trunc_trunc,
+    apply is_contr_loop,
     cases k with k,
     { change is_set (trunc 0 X), apply _ },
     { change is_set (trunc -2 X), apply _ }}
