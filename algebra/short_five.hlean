@@ -70,6 +70,9 @@ section short_exact
   (is_exact_at_3 : is_exact_at_m C (S (S n)))
   (is_contr_4 : is_contr (C (S (S (S (S n))))))
 
+print is_exact_at_m C n
+
+
   /- TODO: show that this gives rise to a short exact sequence in the sense above -/
 end short_exact
 
