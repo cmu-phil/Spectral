@@ -22,6 +22,19 @@ namespace group
     (mul_mem : Π{g h}, g ∈ H → h ∈ H → g * h ∈ H)
     (inv_mem : Π{g}, g ∈ H → g⁻¹ ∈ H)
 
+  definition is_prop_is_subgroup [instance] (G : Group) (H : property G) : is_prop (is_subgroup G H) :=
+  proof -- this results in a simpler choice of universe metavariables
+  have 1 ∈ H × (Π{g h}, g ∈ H → h ∈ H → g * h ∈ H) × (Π{g}, g ∈ H → g⁻¹ ∈ H) ≃ is_subgroup G H,
+  begin
+    fapply equiv.MK,
+    { intro p, cases p with p1 p2, cases p2 with p2 p3, exact is_subgroup.mk p1 @p2 @p3 },
+    { intro p, split, exact is_subgroup.one_mem H, split, apply @is_subgroup.mul_mem G H p, apply @is_subgroup.inv_mem G H p},
+    { intro b, cases b, reflexivity },
+    { intro a, cases a with a1 a2, cases a2, reflexivity }
+  end,
+  is_trunc_equiv_closed _ this
+  qed
+
   /-- Every group G has at least two subgroups, the trivial subgroup containing only one, and the full subgroup. --/
   definition trivial_subgroup [instance] (G : Group) : is_subgroup G '{1} :=
   begin
@@ -103,7 +116,7 @@ namespace group
   /-- Next, we formalize some aspects of normal subgroups. Recall that a normal subgroup H of a
       group G is a subgroup which is invariant under all inner automorophisms on G. --/
 
-  definition is_normal [constructor] (G : Group) (N : property G) : Prop :=
+  definition is_normal.{u v} [constructor] (G : Group) (N : property.{u v} G) : Prop :=
   trunctype.mk (Π{g} h, g ∈ N → h * g * h⁻¹ ∈ N) _
 
   structure is_normal_subgroup [class] (G : Group) (N : property G) extends is_subgroup G N :=
@@ -122,7 +135,7 @@ section
   theorem is_normal_subgroup' (h : G) (r : g ∈ N) : h⁻¹ * g * h ∈ N :=
   inv_inv h ▸ subgroup_is_normal N h⁻¹ r
 
-  definition is_normal_subgroup_ab.{u} [constructor] {C : property A} (subgrpA : is_subgroup A C)
+  definition is_normal_subgroup_ab [constructor] {C : property A} (subgrpA : is_subgroup A C)
     : is_normal_subgroup A C :=
   ⦃ is_normal_subgroup, subgrpA,
     is_normal := abstract begin
@@ -219,6 +232,8 @@ section
 
   definition Kernel {G H : Group} (f : G →g H) : Group := subgroup (kernel f)
 
+set_option trace.class_instances true
+
   definition ab_kernel {G H : AbGroup} (f : G →g H) : AbGroup := ab_subgroup (kernel f)
 
   definition incl_of_subgroup [constructor] {G : Group} (H : property G) [is_subgroup G H] :
@@ -249,7 +264,7 @@ section
     fapply is_embedding_incl_of_subgroup,
   end
 
-  definition is_subgroup_of_subgroup {G : Group} {H1 H2 : property G} [is_subgroup G H1]
+  definition is_subgroup_of_is_subgroup {G : Group} {H1 H2 : property G} [is_subgroup G H1]
     [is_subgroup G H2] (hyp : Π (g : G), g ∈ H1 → g ∈ H2) :
       is_subgroup (subgroup H2) {h | incl_of_subgroup H2 h ∈ H1} :=
   is_subgroup.mk

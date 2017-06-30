@@ -44,6 +44,10 @@ theorem eq_of_subproperty_of_subproperty {a b : property X} (h₁ : a ⊆ b) (h�
 subproperty.antisymm h₁ h₂
 -/
 
+theorem exteq_of_subproperty_of_subproperty {a b : property X} (h₁ : a ⊆ b) (h₂ : b ⊆ a) :
+  ∀ ⦃x⦄, x ∈ a ↔ x ∈ b :=
+λ x, iff.intro (λ h, h₁ h) (λ h, h₂ h)
+
 theorem mem_of_subproperty_of_mem {s₁ s₂ : property X} {a : X} : s₁ ⊆ s₂ → a ∈ s₁ → a ∈ s₂ :=
 assume h₁ h₂, h₁ _ h₂
 
