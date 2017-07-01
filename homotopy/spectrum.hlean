@@ -201,11 +201,18 @@ namespace spectrum
 
   structure shomotopy {N : succ_str} {E F : gen_prespectrum N} (f g : E →ₛ F) :=
     (to_phomotopy : Πn, f n ~* g n)
-    (glue_homotopy : Πn, phsquare
+    (glue_homotopy : Πn, ptube_v 
+                           (to_phomotopy n) 
+                           (ap1_phomotopy (to_phomotopy (S n))) 
+                           (glue_square f n) 
+                           (glue_square g n))
+
+/-    (glue_homotopy : Πn, phsquare
                          (pwhisker_left (glue F n) (to_phomotopy n))
                          (pwhisker_right (glue E n) (ap1_phomotopy (to_phomotopy (S n))))
                          (glue_square f n)
                          (glue_square g n))
+-/
 
   infix ` ~ₛ `:50 := shomotopy
 
