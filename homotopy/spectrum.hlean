@@ -1,11 +1,12 @@
 /-
 Copyright (c) 2016 Michael Shulman. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Michael Shulman, Floris van Doorn, Stefano Piceghello, Yuri Sulyma
+Authors: Michael Shulman, Floris van Doorn, Egbert Rijke, Stefano Piceghello, Yuri Sulyma
 
 -/
 
-import homotopy.LES_of_homotopy_groups .splice ..colim types.pointed2 .EM ..pointed_pi .smash_adjoint ..algebra.seq_colim .fwedge
+import homotopy.LES_of_homotopy_groups .splice ..colim types.pointed2 .EM ..pointed_pi .smash_adjoint ..algebra.seq_colim .fwedge .pointed_cubes
+
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
      seq_colim succ_str EM EM.ops function
 
@@ -148,15 +149,17 @@ namespace spectrum
 
   -- A version of 'glue_square' in the spectrum case that uses 'equiv_glue'
   definition sglue_square {N : succ_str} {E F : gen_spectrum N} (f : E →ₛ F) (n : N)
-    : equiv_glue F n ∘* f n ~* Ω→ (f (S n)) ∘* equiv_glue E n
-    -- I guess this manual eta-expansion is necessary because structures lack definitional eta?
-    := phomotopy.mk (glue_square f n) (to_homotopy_pt (glue_square f n))
+    : psquare (f n) (Ω→ (f (S n))) (equiv_glue E n) (equiv_glue F n) :=
+  glue_square f n
 
   definition sid [constructor] [refl] {N : succ_str} (E : gen_prespectrum N) : E →ₛ E :=
-    smap.mk (λn, pid (E n))
-    (λn, calc glue E n ∘* pid (E n) ~* glue E n                   : pcompose_pid
-                              ...   ~* pid (Ω(E (S n))) ∘* glue E n : pid_pcompose
-                              ...   ~* Ω→(pid (E (S n))) ∘* glue E n : pwhisker_right (glue E n) ap1_pid⁻¹*)
+  smap.mk (λ n, pid (E n)) (λ n, psquare_of_phtpy_bot (ap1_pid) (psquare_of_pid_top_bot (phomotopy.rfl)))
+
+  print sid
+ --   smap.mk (λn, pid (E n))
+ --   (λn, calc glue E n ∘* pid (E n) ~* glue E n                   : pcompose_pid
+ --                             ...   ~* pid (Ω(E (S n))) ∘* glue E n : pid_pcompose
+ --                             ...   ~* Ω→(pid (E (S n))) ∘* glue E n : pwhisker_right (glue E n) ap1_pid⁻¹*)
 
   definition scompose [trans] {N : succ_str} {X Y Z : gen_prespectrum N}
     (g : Y →ₛ Z) (f : X →ₛ Y) : X →ₛ Z :=
