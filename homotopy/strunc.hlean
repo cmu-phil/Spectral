@@ -5,26 +5,32 @@ open trunc_index nat
 
 namespace int
 
-  /-
-    The function from integers to truncation indices which sends positive numbers to themselves, and negative
-    numbers to negative 2. In particular -1 is sent to -2, but since we only work with pointed types, that
-    doesn't matter for us -/
-  definition maxm2 [unfold 1] : ℤ → ℕ₋₂ :=
-  λ n, int.cases_on n trunc_index.of_nat (λk, -2)
+  section
+  private definition maxm2_le.lemma₁ {n k : ℕ} : n+(1:int) + -[1+ k] ≤ n :=
+  le.intro (
+    calc n + 1 + -[1+ k] + k = n + 1 - (k + 1) + k : by reflexivity
+                         ... = n                   : sorry)
 
-  definition maxm2_le_maxm0 (n : ℤ) : maxm2 n ≤ max0 n :=
+  private definition maxm2_le.lemma₂ {n : ℕ} {k : ℤ} : -[1+ n] + 1 + k ≤ k :=
+  le.intro (
+    calc -[1+ n] + 1 + k + n = - (n + 1) + 1 + k + n : by reflexivity
+                         ... = k                     : sorry)
+
+  definition maxm2_le (n k : ℤ) : maxm2 (n+1+k) ≤ (maxm1m1 n).+1+2+(maxm1m1 k) :=
   begin
+    rewrite [-(maxm1_eq_succ n)],
     induction n with n n,
-    { exact le.tr_refl n },
-    { exact minus_two_le 0 }
+    { induction k with k k,
+      { induction k with k IH,
+        { apply le.tr_refl },
+        { exact succ_le_succ IH } },
+      { exact trunc_index.le_trans (maxm2_monotone maxm2_le.lemma₁)
+                                   (maxm2_le_maxm1 n) } },
+    { krewrite (add_plus_two_comm -1 (maxm1m1 k)),
+      rewrite [-(maxm1_eq_succ k)],
+      exact trunc_index.le_trans (maxm2_monotone maxm2_le.lemma₂)
+                                 (maxm2_le_maxm1 k) }
   end
-
-  definition max0_le_of_le {n : ℤ} {m : ℕ} (H : n ≤ of_nat m)
-    : nat.le (max0 n) m :=
-  begin
-    induction n with n n,
-    { exact le_of_of_nat_le_of_nat H },
-    { exact nat.zero_le m }
   end
 
 end int
@@ -129,5 +135,64 @@ have I : m < 2, from
 definition str [constructor] (k : ℤ) (E : spectrum) : E →ₛ strunc k E :=
 smap.mk (λ n, ptr (maxm2 (k + n)) (E n))
   (λ n, sorry)
+
+
+structure truncspectrum (n : ℤ) :=
+  (carrier : spectrum)
+  (struct : is_strunc n carrier)
+
+notation n `-spectrum` := truncspectrum n
+
+attribute truncspectrum.carrier [coercion]
+
+definition genspectrum_of_truncspectrum (n : ℤ)
+  : n-spectrum → gen_spectrum +ℤ :=
+λ E, truncspectrum.carrier E
+
+attribute genspectrum_of_truncspectrum [coercion]
+
+section
+
+  open is_conn
+
+  definition is_conn_maxm1_of_maxm2 (A : Type*) (n : ℤ)
+    : is_conn (maxm2 n) A → is_conn (maxm1m1 n).+1 A :=
+  begin
+    intro H, induction n with n n,
+    { exact H },
+    { exact is_conn_minus_one A (tr pt) }
+  end
+
+  definition is_trunc_maxm2_of_maxm1 (A : Type*) (n : ℤ)
+    : is_trunc (maxm1m1 n).+1 A → is_trunc (maxm2 n) A :=
+  begin
+    intro H, induction n with n n,
+    { exact H},
+    { apply is_contr_of_merely_prop,
+      { exact H },
+      { exact tr pt } }
+  end
+
+  variables (A : Type*) (n : ℤ) [H : is_conn (maxm2 n) A]
+  include H
+
+  definition is_trunc_maxm2_ppi (k : ℤ) (P : A → (maxm2 (n+1+k))-Type*)
+    : is_trunc (maxm2 k) (Π*(a : A), P a) :=
+  is_trunc_maxm2_of_maxm1 (Π*(a : A), P a) k
+    (@is_trunc_ppi A (maxm1m1 n)
+      (is_conn_maxm1_of_maxm2 A n H) (maxm1m1 k)
+      (λ a, ptrunctype.mk (P a) (is_trunc_of_le (P a) (maxm2_le n k)) pt))
+
+  definition is_strunc_spi (k : ℤ) (P : A → (n+1+k)-spectrum)
+    : is_strunc k (spi A P) :=
+  begin
+    intro m, unfold spi,
+    exact is_trunc_maxm2_ppi A n (k+m)
+      (λ a, ptrunctype.mk (P a m)
+       (is_trunc_maxm2_change_int (P a m) (add.assoc (n+1) k m)
+         (truncspectrum.struct (P a) m)) pt)
+  end
+
+end
 
 end spectrum
