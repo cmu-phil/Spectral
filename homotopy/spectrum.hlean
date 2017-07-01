@@ -244,8 +244,44 @@ namespace spectrum
 
   infix ` ≃ₛ ` : 25 := sequiv
 
-  definition is_sequiv_of_smap {N : succ_str} {E F : gen_prespectrum N} (f : E →ₛ F) (H : Π (n : N), is_equiv (f n)) : is_sequiv f :=
+  definition is_sequiv_smap {N : succ_str} {E F : gen_prespectrum N} (f : E →ₛ F) : Type := Π (n: N), is_equiv (f n)
+
+  definition is_sequiv_of_smap_pequiv {N : succ_str} {E F : gen_prespectrum N} (f : E →ₛ F) (H : is_sequiv_smap f) (n : N) : E n ≃* F n :=
   begin
+    fapply pequiv_of_pmap, 
+    exact f n,
+    fapply H,
+  end
+
+  definition is_sequiv_of_smap_inv {N : succ_str} {E F : gen_prespectrum N} (f : E →ₛ F) (H : is_sequiv_smap f) : F →ₛ E :=
+  begin
+    fapply smap.mk,
+    intro n,
+    exact (is_sequiv_of_smap_pequiv f H n)⁻¹ᵉ*,
+    intro n,
+    refine _ ⬝vp* (to_pinv_loopn_pequiv_loopn 1 (is_sequiv_of_smap_pequiv f H (S n)))⁻¹*,
+    fapply phinverse,
+    exact glue_square f n,
+  end
+
+  local postfix `⁻¹ˢ` : (max + 1) := is_sequiv_of_smap_inv 
+
+  definition is_sequiv_of_smap_isretr {N : succ_str} {E F : gen_prespectrum N} (f : E →ₛ F) (H : is_sequiv_smap f) : is_sequiv_of_smap_inv f H ∘ₛ f ~ₛ sid E :=
+  begin
+    fapply shomotopy.mk,
+    intro n,
+    fapply pleft_inv,
+    intro n,
+    refine _ ⬝hp** _,
+    repeat exact sorry,
+  end
+
+  definition is_sequiv_of_smap {N : succ_str} {E F : gen_prespectrum N} (f : E →ₛ F) : is_sequiv_smap f → is_sequiv f :=
+  begin
+    intro H,
+    fapply is_sequiv.mk,
+    fapply is_sequiv_of_smap_inv f H,
+    fapply is_sequiv_of_smap_isretr f H,
     repeat exact sorry
   end
 
