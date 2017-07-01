@@ -182,9 +182,14 @@ namespace spectrum
 
   definition szero [constructor] {N : succ_str} (E F : gen_prespectrum N) : E →ₛ F :=
     smap.mk (λn, pconst (E n) (F n))
+            (λn, psquare_of_phtpy_bot (ap1_pconst (E (S n)) (F (S n)))
+                   (psquare_of_pconst_top_bot (glue E n) (glue F n)))
+
+/-
       (λn, calc glue F n ∘* pconst (E n) (F n) ~* pconst (E n) (Ω(F (S n)))                    : pcompose_pconst
                                          ...   ~* pconst (Ω(E (S n))) (Ω(F (S n))) ∘* glue E n : pconst_pcompose
                                          ...   ~* Ω→(pconst (E (S n)) (F (S n))) ∘* glue E n   : pwhisker_right (glue E n) (ap1_pconst _ _))
+-/
 
   definition stransport [constructor] {N : succ_str} {A : Type} {a a' : A} (p : a = a')
   (E : A → gen_prespectrum N) : E a →ₛ E a' :=
