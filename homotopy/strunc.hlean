@@ -87,6 +87,13 @@ definition is_strunc_change_int {k l : ℤ} (E : spectrum) (p : k = l)
   : is_strunc k E → is_strunc l E :=
 begin induction p, exact id end
 
+definition is_strunc_of_le {k l : ℤ} (E : spectrum) (H : k ≤ l)
+  : is_strunc k E → is_strunc l E :=
+begin
+  intro T, intro n, exact is_trunc_of_le (E n)
+    (maxm2_monotone (algebra.add_le_add_right H n))
+end
+
 definition is_strunc_strunc (k : ℤ) (E : spectrum)
   : is_strunc k (strunc k E) :=
 λ n, is_trunc_trunc (maxm2 (k + n)) (E n)
@@ -179,11 +186,11 @@ section
   definition is_trunc_maxm2_ppi (k : ℤ) (P : A → (maxm2 (n+1+k))-Type*)
     : is_trunc (maxm2 k) (Π*(a : A), P a) :=
   is_trunc_maxm2_of_maxm1 (Π*(a : A), P a) k
-    (@is_trunc_ppi A (maxm1m1 n)
+    (@is_trunc_ppi_of_is_conn A (maxm1m1 n)
       (is_conn_maxm1_of_maxm2 A n H) (maxm1m1 k)
       (λ a, ptrunctype.mk (P a) (is_trunc_of_le (P a) (maxm2_le n k)) pt))
 
-  definition is_strunc_spi (k : ℤ) (P : A → (n+1+k)-spectrum)
+  definition is_strunc_spi_of_is_conn (k : ℤ) (P : A → (n+1+k)-spectrum)
     : is_strunc k (spi A P) :=
   begin
     intro m, unfold spi,
@@ -193,6 +200,17 @@ section
          (truncspectrum.struct (P a) m)) pt)
   end
 
+end
+
+definition is_strunc_spi (A : Type*) (k n : ℤ) (H : n ≤ k) (P : A → n-spectrum)
+  : is_strunc k (spi A P) :=
+begin
+  assert K : n ≤ -[1+ 0] + 1 + k,
+  { krewrite (int.zero_add k), exact H },
+  { exact @is_strunc_spi_of_is_conn A (-[1+ 0])
+    (is_conn.is_conn_minus_two A) k
+    (λ a, truncspectrum.mk (P a) (is_strunc_of_le (P a) K
+          (truncspectrum.struct (P a)))) }
 end
 
 end spectrum
