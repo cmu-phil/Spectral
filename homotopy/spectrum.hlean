@@ -155,7 +155,7 @@ namespace spectrum
   definition sid [constructor] [refl] {N : succ_str} (E : gen_prespectrum N) : E →ₛ E :=
   smap.mk (λ n, pid (E n)) (λ n, psquare_of_phtpy_bot (ap1_pid) (psquare_of_pid_top_bot (phomotopy.rfl)))
 
-  print sid
+  --print sid
  --   smap.mk (λn, pid (E n))
  --   (λn, calc glue E n ∘* pid (E n) ~* glue E n                   : pcompose_pid
  --                             ...   ~* pid (Ω(E (S n))) ∘* glue E n : pid_pcompose
@@ -163,9 +163,9 @@ namespace spectrum
 
   definition scompose [trans] {N : succ_str} {X Y Z : gen_prespectrum N}
     (g : Y →ₛ Z) (f : X →ₛ Y) : X →ₛ Z :=
-    smap.mk (λn, g n ∘* f n) 
-            (λ n, psquare_of_phtpy_bot 
-                    (ap1_pcompose (g (S n)) (f (S n))) 
+    smap.mk (λn, g n ∘* f n)
+            (λ n, psquare_of_phtpy_bot
+                    (ap1_pcompose (g (S n)) (f (S n)))
                     (psquare_hcompose (glue_square f n) (glue_square g n)))
 
 /-
@@ -201,10 +201,10 @@ namespace spectrum
 
   structure shomotopy {N : succ_str} {E F : gen_prespectrum N} (f g : E →ₛ F) :=
     (to_phomotopy : Πn, f n ~* g n)
-    (glue_homotopy : Πn, ptube_v 
-                           (to_phomotopy n) 
-                           (ap1_phomotopy (to_phomotopy (S n))) 
-                           (glue_square f n) 
+    (glue_homotopy : Πn, ptube_v
+                           (to_phomotopy n)
+                           (ap1_phomotopy (to_phomotopy (S n)))
+                           (glue_square f n)
                            (glue_square g n))
 
 /-    (glue_homotopy : Πn, phsquare
@@ -220,7 +220,7 @@ namespace spectrum
   shomotopy.mk
     (λn, (shomotopy.to_phomotopy q n) ⬝* (shomotopy.to_phomotopy p n))
     begin
-      intro n,
+      intro n, unfold [ptube_v],
       rewrite (pwhisker_left_trans _),
       rewrite ap1_phomotopy_trans,
       rewrite (pwhisker_right_trans _),
@@ -229,7 +229,7 @@ namespace spectrum
 
   definition shomotopy_inverse {N : succ_str} {E F : gen_prespectrum N} {f g : E →ₛ F} (p : f ~ₛ g) : g ~ₛ f :=
   shomotopy.mk (λn, (shomotopy.to_phomotopy p n)⁻¹*) begin
-    intro n,
+    intro n, unfold [ptube_v],
     rewrite (pwhisker_left_symm _ _),
     rewrite [-ap1_phomotopy_symm],
     rewrite (pwhisker_right_symm _ _),
@@ -255,7 +255,7 @@ namespace spectrum
 
   structure is_sequiv {N : succ_str} {E F : gen_prespectrum N} (f : E →ₛ F) : Type :=
   (to_linv : F →ₛ E)
-  (is_retr : to_linv ∘ₛf ~ₛ sid E) 
+  (is_retr : to_linv ∘ₛf ~ₛ sid E)
   (to_rinv : F →ₛ E)
   (is_sec  : f ∘ₛ to_rinv ~ₛ sid F)
 
@@ -269,7 +269,7 @@ namespace spectrum
 
   definition is_sequiv_of_smap_pequiv {N : succ_str} {E F : gen_prespectrum N} (f : E →ₛ F) (H : is_sequiv_smap f) (n : N) : E n ≃* F n :=
   begin
-    fapply pequiv_of_pmap, 
+    fapply pequiv_of_pmap,
     exact f n,
     fapply H,
   end
@@ -285,7 +285,7 @@ namespace spectrum
     exact glue_square f n,
   end
 
-  local postfix `⁻¹ˢ` : (max + 1) := is_sequiv_of_smap_inv 
+  local postfix `⁻¹ˢ` : (max + 1) := is_sequiv_of_smap_inv
 
   definition is_sequiv_of_smap_isretr {N : succ_str} {E F : gen_prespectrum N} (f : E →ₛ F) (H : is_sequiv_smap f) : is_sequiv_of_smap_inv f H ∘ₛ f ~ₛ sid E :=
   begin
@@ -537,7 +537,7 @@ namespace spectrum
   begin
     intro f,
     fapply smap.mk,
-    intro n, exact (equiv_glue E n)⁻¹ᵉ* ∘* Ω→ (f (S n)), 
+    intro n, exact (equiv_glue E n)⁻¹ᵉ* ∘* Ω→ (f (S n)),
     intro n, fapply psquare_of_phomotopy,
     refine (passoc (glue (gen_spectrum.to_prespectrum E) n) (pequiv.to_pmap
     (equiv_glue (gen_spectrum.to_prespectrum E) n)⁻¹ᵉ*) (Ω→ (to_fun f (S n))))⁻¹* ⬝* _,

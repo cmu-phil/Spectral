@@ -141,9 +141,6 @@ definition derived_couple_A : AbGroup :=
 definition derived_couple_B : AbGroup :=
   homology (differential EC) (differential_is_differential EC)
 
-print homology
-
-
 definition derived_couple_i : derived_couple_A →g derived_couple_A :=
   (image_lift (exact_couple.i EC)) ∘g (image_incl (exact_couple.i EC))
 
@@ -196,8 +193,8 @@ open eq
 definition left_square_derived_ses_aux : j_factor ∘g ab_image_incl k ~ (SES.f (SES_of_differential d H)) ∘g (image_homomorphism k j) :=
   begin
     intro x,
-    induction x with a p, induction p with f, induction f with b p, induction p, 
-    fapply subtype_eq, 
+    induction x with a p, induction p with f, induction f with b p, induction p,
+    fapply subtype_eq,
     reflexivity,
   end
 
@@ -207,10 +204,7 @@ definition left_square_derived_ses : j_factor ∘g (ab_kernel_incl i) ~ (SES.f (
     exact (ap j_factor (subgroup_iso_exact_at_A_triangle x)) ⬝ (left_square_derived_ses_aux (subgroup_iso_exact_at_A x)),
   end
 
-print quotient_extend_unique_SES
-check quotient_extend_unique_SES (SES_of_exact_couple_at_i) (SES_of_differential d H) (subgroup_homom_ker_to_im) (j_factor) (left_square_derived_ses)
-
-definition derived_couple_j_unique :   
+definition derived_couple_j_unique :
     is_contr (Σ hC, group_fun (hC ∘g SES.g SES_of_exact_couple_at_i) ~ group_fun
        (SES.g (SES_of_differential d H) ∘g j_factor)) :=
 quotient_extend_unique_SES (SES_of_exact_couple_at_i) (SES_of_differential d H) (subgroup_homom_ker_to_im) (j_factor) (left_square_derived_ses)
@@ -229,7 +223,7 @@ definition derived_couple_j_htpy : group_fun (derived_couple_j ∘g SES.g SES_of
 definition SES_im_i_trivial : SES trivial_ab_group derived_couple_A derived_couple_A :=
   begin
     fapply SES_of_isomorphism_right,
-    fapply isomorphism.refl, 
+    fapply isomorphism.refl,
   end
 
 definition subgroup_iso_exact_kerj_imi : ab_kernel j ≃g ab_image i :=
@@ -252,7 +246,7 @@ definition k_restrict : ab_kernel d →g derived_couple_A :=
 definition k_restrict_square_left : k_restrict ∘g (SES.f (SES_of_differential d H)) ~ λ x, 1 :=
   begin
     intro x,
-    induction x with b' p, 
+    induction x with b' p,
     induction p with q,
     induction q with b p,
     induction p,
@@ -260,7 +254,7 @@ definition k_restrict_square_left : k_restrict ∘g (SES.f (SES_of_differential 
     induction EC,
     induction exact_jk,
     fapply im_in_ker,
-  end 
+  end
 
 definition derived_couple_k_unique :   is_contr
     (Σ hC, group_fun (hC ∘g SES.g (SES_of_differential d H)) ~ group_fun
@@ -273,8 +267,6 @@ definition derived_couple_k : derived_couple_B →g derived_couple_A :=
      exact pr1 (center' (derived_couple_k_unique)),
    end
 
-print conter_internal.center
-
 definition derived_couple_k_htpy : group_fun (derived_couple_k ∘g SES.g (SES_of_differential d H)) ~ group_fun
        (SES.g (SES_im_i_trivial) ∘g k_restrict) :=
    begin
@@ -286,8 +278,8 @@ definition derived_couple_exact_ij : is_exact_ag derived_couple_i derived_couple
     fapply is_exact.mk,
     intro a,
     induction a with a' t,
-    induction t with q, induction q with a p, induction p, 
-    repeat exact sorry, 
+    induction t with q, induction q with a p, induction p,
+    repeat exact sorry,
   end
 
 end derived_couple
