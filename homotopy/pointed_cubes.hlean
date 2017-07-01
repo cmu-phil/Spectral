@@ -45,3 +45,11 @@ definition psquare_of_pid_left_right {A B : Type*} {ftop : A →* B} {fbot : A �
 psquare_of_phomotopy ((pid_pcompose ftop) ⬝* phtpy ⬝* ((pcompose_pid fbot)⁻¹*))
 
 print psquare_of_pid_left_right
+
+definition psquare_hcompose {A B C D E F : Type*} {ftop : A →* B} {fbot : D →* E} {fleft : A →* D} {fright : B →* E} {gtop : B →* C} {gbot : E →* F} {gright : C →* F} (psq_left : psquare ftop fbot fleft fright) (psq_right : psquare gtop gbot fright gright) : psquare (gtop ∘* ftop) (gbot ∘* fbot) fleft gright :=
+begin
+  fapply psquare_of_phomotopy,
+  refine (passoc gright gtop ftop)⁻¹* ⬝* _ ⬝* (passoc gbot fbot fleft)⁻¹*,
+  refine (pwhisker_right ftop psq_right) ⬝* (passoc gbot fright ftop) ⬝* _,
+  exact (pwhisker_left gbot psq_left),
+end

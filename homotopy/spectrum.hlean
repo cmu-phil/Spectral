@@ -163,7 +163,12 @@ namespace spectrum
 
   definition scompose [trans] {N : succ_str} {X Y Z : gen_prespectrum N}
     (g : Y →ₛ Z) (f : X →ₛ Y) : X →ₛ Z :=
-    smap.mk (λn, g n ∘* f n)
+    smap.mk (λn, g n ∘* f n) 
+            (λ n, psquare_of_phtpy_bot 
+                    (ap1_pcompose (g (S n)) (f (S n))) 
+                    (psquare_hcompose (glue_square f n) (glue_square g n)))
+
+/-
       (λn, calc glue Z n ∘* to_fun g n ∘* to_fun f n
              ~* (glue Z n ∘* to_fun g n) ∘* to_fun f n                 : passoc
          ... ~* (Ω→(to_fun g (S n)) ∘* glue Y n) ∘* to_fun f n      : pwhisker_right (to_fun f n) (glue_square g n)
@@ -171,6 +176,7 @@ namespace spectrum
          ... ~* Ω→(to_fun g (S n)) ∘* (Ω→ (f (S n)) ∘* glue X n) : pwhisker_left (Ω→(to_fun g (S n))) (glue_square f n)
          ... ~* (Ω→(to_fun g (S n)) ∘* Ω→(f (S n))) ∘* glue X n  : passoc
          ... ~* Ω→(to_fun g (S n) ∘* to_fun f (S n)) ∘* glue X n : pwhisker_right (glue X n) (ap1_pcompose _ _))
+-/
 
   infixr ` ∘ₛ `:60 := scompose
 
