@@ -1,6 +1,6 @@
 import ..algebra.module_exact_couple .strunc
 
-open eq spectrum trunc is_trunc pointed int EM algebra left_module fiber lift
+open eq spectrum trunc is_trunc pointed int EM algebra left_module fiber lift equiv is_equiv
 
 /- Eilenberg MacLane spaces are the fibers of the Postnikov system of a type -/
 
@@ -37,6 +37,14 @@ definition postnikov_map_natural {A B : Type*} (f : A →* B) (n : ℕ₋₂) :
           (ptrunc_functor (n.+1) f) (ptrunc_functor n f) :=
 !ptrunc_functor_postnikov_map ⬝* !ptrunc_elim_ptrunc_functor⁻¹*
 
+definition is_equiv_postnikov_map (A : Type*) {n k : ℕ₋₂} [HA : is_trunc k A] (H : k ≤ n) :
+  is_equiv (postnikov_map A n) :=
+begin
+  apply is_equiv_of_equiv_of_homotopy
+    (ptrunc_pequiv_ptrunc_of_is_trunc (trunc_index.le.step H) H HA),
+  intro x, induction x, reflexivity
+end
+
 definition encode_ap1_gen_tr (n : ℕ₋₂) {A : Type*} {a a' : A} (p : a = a') :
   trunc.encode (ap1_gen tr idp idp p) = tr p :> trunc n (a = a') :=
 by induction p; reflexivity
@@ -54,63 +62,34 @@ begin
 end,
 this⁻¹ᵛ*
 
+definition is_strunc_strunc_pred (X : spectrum) (k : ℤ) : is_strunc k (strunc (k - 1) X) :=
+λn, @(is_trunc_of_le _ (maxm2_monotone (add_le_add_right (sub_one_le k) n))) !is_strunc_strunc
 
--- definition postnikov_map_int (X : Type*) (k : ℤ) :
---   ptrunc (maxm2 (k + 1)) X →* ptrunc (maxm2 k) X :=
--- begin
---   induction k with k k,
---     exact postnikov_map X k,
---   exact !pconst
--- end
+definition postnikov_smap [constructor] (X : spectrum) (k : ℤ) :
+  strunc k X →ₛ strunc (k - 1) X :=
+strunc_elim (str (k - 1) X) (is_strunc_strunc_pred X k)
 
--- definition postnikov_map_int_natural {A B : Type*} (f : A →* B) (k : ℤ) :
---   psquare (postnikov_map_int A k) (postnikov_map_int B k)
---           (ptrunc_int_functor (k+1) f) (ptrunc_int_functor k f) :=
--- begin
---   induction k with k k,
---     exact postnikov_map_natural f k,
---   apply psquare_of_phomotopy, exact !pcompose_pconst ⬝* !pconst_pcompose⁻¹*
--- end
+definition postnikov_smap_phomotopy [constructor] (X : spectrum) (k : ℤ) (n : ℤ) :
+  postnikov_smap X k n ~* postnikov_map (X n) (maxm2 (k - 1 + n)) ∘*
+  sorry :=
+sorry
 
--- definition postnikov_map_int_natural_pequiv {A B : Type*} (f : A ≃* B) (k : ℤ) :
---   psquare (postnikov_map_int A k) (postnikov_map_int B k)
---           (ptrunc_int_pequiv_ptrunc_int (k+1) f) (ptrunc_int_pequiv_ptrunc_int k f) :=
--- begin
---   induction k with k k,
---     exact postnikov_map_natural f k,
---   apply psquare_of_phomotopy, exact !pcompose_pconst ⬝* !pconst_pcompose⁻¹*
--- end
+section atiyah_hirzebruch
+  parameters {X : Type*} (Y : X → spectrum) (s₀ : ℤ) (H : Πx, is_strunc s₀ (Y x))
 
--- definition pequiv_ap_natural2 {X A : Type} (B C : X → A → Type*) {a a' : X → A}
---   (p : a ~ a')
---   (s : X → X) (f : Πx a, B x a →* C (s x) a) (x : X) :
---   psquare (pequiv_ap (B x) (p x)) (pequiv_ap (C (s x)) (p x)) (f x (a x)) (f x (a' x)) :=
--- begin induction p using homotopy.rec_on_idp, exact phrfl end
+  definition atiyah_hirzebruch_exact_couple : exact_couple rℤ Z2 :=
+  @exact_couple_sequence (λs, strunc s (spi X Y)) (postnikov_smap (spi X Y))
 
--- definition pequiv_ap_natural3 {X A : Type} (B C : X → A → Type*) {a a' : A}
---   (p : a = a')
---   (s : X → X) (x : X) (f : Πx a, B x a →* C (s x) a) :
---   psquare (pequiv_ap (B x) p) (pequiv_ap (C (s x)) p) (f x a) (f x a') :=
--- begin induction p, exact phrfl end
+  definition is_bounded_atiyah_hirzebruch : is_bounded atiyah_hirzebruch_exact_couple :=
+  is_bounded_sequence _ s₀ (λn, n - 1)
+    begin
+      intro s n H,
+      exact sorry
+    end
+    begin
+      intro s n H, apply trivial_shomotopy_group_of_is_strunc,
+        apply is_strunc_strunc,
+      exact lt_of_le_sub_one H,
+    end
 
--- definition postnikov_smap (X : spectrum) (k : ℤ) :
---   strunc (k+1) X →ₛ strunc k X :=
--- smap.mk (λn, postnikov_map_int (X n) (k + n) ∘* ptrunc_int_change_int _ !norm_num.add_comm_middle)
---         (λn, begin
---                exact sorry
--- --             exact (_ ⬝vp* !ap1_pequiv_ap) ⬝h* (!postnikov_map_int_natural_pequiv ⬝v* _ ⬝v* _) ⬝vp* !ap1_pcompose,
---              end)
-
-
--- section atiyah_hirzebruch
---   parameters {X : Type*} (Y : X → spectrum)
-
---   definition atiyah_hirzebruch_exact_couple : exact_couple rℤ spectrum.I :=
---   @exact_couple_sequence (λs, strunc s (spi X (λx, Y x)))
---                          (λs, !postnikov_smap ∘ₛ strunc_change_int _ !succ_pred⁻¹)
-
--- --  parameters (k : ℕ) (H : Π(x : X) (n : ℕ), is_trunc (k + n) (Y x n))
-
-
-
--- end atiyah_hirzebruch
+end atiyah_hirzebruch

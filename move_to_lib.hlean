@@ -209,37 +209,23 @@ namespace int
     { exact nat.zero_le m }
   end
 
-  section
-  -- is there a way to get this from int.add_assoc?
-  private definition maxm2_monotone.lemma₁ {n k : ℕ}
-    : k + n + (1:int) = k + (1:int) + n :=
-  begin
-    induction n with n IH,
-    { reflexivity },
-    { exact ap (λ z, z + 1) IH }
-  end
+  definition not_neg_succ_le_of_nat {n m : ℕ} : ¬m ≤ -[1+n] :=
+  by cases m: exact id
 
-  private definition maxm2_monotone.lemma₂ {n k : ℕ} : ¬ n ≤ -[1+ k] :=
-  int.not_le_of_gt (lt.intro
-    (calc -[1+ k] + (succ (k + n))
-         = -(k+1) + (k + n + 1) : by reflexivity
-     ... = -(k+1) + (k + 1 + n) : maxm2_monotone.lemma₁
-     ... = (-(k+1) + (k+1)) + n : int.add_assoc
-     ... = (0:int) + n          : by rewrite int.add_left_inv
-     ... = n                    : int.zero_add))
-
-  definition maxm2_monotone {n k : ℤ} : n ≤ k → maxm2 n ≤ maxm2 k :=
+  definition maxm2_monotone {n m : ℤ} (H : n ≤ m) : maxm2 n ≤ maxm2 m :=
   begin
-    intro H,
     induction n with n n,
-    { induction k with k k,
-      { exact trunc_index.of_nat_monotone (le_of_of_nat_le_of_nat H) },
-      { exact empty.elim (maxm2_monotone.lemma₂ H) } },
-    { induction k with k k,
-      { apply minus_two_le },
-      { apply le.tr_refl } }
+    { induction m with m m,
+      { apply of_nat_le_of_nat, exact le_of_of_nat_le_of_nat H },
+      { exfalso, exact not_neg_succ_le_of_nat H }},
+    { apply minus_two_le }
   end
-  end
+
+  definition sub_nat_le (n : ℤ) (m : ℕ) : n - m ≤ n :=
+  le.intro !sub_add_cancel
+
+  definition sub_one_le (n : ℤ) : n - 1 ≤ n :=
+  sub_nat_le n 1
 
 end int
 
@@ -285,6 +271,44 @@ namespace trunc
     { intro a, induction a with a, reflexivity },
     { apply idp_con }
   end
+
+  definition ptrunc_elim_ptr_phomotopy_pid (n : ℕ₋₂) (A : Type*):
+    ptrunc.elim n (ptr n A) ~* pid (ptrunc n A) :=
+  begin
+    fapply phomotopy.mk,
+    { intro a, induction a with a, reflexivity },
+    { apply idp_con }
+  end
+
+  definition is_trunc_of_eq {n m : ℕ₋₂} (p : n = m) {A : Type} (H : is_trunc n A) : is_trunc m A :=
+  transport (λk, is_trunc k A) p H
+
+  definition is_trunc_ptrunc_of_is_trunc [instance] [priority 500] (A : Type*)
+    (n m : ℕ₋₂) [H : is_trunc n A] : is_trunc n (ptrunc m A) :=
+  is_trunc_trunc_of_is_trunc A n m
+
+  definition ptrunc_pequiv_ptrunc_of_is_trunc {n m k : ℕ₋₂} {A : Type*}
+    (H1 : n ≤ m) (H2 : n ≤ k) (H : is_trunc n A) : ptrunc m A ≃* ptrunc k A :=
+  have is_trunc m A, from is_trunc_of_le A H1,
+  have is_trunc k A, from is_trunc_of_le A H2,
+  pequiv.MK (ptrunc.elim _ (ptr k A)) (ptrunc.elim _ (ptr m A))
+    abstract begin
+      refine !ptrunc_elim_pcompose⁻¹* ⬝* _,
+      exact ptrunc_elim_phomotopy _ !ptrunc_elim_ptr ⬝* !ptrunc_elim_ptr_phomotopy_pid,
+    end end
+    abstract begin
+      refine !ptrunc_elim_pcompose⁻¹* ⬝* _,
+      exact ptrunc_elim_phomotopy _ !ptrunc_elim_ptr ⬝* !ptrunc_elim_ptr_phomotopy_pid,
+    end end
+
+  definition ptrunc_change_index {k l : ℕ₋₂} (p : k = l) (X : Type*)
+    : ptrunc k X ≃* ptrunc l X :=
+  pequiv_ap (λ n, ptrunc n X) p
+
+  definition ptrunc_functor_le {k l : ℕ₋₂} (p : l ≤ k) (X : Type*)
+    : ptrunc k X →* ptrunc l X :=
+  have is_trunc k (ptrunc l X), from is_trunc_of_le _ p,
+  ptrunc.elim _ (ptr l X)
 
 end trunc
 

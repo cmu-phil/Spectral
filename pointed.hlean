@@ -204,9 +204,14 @@ namespace pointed
   definition loop_punit : Ω punit ≃* punit :=
   loop_pequiv_punit_of_is_set punit
 
-  definition phomotopy_of_is_contr [constructor] {X Y: Type*} (f g : X →* Y) [is_contr Y] :
+  definition phomotopy_of_is_contr_cod [constructor] {X Y : Type*} (f g : X →* Y) [is_contr Y] :
     f ~* g :=
   phomotopy.mk (λa, !eq_of_is_contr) !eq_of_is_contr
+
+  definition phomotopy_of_is_contr_dom [constructor] {X Y : Type*} (f g : X →* Y) [is_contr X] :
+    f ~* g :=
+  phomotopy.mk (λa, ap f !is_prop.elim ⬝ respect_pt f ⬝ (respect_pt g)⁻¹ ⬝ ap g !is_prop.elim)
+    begin rewrite [▸*, is_prop_elim_self, +ap_idp, idp_con, con_idp, inv_con_cancel_right] end
 
 
 
