@@ -96,3 +96,25 @@ phsquare (pwhisker_left fright phtpy_top) (pwhisker_right fleft phtpy_bot) psq_b
 
 definition ptube_h {A B C D : Type*} {ftop : A →* B} {fbot : C →* D} {fleft fleft' : A →* C} (phtpy_left : fleft ~* fleft') {fright fright' : B →* D} (phtpy_right : fright ~* fright') (psq_back : psquare ftop fbot fleft fright) (psq_front : psquare ftop fbot fleft' fright') : Type :=
 phsquare (pwhisker_right ftop phtpy_right) (pwhisker_left fbot phtpy_left) psq_back psq_front
+
+print pinv_right_phomotopy_of_phomotopy
+
+definition psquare_inv_top_bot {A B C D : Type*} {ftop : A ≃* B} {fbot : C ≃* D} {fleft : A →* C} {fright : B →* D} (psq : psquare ftop fbot fleft fright) : psquare ftop⁻¹ᵉ* fbot⁻¹ᵉ* fright fleft :=
+begin
+  fapply psquare_of_phomotopy,
+  refine (pinv_right_phomotopy_of_phomotopy _),
+  refine _ ⬝* (passoc fbot⁻¹ᵉ* fright ftop)⁻¹*,
+  refine (pinv_left_phomotopy_of_phomotopy _)⁻¹*,
+  exact psq,
+end
+
+definition ptube_v_left_inv {A B C D : Type*} {ftop : A ≃* B} {fbot : C ≃* D} {fleft : A →* C} {fright : B →* D} 
+  (psq : psquare ftop fbot fleft fright) : 
+  ptube_v 
+    (pleft_inv ftop) 
+    (pleft_inv fbot) 
+    (psquare_hcompose psq (psquare_inv_top_bot psq)) 
+    (psquare_of_pid_top_bot phomotopy.rfl) :=
+begin
+  exact sorry
+end
