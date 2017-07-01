@@ -4,9 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ulrik Buchholtz, Floris van Doorn
 -/
 
-import homotopy.connectedness types.pointed2
+import homotopy.connectedness types.pointed2 .move_to_lib
 
-open eq pointed equiv sigma is_equiv
+open eq pointed equiv sigma is_equiv trunc
 
 /-
   In this file we define dependent pointed maps and properties of them.
@@ -464,6 +464,8 @@ end pointed open pointed
 
 open is_trunc is_conn
 namespace is_conn
+  section
+
   variables (A : Type*) (n : ℕ₋₂) [H : is_conn (n.+1) A]
   include H
 
@@ -477,7 +479,7 @@ namespace is_conn
     { krewrite (is_conn.elim_β n), apply con.left_inv }
   end
 
-  definition is_trunc_ppi (k : ℕ₋₂) (P : A → (n.+1+2+k)-Type*)
+  definition is_trunc_ppi_of_is_conn (k : ℕ₋₂) (P : A → (n.+1+2+k)-Type*)
     : is_trunc k.+1 (Π*(a : A), P a) :=
   begin
     induction k with k IH,
@@ -497,6 +499,24 @@ namespace is_conn
   definition is_trunc_pmap_of_is_conn (k : ℕ₋₂) (B : (n.+1+2+k)-Type*)
     : is_trunc k.+1 (A →* B) :=
   @is_trunc_equiv_closed _ _ k.+1 (ppi_equiv_pmap A B)
-    (is_trunc_ppi A n k (λ a, B))
+    (is_trunc_ppi_of_is_conn A n k (λ a, B))
+
+  end
+
+  -- this is probably much easier to prove directly
+  definition is_trunc_ppi (A : Type*) (n k : ℕ₋₂) (H : n ≤ k) (P : A → n-Type*)
+    : is_trunc k (Π*(a : A), P a) :=
+  begin
+    cases k with k,
+    { apply trunc.is_contr_of_merely_prop,
+      { exact @is_trunc_ppi_of_is_conn A -2 (is_conn_minus_one A (tr pt)) -2
+          (λ a, ptrunctype.mk (P a) (is_trunc_of_le (P a)
+                  (trunc_index.le.step H)) pt) },
+      { exact tr pt } },
+    { assert K : n ≤ -1 +2+ k,
+      { rewrite (trunc_index.add_plus_two_comm -1 k), exact H },
+      { exact @is_trunc_ppi_of_is_conn A -2 (is_conn_minus_one A (tr pt)) k
+          (λ a, ptrunctype.mk (P a) (is_trunc_of_le (P a) K) pt) } }
+  end
 
 end is_conn
