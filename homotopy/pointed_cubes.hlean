@@ -53,3 +53,40 @@ begin
   refine (pwhisker_right ftop psq_right) ⬝* (passoc gbot fright ftop) ⬝* _,
   exact (pwhisker_left gbot psq_left),
 end
+
+definition psquare_vcompose {A B C D E F : Type*} {ftop : A →* B} {fbot : C →* D} {fleft : A →* C} {fright : B →* D} {gbot : E →* F} {gleft : C →* E} {gright : D →* F} (psq_top : psquare ftop fbot fleft fright) (psq_bot : psquare fbot gbot gleft gright) : psquare ftop gbot (gleft ∘* fleft) (gright ∘* fright) :=
+begin
+  fapply psquare_of_phomotopy,
+  refine (passoc gright fright ftop) ⬝* _ ⬝* (passoc gbot gleft fleft),
+  refine (pwhisker_left gright psq_top) ⬝* _,
+  refine (passoc gright fbot fleft)⁻¹* ⬝* _,
+  exact pwhisker_right fleft psq_bot,
+end
+
+definition psquare_of_pconst_top_bot {A B C D : Type*} (fleft : A →* C) (fright : B →* D) : psquare (pconst A B) (pconst C D) fleft fright :=
+begin
+  fapply psquare_of_phomotopy,
+  refine (pcompose_pconst fright) ⬝* _,
+  exact (pconst_pcompose fleft)⁻¹*,
+end
+
+definition psquare_of_pconst_left_right {A B C D : Type*} (ftop : A →* B) (fbot : C →* D) : psquare ftop fbot (pconst A C) (pconst B D) :=
+begin
+  fapply psquare_of_phomotopy,
+  refine (pconst_pcompose ftop) ⬝* _,
+  exact (pcompose_pconst fbot)⁻¹*
+end
+
+definition psquare_of_pconst_top_left {A B C D : Type*} (fbot : C →* D) (fright : B →* D) : psquare (pconst A B) fbot (pconst A C) fright :=
+begin
+  fapply psquare_of_phomotopy,
+  refine (pcompose_pconst fright) ⬝* _,
+  exact (pcompose_pconst fbot)⁻¹*,
+end
+
+definition psquare_of_pconst_bot_right {A B C D : Type*} (ftop : A →* B) (fleft : A →* C) : psquare ftop (pconst C D) fleft (pconst B D) :=
+begin
+  fapply psquare_of_phomotopy,
+  refine (pconst_pcompose ftop) ⬝* _,
+  exact (pconst_pcompose fleft)⁻¹*,
+end
