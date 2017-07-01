@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2017 Yuri Sulyma, Favonia
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Yuri Sulyma, Favonia
+Authors: Yuri Sulyma, Favonia, Floris van Doorn
 
 Reduced homology theories
 -/

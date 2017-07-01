@@ -120,6 +120,129 @@ namespace eq
 
 end eq open eq
 
+namespace nat
+
+  protected definition rec_down (P : ℕ → Type) (s : ℕ) (H0 : P s) (Hs : Πn, P (n+1) → P n) : P 0 :=
+  have Hp : Πn, P n → P (pred n),
+  begin
+    intro n p, cases n with n,
+    { exact p },
+    { exact Hs n p }
+  end,
+  have H : Πn, P (s - n),
+  begin
+    intro n, induction n with n p,
+    { exact H0 },
+    { exact Hp (s - n) p }
+  end,
+  transport P (nat.sub_self s) (H s)
+
+end nat
+
+
+namespace trunc_index
+  open is_conn nat trunc is_trunc
+  lemma minus_two_add_plus_two (n : ℕ₋₂) : -2+2+n = n :=
+  by induction n with n p; reflexivity; exact ap succ p
+
+  protected definition of_nat_monotone {n k : ℕ} : n ≤ k → of_nat n ≤ of_nat k :=
+  begin
+    intro H, induction H with k H K,
+    { apply le.tr_refl },
+    { apply le.step K }
+  end
+
+  lemma add_plus_two_comm (n k : ℕ₋₂) : n +2+ k = k +2+ n :=
+  begin
+    induction n with n IH,
+    { exact minus_two_add_plus_two k },
+    { exact !succ_add_plus_two ⬝ ap succ IH}
+  end
+
+end trunc_index
+
+namespace int
+
+  open trunc_index
+  /-
+    The function from integers to truncation indices which sends
+    positive numbers to themselves, and negative numbers to negative
+    2. In particular -1 is sent to -2, but since we only work with
+    pointed types, that doesn't matter for us -/
+  definition maxm2 [unfold 1] : ℤ → ℕ₋₂ :=
+  λ n, int.cases_on n trunc_index.of_nat (λk, -2)
+
+  -- we also need the max -1 - function
+  definition maxm1 [unfold 1] : ℤ → ℕ₋₂ :=
+  λ n, int.cases_on n trunc_index.of_nat (λk, -1)
+
+  definition maxm2_le_maxm1 (n : ℤ) : maxm2 n ≤ maxm1 n :=
+  begin
+    induction n with n n,
+    { exact le.tr_refl n },
+    { exact minus_two_le -1 }
+  end
+
+  -- the is maxm1 minus 1
+  definition maxm1m1 [unfold 1] : ℤ → ℕ₋₂ :=
+  λ n, int.cases_on n (λ k, k.-1) (λ k, -2)
+
+  definition maxm1_eq_succ (n : ℤ) : maxm1 n = (maxm1m1 n).+1 :=
+  begin
+    induction n with n n,
+    { reflexivity },
+    { reflexivity }
+  end
+
+  definition maxm2_le_maxm0 (n : ℤ) : maxm2 n ≤ max0 n :=
+  begin
+    induction n with n n,
+    { exact le.tr_refl n },
+    { exact minus_two_le 0 }
+  end
+
+  definition max0_le_of_le {n : ℤ} {m : ℕ} (H : n ≤ of_nat m)
+    : nat.le (max0 n) m :=
+  begin
+    induction n with n n,
+    { exact le_of_of_nat_le_of_nat H },
+    { exact nat.zero_le m }
+  end
+
+  section
+  -- is there a way to get this from int.add_assoc?
+  private definition maxm2_monotone.lemma₁ {n k : ℕ}
+    : k + n + (1:int) = k + (1:int) + n :=
+  begin
+    induction n with n IH,
+    { reflexivity },
+    { exact ap (λ z, z + 1) IH }
+  end
+
+  private definition maxm2_monotone.lemma₂ {n k : ℕ} : ¬ n ≤ -[1+ k] :=
+  int.not_le_of_gt (lt.intro
+    (calc -[1+ k] + (succ (k + n))
+         = -(k+1) + (k + n + 1) : by reflexivity
+     ... = -(k+1) + (k + 1 + n) : maxm2_monotone.lemma₁
+     ... = (-(k+1) + (k+1)) + n : int.add_assoc
+     ... = (0:int) + n          : by rewrite int.add_left_inv
+     ... = n                    : int.zero_add))
+
+  definition maxm2_monotone {n k : ℤ} : n ≤ k → maxm2 n ≤ maxm2 k :=
+  begin
+    intro H,
+    induction n with n n,
+    { induction k with k k,
+      { exact trunc_index.of_nat_monotone (le_of_of_nat_le_of_nat H) },
+      { exact empty.elim (maxm2_monotone.lemma₂ H) } },
+    { induction k with k k,
+      { apply minus_two_le },
+      { apply le.tr_refl } }
+  end
+  end
+
+end int
+
 namespace pmap
 
   definition eta {A B : Type*} (f : A →* B) : pmap.mk f (respect_pt f) = f :=
@@ -164,13 +287,6 @@ namespace trunc
   end
 
 end trunc
-
-namespace trunc_index
-  open is_conn nat trunc is_trunc
-  lemma minus_two_add_plus_two (n : ℕ₋₂) : -2+2+n = n :=
-  by induction n with n p; reflexivity; exact ap succ p
-
-end trunc_index
 
 namespace sigma
 

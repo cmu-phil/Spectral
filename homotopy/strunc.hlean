@@ -5,27 +5,32 @@ open trunc_index nat
 
 namespace int
 
-  definition maxm2 : ℤ → ℕ₋₂ :=
-  λ n, int.cases_on n trunc_index.of_nat
-    (λ m, nat.cases_on m -1 (λ a, -2))
+  section
+  private definition maxm2_le.lemma₁ {n k : ℕ} : n+(1:int) + -[1+ k] ≤ n :=
+  le.intro (
+    calc n + 1 + -[1+ k] + k = n + 1 - (k + 1) + k : by reflexivity
+                         ... = n                   : sorry)
 
-  attribute maxm2 [unfold 1]
+  private definition maxm2_le.lemma₂ {n : ℕ} {k : ℤ} : -[1+ n] + 1 + k ≤ k :=
+  le.intro (
+    calc -[1+ n] + 1 + k + n = - (n + 1) + 1 + k + n : by reflexivity
+                         ... = k                     : sorry)
 
-  definition maxm2_le_maxm0 (n : ℤ) : maxm2 n ≤ max0 n :=
+  definition maxm2_le (n k : ℤ) : maxm2 (n+1+k) ≤ (maxm1m1 n).+1+2+(maxm1m1 k) :=
   begin
+    rewrite [-(maxm1_eq_succ n)],
     induction n with n n,
-    { exact le.tr_refl n },
-    { cases n with n,
-      { exact le.step (le.tr_refl -1) },
-      { exact minus_two_le 0 } }
+    { induction k with k k,
+      { induction k with k IH,
+        { apply le.tr_refl },
+        { exact succ_le_succ IH } },
+      { exact trunc_index.le_trans (maxm2_monotone maxm2_le.lemma₁)
+                                   (maxm2_le_maxm1 n) } },
+    { krewrite (add_plus_two_comm -1 (maxm1m1 k)),
+      rewrite [-(maxm1_eq_succ k)],
+      exact trunc_index.le_trans (maxm2_monotone maxm2_le.lemma₂)
+                                 (maxm2_le_maxm1 k) }
   end
-
-  definition max0_le_of_le {n : ℤ} {m : ℕ} (H : n ≤ of_nat m)
-    : nat.le (max0 n) m :=
-  begin
-    induction n with n n,
-    { exact le_of_of_nat_le_of_nat H },
-    { exact nat.zero_le m }
   end
 
 end int
@@ -43,14 +48,11 @@ definition loop_ptrunc_maxm2_pequiv (k : ℤ) (X : Type*) :
 begin
   induction k with k k,
   { exact loop_ptrunc_pequiv k X },
-  { cases k with k,
-    { exact loop_ptrunc_pequiv -1 X },
-    { cases k with k,
-      { exact loop_ptrunc_pequiv -2 X },
-      { exact loop_pequiv_punit_of_is_set (pType.mk (trunc -2 X) (tr pt))
-          ⬝e* (pequiv_punit_of_is_contr
-                (pType.mk (trunc -2 (Point X = Point X)) (tr idp))
-                (is_trunc_trunc -2 (Point X = Point X)))⁻¹ᵉ* } } }
+  { refine pequiv_of_is_contr _ _ _ !is_trunc_trunc,
+    apply is_contr_loop,
+    cases k with k,
+    { change is_set (trunc 0 X), apply _ },
+    { change is_set (trunc -2 X), apply _ }}
 end
 
 definition is_trunc_of_is_trunc_maxm2 (k : ℤ) (X : Type)
@@ -73,14 +75,12 @@ definition is_trunc_maxm2_loop (A : pType) (k : ℤ)
 begin
   intro H, induction k with k k,
   { apply is_trunc_loop, exact H },
-  { cases k with k,
-    { apply is_trunc_loop, exact H},
-    { apply is_trunc_loop, cases k with k,
-      { exact H },
-      { apply is_trunc_succ, exact H } } }
+  { apply is_contr_loop, cases k with k,
+    { exact H },
+    { have H2 : is_contr A, from H, apply _ } }
 end
 
-definition is_strunc (k : ℤ) (E : spectrum) : Type :=
+definition is_strunc [reducible] (k : ℤ) (E : spectrum) : Type :=
 Π (n : ℤ), is_trunc (maxm2 (k + n)) (E n)
 
 definition is_strunc_change_int {k l : ℤ} (E : spectrum) (p : k = l)
@@ -95,6 +95,10 @@ definition is_trunc_maxm2_change_int {k l : ℤ} (X : pType) (p : k = l)
   : is_trunc (maxm2 k) X → is_trunc (maxm2 l) X :=
 by induction p; exact id
 
+definition strunc_functor [constructor] (k : ℤ) {E F : spectrum} (f : E →ₛ F) :
+  strunc k E →ₛ strunc k F :=
+smap.mk (λn, ptrunc_functor (maxm2 (k + n)) (f n)) sorry
+
 definition is_strunc_EM_spectrum (G : AbGroup)
   : is_strunc 0 (EM_spectrum G) :=
 begin
@@ -102,12 +106,18 @@ begin
   { -- case ≥ 0
     apply is_trunc_maxm2_change_int (EM G n) (zero_add n)⁻¹,
     apply is_trunc_EM },
-  { induction n with n IH,
+  { change is_contr (EM_spectrum G (-[1+n])),
+    induction n with n IH,
     { -- case = -1
-      apply is_trunc_loop, exact ab_group.is_set_carrier G },
+      apply is_contr_loop, exact is_trunc_EM G 0 },
     { -- case < -1
-      apply is_trunc_maxm2_loop, exact IH }}
+      apply is_trunc_loop, apply is_trunc_succ, exact IH }}
 end
+
+definition strunc_elim [constructor] {k : ℤ} {E F : spectrum} (f : E →ₛ F)
+  (H : is_strunc k F) : strunc k E →ₛ F :=
+smap.mk (λn, ptrunc.elim (maxm2 (k + n)) (f n))
+        (λn, sorry)
 
 definition trivial_shomotopy_group_of_is_strunc (E : spectrum)
   {n k : ℤ} (K : is_strunc n E) (H : n < k)
@@ -125,5 +135,64 @@ have I : m < 2, from
 definition str [constructor] (k : ℤ) (E : spectrum) : E →ₛ strunc k E :=
 smap.mk (λ n, ptr (maxm2 (k + n)) (E n))
   (λ n, sorry)
+
+
+structure truncspectrum (n : ℤ) :=
+  (carrier : spectrum)
+  (struct : is_strunc n carrier)
+
+notation n `-spectrum` := truncspectrum n
+
+attribute truncspectrum.carrier [coercion]
+
+definition genspectrum_of_truncspectrum (n : ℤ)
+  : n-spectrum → gen_spectrum +ℤ :=
+λ E, truncspectrum.carrier E
+
+attribute genspectrum_of_truncspectrum [coercion]
+
+section
+
+  open is_conn
+
+  definition is_conn_maxm1_of_maxm2 (A : Type*) (n : ℤ)
+    : is_conn (maxm2 n) A → is_conn (maxm1m1 n).+1 A :=
+  begin
+    intro H, induction n with n n,
+    { exact H },
+    { exact is_conn_minus_one A (tr pt) }
+  end
+
+  definition is_trunc_maxm2_of_maxm1 (A : Type*) (n : ℤ)
+    : is_trunc (maxm1m1 n).+1 A → is_trunc (maxm2 n) A :=
+  begin
+    intro H, induction n with n n,
+    { exact H},
+    { apply is_contr_of_merely_prop,
+      { exact H },
+      { exact tr pt } }
+  end
+
+  variables (A : Type*) (n : ℤ) [H : is_conn (maxm2 n) A]
+  include H
+
+  definition is_trunc_maxm2_ppi (k : ℤ) (P : A → (maxm2 (n+1+k))-Type*)
+    : is_trunc (maxm2 k) (Π*(a : A), P a) :=
+  is_trunc_maxm2_of_maxm1 (Π*(a : A), P a) k
+    (@is_trunc_ppi A (maxm1m1 n)
+      (is_conn_maxm1_of_maxm2 A n H) (maxm1m1 k)
+      (λ a, ptrunctype.mk (P a) (is_trunc_of_le (P a) (maxm2_le n k)) pt))
+
+  definition is_strunc_spi (k : ℤ) (P : A → (n+1+k)-spectrum)
+    : is_strunc k (spi A P) :=
+  begin
+    intro m, unfold spi,
+    exact is_trunc_maxm2_ppi A n (k+m)
+      (λ a, ptrunctype.mk (P a m)
+       (is_trunc_maxm2_change_int (P a m) (add.assoc (n+1) k m)
+         (truncspectrum.struct (P a) m)) pt)
+  end
+
+end
 
 end spectrum

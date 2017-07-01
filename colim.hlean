@@ -1,4 +1,4 @@
--- authors: Floris van Doorn, Egbert Rijke
+-- authors: Floris van Doorn, Egbert Rijke, Stefano Piceghello
 
 import hit.colimit types.fin homotopy.chain_complex types.pointed2
 open seq_colim pointed algebra eq is_trunc nat is_equiv equiv sigma sigma.ops chain_complex

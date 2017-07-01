@@ -421,7 +421,6 @@ end
       (λa, to_right_inv (equiv_of_isomorphism eB) _) (λb, to_right_inv (equiv_of_isomorphism eC) _)
       (short_exact_mod.h H))
 
-
   end
 
   end
