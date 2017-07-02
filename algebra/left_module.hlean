@@ -421,6 +421,10 @@ end
       (λa, to_right_inv (equiv_of_isomorphism eB) _) (λb, to_right_inv (equiv_of_isomorphism eC) _)
       (short_exact_mod.h H))
 
+  definition is_contr_middle_of_short_exact_mod {A B C : LeftModule R} (H : short_exact_mod A B C)
+    (HA : is_contr A) (HC : is_contr C) : is_contr B :=
+  is_contr_middle_of_is_exact (is_exact_of_is_short_exact (short_exact_mod.h H))
+
   end
 
   end
@@ -438,6 +442,10 @@ LeftModule.mk A (left_module_int_of_ab_group A)
 definition lm_hom_int.mk [constructor] {A B : AbGroup} (φ : A →g B) :
   LeftModule_int_of_AbGroup A →lm LeftModule_int_of_AbGroup B :=
 lm_homomorphism_of_group_homomorphism φ (to_respect_imul φ)
+
+definition lm_iso_int.mk [constructor] {A B : AbGroup} (φ : A ≃g B) :
+  LeftModule_int_of_AbGroup A ≃lm LeftModule_int_of_AbGroup B :=
+isomorphism.mk (lm_hom_int.mk φ) (group.isomorphism.is_equiv_to_hom φ)
 end int
 
 end left_module

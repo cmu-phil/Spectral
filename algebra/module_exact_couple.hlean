@@ -456,13 +456,13 @@ namespace left_module
   definition Z2 [constructor] : Set := gℤ ×g gℤ
 
   structure converges_to.{u v w} {R : Ring} (E' : gℤ → gℤ → LeftModule.{u v} R)
-                                 (Dinf : graded_module.{u 0 w} R gℤ) : Type.{max u (v+1) (w+1)} :=
+                                 (Dinf : gℤ → LeftModule.{u w} R) : Type.{max u (v+1) (w+1)} :=
     (X : exact_couple.{u 0 v w} R Z2)
     (HH : is_bounded X)
+    (s₀ : gℤ → gℤ)
+    (p : Π(n : gℤ), is_bounded.B' HH (deg (k X) (n, s₀ n)) = 0)
     (e : Π(x : gℤ ×g gℤ), exact_couple.E X x ≃lm E' x.1 x.2)
-    (s₀ : gℤ)
-    (p : Π(n : gℤ), is_bounded.B' HH (deg (k X) (n, s₀)) = 0)
-    (f : Π(n : gℤ), exact_couple.D X (deg (k X) (n, s₀)) ≃lm Dinf n)
+    (f : Π(n : gℤ), exact_couple.D X (deg (k X) (n, s₀ n)) ≃lm Dinf n)
 
   infix ` ⟹ `:25 := converges_to
 
@@ -473,29 +473,48 @@ namespace left_module
 
   section
   open converges_to
-  parameters {R : Ring} {E' : gℤ → gℤ → LeftModule R} {Dinf : graded_module R gℤ} (c : E' ⟹ Dinf)
+  parameters {R : Ring} {E' : gℤ → gℤ → LeftModule R} {Dinf : gℤ → LeftModule R} (c : E' ⟹ Dinf)
   local abbreviation X := X c
+  local abbreviation i := i X
   local abbreviation HH := HH c
   local abbreviation s₀ := s₀ c
-  local abbreviation Dinfdiag (n : gℤ) (k : ℕ) := Dinfdiag X HH (n, s₀) k
-  local abbreviation Einfdiag (n : gℤ) (k : ℕ) := Einfdiag X HH (n, s₀) k
+  local abbreviation Dinfdiag (n : gℤ) (k : ℕ) := Dinfdiag X HH (n, s₀ n) k
+  local abbreviation Einfdiag (n : gℤ) (k : ℕ) := Einfdiag X HH (n, s₀ n) k
 
-  include c
+  definition converges_to_isomorphism {E'' : gℤ → gℤ → LeftModule R} {Dinf' : graded_module R gℤ}
+    (e' : Πn s, E' n s ≃lm E'' n s) (f' : Πn, Dinf n ≃lm Dinf' n) : E'' ⟹ Dinf' :=
+  converges_to.mk X HH s₀ (p c)
+    begin intro x, induction x with n s, exact e c (n, s) ⬝lm e' n s end
+    (λn, f c n ⬝lm f' n)
 
-  theorem is_contr_converges_to (H : Π(n s : gℤ), is_contr (E' n s)) (n : gℤ) : is_contr (Dinf n) :=
+  theorem is_contr_converges_to_precise (n : gℤ)
+  (H : Π(n : gℤ) (l : ℕ), is_contr (E' ((deg i)^[l] (n, s₀ n)).1 ((deg i)^[l] (n, s₀ n)).2)) :
+    is_contr (Dinf n) :=
   begin
-    assert H2 : Π(m : gℤ) (k : ℕ), is_contr (Einfdiag m k),
-    { intro m k, apply is_contr_E, exact is_trunc_equiv_closed_rev -2 (equiv_of_isomorphism (e c _)) },
-    assert H3 : Π(m : gℤ), is_contr (Dinfdiag m 0),
-    { intro m, fapply nat.rec_down (λk, is_contr (Dinfdiag m k)),
-      { exact is_bounded.B HH (deg (k X) (m, s₀)) },
+    assert H2 : Π(l : ℕ), is_contr (Einfdiag n l),
+    { intro l, apply is_contr_E,
+      refine @(is_trunc_equiv_closed_rev -2 (equiv_of_isomorphism (e c _))) (H n l) },
+    assert H3 : is_contr (Dinfdiag n 0),
+    { fapply nat.rec_down (λk, is_contr (Dinfdiag n k)),
+      { exact is_bounded.B HH (deg (k X) (n, s₀ n)) },
       { apply Dinfdiag_stable, reflexivity },
-      { intro k H, exact sorry /-note zz := is_contr_middle_of_is_exact (short_exact_mod_infpage k)-/ }},
-    refine @is_trunc_equiv_closed _ _ _ _ (H3 n),
-    apply equiv_of_isomorphism,
-    exact Dinfdiag0 X HH (n, s₀) (p c n) ⬝lm f c n
+      { intro l H,
+        exact is_contr_middle_of_short_exact_mod (short_exact_mod_infpage X HH (n, s₀ n) l)
+                (H2 l) H }},
+    refine @is_trunc_equiv_closed _ _ _ _ H3,
+    exact equiv_of_isomorphism (Dinfdiag0 X HH (n, s₀ n) (p c n) ⬝lm f c n)
   end
+
+  theorem is_contr_converges_to (n : gℤ) (H : Π(n s : gℤ), is_contr (E' n s)) : is_contr (Dinf n) :=
+  is_contr_converges_to_precise n (λn s, !H)
+
   end
+
+  variables {E' : gℤ → gℤ → AbGroup} {Dinf : gℤ → AbGroup} (c : E' ⟹ᵍ Dinf)
+  definition converges_to_g_isomorphism {E'' : gℤ → gℤ → AbGroup} {Dinf' : gℤ → AbGroup}
+    (e' : Πn s, E' n s ≃g E'' n s) (f' : Πn, Dinf n ≃g Dinf' n) : E'' ⟹ᵍ Dinf' :=
+  converges_to_isomorphism c (λn s, lm_iso_int.mk (e' n s)) (λn, lm_iso_int.mk (f' n))
+
 
 end left_module
 open left_module
@@ -702,9 +721,9 @@ namespace spectrum
     fapply converges_to.mk,
     { exact exact_couple_sequence },
     { exact is_bounded_sequence },
-    { intros, reflexivity },
-    { exact ub },
+    { intro n, exact ub },
     { intro n, change max0 (ub - ub) = 0, exact ap max0 (sub_self ub) },
+    { intro ns, reflexivity },
     { intro n, reflexivity }
   end
 

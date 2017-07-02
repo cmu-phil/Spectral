@@ -121,4 +121,12 @@ begin
     apply is_surjective_compose, apply is_short_exact.is_surj H, apply is_surjective_of_is_equiv }
 end
 
+lemma is_exact_of_is_short_exact {A B : Type} {C : Type*}
+  {f : A → B} {g : B → C} (H : is_short_exact f g) : is_exact f g :=
+begin
+  constructor,
+  { exact is_short_exact.im_in_ker H },
+  { exact is_short_exact.ker_in_im H }
+end
+
 end algebra
