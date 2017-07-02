@@ -570,4 +570,11 @@ namespace EM
     abstract (EMadd1_functor_gcompose φ φ⁻¹ᵍ n)⁻¹* ⬝* EMadd1_functor_phomotopy proof right_inv φ qed n ⬝*
              EMadd1_functor_gid H n end
 
+  definition EM_pequiv_EM (n : ℕ) {G H : AbGroup} (φ : G ≃g H) : K G n ≃* K H n :=
+  begin
+    cases n with n,
+    { exact pequiv_of_isomorphism φ },
+    { exact EMadd1_pequiv_EMadd1 n φ }
+  end
+
 end EM

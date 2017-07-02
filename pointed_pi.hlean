@@ -399,7 +399,7 @@ namespace pointed
                 idpo)⁻¹ᵉ*
   qed
 
-  definition pmap_psigma {A B : Type*} (C : B → Type) (c : C pt) :
+  definition ppmap_psigma {A B : Type*} (C : B → Type) (c : C pt) :
     ppmap A (psigma_gen C c) ≃*
     psigma_gen (λ(f : ppmap A B), ppi_gen (C ∘ f) (transport C (respect_pt f)⁻¹ c))
                 (ppi_const _) :=
@@ -430,7 +430,7 @@ namespace pointed
                  refine !idp_con ⬝ _, symmetry, refine !ap_id ◾ !idp_con ⬝ _, apply con.right_inv
              end
       ... ≃* ppmap A (psigma_gen (λb, f b = pt) (respect_pt f)) :
-             by exact (pmap_psigma _ _)⁻¹ᵉ*
+             by exact (ppmap_psigma _ _)⁻¹ᵉ*
       ... ≃* ppmap A (pfiber f) : by exact pequiv_ppcompose_left !pfiber.sigma_char'⁻¹ᵉ*
 
 
@@ -459,6 +459,9 @@ namespace pointed
       ... ≃* Π*(a : A), (psigma_gen (λb, f a b = pt) (respect_pt (f a))) :
              by exact (ppi_psigma _ _)⁻¹ᵉ*
       ... ≃* Π*(a : A), pfiber (f a) : by exact ppi_pequiv_right (λa, !pfiber.sigma_char'⁻¹ᵉ*)
+
+  -- definition pppi_ppmap {A C : Type*} {B : A → Type*} :
+  --   ppmap (/- dependent smash of B -/) C ≃* Π*(a : A), ppmap (B a) C :=
 
 end pointed open pointed
 

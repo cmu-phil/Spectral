@@ -134,6 +134,10 @@ begin
     (maxm2_monotone (algebra.add_le_add_right H n))
 end
 
+definition is_strunc_pequiv_closed {k : ℤ} {E F : spectrum} (H : Πn, E n ≃* F n)
+  (H2 : is_strunc k E) : is_strunc k F :=
+λn, is_trunc_equiv_closed (maxm2 (k + n)) (H n)
+
 definition is_strunc_strunc (k : ℤ) (E : spectrum)
   : is_strunc k (strunc k E) :=
 λ n, is_trunc_trunc (maxm2 (k + n)) (E n)
@@ -255,7 +259,7 @@ section
 
 end
 
-definition is_strunc_spi (A : Type*) (k n : ℤ) (H : n ≤ k) (P : A → n-spectrum)
+definition is_strunc_spi_of_le {A : Type*} (k n : ℤ) (H : n ≤ k) (P : A → n-spectrum)
   : is_strunc k (spi A P) :=
 begin
   assert K : n ≤ -[1+ 0] + 1 + k,
@@ -265,5 +269,13 @@ begin
     (λ a, truncspectrum.mk (P a) (is_strunc_of_le (P a) K
           (truncspectrum.struct (P a)))) }
 end
+
+definition is_strunc_spi {A : Type*} (n : ℤ) (P : A → spectrum) (H : Πa, is_strunc n (P a))
+  : is_strunc n (spi A P) :=
+is_strunc_spi_of_le n n !le.refl (λa, truncspectrum.mk (P a) (H a))
+
+definition is_strunc_sp_cotensor (n : ℤ) (A : Type*) {Y : spectrum} (H : is_strunc n Y)
+  : is_strunc n (sp_cotensor A Y) :=
+is_strunc_pequiv_closed (λn, !pppi_pequiv_ppmap) (is_strunc_spi n (λa, Y) (λa, H))
 
 end spectrum

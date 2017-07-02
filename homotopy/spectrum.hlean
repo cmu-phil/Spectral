@@ -8,7 +8,7 @@ Authors: Michael Shulman, Floris van Doorn, Egbert Rijke, Stefano Piceghello, Yu
 import homotopy.LES_of_homotopy_groups .splice ..colim types.pointed2 .EM ..pointed_pi .smash_adjoint ..algebra.seq_colim .fwedge .pointed_cubes
 
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
-     seq_colim succ_str EM EM.ops function
+     seq_colim succ_str EM EM.ops function unit lift is_trunc
 
 /---------------------
   Basic definitions
@@ -253,6 +253,18 @@ namespace spectrum
   -- Equivalences of prespectra
   ------------------------------
 
+  definition spectrum_pequiv_of_nat {E F : spectrum} (e : Π(n : ℕ), E n ≃* F n) (n : ℤ) :
+    E n ≃* F n :=
+  begin
+    have Πn, E (n + 1) ≃* F (n + 1) → E n ≃* F n,
+    from λk f, equiv_glue E k ⬝e* loop_pequiv_loop f ⬝e* (equiv_glue F k)⁻¹ᵉ*,
+    induction n with n n,
+      exact e n,
+    induction n with n IH,
+    { exact this -[1+0] (e 0) },
+    { exact this -[1+succ n] IH }
+  end
+
   structure is_sequiv {N : succ_str} {E F : gen_prespectrum N} (f : E →ₛ F) : Type :=
   (to_linv : F →ₛ E)
   (is_retr : to_linv ∘ₛf ~ₛ sid E)
@@ -326,6 +338,13 @@ namespace spectrum
   definition psp_sphere : gen_prespectrum +ℕ :=
     psp_susp bool.pbool
 
+  ------------------------------
+  -- Contractible spectrum
+  ------------------------------
+
+  definition sunit.{u} [constructor] : spectrum.{u} :=
+  spectrum.MK (λn, plift punit) (λn, pequiv_of_is_contr _ _ _ _)
+
   /---------------------
     Homotopy groups
    ---------------------/
@@ -341,6 +360,14 @@ namespace spectrum
   definition shomotopy_group_fun (n : ℤ) {E F : spectrum} (f : E →ₛ F) :
     πₛ[n] E →g πₛ[n] F :=
   π→g[2] (f (2 - n))
+
+  definition shomotopy_group_isomorphism_of_pequiv (n : ℤ) {E F : spectrum} (f : Πn, E n ≃* F n) :
+    πₛ[n] E ≃g πₛ[n] F :=
+  homotopy_group_isomorphism_of_pequiv 1 (f (2 - n))
+
+  definition shomotopy_group_isomorphism_of_pequiv_nat (n : ℕ) {E F : spectrum}
+    (f : Πn, E n ≃* F n) : πₛ[n] E ≃g πₛ[n] F :=
+  shomotopy_group_isomorphism_of_pequiv n (spectrum_pequiv_of_nat f)
 
   notation `πₛ→[`:95 n:0 `]`:0 := shomotopy_group_fun n
 
@@ -405,7 +432,8 @@ namespace spectrum
     Fibers and long exact sequences
   -----------------------------------------/
 
-  definition sfiber {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y) : gen_spectrum N :=
+  definition sfiber [constructor] {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y) :
+    gen_spectrum N :=
     spectrum.MK (λn, pfiber (f n))
        (λn, (loop_pfiber (f (S n)))⁻¹ᵉ* ∘*ᵉ pfiber_pequiv_of_square _ _ (sglue_square f n))
 
@@ -727,6 +755,10 @@ spectrify_fun (smash_prespectrum_fun f g)
 
   definition EM_spectrum /-[constructor]-/ (G : AbGroup) : spectrum :=
   spectrum.Mk (K G) (λn, (loop_EM G n)⁻¹ᵉ*)
+
+  definition EM_spectrum_pequiv {G H : AbGroup} (e : G ≃g H) (n : ℤ) :
+    EM_spectrum G n ≃* EM_spectrum H n :=
+  spectrum_pequiv_of_nat (λk, EM_pequiv_EM k e) n
 
   /- Wedge of prespectra -/
 

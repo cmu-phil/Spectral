@@ -1,9 +1,12 @@
-import ..algebra.module_exact_couple .strunc
+import ..algebra.module_exact_couple .strunc .cohomology
 
 open eq spectrum trunc is_trunc pointed int EM algebra left_module fiber lift equiv is_equiv
+     cohomology group sigma unit
+set_option pp.binder_types true
 
 /- Eilenberg MacLane spaces are the fibers of the Postnikov system of a type -/
 
+namespace pointed
 definition postnikov_map [constructor] (A : Type*) (n : ℕ₋₂) : ptrunc (n.+1) A →* ptrunc n A :=
 ptrunc.elim (n.+1) !ptr
 
@@ -62,6 +65,10 @@ begin
 end,
 this⁻¹ᵛ*
 
+end pointed open pointed
+
+namespace spectrum
+
 definition is_strunc_strunc_pred (X : spectrum) (k : ℤ) : is_strunc k (strunc (k - 1) X) :=
 λn, @(is_trunc_of_le _ (maxm2_monotone (add_le_add_right (sub_one_le k) n))) !is_strunc_strunc
 
@@ -69,10 +76,11 @@ definition postnikov_smap [constructor] (X : spectrum) (k : ℤ) :
   strunc k X →ₛ strunc (k - 1) X :=
 strunc_elim (str (k - 1) X) (is_strunc_strunc_pred X k)
 
-definition postnikov_smap_phomotopy [constructor] (X : spectrum) (k : ℤ) (n : ℤ) :
-  postnikov_smap X k n ~* postnikov_map (X n) (maxm2 (k - 1 + n)) ∘*
-  sorry :=
-sorry
+definition pfiber_postnikov_smap (A : spectrum) (n : ℤ) (k : ℤ) :
+  pfiber (postnikov_smap A n k) ≃* EM_spectrum (πₛ[n] A) k :=
+begin
+  exact sorry
+end
 
 section atiyah_hirzebruch
   parameters {X : Type*} (Y : X → spectrum) (s₀ : ℤ) (H : Πx, is_strunc s₀ (Y x))
@@ -80,16 +88,95 @@ section atiyah_hirzebruch
   definition atiyah_hirzebruch_exact_couple : exact_couple rℤ Z2 :=
   @exact_couple_sequence (λs, strunc s (spi X Y)) (postnikov_smap (spi X Y))
 
+  definition atiyah_hirzebruch_ub ⦃s n : ℤ⦄ (Hs : s ≤ n - 1) :
+    is_contr (πₛ[n] (strunc s (spi X Y))) :=
+  begin
+    apply trivial_shomotopy_group_of_is_strunc,
+      apply is_strunc_strunc,
+    exact lt_of_le_sub_one Hs
+  end
+
+  include H
+  definition atiyah_hirzebruch_lb ⦃s n : ℤ⦄ (Hs : s ≥ s₀ + 1) :
+    is_equiv (postnikov_smap (spi X Y) s n) :=
+  begin
+    have H2 : is_strunc s₀ (spi X Y), from is_strunc_spi _ _ H,
+    refine is_equiv_of_equiv_of_homotopy
+      (ptrunc_pequiv_ptrunc_of_is_trunc _ _ (H2 n)) _,
+    { apply maxm2_monotone, apply add_le_add_right, exact le.trans !le_add_one Hs },
+    { apply maxm2_monotone, apply add_le_add_right, exact le_sub_one_of_lt Hs },
+    refine @trunc.rec _ _ _ _ _,
+    { intro x, apply is_trunc_eq,
+      assert H3 : maxm2 (s - 1 + n) ≤ (maxm2 (s + n)).+1,
+      { refine trunc_index.le_succ (maxm2_monotone (le.trans (le_of_eq !add.right_comm)
+                                                             !sub_one_le)) },
+      exact @is_trunc_of_le _ _ _ H3 !is_trunc_trunc },
+    intro a, reflexivity
+  end
+
   definition is_bounded_atiyah_hirzebruch : is_bounded atiyah_hirzebruch_exact_couple :=
-  is_bounded_sequence _ s₀ (λn, n - 1)
+  is_bounded_sequence _ s₀ (λn, n - 1) atiyah_hirzebruch_lb atiyah_hirzebruch_ub
+
+  definition atiyah_hirzebruch_convergence' :
+    (λn s, πₛ[n] (sfiber (postnikov_smap (spi X Y) s))) ⟹ᵍ (λn, πₛ[n] (strunc s₀ (spi X Y))) :=
+  converges_to_sequence _ s₀ (λn, n - 1) atiyah_hirzebruch_lb atiyah_hirzebruch_ub
+
+  lemma spi_EM_spectrum (k s : ℤ) :
+    EM_spectrum (πₛ[s] (spi X Y)) k ≃* spi X (λx, EM_spectrum (πₛ[s] (Y x))) k :=
+  sorry
+
+  definition atiyah_hirzebruch_convergence :
+    (λn s, opH^-n[(x : X), πₛ[s] (Y x)]) ⟹ᵍ (λn, pH^-n[(x : X), Y x]) :=
+  converges_to_g_isomorphism atiyah_hirzebruch_convergence'
     begin
-      intro s n H,
-      exact sorry
+      intro n s,
+      refine _ ⬝g (parametrized_cohomology_isomorphism_shomotopy_group_spi _ idp)⁻¹ᵍ,
+      apply shomotopy_group_isomorphism_of_pequiv, intro k,
+      refine pfiber_postnikov_smap (spi X Y) s k ⬝e* _,
+      apply spi_EM_spectrum
     end
     begin
-      intro s n H, apply trivial_shomotopy_group_of_is_strunc,
-        apply is_strunc_strunc,
-      exact lt_of_le_sub_one H,
+      intro n,
+      refine _ ⬝g (parametrized_cohomology_isomorphism_shomotopy_group_spi _ idp)⁻¹ᵍ,
+      apply shomotopy_group_isomorphism_of_pequiv, intro k,
+      apply ptrunc_pequiv, exact is_strunc_spi s₀ Y H k,
     end
 
 end atiyah_hirzebruch
+
+section serre
+  variables {X : Type} (F : X → Type) (Y : spectrum) (s₀ : ℤ) (H : is_strunc s₀ Y)
+
+  open option
+  definition add_point_over {X : Type} (F : X → Type) (x : option X) : Type* :=
+  (option.cases_on x (lift empty) F)₊
+
+  postfix `₊ₒ`:(max+1) := add_point_over
+
+  /- NOTE: we need unreduced cohomology, maybe also define aityah_hirzebruch for unreduced cohomology -/
+  include H
+  definition serre_convergence :
+    (λn s, opH^-n[(x : X₊), H^-s[F₊ₒ x, Y]]) ⟹ᵍ (λn, H^-n[(Σ(x : X), F x)₊, Y]) :=
+ -- (λn s, uopH^-n[(x : X), uH^-s[F x, Y]]) ⟹ᵍ (λn, uH^-n[Σ(x : X), F x, Y]) :=
+  proof
+  converges_to_g_isomorphism
+    (atiyah_hirzebruch_convergence (λx, sp_cotensor (F₊ₒ x) Y) s₀
+                                   (λx, is_strunc_sp_cotensor s₀ (F₊ₒ x) H))
+    begin
+      intro n s,
+      apply ordinary_parametrized_cohomology_isomorphism_right,
+      intro x,
+      exact (cohomology_isomorphism_shomotopy_group_sp_cotensor _ _ idp)⁻¹ᵍ,
+    end
+    begin
+      intro n, exact sorry
+--      refine parametrized_cohomology_isomorphism_shomotopy_group_spi _ idp ⬝g _,
+--      refine _ ⬝g (cohomology_isomorphism_shomotopy_group_sp_cotensor _ _ idp)⁻¹ᵍ,
+--      apply shomotopy_group_isomorphism_of_pequiv, intro k,
+    end
+ qed
+end serre
+
+/- TODO: πₛ[n] (strunc 0 (spi X Y)) ≃g H^n[X, λx, Y x] -/
+
+end spectrum

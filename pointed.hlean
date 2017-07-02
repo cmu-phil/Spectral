@@ -195,6 +195,9 @@ namespace pointed
   definition is_contr_loop (A : Type*) [is_set A] : is_contr (Ω A) :=
   is_contr.mk idp (λa, !is_prop.elim)
 
+  definition is_contr_punit [instance] : is_contr punit :=
+  is_contr_unit
+
   definition pequiv_of_is_contr (A B : Type*) (HA : is_contr A) (HB : is_contr B) : A ≃* B :=
   pequiv_punit_of_is_contr A _ ⬝e* (pequiv_punit_of_is_contr B _)⁻¹ᵉ*
 

@@ -20,31 +20,64 @@ namespace cohomology
 definition cohomology (X : Type*) (Y : spectrum) (n : ℤ) : AbGroup :=
 AbGroup_trunc_pmap X (Y (n+2))
 
-definition parametrized_cohomology {X : Type*} (Y : X → spectrum) (n : ℤ) : AbGroup :=
-AbGroup_trunc_ppi (λx, Y x (n+2))
-
 definition ordinary_cohomology [reducible] (X : Type*) (G : AbGroup) (n : ℤ) : AbGroup :=
 cohomology X (EM_spectrum G) n
 
 definition ordinary_cohomology_Z [reducible] (X : Type*) (n : ℤ) : AbGroup :=
 ordinary_cohomology X agℤ n
 
-notation `H^` n `[`:0 X:0 `, ` Y:0 `]`:0 := cohomology X Y n
-notation `H^` n `[`:0 X:0 `]`:0 := ordinary_cohomology_Z X n
+definition unreduced_cohomology (X : Type) (Y : spectrum) (n : ℤ) : AbGroup :=
+cohomology X₊ Y n
+
+definition unreduced_ordinary_cohomology [reducible] (X : Type) (G : AbGroup) (n : ℤ) : AbGroup :=
+unreduced_cohomology X (EM_spectrum G) n
+
+definition unreduced_ordinary_cohomology_Z [reducible] (X : Type) (n : ℤ) : AbGroup :=
+unreduced_ordinary_cohomology X agℤ n
+
+definition parametrized_cohomology {X : Type*} (Y : X → spectrum) (n : ℤ) : AbGroup :=
+AbGroup_trunc_ppi (λx, Y x (n+2))
+
+definition ordinary_parametrized_cohomology [reducible] {X : Type*} (G : X → AbGroup) (n : ℤ) :
+  AbGroup :=
+parametrized_cohomology (λx, EM_spectrum (G x)) n
+
+definition unreduced_parametrized_cohomology {X : Type} (Y : X → spectrum) (n : ℤ) : AbGroup :=
+@parametrized_cohomology X₊ (λx, option.cases_on x sunit Y) n
+
+definition unreduced_ordinary_parametrized_cohomology [reducible] {X : Type} (G : X → AbGroup)
+  (n : ℤ) : AbGroup :=
+unreduced_parametrized_cohomology (λx, EM_spectrum (G x)) n
+
+notation `H^` n `[`:0 X:0 `, ` Y:0 `]`:0   := cohomology X Y n
+notation `oH^` n `[`:0 X:0 `, ` G:0 `]`:0  := ordinary_cohomology X G n
+notation `H^` n `[`:0 X:0 `]`:0            := ordinary_cohomology_Z X n
+notation `uH^` n `[`:0 X:0 `, ` Y:0 `]`:0  := unreduced_cohomology X Y n
+notation `uoH^` n `[`:0 X:0 `, ` G:0 `]`:0 := unreduced_ordinary_cohomology X G n
+notation `uH^` n `[`:0 X:0 `]`:0           := unreduced_ordinary_cohomology_Z X n
 notation `pH^` n `[`:0 binders `, ` r:(scoped Y, parametrized_cohomology Y n) `]`:0 := r
+notation `opH^` n `[`:0 binders `, ` r:(scoped G, ordinary_parametrized_cohomology G n) `]`:0 := r
+notation `upH^` n `[`:0 binders `, ` r:(scoped Y, unreduced_parametrized_cohomology Y n) `]`:0 := r
+notation `uopH^` n `[`:0 binders `, ` r:(scoped G, unreduced_ordinary_parametrized_cohomology G n) `]`:0 := r
 
 -- check H^3[S¹*,EM_spectrum agℤ]
 -- check H^3[S¹*]
 -- check pH^3[(x : S¹*), EM_spectrum agℤ]
 
 /- an alternate definition of cohomology -/
-definition cohomology_equiv_shomotopy_group_cotensor (X : Type*) (Y : spectrum) (n : ℤ) :
+definition cohomology_equiv_shomotopy_group_sp_cotensor (X : Type*) (Y : spectrum) (n : ℤ) :
   H^n[X, Y] ≃ πₛ[-n] (sp_cotensor X Y) :=
 trunc_equiv_trunc 0 (!pfunext ⬝e loop_pequiv_loop !pfunext ⬝e loopn_pequiv_loopn 2
   (pequiv_of_eq (ap (λn, ppmap X (Y n)) (add.comm n 2 ⬝ ap (add 2) !neg_neg⁻¹))))
 
-definition unpointed_cohomology (X : Type) (Y : spectrum) (n : ℤ) : AbGroup :=
-cohomology X₊ Y n
+definition cohomology_isomorphism_shomotopy_group_sp_cotensor (X : Type*) (Y : spectrum) {n m : ℤ}
+  (p : -m = n) : H^n[X, Y] ≃g πₛ[m] (sp_cotensor X Y) :=
+sorry
+
+definition parametrized_cohomology_isomorphism_shomotopy_group_spi {X : Type*} (Y : X → spectrum)
+  {n m : ℤ} (p : -m = n) : pH^n[(x : X), Y x] ≃g πₛ[m] (spi X Y) :=
+sorry
+
 
 /- functoriality -/
 
@@ -80,6 +113,23 @@ Group_trunc_pmap_isomorphism f
 definition cohomology_isomorphism_refl (X : Type*) (Y : spectrum) (n : ℤ) (x : H^n[X,Y]) :
   cohomology_isomorphism (pequiv.refl X) Y n x = x :=
 !Group_trunc_pmap_isomorphism_refl
+
+definition cohomology_isomorphism_right (X : Type*) {Y Y' : spectrum} (e : Πn, Y n ≃* Y' n) (n : ℤ)
+   : H^n[X, Y] ≃g H^n[X, Y'] :=
+sorry
+
+definition parametrized_cohomology_isomorphism_right (X : Type*) {Y Y' : X → spectrum}
+  (e : Πx n, Y x n ≃* Y' x n) (n : ℤ)
+   : pH^n[(x : X), Y x] ≃g pH^n[(x : X), Y' x] :=
+sorry
+
+definition ordinary_cohomology_isomorphism_right (X : Type*) {G G' : AbGroup} (e : G ≃g G')
+  (n : ℤ) : oH^n[X, G] ≃g oH^n[X, G'] :=
+cohomology_isomorphism_right X (EM_spectrum_pequiv e) n
+
+definition ordinary_parametrized_cohomology_isomorphism_right (X : Type*) {G G' : X → AbGroup}
+  (e : Πx, G x ≃g G' x) (n : ℤ) : opH^n[(x : X), G x] ≃g opH^n[(x : X), G' x] :=
+parametrized_cohomology_isomorphism_right X (λx, EM_spectrum_pequiv (e x)) n
 
 /- suspension axiom -/
 
@@ -168,6 +218,11 @@ theorem EM_dimension (G : AbGroup) (n : ℤ) (H : n ≠ 0) :
 @(is_trunc_equiv_closed_rev -2
   (equiv_of_isomorphism (cohomology_isomorphism (pequiv_plift pbool) _ _)))
   (EM_dimension' G n H)
+
+open group algebra
+theorem ordinary_cohomology_pbool (G : AbGroup) : ordinary_cohomology pbool G 0 ≃g G :=
+sorry
+--isomorphism_of_equiv (trunc_equiv_trunc 0 (ppmap_pbool_pequiv _ ⬝e _)  ⬝e !trunc_equiv) sorry
 
 /- cohomology theory -/
 

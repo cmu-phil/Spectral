@@ -227,6 +227,12 @@ namespace int
   definition sub_one_le (n : ℤ) : n - 1 ≤ n :=
   sub_nat_le n 1
 
+  definition le_add_nat (n : ℤ) (m : ℕ) : n ≤ n + m :=
+  le.intro rfl
+
+  definition le_add_one (n : ℤ) : n ≤ n + 1:=
+  le_add_nat n 1
+
 end int
 
 namespace pmap
@@ -235,6 +241,14 @@ namespace pmap
   begin induction f, reflexivity end
 
 end pmap
+
+namespace lift
+
+  definition is_trunc_plift [instance] [priority 1450] (A : Type*) (n : ℕ₋₂)
+    [H : is_trunc n A] : is_trunc n (plift A) :=
+  is_trunc_lift A n
+
+end lift
 
 namespace trunc
 
