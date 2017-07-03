@@ -142,7 +142,32 @@ section atiyah_hirzebruch
       apply ptrunc_pequiv, exact is_strunc_spi s₀ Y H k,
     end
 
+--{X : Type*} (Y : X → spectrum) (s₀ : ℤ) (H : Πx, is_strunc s₀ (Y x))
 end atiyah_hirzebruch
+
+section unreduced_atiyah_hirzebruch
+
+open option
+
+definition unreduced_atiyah_hirzebruch_convergence {X : Type} (Y : X → spectrum) (s₀ : ℤ)
+  (H : Πx, is_strunc s₀ (Y x)) :
+  (λn s, uopH^-n[(x : X), πₛ[s] (Y x)]) ⟹ᵍ (λn, upH^-n[(x : X), Y x]) :=
+converges_to_g_isomorphism
+  (@atiyah_hirzebruch_convergence X₊ (add_point_spectrum Y) s₀ (is_strunc_add_point_spectrum H))
+  begin
+    intro n s, exact sorry
+    -- refine _ ⬝g (parametrized_cohomology_isomorphism_shomotopy_group_spi _ idp)⁻¹ᵍ,
+    -- apply shomotopy_group_isomorphism_of_pequiv, intro k,
+    -- refine pfiber_postnikov_smap (spi X Y) s k ⬝e* _,
+    -- apply spi_EM_spectrum
+  end
+  begin
+    intro n, exact sorry
+    -- refine _ ⬝g (parametrized_cohomology_isomorphism_shomotopy_group_spi _ idp)⁻¹ᵍ,
+    -- apply shomotopy_group_isomorphism_of_pequiv, intro k,
+    -- apply ptrunc_pequiv, exact is_strunc_spi s₀ Y H k,
+  end
+end unreduced_atiyah_hirzebruch
 
 section serre
   variables {X : Type} (F : X → Type) (Y : spectrum) (s₀ : ℤ) (H : is_strunc s₀ Y)
@@ -156,17 +181,17 @@ section serre
   /- NOTE: we need unreduced cohomology, maybe also define aityah_hirzebruch for unreduced cohomology -/
   include H
   definition serre_convergence :
-    (λn s, opH^-n[(x : X₊), H^-s[F₊ₒ x, Y]]) ⟹ᵍ (λn, H^-n[(Σ(x : X), F x)₊, Y]) :=
- -- (λn s, uopH^-n[(x : X), uH^-s[F x, Y]]) ⟹ᵍ (λn, uH^-n[Σ(x : X), F x, Y]) :=
+    (λn s, uopH^-n[(x : X), uH^-s[F x, Y]]) ⟹ᵍ (λn, uH^-n[Σ(x : X), F x, Y]) :=
   proof
   converges_to_g_isomorphism
     (atiyah_hirzebruch_convergence (λx, sp_cotensor (F₊ₒ x) Y) s₀
                                    (λx, is_strunc_sp_cotensor s₀ (F₊ₒ x) H))
     begin
-      intro n s,
-      apply ordinary_parametrized_cohomology_isomorphism_right,
-      intro x,
-      exact (cohomology_isomorphism_shomotopy_group_sp_cotensor _ _ idp)⁻¹ᵍ,
+      exact sorry
+      -- intro n s,
+      -- apply ordinary_parametrized_cohomology_isomorphism_right,
+      -- intro x,
+      -- exact (cohomology_isomorphism_shomotopy_group_sp_cotensor _ _ idp)⁻¹ᵍ,
     end
     begin
       intro n, exact sorry

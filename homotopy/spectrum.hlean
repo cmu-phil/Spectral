@@ -345,6 +345,11 @@ namespace spectrum
   definition sunit.{u} [constructor] : spectrum.{u} :=
   spectrum.MK (λn, plift punit) (λn, pequiv_of_is_contr _ _ _ _)
 
+  open option
+  definition add_point_spectrum {X : Type} (Y : X → spectrum) : X₊ → spectrum
+  | (some x) := Y x
+  | none     := sunit
+
   /---------------------
     Homotopy groups
    ---------------------/
