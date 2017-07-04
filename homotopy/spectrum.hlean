@@ -253,11 +253,34 @@ namespace spectrum
   -- Equivalences of prespectra
   ------------------------------
 
+  definition spectrum_pequiv_of_pequiv_succ {E F : spectrum} (n : ℤ) (e : E (n + 1) ≃* F (n + 1)) :
+    E n ≃* F n :=
+  equiv_glue E n ⬝e* loop_pequiv_loop e ⬝e* (equiv_glue F n)⁻¹ᵉ*
+
   definition spectrum_pequiv_of_nat {E F : spectrum} (e : Π(n : ℕ), E n ≃* F n) (n : ℤ) :
     E n ≃* F n :=
   begin
-    have Πn, E (n + 1) ≃* F (n + 1) → E n ≃* F n,
-    from λk f, equiv_glue E k ⬝e* loop_pequiv_loop f ⬝e* (equiv_glue F k)⁻¹ᵉ*,
+    induction n with n n,
+      exact e n,
+    induction n with n IH,
+    { exact spectrum_pequiv_of_pequiv_succ -[1+0] (e 0) },
+    { exact spectrum_pequiv_of_pequiv_succ -[1+succ n] IH }
+  end
+
+  -- definition spectrum_pequiv_of_nat_add {E F : spectrum} (m : ℕ)
+  --   (e : Π(n : ℕ), E (n + m) ≃* F (n + m)) : Π(n : ℤ), E n ≃* F n :=
+  -- begin
+  --   apply spectrum_pequiv_of_nat,
+  --   refine nat.rec_down _ m e _,
+  --   intro n f m, cases m with m,
+
+  -- end
+
+  definition is_contr_spectrum_of_nat {E : spectrum} (e : Π(n : ℕ), is_contr (E n)) (n : ℤ) :
+    is_contr (E n)  :=
+  begin
+    have Πn, is_contr (E (n + 1)) → is_contr (E n),
+    from λn H, @(is_trunc_equiv_closed_rev -2 !equiv_glue) (is_contr_loop_of_is_contr H),
     induction n with n n,
       exact e n,
     induction n with n IH,
@@ -337,13 +360,6 @@ namespace spectrum
   -- The sphere prespectrum
   definition psp_sphere : gen_prespectrum +ℕ :=
     psp_susp bool.pbool
-
-  ------------------------------
-  -- Contractible spectrum
-  ------------------------------
-
-  definition sunit.{u} [constructor] : spectrum.{u} :=
-  spectrum.MK (λn, plift punit) (λn, pequiv_of_is_contr _ _ _ _)
 
   /---------------------
     Homotopy groups
@@ -751,6 +767,29 @@ spectrify_fun (smash_prespectrum_fun f g)
 
   /- Cofibers and stability -/
 
+
+  ------------------------------
+  -- Contractible spectrum
+  ------------------------------
+
+  definition sunit.{u} [constructor] : spectrum.{u} :=
+  spectrum.MK (λn, plift punit) (λn, pequiv_of_is_contr _ _ _ _)
+
+  definition shomotopy_group_sunit.{u} (n : ℤ) : πₛ[n] sunit.{u} ≃g trivial_ab_group_lift.{u} :=
+  have H : 0 <[ℕ] 2, from !zero_lt_succ,
+  isomorphism_of_is_contr (@trivial_homotopy_group_of_is_trunc _ _ _ !is_trunc_lift H)
+    !is_trunc_lift
+
+  open option
+  definition add_point_spectrum [unfold 3] {X : Type} (Y : X → spectrum) : X₊ → spectrum
+  | (some x) := Y x
+  | none     := sunit
+
+  definition shomotopy_group_add_point_spectrum {X : Type} (Y : X → spectrum) (n : ℤ) :
+    Π(x : X₊), πₛ[n] (add_point_spectrum Y x) ≃g add_point_AbGroup (λ (x : X), πₛ[n] (Y x)) x
+  | (some x) := by reflexivity
+  | none     := shomotopy_group_sunit n
+
   /- The Eilenberg-MacLane spectrum -/
 
   definition EM_spectrum /-[constructor]-/ (G : AbGroup) : spectrum :=
@@ -759,6 +798,12 @@ spectrify_fun (smash_prespectrum_fun f g)
   definition EM_spectrum_pequiv {G H : AbGroup} (e : G ≃g H) (n : ℤ) :
     EM_spectrum G n ≃* EM_spectrum H n :=
   spectrum_pequiv_of_nat (λk, EM_pequiv_EM k e) n
+
+  definition EM_spectrum_trivial.{u} (n : ℤ) :
+    EM_spectrum trivial_ab_group_lift.{u} n ≃* trivial_ab_group_lift.{u} :=
+  pequiv_of_is_contr _ _
+    (is_contr_spectrum_of_nat (λk, is_contr_EM k !is_trunc_lift) n)
+    !is_trunc_lift
 
   /- Wedge of prespectra -/
 

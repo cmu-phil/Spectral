@@ -6,7 +6,7 @@ Authors: Floris van Doorn, Egbert Rijke, Favonia
 Constructions with groups
 -/
 
-import .quotient_group .free_commutative_group .product_group
+import .quotient_group .free_abelian_group .product_group
 
 open eq is_equiv algebra is_trunc set_quotient relation sigma prod sum list trunc function equiv sigma.ops lift
 

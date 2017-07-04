@@ -3,10 +3,10 @@ Copyright (c) 2015 Floris van Doorn. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Floris van Doorn, Egbert Rijke
 
-Constructions with groups
+Tensor group
 -/
 
-import .free_commutative_group
+import .free_abelian_group
 
 open eq algebra is_trunc sigma sigma.ops prod trunc function equiv
 namespace group

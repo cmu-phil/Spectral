@@ -173,6 +173,17 @@ definition strunc_functor [constructor] (k : ℤ) {E F : spectrum} (f : E →ₛ
   strunc k E →ₛ strunc k F :=
 strunc_elim (str k F ∘ₛ f) (is_strunc_strunc k F)
 
+definition is_strunc_sunit (n : ℤ) : is_strunc n sunit :=
+begin
+  intro k, apply is_trunc_lift, apply is_trunc_unit
+end
+
+open option
+definition is_strunc_add_point_spectrum {X : Type} {Y : X → spectrum} {s₀ : ℤ}
+  (H : Πx, is_strunc s₀ (Y x)) : Π(x : X₊), is_strunc s₀ (add_point_spectrum Y x)
+| (some x) := H x
+| none     := is_strunc_sunit s₀
+
 definition is_strunc_EM_spectrum (G : AbGroup)
   : is_strunc 0 (EM_spectrum G) :=
 begin
