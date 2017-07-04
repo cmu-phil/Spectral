@@ -2,6 +2,8 @@
 
 Formalization project of the CMU HoTT group towards formalizing the Serre spectral sequence.
 
+This repository also contains the contents of the MRC group on formalizing homology in Lean.
+
 #### Participants
 Jeremy Avigad, Steve Awodey, Ulrik Buchholtz, Floris van Doorn, Clive Newstead, Egbert Rijke, Mike Shulman.
 
@@ -91,3 +93,9 @@ These projects are mostly done
 - long exact sequence of homotopy groups of spectra, indexed on ℤ
 - exact couple of a tower of spectra
   + need to splice together LES's
+
+## Contributing
+- We will try to make sure that this repository compiles with the newest version of Lean 2.
+- Installation instructions for Lean 2 can be found [here](https://github.com/leanprover/lean2).
+- Some notes on the Emacs mode can be found [here](https://github.com/leanprover/lean2/blob/master/src/emacs/README.md) (for example if some unicode characters don't show up, or increase the spacing between lines by a lot).
+- If you contribute, please use rebase instead off merge (e.g. `git pull -r`).
