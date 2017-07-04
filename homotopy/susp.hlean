@@ -1,6 +1,6 @@
-import homotopy.susp types.pointed2
+import homotopy.susp types.pointed2 ..move_to_lib
 
-open susp eq pointed function is_equiv lift equiv
+open susp eq pointed function is_equiv lift equiv is_trunc
 
 namespace susp
   variables {X X' Y Y' Z : Type*}
@@ -88,6 +88,44 @@ namespace susp
     calc
       plift.{u v} (psusp A) ≃* psusp A               : by exact (pequiv_plift (psusp A))⁻¹ᵉ*
                         ... ≃* psusp (plift.{u v} A) : by exact psusp_pequiv (pequiv_plift.{u v} A)
+  end
+
+  definition is_contr_susp [instance] (A : Type) [H : is_contr A] : is_contr (susp A) :=
+  begin
+    apply is_contr.mk north,
+    intro x, induction x,
+    reflexivity,
+    exact merid !center,
+    apply eq_pathover_constant_left_id_right, apply square_of_eq,
+    exact whisker_left idp (ap merid !eq_of_is_contr)
+  end
+
+  definition is_contr_psusp [instance] (A : Type) [H : is_contr A] : is_contr (psusp A) :=
+  is_contr_susp A
+
+definition psusp_pelim2 {X Y : Type*} {f g : ⅀ X →* Y} (p : f ~* g) : ((loop_psusp_pintro X Y) f) ~* ((loop_psusp_pintro X Y) g) :=
+pwhisker_right (loop_psusp_unit X) (Ω⇒ p)
+
+  variables {A₀₀ A₂₀ A₀₂ A₂₂ : Type*}
+            {f₁₀ : A₀₀ →* A₂₀} {f₁₂ : A₀₂ →* A₂₂}
+            {f₀₁ : A₀₀ →* A₀₂} {f₂₁ : A₂₀ →* A₂₂}
+
+  -- rename: psusp_functor_psquare
+  definition suspend_psquare (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : psquare (⅀→ f₁₀) (⅀→ f₁₂) (⅀→ f₀₁) (⅀→ f₂₁) :=
+sorry
+
+  definition susp_to_loop_psquare (f₁₀ : A₀₀ →* A₂₀) (f₁₂ : A₀₂ →* A₂₂) (f₀₁ : psusp A₀₀ →* A₀₂) (f₂₁ : psusp A₂₀ →* A₂₂) : (psquare (⅀→ f₁₀) f₁₂ f₀₁ f₂₁) → (psquare f₁₀ (Ω→ f₁₂) ((loop_psusp_pintro A₀₀ A₀₂) f₀₁) ((loop_psusp_pintro A₂₀ A₂₂) f₂₁)) :=
+  begin
+    intro p,
+    refine pvconcat _ (ap1_psquare p),
+    exact loop_psusp_unit_natural f₁₀
+  end
+
+  definition loop_to_susp_square (f₁₀ : A₀₀ →* A₂₀) (f₁₂ : A₀₂ →* A₂₂) (f₀₁ : A₀₀ →* Ω A₀₂) (f₂₁ : A₂₀ →* Ω A₂₂) : (psquare f₁₀ (Ω→ f₁₂) f₀₁ f₂₁) → (psquare (⅀→ f₁₀) f₁₂ ((psusp_pelim A₀₀ A₀₂) f₀₁) ((psusp_pelim A₂₀ A₂₂) f₂₁)) :=
+  begin
+    intro p,
+    refine pvconcat (suspend_psquare p) _,
+    exact psquare_transpose (loop_psusp_counit_natural f₁₂)
   end
 
 end susp

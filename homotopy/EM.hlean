@@ -1,7 +1,7 @@
 -- Authors: Floris van Doorn
 
 import homotopy.EM algebra.category.functor.equivalence types.pointed2 ..pointed_pi ..pointed
-       ..move_to_lib
+       ..move_to_lib .susp
 
 open eq equiv is_equiv algebra group nat pointed EM.ops is_trunc trunc susp function is_conn
 
@@ -518,33 +518,6 @@ namespace EM
   equivalence.mk (EM_cfunctor (n+2)) (is_equivalence_EM_cfunctor n)
   end category
 
-  /- move -/
-
-  open trunc_index
-  definition is_trunc_succ_of_is_trunc_loop (n : ℕ₋₂) (A : Type*) (H : is_trunc (n.+1) (Ω A))
-    (H2 : is_conn 0 A) : is_trunc (n.+2) A :=
-  begin
-    apply is_trunc_succ_of_is_trunc_loop, apply minus_one_le_succ,
-    refine is_conn.elim -1 _ _, exact H
-  end
-
-  lemma is_trunc_of_is_trunc_loopn (m n : ℕ) (A : Type*) (H : is_trunc n (Ω[m] A))
-    (H2 : is_conn m A) : is_trunc (m + n) A :=
-  begin
-    revert A H H2; induction m with m IH: intro A H H2,
-    { rewrite [nat.zero_add], exact H },
-    rewrite [succ_add],
-    apply is_trunc_succ_of_is_trunc_loop,
-    { apply IH,
-      { apply is_trunc_equiv_closed _ !loopn_succ_in },
-      apply is_conn_loop },
-    exact is_conn_of_le _ (zero_le_of_nat (succ m))
-  end
-
-  lemma is_trunc_of_is_set_loopn (m : ℕ) (A : Type*) (H : is_set (Ω[m] A))
-    (H2 : is_conn m A) : is_trunc m A :=
-  is_trunc_of_is_trunc_loopn m 0 A H H2
-
   definition pequiv_EMadd1_of_loopn_pequiv_EM1 {G : AbGroup} {X : Type*} (n : ℕ) (e : Ω[n] X ≃* EM1 G)
     [H1 : is_conn n X] : X ≃* EMadd1 G n :=
   begin
@@ -563,6 +536,25 @@ namespace EM
     abstract (EM1_functor_gcompose φ φ⁻¹ᵍ)⁻¹* ⬝* EM1_functor_phomotopy proof right_inv φ qed ⬝*
              EM1_functor_gid H end
 
+  definition is_contr_EM1 {G : Group} (H : is_contr G) : is_contr (EM1 G) :=
+  is_contr_of_is_conn_of_is_trunc
+    (is_trunc_succ_succ_of_is_trunc_loop _ _ (is_trunc_equiv_closed _ !loop_EM1) _) !is_conn_EM1
+
+  definition is_contr_EMadd1 (n : ℕ) {G : AbGroup} (H : is_contr G) : is_contr (EMadd1 G n) :=
+  begin
+    induction n with n IH,
+    { exact is_contr_EM1 H },
+    { have is_contr (ptrunc (n+2) (psusp (EMadd1 G n))), from _,
+      exact this }
+  end
+
+  definition is_contr_EM (n : ℕ) {G : AbGroup} (H : is_contr G) : is_contr (K G n) :=
+  begin
+    cases n with n,
+    { exact H },
+    { exact is_contr_EMadd1 n H }
+  end
+
   definition EMadd1_pequiv_EMadd1 (n : ℕ) {G H : AbGroup} (φ : G ≃g H) : EMadd1 G n ≃* EMadd1 H n :=
   pequiv.MK (EMadd1_functor φ n) (EMadd1_functor φ⁻¹ᵍ n)
     abstract (EMadd1_functor_gcompose φ⁻¹ᵍ φ n)⁻¹* ⬝* EMadd1_functor_phomotopy proof left_inv φ qed n ⬝*
@@ -576,5 +568,13 @@ namespace EM
     { exact pequiv_of_isomorphism φ },
     { exact EMadd1_pequiv_EMadd1 n φ }
   end
+
+  definition ppi_EMadd1 {X : Type*} (Y : X → Type*) (n : ℕ) :
+    (Π*(x : X), EMadd1 (πag[n+2] (Y x)) (n+1)) ≃* EMadd1 (πag[n+2] (Π*(x : X), Y x)) (n+1) :=
+  begin
+    exact sorry
+  end
+--EM_spectrum (πₛ[s] (spi X Y)) k ≃* spi X (λx, EM_spectrum (πₛ[s] (Y x))) k
+
 
 end EM

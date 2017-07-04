@@ -1,7 +1,6 @@
 -- definitions, theorems and attributes which should be moved to files in the HoTT library
 
 import homotopy.sphere2 homotopy.cofiber homotopy.wedge hit.prop_trunc hit.set_quotient eq2 types.pointed2
-       .homotopy.susp
 
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc pi group
      is_trunc function sphere unit prod bool
@@ -294,9 +293,6 @@ namespace trunc
     { apply idp_con }
   end
 
-  definition is_trunc_of_eq {n m : ℕ₋₂} (p : n = m) {A : Type} (H : is_trunc n A) : is_trunc m A :=
-  transport (λk, is_trunc k A) p H
-
   definition is_trunc_ptrunc_of_is_trunc [instance] [priority 500] (A : Type*)
     (n m : ℕ₋₂) [H : is_trunc n A] : is_trunc n (ptrunc m A) :=
   is_trunc_trunc_of_is_trunc A n m
@@ -326,6 +322,38 @@ namespace trunc
 
 end trunc
 
+namespace is_trunc
+
+  open trunc_index is_conn
+
+  definition is_trunc_of_eq {n m : ℕ₋₂} (p : n = m) {A : Type} (H : is_trunc n A) : is_trunc m A :=
+  transport (λk, is_trunc k A) p H
+
+  definition is_trunc_succ_succ_of_is_trunc_loop (n : ℕ₋₂) (A : Type*) (H : is_trunc (n.+1) (Ω A))
+    (H2 : is_conn 0 A) : is_trunc (n.+2) A :=
+  begin
+    apply is_trunc_succ_of_is_trunc_loop, apply minus_one_le_succ,
+    refine is_conn.elim -1 _ _, exact H
+  end
+
+  lemma is_trunc_of_is_trunc_loopn (m n : ℕ) (A : Type*) (H : is_trunc n (Ω[m] A))
+    (H2 : is_conn m A) : is_trunc (m + n) A :=
+  begin
+    revert A H H2; induction m with m IH: intro A H H2,
+    { rewrite [nat.zero_add], exact H },
+    rewrite [succ_add],
+    apply is_trunc_succ_succ_of_is_trunc_loop,
+    { apply IH,
+      { apply is_trunc_equiv_closed _ !loopn_succ_in },
+      apply is_conn_loop },
+    exact is_conn_of_le _ (zero_le_of_nat (succ m))
+  end
+
+  lemma is_trunc_of_is_set_loopn (m : ℕ) (A : Type*) (H : is_set (Ω[m] A))
+    (H2 : is_conn m A) : is_trunc m A :=
+  is_trunc_of_is_trunc_loopn m 0 A H H2
+
+end is_trunc
 namespace sigma
 
   -- definition sigma_pathover_equiv_of_is_prop {A : Type} {B : A → Type} {C : Πa, B a → Type}
@@ -381,6 +409,14 @@ namespace group
     reflexivity
   end
 
+  open option
+  definition add_point_AbGroup [unfold 3] {X : Type} (G : X → AbGroup) : X₊ → AbGroup
+  | (some x) := G x
+  | none     := trivial_ab_group_lift
+
+  definition isomorphism_of_is_contr {G H : Group} (hG : is_contr G) (hH : is_contr H) : G ≃g H :=
+  trivial_group_of_is_contr G ⬝g (trivial_group_of_is_contr H)⁻¹ᵍ
+
 end group open group
 
 namespace function
@@ -418,35 +454,6 @@ namespace is_conn
   sorry
 
 end is_conn
-
-namespace is_trunc
-
-open trunc_index is_conn
-
-  definition is_trunc_succ_succ_of_is_trunc_loop (n : ℕ₋₂) (A : Type*) (H : is_trunc (n.+1) (Ω A))
-    (H2 : is_conn 0 A) : is_trunc (n.+2) A :=
-  begin
-    apply is_trunc_succ_of_is_trunc_loop, apply minus_one_le_succ,
-    refine is_conn.elim -1 _ _, exact H
-  end
-  lemma is_trunc_of_is_trunc_loopn (m n : ℕ) (A : Type*) (H : is_trunc n (Ω[m] A))
-    (H2 : is_conn m A) : is_trunc (m +[ℕ] n) A :=
-  begin
-    revert A H H2; induction m with m IH: intro A H H2,
-    { rewrite [nat.zero_add], exact H },
-    rewrite [succ_add],
-    apply is_trunc_succ_succ_of_is_trunc_loop,
-    { apply IH,
-      { apply is_trunc_equiv_closed _ !loopn_succ_in },
-      apply is_conn_loop },
-    exact is_conn_of_le _ (zero_le_of_nat (succ m))
-  end
-
-  lemma is_trunc_of_is_set_loopn (m : ℕ) (A : Type*) (H : is_set (Ω[m] A))
-    (H2 : is_conn m A) : is_trunc m A :=
-  is_trunc_of_is_trunc_loopn m 0 A H H2
-
-end is_trunc
 
 namespace misc
   open is_conn
@@ -801,34 +808,16 @@ begin
   rewrite trans_refl
 end
 
-definition psusp_pelim2 {X Y : Type*} {f g : ⅀ X →* Y} (p : f ~* g) : ((loop_psusp_pintro X Y) f) ~* ((loop_psusp_pintro X Y) g) :=
-pwhisker_right (loop_psusp_unit X) (Ω⇒ p)
 
 namespace pointed
   definition to_homotopy_pt_mk {A B : Type*} {f g : A →* B} (h : f ~ g)
     (p : h pt ⬝ respect_pt g = respect_pt f) : to_homotopy_pt (phomotopy.mk h p) = p :=
   to_right_inv !eq_con_inv_equiv_con_eq p
 
+
   variables {A₀₀ A₂₀ A₀₂ A₂₂ : Type*}
             {f₁₀ : A₀₀ →* A₂₀} {f₁₂ : A₀₂ →* A₂₂}
             {f₀₁ : A₀₀ →* A₀₂} {f₂₁ : A₂₀ →* A₂₂}
-
   definition psquare_transpose (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : psquare f₀₁ f₂₁ f₁₀ f₁₂ := p⁻¹*
 
-  definition suspend_psquare (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : psquare (⅀→ f₁₀) (⅀→ f₁₂) (⅀→ f₀₁) (⅀→ f₂₁) :=
-sorry
-
-  definition susp_to_loop_psquare (f₁₀ : A₀₀ →* A₂₀) (f₁₂ : A₀₂ →* A₂₂) (f₀₁ : psusp A₀₀ →* A₀₂) (f₂₁ : psusp A₂₀ →* A₂₂) : (psquare (⅀→ f₁₀) f₁₂ f₀₁ f₂₁) → (psquare f₁₀ (Ω→ f₁₂) ((loop_psusp_pintro A₀₀ A₀₂) f₀₁) ((loop_psusp_pintro A₂₀ A₂₂) f₂₁)) :=
-  begin
-    intro p,
-    refine pvconcat _ (ap1_psquare p),
-    exact loop_psusp_unit_natural f₁₀
-  end
-
-  definition loop_to_susp_square (f₁₀ : A₀₀ →* A₂₀) (f₁₂ : A₀₂ →* A₂₂) (f₀₁ : A₀₀ →* Ω A₀₂) (f₂₁ : A₂₀ →* Ω A₂₂) : (psquare f₁₀ (Ω→ f₁₂) f₀₁ f₂₁) → (psquare (⅀→ f₁₀) f₁₂ ((psusp_pelim A₀₀ A₀₂) f₀₁) ((psusp_pelim A₂₀ A₂₂) f₂₁)) :=
-  begin
-    intro p,
-    refine pvconcat (suspend_psquare p) _,
-    exact psquare_transpose (loop_psusp_counit_natural f₁₂)
-  end
 end pointed

@@ -43,7 +43,7 @@ definition ordinary_parametrized_cohomology [reducible] {X : Type*} (G : X → A
 parametrized_cohomology (λx, EM_spectrum (G x)) n
 
 definition unreduced_parametrized_cohomology {X : Type} (Y : X → spectrum) (n : ℤ) : AbGroup :=
-@parametrized_cohomology X₊ (λx, option.cases_on x sunit Y) n
+@parametrized_cohomology X₊ (add_point_spectrum Y) n
 
 definition unreduced_ordinary_parametrized_cohomology [reducible] {X : Type} (G : X → AbGroup)
   (n : ℤ) : AbGroup :=
@@ -77,7 +77,6 @@ sorry
 definition parametrized_cohomology_isomorphism_shomotopy_group_spi {X : Type*} (Y : X → spectrum)
   {n m : ℤ} (p : -m = n) : pH^n[(x : X), Y x] ≃g πₛ[m] (spi X Y) :=
 sorry
-
 
 /- functoriality -/
 
@@ -118,7 +117,7 @@ definition cohomology_isomorphism_right (X : Type*) {Y Y' : spectrum} (e : Πn, 
    : H^n[X, Y] ≃g H^n[X, Y'] :=
 sorry
 
-definition parametrized_cohomology_isomorphism_right (X : Type*) {Y Y' : X → spectrum}
+definition parametrized_cohomology_isomorphism_right {X : Type*} {Y Y' : X → spectrum}
   (e : Πx n, Y x n ≃* Y' x n) (n : ℤ)
    : pH^n[(x : X), Y x] ≃g pH^n[(x : X), Y' x] :=
 sorry
@@ -127,9 +126,19 @@ definition ordinary_cohomology_isomorphism_right (X : Type*) {G G' : AbGroup} (e
   (n : ℤ) : oH^n[X, G] ≃g oH^n[X, G'] :=
 cohomology_isomorphism_right X (EM_spectrum_pequiv e) n
 
-definition ordinary_parametrized_cohomology_isomorphism_right (X : Type*) {G G' : X → AbGroup}
+definition ordinary_parametrized_cohomology_isomorphism_right {X : Type*} {G G' : X → AbGroup}
   (e : Πx, G x ≃g G' x) (n : ℤ) : opH^n[(x : X), G x] ≃g opH^n[(x : X), G' x] :=
-parametrized_cohomology_isomorphism_right X (λx, EM_spectrum_pequiv (e x)) n
+parametrized_cohomology_isomorphism_right (λx, EM_spectrum_pequiv (e x)) n
+
+definition uopH_isomorphism_opH {X : Type} (G : X → AbGroup) (n : ℤ) :
+  uopH^n[(x : X), G x] ≃g opH^n[(x : X₊), add_point_AbGroup G x] :=
+parametrized_cohomology_isomorphism_right
+  begin
+    intro x n, induction x with x,
+    { symmetry, apply EM_spectrum_trivial, },
+    { reflexivity }
+  end
+  n
 
 /- suspension axiom -/
 
