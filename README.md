@@ -26,7 +26,7 @@ These projects are mostly done
 - We construct the Atiyah-Hirzebruch and Serre spectral sequences for cohomology.
 
 ### Future directions
-- Hurewicz Theorem and Hurewicz theorem modulo a Serre class.
+- Hurewicz Theorem and Hurewicz theorem modulo a Serre class. There is a proof in Hatcher. Also, [this](http://www.math.uni-frankfurt.de/~johannso/SkriptAll/SkriptTopAlg/SkriptTopCW/homotop12.pdf) might be useful.
 - Homological Serre spectral sequence.
 - Interaction between steenrod squares and cup product with spectral sequences
 - ...
