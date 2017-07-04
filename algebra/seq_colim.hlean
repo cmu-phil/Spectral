@@ -1,6 +1,6 @@
 --Authors: Robert Rose, Liz Vidaurre
 
-import .direct_sum .quotient_group ..move_to_lib
+import .direct_sum ..move_to_lib
 
 open eq algebra is_trunc set_quotient relation sigma prod sum list trunc function equiv sigma.ops nat
 
