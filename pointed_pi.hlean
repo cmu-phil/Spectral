@@ -168,6 +168,29 @@ namespace pointed
     ppi_homotopy_of_eq (eq_of_ppi_homotopy h) = h :=
   to_right_inv (ppi_eq_equiv k l) h
 
+  print pointed.phomotopy_rec_on_idp
+  print ppi_gen
+
+  variable (k)
+
+  definition eq_ppi_homotopy_refl_ppi_homotopy_of_eq_refl : ppi_homotopy.refl k = ppi_homotopy_of_eq (refl k) :=
+  begin
+    induction k with k p,
+    induction p, reflexivity    
+  end
+
+  definition ppi_homotopy_rec_on_eq [recursor] {k' : ppi_gen B x₀}
+    {Q : (k ~~* k') → Type} (p : k ~~* k') (H : Π(q : k = k'), Q (ppi_homotopy_of_eq q)) : Q p :=
+  ppi_homotopy_of_eq_of_ppi_homotopy p ▸ H (eq_of_ppi_homotopy p)
+
+  definition ppi_homotopy_rec_on_idp [recursor]
+    {Q : Π {k' : ppi_gen B x₀},  (k ~~* k') → Type}
+    (q : Q (ppi_homotopy.refl k)) {k' : ppi_gen B x₀} (H : k ~~* k') : Q H :=
+  begin
+    induction H using ppi_homotopy_rec_on_eq with t,
+    induction t, exact eq_ppi_homotopy_refl_ppi_homotopy_of_eq_refl k ▸ q,
+  end
+
   definition ppi_loop_equiv_lemma (p : k ~ k)
     : (p pt ⬝ ppi_gen.resp_pt k = ppi_gen.resp_pt k) ≃ (p pt = idp) :=
     calc (p pt ⬝ ppi_gen.resp_pt k = ppi_gen.resp_pt k)

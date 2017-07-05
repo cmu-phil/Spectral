@@ -10,7 +10,7 @@ The goal of this file is to extend the library of pointed types and pointed maps
 
 -/
 
-import types.pointed2
+import types.pointed2 ..pointed_pi
 
 open eq pointed
 
@@ -122,18 +122,20 @@ structure p2homotopy {A B : Type*} {f g : A →* B} (H K : f ~* g) : Type :=
 ( to_2htpy : H ~ K)
 ( respect_pt  : p2homotopy_ty_respect_pt to_2htpy)
 
-definition phsquare_of_p2homotopy {A B : Type*} {f g h i : A →* B} {phtpy_top : f ~* g} {phtpy_bot : h ~* i} {phtpy_left : f ~* h} {phtpy_right : g ~* i} (p2htpy : p2homotopy (phtpy_top ⬝* phtpy_right) (phtpy_left ⬝* phtpy_bot)) : phsquare phtpy_top phtpy_bot phtpy_left phtpy_right :=
+definition phsquare_of_p2homotopy {A B : Type*} {f g h i : A →* B} {phtpy_top : f ~* g} {phtpy_bot : h ~* i} {phtpy_left : f ~* h} {phtpy_right : g ~* i} (p2htpy : (phtpy_top ⬝* phtpy_right) ~~* (phtpy_left ⬝* phtpy_bot)) : phsquare phtpy_top phtpy_bot phtpy_left phtpy_right :=
 begin
   induction p2htpy,
   induction phtpy_left using phomotopy_rec_on_idp,
-  induction phtpy_right using phomotopy_rec_on_idp,
+  induction phtpy_right using phomotopy_rec_on_idp, 
+  induction to_2htpy, unfold phsquare,
   repeat exact sorry
 end
 
 definition ptube_v_phtpy_bot {A B C D : Type*} {ftop ftop' : A →* B} {phtpy_top : ftop ~* ftop'} {fbot fbot' fbot'' : C →* D} {phtpy_bot : fbot ~* fbot'} {phtpy_bot' : fbot' ~* fbot''} {fleft : A →* C} {fright : B →* D} {psq_back : psquare ftop fbot fleft fright} {psq_front : psquare ftop' fbot' fleft fright} {psq_front' : psquare ftop' fbot'' fleft fright} (ptb : ptube_v phtpy_top phtpy_bot psq_back psq_front) (ptb' : ptube_v phomotopy.rfl phtpy_bot' psq_front psq_front') : ptube_v phtpy_top (phtpy_bot ⬝* phtpy_bot') psq_back psq_front' :=
 begin
   unfold ptube_v,
-  unfold phsquare
+  unfold phsquare,
+  repeat exact sorry
 end
 
 definition ptube_v_left_inv {A B C D : Type*} {ftop : A ≃* B} {fbot : C ≃* D} {fleft : A →* C} {fright : B →* D} 
