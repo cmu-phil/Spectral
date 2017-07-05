@@ -332,17 +332,20 @@ namespace spectrum
     repeat exact sorry,
   end
 
+  definition is_sequiv_of_smap_issec {N : succ_str} {E F : gen_prespectrum N} (f : E →ₛ F) (H : is_sequiv_smap f) : f ∘ₛ is_sequiv_of_smap_inv f H ~ₛ sid F :=
+  begin
+    repeat exact sorry
+  end
+
   definition is_sequiv_of_smap {N : succ_str} {E F : gen_prespectrum N} (f : E →ₛ F) : is_sequiv_smap f → is_sequiv f :=
   begin
     intro H,
     fapply is_sequiv.mk,
     fapply is_sequiv_of_smap_inv f H,
     fapply is_sequiv_of_smap_isretr f H,
-    repeat exact sorry
+    fapply is_sequiv_of_smap_inv f H,
+    fapply is_sequiv_of_smap_issec f H,
   end
-
---  definition is_sequiv_psimple {N : succ_str} {E F : gen_prespectrum N} (f : E →ₛ F) : Type :=
---  Π (n : N), is_pequiv
 
   ------------------------------
   -- Suspension prespectra
@@ -566,18 +569,31 @@ namespace spectrum
   -- note: see also cotensor above
 
   /- Prespectrification -/
+  definition is_sconnected {N : succ_str} {X Y : gen_prespectrum N} (h : X →ₛ Y) : Type :=
+  Π (E : gen_spectrum N), is_equiv (λ g : Y →ₛ E, g ∘ₛ h)
 
-  definition prespectrify [constructor] {N : succ_str} (X : gen_prespectrum N) : gen_prespectrum N :=
+  definition prespectrification [constructor] {N : succ_str} (X : gen_prespectrum N) : gen_prespectrum N :=
   gen_prespectrum.mk (λ n, Ω (X (S n))) (λ n, Ω→ (glue X (S n)))
 
-  definition to_prespectrify {N : succ_str} (X : gen_prespectrum N) : X →ₛ prespectrify X :=
+  definition to_prespectrification {N : succ_str} (X : gen_prespectrum N) : X →ₛ prespectrification X :=
   begin
     fapply smap.mk,
     exact glue X,
     intro n, fapply psquare_of_phomotopy, reflexivity
   end
 
-  definition is_leftmap_to_prespectrify_inv {N : succ_str} (X : gen_prespectrum N) (E : gen_spectrum N) : X →ₛ gen_spectrum.to_prespectrum E → prespectrify X →ₛ gen_spectrum.to_prespectrum E :=
+  definition is_sequiv_smap_of_is_spectrum {N : succ_str} (E : gen_prespectrum N) (H : is_spectrum E) : is_sequiv_smap (to_prespectrification E) :=
+  begin
+    repeat exact sorry
+  end
+
+  definition is_sequiv_of_spectrum {N : succ_str} (E : gen_spectrum N) : is_sequiv_smap (to_prespectrification E) :=
+  begin
+    repeat exact sorry
+  end
+
+  definition is_sconnected_to_prespectrification_inv {N : succ_str} (X : gen_prespectrum N) (E : gen_spectrum N) 
+  : (X →ₛ E) → (prespectrification X →ₛ E) :=
   begin
     intro f,
     fapply smap.mk,
@@ -586,21 +602,36 @@ namespace spectrum
     refine (passoc (glue (gen_spectrum.to_prespectrum E) n) (pequiv.to_pmap
     (equiv_glue (gen_spectrum.to_prespectrum E) n)⁻¹ᵉ*) (Ω→ (to_fun f (S n))))⁻¹* ⬝* _,
     refine pwhisker_right (Ω→ (to_fun f (S n))) (pright_inv (equiv_glue E n)) ⬝* _,
-    refine _ ⬝* pwhisker_right (glue (prespectrify X) n) ((ap1_pcompose (pequiv.to_pmap (equiv_glue (gen_spectrum.to_prespectrum E) (S n))⁻¹ᵉ*) (Ω→ (to_fun f (S (S n)))))⁻¹*),
+    refine _ ⬝* pwhisker_right (glue (prespectrification X) n) ((ap1_pcompose (pequiv.to_pmap (equiv_glue (gen_spectrum.to_prespectrum E) (S n))⁻¹ᵉ*) (Ω→ (to_fun f (S (S n)))))⁻¹*),
+    refine pid_pcompose (Ω→ (f (S n))) ⬝* _,
     repeat exact sorry
   end
 
-  definition is_leftmap_to_prespectrify {N : succ_str} (X : gen_prespectrum N) (E : gen_spectrum N) :
-  is_equiv (λ (f : prespectrify X →ₛ E), f ∘ₛ to_prespectrify X) :=
+  definition is_sconnected_to_prespectrification_isretr {N : succ_str} (X : gen_prespectrum N) (E : gen_spectrum N) (f : prespectrification X →ₛ E) : is_sconnected_to_prespectrification_inv X E (f ∘ₛ to_prespectrification X) = f :=
   begin
-    fapply adjointify,
-    exact is_leftmap_to_prespectrify_inv X E,
     repeat exact sorry
+  end
+
+  definition is_sconnected_to_prespectrification_issec {N : succ_str} (X : gen_prespectrum N) (E : gen_spectrum N) (g : X →ₛ E) :
+  is_sconnected_to_prespectrification_inv X E g ∘ₛ to_prespectrification X = g :=
+  begin
+    repeat exact sorry
+  end
+
+  definition is_sconnected_to_prespectrify {N : succ_str} (X : gen_prespectrum N) :
+    is_sconnected (to_prespectrification X) :=
+  begin
+    intro E,
+    fapply adjointify,
+    exact is_sconnected_to_prespectrification_inv X E,
+    exact is_sconnected_to_prespectrification_issec X E,
+    exact is_sconnected_to_prespectrification_isretr X E
   end
 
   -- Conjecture
-  definition is_spectrum_of_local (E : gen_spectrum +ℕ) (Hyp : is_equiv (λ (f : prespectrify (psp_sphere) →ₛ E), f ∘ₛ to_prespectrify (psp_sphere))) : is_spectrum E :=
+  definition is_spectrum_of_local (X : gen_prespectrum +ℕ) (Hyp : is_equiv (λ (f : prespectrification (psp_sphere) →ₛ X), f ∘ₛ to_prespectrification (psp_sphere))) : is_spectrum X :=
   begin
+    fapply is_spectrum.mk,
     exact sorry
   end
 
