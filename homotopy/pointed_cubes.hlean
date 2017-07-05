@@ -91,6 +91,9 @@ begin
   exact (pconst_pcompose fleft)⁻¹*,
 end
 
+definition phsquare_of_ppi_homotopy {A B : Type*} {f g h i : A →* B} {phtpy_top : f ~* g} {phtpy_bot : h ~* i} {phtpy_left : f ~* h} {phtpy_right : g ~* i} (H : phtpy_top ⬝* phtpy_right ~~* phtpy_left ⬝* phtpy_bot) : phsquare phtpy_top phtpy_bot phtpy_left phtpy_right :=
+  eq_of_ppi_homotopy H
+
 definition ptube_v {A B C D : Type*} {ftop ftop' : A →* B} (phtpy_top : ftop ~* ftop') {fbot fbot' : C →* D} (phtpy_bot : fbot ~* fbot') {fleft : A →* C} {fright : B →* D} (psq_back : psquare ftop fbot fleft fright) (psq_front : psquare ftop' fbot' fleft fright) : Type :=
 phsquare (pwhisker_left fright phtpy_top) (pwhisker_right fleft phtpy_bot) psq_back psq_front
 
@@ -122,20 +125,18 @@ structure p2homotopy {A B : Type*} {f g : A →* B} (H K : f ~* g) : Type :=
 ( to_2htpy : H ~ K)
 ( respect_pt  : p2homotopy_ty_respect_pt to_2htpy)
 
-definition phsquare_of_p2homotopy {A B : Type*} {f g h i : A →* B} {phtpy_top : f ~* g} {phtpy_bot : h ~* i} {phtpy_left : f ~* h} {phtpy_right : g ~* i} (p2htpy : (phtpy_top ⬝* phtpy_right) ~~* (phtpy_left ⬝* phtpy_bot)) : phsquare phtpy_top phtpy_bot phtpy_left phtpy_right :=
+definition ptube_v_phtpy_bot {A B C D : Type*} 
+  {ftop ftop' : A →* B} {phtpy_top : ftop ~* ftop'} 
+  {fbot fbot' : C →* D} {phtpy_bot phtpy_bot' : fbot ~* fbot'} (ppi_htpy_bot : phtpy_bot ~~* phtpy_bot')
+  {fleft : A →* C} {fright : B →* D} 
+  {psq_back : psquare ftop fbot fleft fright} 
+  {psq_front : psquare ftop' fbot' fleft fright} 
+  (ptb : ptube_v phtpy_top phtpy_bot psq_back psq_front)  
+  : ptube_v phtpy_top phtpy_bot' psq_back psq_front 
+  :=
 begin
-  induction p2htpy,
-  induction phtpy_left using phomotopy_rec_on_idp,
-  induction phtpy_right using phomotopy_rec_on_idp, 
-  induction to_2htpy, unfold phsquare,
-  repeat exact sorry
-end
-
-definition ptube_v_phtpy_bot {A B C D : Type*} {ftop ftop' : A →* B} {phtpy_top : ftop ~* ftop'} {fbot fbot' fbot'' : C →* D} {phtpy_bot : fbot ~* fbot'} {phtpy_bot' : fbot' ~* fbot''} {fleft : A →* C} {fright : B →* D} {psq_back : psquare ftop fbot fleft fright} {psq_front : psquare ftop' fbot' fleft fright} {psq_front' : psquare ftop' fbot'' fleft fright} (ptb : ptube_v phtpy_top phtpy_bot psq_back psq_front) (ptb' : ptube_v phomotopy.rfl phtpy_bot' psq_front psq_front') : ptube_v phtpy_top (phtpy_bot ⬝* phtpy_bot') psq_back psq_front' :=
-begin
-  unfold ptube_v,
-  unfold phsquare,
-  repeat exact sorry
+  induction ppi_htpy_bot using ppi_homotopy_rec_on_idp,
+  exact ptb,
 end
 
 definition ptube_v_left_inv {A B C D : Type*} {ftop : A ≃* B} {fbot : C ≃* D} {fleft : A →* C} {fright : B →* D} 
@@ -146,5 +147,8 @@ definition ptube_v_left_inv {A B C D : Type*} {ftop : A ≃* B} {fbot : C ≃* D
     (psquare_hcompose psq (psquare_inv_top_bot psq)) 
     (psquare_of_pid_top_bot phomotopy.rfl) :=
 begin
-  exact sorry
+  refine ptube_v_phtpy_bot _ _,
+  exact pleft_inv fbot,
+  exact ppi_homotopy.rfl,
+  fapply phsquare_of_ppi_homotopy, repeat exact sorry,
 end

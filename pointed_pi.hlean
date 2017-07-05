@@ -168,9 +168,6 @@ namespace pointed
     ppi_homotopy_of_eq (eq_of_ppi_homotopy h) = h :=
   to_right_inv (ppi_eq_equiv k l) h
 
-  print pointed.phomotopy_rec_on_idp
-  print ppi_gen
-
   variable (k)
 
   definition eq_ppi_homotopy_refl_ppi_homotopy_of_eq_refl : ppi_homotopy.refl k = ppi_homotopy_of_eq (refl k) :=
@@ -178,6 +175,8 @@ namespace pointed
     induction k with k p,
     induction p, reflexivity    
   end
+
+  variable {k}
 
   definition ppi_homotopy_rec_on_eq [recursor] {k' : ppi_gen B x₀}
     {Q : (k ~~* k') → Type} (p : k ~~* k') (H : Π(q : k = k'), Q (ppi_homotopy_of_eq q)) : Q p :=
