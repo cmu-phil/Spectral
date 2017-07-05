@@ -232,7 +232,7 @@ namespace int
   definition le_add_one (n : ℤ) : n ≤ n + 1:=
   le_add_nat n 1
 
-end int
+end int open int
 
 namespace pmap
 
@@ -250,6 +250,15 @@ namespace lift
 end lift
 
 namespace trunc
+  open trunc_index
+  definition trunc_index_equiv_nat [constructor] : ℕ₋₂ ≃ ℕ :=
+  equiv.MK add_two sub_two add_two_sub_two sub_two_add_two
+
+  definition is_set_trunc_index [instance] : is_set ℕ₋₂ :=
+  is_trunc_equiv_closed_rev 0 trunc_index_equiv_nat
+
+  definition is_contr_ptrunc_minus_one (A : Type*) : is_contr (ptrunc -1 A) :=
+  is_contr_of_inhabited_prop pt
 
   -- TODO: redefine loopn_ptrunc_pequiv
   definition apn_ptrunc_functor (n : ℕ₋₂) (k : ℕ) {A B : Type*} (f : A →* B) :
@@ -319,6 +328,9 @@ namespace trunc
     : ptrunc k X →* ptrunc l X :=
   have is_trunc k (ptrunc l X), from is_trunc_of_le _ p,
   ptrunc.elim _ (ptr l X)
+
+  definition trunc_index.pred [unfold 1] (n : ℕ₋₂) : ℕ₋₂ :=
+  begin cases n with n, exact -2, exact n end
 
 end trunc
 
@@ -418,6 +430,13 @@ namespace group
   trivial_group_of_is_contr G ⬝g (trivial_group_of_is_contr H)⁻¹ᵍ
 
 end group open group
+
+namespace fiber
+
+  definition is_contr_pfiber_pid (A : Type*) : is_contr (pfiber (pid A)) :=
+  is_contr.mk pt begin intro x, induction x with a p, esimp at p, cases p, reflexivity end
+
+end fiber
 
 namespace function
   variables {A B : Type} {f f' : A → B}

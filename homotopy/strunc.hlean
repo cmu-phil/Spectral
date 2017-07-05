@@ -40,7 +40,7 @@ namespace spectrum
 
 definition ptrunc_maxm2_change_int {k l : ℤ} (p : k = l) (X : Type*)
   : ptrunc (maxm2 k) X ≃* ptrunc (maxm2 l) X :=
-pequiv_ap (λ n, ptrunc (maxm2 n) X) p
+ptrunc_change_index (ap maxm2 p) X
 
 definition is_trunc_maxm2_change_int {k l : ℤ} (X : pType) (p : k = l)
   : is_trunc (maxm2 k) X → is_trunc (maxm2 l) X :=
