@@ -23,7 +23,7 @@ namespace wedge
     induction x,
     { reflexivity },
     { reflexivity },
-    { apply eq_pathover_id_right, 
+    { apply eq_pathover_id_right,
      apply hdeg_square,
      exact ap_compose wedge_flip _ _ ⬝ ap02 _ !elim_glue ⬝ !ap_inv ⬝ !elim_glue⁻² ⬝ !inv_inv }
   end
@@ -48,7 +48,7 @@ namespace wedge
     exact (glue ⋆),
     exact inr (inr a),
     -- exact elim_glue _ _ _,
-    
+    exact sorry
 
   end
 
@@ -65,5 +65,3 @@ namespace wedge
                        ... ≃* plift.{u v} A ∨ plift.{u v} B : by exact pwedge_pequiv !pequiv_plift !pequiv_plift
 
 end wedge
-
-

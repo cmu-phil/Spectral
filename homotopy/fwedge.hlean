@@ -82,7 +82,7 @@ namespace fwedge
         { reflexivity },
         { apply eq_pathover_id_right,
           refine ap_compose pwedge_of_fwedge _ _ ⬝ ap02 _ !elim_glue ⬝ !ap_con ⬝
-                 !elim_glue ◾ (!ap_inv ⬝ !elim_glue⁻²) ⬝ph _, exact hrfl } end end}},   
+                 !elim_glue ◾ (!ap_inv ⬝ !elim_glue⁻²) ⬝ph _, exact hrfl } end end}},
     { exact glue ff }
   end
 
@@ -180,48 +180,48 @@ namespace fwedge
    end
 
   -- left:
-  definition prod_funct_comp {A B X Y : Type*} (f : X →* Y) : (A →* X) × (B →* X) → (A →* Y) × (B →* Y) := 
+  definition prod_funct_comp {A B X Y : Type*} (f : X →* Y) : (A →* X) × (B →* X) → (A →* Y) × (B →* Y) :=
    prod_functor (pcompose f) (pcompose f)
 
   -- right:
-  definition left_comp_pi_bool_funct {A B X Y : Type*} (f : X →* Y) : (Π u, (bool.rec A B u →* X)) →  (Π u, (bool.rec A B u →* Y)) := 
+  definition left_comp_pi_bool_funct {A B X Y : Type*} (f : X →* Y) : (Π u, (bool.rec A B u →* X)) →  (Π u, (bool.rec A B u →* Y)) :=
   begin
     intro, intro, exact f ∘* (a u)
   end
 
-  definition left_comp_pi_bool {A B X Y : Type*} (f : X →* Y) : Π u, ((bool.rec A B u →* X) →  (bool.rec A B u →* Y)) := 
+  definition left_comp_pi_bool {A B X Y : Type*} (f : X →* Y) : Π u, ((bool.rec A B u →* X) →  (bool.rec A B u →* Y)) :=
   begin
     intro, intro, exact f∘* a
   end
 
 -- hsquare 1:
- definition prod_to_pi_bool_nat_square {A B X Y : Type*} (f : X →* Y) : 
+ definition prod_to_pi_bool_nat_square {A B X Y : Type*} (f : X →* Y) :
    hsquare (prod_pi_bool_comp_funct X) (prod_pi_bool_comp_funct Y) (prod_funct_comp f) (@left_comp_pi_bool_funct A B X Y f) :=
-  begin 
+  begin
    intro x, fapply eq_of_homotopy, intro u, induction u, esimp, esimp
   end
 
 -- hsquare 2:
-  definition fwedge_pmap_nat_square {A B X Y : Type*} (f : X →* Y) : 
+  definition fwedge_pmap_nat_square {A B X Y : Type*} (f : X →* Y) :
        hsquare (fwedge_pmap_equiv (bool.rec A B) X)⁻¹ᵉ (fwedge_pmap_equiv (bool.rec A B) Y)⁻¹ᵉ (left_comp_pi_bool_funct f) (pcompose f) :=
-  begin 
-   intro h, esimp, fapply pmap_eq, 
+  begin
+   intro h, esimp, fapply pmap_eq,
    exact fwedge_pmap_nat₂ (λ u, bool.rec A B u) f h,
    esimp,
   end
 
 -- hsquare 3:
-  definition fwedge_to_pwedge_nat_square {A B X Y : Type*} (f : X →* Y) : 
-        hsquare (pequiv_ppcompose_right (pwedge_pequiv_fwedge A B)) (pequiv_ppcompose_right (pwedge_pequiv_fwedge A B)) (pcompose f) (pcompose f) := 
-  begin 
+  definition fwedge_to_pwedge_nat_square {A B X Y : Type*} (f : X →* Y) :
+        hsquare (pequiv_ppcompose_right (pwedge_pequiv_fwedge A B)) (pequiv_ppcompose_right (pwedge_pequiv_fwedge A B)) (pcompose f) (pcompose f) :=
+  begin
     exact sorry
   end
 
- definition pwedge_pmap_nat₂ (A B X Y : Type*) (f : X →* Y) (h : A →* X) (k : B →* X) : Π (w : A ∨ B), 
+ definition pwedge_pmap_nat₂ (A B X Y : Type*) (f : X →* Y) (h : A →* X) (k : B →* X) : Π (w : A ∨ B),
     (f ∘* (pwedge_pmap h k)) w = pwedge_pmap (f ∘* h )(f ∘* k) w  :=
 have H : _, from
     (@prod_to_pi_bool_nat_square A B X Y f) ⬝htyh (fwedge_pmap_nat_square f) ⬝htyh (fwedge_to_pwedge_nat_square f),
-proof H qed
+sorry
 
 -- SA to here 7/5
 
