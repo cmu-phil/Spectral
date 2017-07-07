@@ -6,6 +6,7 @@ import ..homotopy.smash
 open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops wedge is_trunc
      function red_susp unit sigma
 
+exit
 namespace smash
 
   variables {A B C : Type*}

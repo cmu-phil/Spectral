@@ -639,17 +639,35 @@ set_option pp.coercions true
   -- Makes sense for any indexing succ_str.  Could be done for
   -- prespectra too, but as with truncation, why bother?
 
-  definition sp_cotensor [constructor] {N : succ_str} (A : Type*) (B : gen_spectrum N) : gen_spectrum N :=
+  definition sp_cotensor [constructor] {N : succ_str} (A : Type*) (B : gen_spectrum N) :
+    gen_spectrum N :=
     spectrum.MK (λn, ppmap A (B n))
       (λn, (loop_ppmap_commute A (B (S n)))⁻¹ᵉ* ∘*ᵉ (pequiv_ppcompose_left (equiv_glue B n)))
+
+  /- unpointed cotensor -/
+  definition sp_ucotensor [constructor] {N : succ_str} (A : Type) (B : gen_spectrum N) :
+    gen_spectrum N :=
+  spectrum.MK (λn, A →ᵘ* B n)
+              (λn, pumap_pequiv_right A (equiv_glue B n) ⬝e* (loop_pumap A (B (S n)))⁻¹ᵉ*)
 
   ----------------------------------------
   -- Sections of parametrized spectra
   ----------------------------------------
 
-  definition spi [constructor] {N : succ_str} (A : Type*) (E : A -> gen_spectrum N) : gen_spectrum N :=
-    spectrum.MK (λn, Π*a, E a n)
-      (λn, !ppi_loop_pequiv⁻¹ᵉ* ∘*ᵉ ppi_pequiv_right (λa, equiv_glue (E a) n))
+  definition spi [constructor] {N : succ_str} (A : Type*) (E : A → gen_spectrum N) :
+    gen_spectrum N :=
+  spectrum.MK (λn, Π*a, E a n)
+    (λn, !ppi_loop_pequiv⁻¹ᵉ* ∘*ᵉ ppi_pequiv_right (λa, equiv_glue (E a) n))
+
+  definition spi_compose_left [constructor] {N : succ_str} {A : Type*} {E F : A -> gen_spectrum N}
+    (f : Πa, E a →ₛ F a) : spi A E →ₛ spi A F :=
+  smap.mk (λn, ppi_compose_left (λa, f a n)) sorry /- TODO FOR SSS -/
+
+  -- unpointed spi
+  definition supi [constructor] {N : succ_str} (A : Type) (E : A → gen_spectrum N) :
+    gen_spectrum N :=
+  spectrum.MK (λn, Πᵘ*a, E a n)
+              (λn, pupi_pequiv_right (λa, equiv_glue (E a) n) ⬝e* (loop_pupi (λa, E a (S n)))⁻¹ᵉ*)
 
   /-----------------------------------------
     Fibers and long exact sequences
@@ -1063,6 +1081,28 @@ set_option pp.coercions true
 
   definition spectrify_fun {N : succ_str} {X Y : gen_prespectrum N} (f : X →ₛ Y) : spectrify X →ₛ spectrify Y :=
   spectrify.elim ((@spectrify_map _ Y) ∘ₛ f)
+
+  /-
+    suspension of a spectrum
+
+    this is just a shift. A shift in the other direction is loopn,
+    but we might not want to define that yet.
+  -/
+
+  definition ssusp [constructor] {N : succ_str} (X : gen_spectrum N) : gen_spectrum N :=
+  spectrum.MK (λn, X (S n)) (λn, equiv_glue X (S n))
+
+  definition ssuspn [constructor] (k : ℤ) (X : spectrum) : spectrum :=
+  spectrum.MK (λn, X (n + k))
+              (λn, equiv_glue X (n + k) ⬝e* loop_pequiv_loop (pequiv_ap X !add.right_comm))
+
+  definition shomotopy_group_ssuspn (k : ℤ) (X : spectrum) (n : ℤ) :
+    πₛ[k] (ssuspn n X) ≃g πₛ[k - n] X :=
+  have k - n + (2 - k + n) = 2, from
+  !add.comm ⬝
+  ap (λx, x + (k - n)) (!add.assoc ⬝ ap (λx, 2 + x) (ap (λx, -k + x) !neg_neg⁻¹ ⬝ !neg_add⁻¹)) ⬝
+  sub_add_cancel 2 (k - n),
+  (shomotopy_group_isomorphism_homotopy_group X this)⁻¹ᵍ
 
   /- Tensor by spaces -/
 

@@ -7,6 +7,16 @@ open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc pi gr
 
 namespace eq
 
+  definition apd10_prepostcompose_nondep {A B C D : Type} (h : C → D) {g g' : B → C} (p : g = g')
+    (f : A → B) (a : A) : apd10 (ap (λg a, h (g (f a))) p) a = ap h (apd10 p (f a)) :=
+  begin induction p, reflexivity end
+
+  definition apd10_prepostcompose {A B : Type} {C : B → Type} {D : A → Type}
+    (f : A → B) (h : Πa, C (f a) → D a) {g g' : Πb, C b}
+    (p : g = g') (a : A) :
+    apd10 (ap (λg a, h a (g (f a))) p) a = ap (h a) (apd10 p (f a)) :=
+  begin induction p, reflexivity end
+
   definition eq.rec_to {A : Type} {a₀ : A} {P : Π⦃a₁⦄, a₀ = a₁ → Type}
     {a₁ : A} (p₀ : a₀ = a₁) (H : P p₀) ⦃a₂ : A⦄ (p : a₀ = a₂) : P p :=
   begin

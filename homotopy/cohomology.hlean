@@ -43,7 +43,7 @@ definition ordinary_parametrized_cohomology [reducible] {X : Type*} (G : X → A
 parametrized_cohomology (λx, EM_spectrum (G x)) n
 
 definition unreduced_parametrized_cohomology {X : Type} (Y : X → spectrum) (n : ℤ) : AbGroup :=
-@parametrized_cohomology X₊ (add_point_spectrum Y) n
+parametrized_cohomology (add_point_spectrum Y) n
 
 definition unreduced_ordinary_parametrized_cohomology [reducible] {X : Type} (G : X → AbGroup)
   (n : ℤ) : AbGroup :=
@@ -72,11 +72,19 @@ trunc_equiv_trunc 0 (!pfunext ⬝e loop_pequiv_loop !pfunext ⬝e loopn_pequiv_l
 
 definition cohomology_isomorphism_shomotopy_group_sp_cotensor (X : Type*) (Y : spectrum) {n m : ℤ}
   (p : -m = n) : H^n[X, Y] ≃g πₛ[m] (sp_cotensor X Y) :=
-sorry
+sorry /- TODO FOR SSS -/
+
+definition unreduced_cohomology_isomorphism_shomotopy_group_sp_ucotensor (X : Type) (Y : spectrum)
+  {n m : ℤ} (p : -m = n) : uH^n[X, Y] ≃g πₛ[m] (sp_ucotensor X Y) :=
+sorry /- TODO FOR SSS -/
 
 definition parametrized_cohomology_isomorphism_shomotopy_group_spi {X : Type*} (Y : X → spectrum)
   {n m : ℤ} (p : -m = n) : pH^n[(x : X), Y x] ≃g πₛ[m] (spi X Y) :=
-sorry
+sorry /- TODO FOR SSS -/
+
+definition unreduced_parametrized_cohomology_isomorphism_shomotopy_group_supi {X : Type}
+  (Y : X → spectrum) {n m : ℤ} (p : -m = n) : upH^n[(x : X), Y x] ≃g πₛ[m] (supi X Y) :=
+sorry /- TODO FOR SSS -/
 
 /- functoriality -/
 
@@ -113,14 +121,22 @@ definition cohomology_isomorphism_refl (X : Type*) (Y : spectrum) (n : ℤ) (x :
   cohomology_isomorphism (pequiv.refl X) Y n x = x :=
 !Group_trunc_pmap_isomorphism_refl
 
-definition cohomology_isomorphism_right (X : Type*) {Y Y' : spectrum} (e : Πn, Y n ≃* Y' n) (n : ℤ)
-   : H^n[X, Y] ≃g H^n[X, Y'] :=
-sorry
+definition cohomology_isomorphism_right (X : Type*) {Y Y' : spectrum} (e : Πn, Y n ≃* Y' n)
+  (n : ℤ) : H^n[X, Y] ≃g H^n[X, Y'] :=
+sorry /- TODO FOR SSS -/
 
 definition parametrized_cohomology_isomorphism_right {X : Type*} {Y Y' : X → spectrum}
-  (e : Πx n, Y x n ≃* Y' x n) (n : ℤ)
-   : pH^n[(x : X), Y x] ≃g pH^n[(x : X), Y' x] :=
-sorry
+  (e : Πx n, Y x n ≃* Y' x n) (n : ℤ) : pH^n[(x : X), Y x] ≃g pH^n[(x : X), Y' x] :=
+sorry /- TODO FOR SSS -/
+
+definition unreduced_parametrized_cohomology_isomorphism_right {X : Type} {Y Y' : X → spectrum}
+  (e : Πx n, Y x n ≃* Y' x n) (n : ℤ) : upH^n[(x : X), Y x] ≃g upH^n[(x : X), Y' x] :=
+sorry /- TODO FOR SSS -/
+
+definition unreduced_ordinary_parametrized_cohomology_isomorphism_right {X : Type}
+  {G G' : X → AbGroup} (e : Πx, G x ≃g G' x) (n : ℤ) :
+  uopH^n[(x : X), G x] ≃g uopH^n[(x : X), G' x] :=
+sorry /- TODO FOR SSS -/
 
 definition ordinary_cohomology_isomorphism_right (X : Type*) {G G' : AbGroup} (e : G ≃g G')
   (n : ℤ) : oH^n[X, G] ≃g oH^n[X, G'] :=

@@ -157,6 +157,14 @@ namespace pointed
     h a' ∘* ptransport X (ap f p) ~* ptransport Y (ap g p) ∘* h a :=
   by induction p; exact !pcompose_pid ⬝* !pid_pcompose⁻¹*
 
+  definition ptransport_ap {A B : Type} (X : B → Type*) (f : A → B) {a a' : A} (p : a = a') :
+    ptransport X (ap f p) ~* ptransport (X ∘ f) p :=
+  by induction p; reflexivity
+
+  definition ptransport_constant (A : Type) (B : Type*) {a a' : A} (p : a = a') :
+    ptransport (λ(a : A), B) p ~* pid B :=
+  by induction p; reflexivity
+
   definition ptransport_natural {A : Type} (X : A → Type*) (Y : A → Type*)
     (h : Πa, X a →* Y a) {a a' : A} (p : a = a') :
     h a' ∘* ptransport X p ~* ptransport Y p ∘* h a :=

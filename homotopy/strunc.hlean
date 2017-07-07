@@ -8,12 +8,12 @@ namespace int
   private definition maxm2_le.lemma₁ {n k : ℕ} : n+(1:int) + -[1+ k] ≤ n :=
   le.intro (
     calc n + 1 + -[1+ k] + k = n + 1 - (k + 1) + k : by reflexivity
-                         ... = n                   : sorry)
+                         ... = n                   : sorry) /- TODO FOR SSS -/
 
   private definition maxm2_le.lemma₂ {n : ℕ} {k : ℤ} : -[1+ n] + 1 + k ≤ k :=
   le.intro (
     calc -[1+ n] + 1 + k + n = - (n + 1) + 1 + k + n : by reflexivity
-                         ... = k                     : sorry)
+                         ... = k                     : sorry) /- TODO FOR SSS -/
 
   definition maxm2_le (n k : ℤ) : maxm2 (n+1+k) ≤ (maxm1m1 n).+1+2+(maxm1m1 k) :=
   begin
@@ -141,6 +141,10 @@ definition is_strunc_pequiv_closed {k : ℤ} {E F : spectrum} (H : Πn, E n ≃*
 definition is_strunc_strunc (k : ℤ) (E : spectrum)
   : is_strunc k (strunc k E) :=
 λ n, is_trunc_trunc (maxm2 (k + n)) (E n)
+
+definition is_strunc_strunc_of_is_strunc (k : ℤ) {l : ℤ} {E : spectrum} (H : is_strunc l E)
+  : is_strunc l (strunc k E) :=
+λ n, !is_trunc_trunc_of_is_trunc
 
 definition str [constructor] (k : ℤ) (E : spectrum) : E →ₛ strunc k E :=
 smap.mk (λ n, ptr (maxm2 (k + n)) (E n))
@@ -282,5 +286,9 @@ is_strunc_spi_of_le n n !le.refl P H
 definition is_strunc_sp_cotensor (n : ℤ) (A : Type*) {Y : spectrum} (H : is_strunc n Y)
   : is_strunc n (sp_cotensor A Y) :=
 is_strunc_pequiv_closed (λn, !pppi_pequiv_ppmap) (is_strunc_spi n (λa, Y) (λa, H))
+
+definition is_strunc_sp_ucotensor (n : ℤ) (A : Type) {Y : spectrum} (H : is_strunc n Y)
+  : is_strunc n (sp_ucotensor A Y) :=
+λk, !pi.is_trunc_arrow
 
 end spectrum
