@@ -139,6 +139,13 @@ begin
   exact ptb,
 end
 
+definition ptube_v_eq_bot {A B C D : Type*} {ftop ftop' : A →* B} (htpy_top : ftop ~* ftop') {fbot fbot' : C →* D} {htpy_bot htpy_bot' : fbot ~* fbot'} (p : htpy_bot = htpy_bot') {fleft : A →* C} {fright : B →* D} (psq_back : psquare ftop fbot fleft fright) (psq_front : psquare ftop' fbot' fleft fright) :
+  ptube_v htpy_top htpy_bot psq_back psq_front → ptube_v htpy_top htpy_bot' psq_back psq_front :=
+begin
+  induction p,
+  exact id,
+end
+
 definition ptube_v_left_inv {A B C D : Type*} {ftop : A ≃* B} {fbot : C ≃* D} {fleft : A →* C} {fright : B →* D} 
   (psq : psquare ftop fbot fleft fright) : 
   ptube_v 
