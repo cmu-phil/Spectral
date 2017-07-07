@@ -8,7 +8,7 @@ set_option pp.binder_types true
 
 namespace pointed
 definition postnikov_map [constructor] (A : Type*) (n : ℕ₋₂) : ptrunc (n.+1) A →* ptrunc n A :=
-ptrunc.elim (n.+1) !ptr
+ptrunc.elim (n.+1) (ptr n A)
 
 definition ptrunc_functor_postnikov_map {A B : Type*} (n : ℕ₋₂) (f : A →* B) :
   ptrunc_functor n f ∘* postnikov_map A n ~* ptrunc.elim (n.+1) (!ptr ∘* f) :=
@@ -68,39 +68,95 @@ this⁻¹ᵛ*
 end pointed open pointed
 
 namespace spectrum
-
+/- begin move -/
 definition is_strunc_strunc_pred (X : spectrum) (k : ℤ) : is_strunc k (strunc (k - 1) X) :=
 λn, @(is_trunc_of_le _ (maxm2_monotone (add_le_add_right (sub_one_le k) n))) !is_strunc_strunc
+
+definition ptrunc_maxm2_pred {n m : ℤ} (A : Type*) (p : n - 1 = m) :
+  ptrunc (maxm2 m) A ≃* ptrunc (trunc_index.pred (maxm2 n)) A :=
+begin
+  cases n with n, cases n with n, apply pequiv_of_is_contr,
+        induction p, apply is_trunc_trunc,
+      apply is_contr_ptrunc_minus_one,
+    exact ptrunc_change_index (ap maxm2 (p⁻¹ ⬝ !add_sub_cancel)) A,
+  exact ptrunc_change_index (ap maxm2 p⁻¹) A
+end
+
+definition ptrunc_maxm2_pred_nat {n : ℕ} {m l : ℤ} (A : Type*)
+  (p : nat.succ n = l) (q : pred l = m) (r : maxm2 m = trunc_index.pred (maxm2 (nat.succ n))) :
+  @ptrunc_maxm2_pred (nat.succ n) m A (ap pred p ⬝ q) ~* ptrunc_change_index r A :=
+begin
+  have ap maxm2 ((ap pred p ⬝ q)⁻¹ ⬝ add_sub_cancel n 1) = r, from !is_set.elim,
+  induction this, reflexivity
+end
+
+definition EM_type_pequiv_EM (A : spectrum) (n k : ℤ) (l : ℕ) (p : n + k = l) :
+  EM_type (A k) l ≃* EM (πₛ[n] A) l :=
+begin
+  symmetry,
+  cases l with l,
+  { exact shomotopy_group_pequiv_homotopy_group A p },
+  { cases l with l,
+    { apply EM1_pequiv_EM1, exact shomotopy_group_isomorphism_homotopy_group A p },
+    { apply EMadd1_pequiv_EMadd1 (l+1), exact shomotopy_group_isomorphism_homotopy_group A p }}
+end
+/- end move -/
 
 definition postnikov_smap [constructor] (X : spectrum) (k : ℤ) :
   strunc k X →ₛ strunc (k - 1) X :=
 strunc_elim (str (k - 1) X) (is_strunc_strunc_pred X k)
 
-/-
-  we could try to prove that postnikov_smap is homotopic to postnikov_map, although the types
-  are different enough, that even stating it will be quite annoying
--/
+definition postnikov_map_pred (A : Type*) (n : ℕ₋₂) :
+  ptrunc n A →* ptrunc (trunc_index.pred n) A :=
+begin cases n with n, exact !pid, exact postnikov_map A n end
+
+definition pfiber_postnikov_map_pred (A : Type*) (n : ℕ) :
+  pfiber (postnikov_map_pred A n) ≃* EM_type A n :=
+begin
+  cases n with n,
+    apply pfiber_pequiv_of_is_contr, apply is_contr_ptrunc_minus_one,
+  exact pfiber_postnikov_map A n
+end
+
+definition pfiber_postnikov_map_pred' (A : spectrum) (n k l : ℤ) (p : n + k = l) :
+  pfiber (postnikov_map_pred (A k) (maxm2 l)) ≃* EM_spectrum (πₛ[n] A) l :=
+begin
+  cases l with l l,
+  { refine pfiber_postnikov_map_pred (A k) l ⬝e* _,
+    exact EM_type_pequiv_EM A n k l p },
+  { apply pequiv_of_is_contr, apply is_contr_pfiber_pid,
+    apply is_contr_EM_spectrum_neg }
+end
+
+definition psquare_postnikov_map_ptrunc_elim (A : Type*) {n k l : ℕ₋₂} (H : is_trunc n (ptrunc k A))
+  (p : n = l.+1) (q : k = l) :
+  psquare (ptrunc.elim n (ptr k A)) (postnikov_map A l)
+          (ptrunc_change_index p A) (ptrunc_change_index q A) :=
+begin
+  induction q, cases p,
+  refine _ ⬝pv* pvrfl,
+  apply ptrunc_elim_phomotopy2,
+  reflexivity
+end
+
+definition postnikov_smap_postnikov_map (A : spectrum) (n k l : ℤ) (p : n + k = l) :
+  psquare (postnikov_smap A n k) (postnikov_map_pred (A k) (maxm2 l))
+    (ptrunc_maxm2_change_int p (A k)) (ptrunc_maxm2_pred (A k) (ap pred p⁻¹ ⬝ add.right_comm n k (- 1))) :=
+begin
+  cases l with l,
+  { cases l with l, apply phomotopy_of_is_contr_cod, apply is_contr_ptrunc_minus_one,
+    refine psquare_postnikov_map_ptrunc_elim (A k) _ _ _ ⬝hp* _,
+    exact ap maxm2 (add.right_comm n (- 1) k ⬝ ap pred p ⬝ !pred_succ),
+    apply ptrunc_maxm2_pred_nat },
+  { apply phomotopy_of_is_contr_cod, apply is_trunc_trunc }
+end
 
 definition pfiber_postnikov_smap (A : spectrum) (n : ℤ) (k : ℤ) :
-  sfiber (postnikov_smap A n) k ≃* EM_spectrum (πₛ[n] A) k :=
-begin
-  exact sorry
-/-  symmetry, apply spectrum_pequiv_of_nat_succ_succ, clear k, intro k,
-  apply EMadd1_pequiv k,
-  { exact sorry
-    -- refine _ ⬝g shomotopy_group_strunc n A,
-    -- exact chain_complex.LES_isomorphism_of_trivial_cod _ _
-    --   (trivial_homotopy_group_of_is_trunc _ (self_lt_succ n))
-    --   (trivial_homotopy_group_of_is_trunc _ (le_succ _))
-},
-  { exact sorry --apply is_conn_fun_trunc_elim,  apply is_conn_fun_tr
-    },
-  { -- have is_trunc (n+1) (ptrunc n.+1 A), from !is_trunc_trunc,
-    -- have is_trunc ((n+1).+1) (ptrunc n A), by do 2 apply is_trunc_succ, apply is_trunc_trunc,
-    -- apply is_trunc_pfiber
-    exact sorry
-    }-/
-end
+  sfiber (postnikov_smap A n) k ≃* EM_spectrum (πₛ[n] A) (n + k) :=
+proof
+pfiber_pequiv_of_square _ _ (postnikov_smap_postnikov_map A n k (n + k) idp) ⬝e*
+pfiber_postnikov_map_pred' A n k _ idp
+qed
 
 section atiyah_hirzebruch
   parameters {X : Type*} (Y : X → spectrum) (s₀ : ℤ) (H : Πx, is_strunc s₀ (Y x))
@@ -141,10 +197,18 @@ section atiyah_hirzebruch
     (λn s, πₛ[n] (sfiber (postnikov_smap (spi X Y) s))) ⟹ᵍ (λn, πₛ[n] (strunc s₀ (spi X Y))) :=
   converges_to_sequence _ s₀ (λn, n - 1) atiyah_hirzebruch_lb atiyah_hirzebruch_ub
 
-  lemma spi_EM_spectrum (k n : ℤ) :
-    EM_spectrum (πₛ[n] (spi X Y)) k ≃* spi X (λx, EM_spectrum (πₛ[n] (Y x))) k :=
-  sorry
+  lemma spi_EM_spectrum (n : ℤ) : Π(k : ℤ),
+    EM_spectrum (πₛ[n] (spi X Y)) (n + k) ≃* spi X (λx, EM_spectrum (πₛ[n] (Y x))) k :=
+  begin
+    exact sorry
+    -- apply spectrum_pequiv_of_nat_add 2, intro k,
+    -- fapply EMadd1_pequiv (k+1),
+    -- { exact sorry },
+    -- { exact sorry },
+    -- { apply is_trunc_ppi, rotate 1, intro x,  },
+  end
 
+set_option formatter.hide_full_terms false
   definition atiyah_hirzebruch_convergence :
     (λn s, opH^-n[(x : X), πₛ[s] (Y x)]) ⟹ᵍ (λn, pH^-n[(x : X), Y x]) :=
   converges_to_g_isomorphism atiyah_hirzebruch_convergence'

@@ -40,7 +40,7 @@ namespace spectrum
 
 definition ptrunc_maxm2_change_int {k l : ℤ} (p : k = l) (X : Type*)
   : ptrunc (maxm2 k) X ≃* ptrunc (maxm2 l) X :=
-pequiv_ap (λ n, ptrunc (maxm2 n) X) p
+ptrunc_change_index (ap maxm2 p) X
 
 definition is_trunc_maxm2_change_int {k l : ℤ} (X : pType) (p : k = l)
   : is_trunc (maxm2 k) X → is_trunc (maxm2 l) X :=
@@ -251,39 +251,33 @@ section
   variables (A : Type*) (n : ℤ) [H : is_conn (maxm2 n) A]
   include H
 
-  definition is_trunc_maxm2_ppi (k : ℤ) (P : A → (maxm2 (n+1+k))-Type*)
-    : is_trunc (maxm2 k) (Π*(a : A), P a) :=
+  definition is_trunc_maxm2_ppi (k l : ℤ) (H3 : l ≤ n+1+k) (P : A → Type*)
+    (H2 : Πa, is_trunc (maxm2 l) (P a)) : is_trunc (maxm2 k) (Π*(a : A), P a) :=
   is_trunc_maxm2_of_maxm1 (Π*(a : A), P a) k
-    (@is_trunc_ppi_of_is_conn A (maxm1m1 n)
-      (is_conn_maxm1_of_maxm2 A n H) (maxm1m1 k)
-      (λ a, ptrunctype.mk (P a) (is_trunc_of_le (P a) (maxm2_le n k)) pt))
+    (@is_trunc_ppi_of_is_conn A (maxm1m1 n) (is_conn_maxm1_of_maxm2 A n H) (maxm1m1 k) _
+      (le.trans (maxm2_monotone H3) (maxm2_le n k)) P H2)
 
-  definition is_strunc_spi_of_is_conn (k : ℤ) (P : A → (n+1+k)-spectrum)
-    : is_strunc k (spi A P) :=
+  definition is_strunc_spi_of_is_conn (k l : ℤ) (H3 : l ≤ n+1+k) (P : A → spectrum)
+    (H2 : Πa, is_strunc l (P a)) : is_strunc k (spi A P) :=
   begin
     intro m, unfold spi,
-    exact is_trunc_maxm2_ppi A n (k+m)
-      (λ a, ptrunctype.mk (P a m)
-       (is_trunc_maxm2_change_int (P a m) (add.assoc (n+1) k m)
-         (truncspectrum.struct (P a) m)) pt)
+    exact is_trunc_maxm2_ppi A n (k+m) _ (le.trans (add_le_add_right H3 _)
+            (le_of_eq (add.assoc (n+1) k m))) (λ a, P a m) (λa, H2 a m)
   end
 
 end
 
-definition is_strunc_spi_of_le {A : Type*} (k n : ℤ) (H : n ≤ k) (P : A → n-spectrum)
-  : is_strunc k (spi A P) :=
+definition is_strunc_spi_of_le {A : Type*} (k n : ℤ) (H : n ≤ k) (P : A → spectrum)
+  (H2 : Πa, is_strunc n (P a)) : is_strunc k (spi A P) :=
 begin
   assert K : n ≤ -[1+ 0] + 1 + k,
   { krewrite (int.zero_add k), exact H },
-  { exact @is_strunc_spi_of_is_conn A (-[1+ 0])
-    (is_conn.is_conn_minus_two A) k
-    (λ a, truncspectrum.mk (P a) (is_strunc_of_le (P a) K
-          (truncspectrum.struct (P a)))) }
+  { exact @is_strunc_spi_of_is_conn A (-[1+ 0]) (is_conn.is_conn_minus_two A) k _ K P H2 }
 end
 
 definition is_strunc_spi {A : Type*} (n : ℤ) (P : A → spectrum) (H : Πa, is_strunc n (P a))
   : is_strunc n (spi A P) :=
-is_strunc_spi_of_le n n !le.refl (λa, truncspectrum.mk (P a) (H a))
+is_strunc_spi_of_le n n !le.refl P H
 
 definition is_strunc_sp_cotensor (n : ℤ) (A : Type*) {Y : spectrum} (H : is_strunc n Y)
   : is_strunc n (sp_cotensor A Y) :=

@@ -494,7 +494,7 @@ namespace is_conn
   variables (A : Type*) (n : ℕ₋₂) [H : is_conn (n.+1) A]
   include H
 
-  definition is_contr_ppi_match (P : A → (n.+1)-Type*)
+  definition is_contr_ppi_match (P : A → Type*) (H : Πa, is_trunc (n.+1) (P a))
     : is_contr (Π*(a : A), P a) :=
   begin
     apply is_contr.mk pt,
@@ -504,44 +504,46 @@ namespace is_conn
     { krewrite (is_conn.elim_β n), apply con.left_inv }
   end
 
-  definition is_trunc_ppi_of_is_conn (k : ℕ₋₂) (P : A → (n.+1+2+k)-Type*)
-    : is_trunc k.+1 (Π*(a : A), P a) :=
+  -- definition is_trunc_ppi_of_is_conn (k : ℕ₋₂) (P : A → Type*)
+  --   : is_trunc k.+1 (Π*(a : A), P a) :=
+
+  definition is_trunc_ppi_of_is_conn (k l : ℕ₋₂) (H2 : l ≤ n.+1+2+k)
+    (P : A → Type*) (H3 : Πa, is_trunc l (P a)) :
+    is_trunc k.+1 (Π*(a : A), P a) :=
   begin
-    induction k with k IH,
+    have H4 : Πa, is_trunc (n.+1+2+k) (P a), from λa, is_trunc_of_le (P a) H2,
+    clear H2 H3, revert P H4,
+    induction k with k IH: intro P H4,
     { apply is_prop_of_imp_is_contr, intro f,
-      apply is_contr_ppi_match },
+      apply is_contr_ppi_match A n P H4 },
     { apply is_trunc_succ_of_is_trunc_loop
         (trunc_index.succ_le_succ (trunc_index.minus_two_le k)),
       intro f,
-      apply @is_trunc_equiv_closed_rev _ _ k.+1
-        (ppi_loop_equiv f),
+      apply @is_trunc_equiv_closed_rev _ _ k.+1 (ppi_loop_equiv f),
       apply IH, intro a,
-      apply ptrunctype.mk (Ω (pType.mk (P a) (f a))),
-      { apply is_trunc_loop, exact is_trunc_ptrunctype (P a) },
-      { exact pt } }
+      apply is_trunc_loop, apply H4 }
   end
 
-  definition is_trunc_pmap_of_is_conn (k : ℕ₋₂) (B : (n.+1+2+k)-Type*)
-    : is_trunc k.+1 (A →* B) :=
+
+  definition is_trunc_pmap_of_is_conn (k l : ℕ₋₂) (B : Type*) (H2 : l ≤ n.+1+2+k)
+    (H3 : is_trunc l B) : is_trunc k.+1 (A →* B) :=
   @is_trunc_equiv_closed _ _ k.+1 (ppi_equiv_pmap A B)
-    (is_trunc_ppi_of_is_conn A n k (λ a, B))
+    (is_trunc_ppi_of_is_conn A n k l H2 (λ a, B) _)
 
   end
 
   -- this is probably much easier to prove directly
-  definition is_trunc_ppi (A : Type*) (n k : ℕ₋₂) (H : n ≤ k) (P : A → n-Type*)
-    : is_trunc k (Π*(a : A), P a) :=
+  definition is_trunc_ppi (A : Type*) (n k : ℕ₋₂) (H : n ≤ k) (P : A → Type*)
+    (H2 : Πa, is_trunc n (P a)) : is_trunc k (Π*(a : A), P a) :=
   begin
     cases k with k,
-    { apply trunc.is_contr_of_merely_prop,
-      { exact @is_trunc_ppi_of_is_conn A -2 (is_conn_minus_one A (tr pt)) -2
-          (λ a, ptrunctype.mk (P a) (is_trunc_of_le (P a)
-                  (trunc_index.le.step H)) pt) },
+    { apply is_contr_of_merely_prop,
+      { exact @is_trunc_ppi_of_is_conn A -2 (is_conn_minus_one A (tr pt)) -2 _
+                (trunc_index.le.step H) P H2 },
       { exact tr pt } },
     { assert K : n ≤ -1 +2+ k,
       { rewrite (trunc_index.add_plus_two_comm -1 k), exact H },
-      { exact @is_trunc_ppi_of_is_conn A -2 (is_conn_minus_one A (tr pt)) k
-          (λ a, ptrunctype.mk (P a) (is_trunc_of_le (P a) K) pt) } }
+      { exact @is_trunc_ppi_of_is_conn A -2 (is_conn_minus_one A (tr pt)) k _ K P H2 } }
   end
 
 end is_conn

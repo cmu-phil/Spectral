@@ -405,7 +405,7 @@ namespace EM
   begin
     cases n with n, { exact _ },
     cases Y with Y H1 H2, cases Y with Y y₀,
-    exact is_trunc_pmap_of_is_conn X n -1 (ptrunctype.mk Y _ y₀),
+    exact is_trunc_pmap_of_is_conn X n -1 _ (pointed.MK Y y₀) !le.refl H2,
   end
 
   open category functor nat_trans

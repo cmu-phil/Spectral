@@ -2,7 +2,7 @@
 
 -- Author: Floris van Doorn
 
-import types.pointed2
+import types.pointed2 .move_to_lib
 
 open pointed eq equiv function is_equiv unit is_trunc trunc nat algebra sigma group
 
@@ -218,7 +218,6 @@ namespace pointed
     f ~* g :=
   phomotopy.mk (λa, ap f !is_prop.elim ⬝ respect_pt f ⬝ (respect_pt g)⁻¹ ⬝ ap g !is_prop.elim)
     begin rewrite [▸*, is_prop_elim_self, +ap_idp, idp_con, con_idp, inv_con_cancel_right] end
-
 
 
 end pointed

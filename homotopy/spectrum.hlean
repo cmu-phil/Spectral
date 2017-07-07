@@ -59,6 +59,30 @@ namespace spectrum
     exact add.assoc n 1 1
   end
 
+  definition gluen {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ)
+    : X n →* Ω[k] (X (n +' k)) :=
+  by induction k with k f; reflexivity; exact !loopn_succ_in⁻¹ᵉ* ∘* Ω→[k] (glue X (n +' k)) ∘* f
+
+  -- note: the forward map is (currently) not definitionally equal to gluen. Is that a problem?
+  definition equiv_gluen {N : succ_str} (X : gen_spectrum N) (n : N) (k : ℕ)
+    : X n ≃* Ω[k] (X (n +' k)) :=
+  by induction k with k f; reflexivity; exact f ⬝e* (loopn_pequiv_loopn k (equiv_glue X (n +' k))
+                                                ⬝e* !loopn_succ_in⁻¹ᵉ*)
+
+  definition equiv_gluen_inv_succ {N : succ_str} (X : gen_spectrum N) (n : N) (k : ℕ) :
+    (equiv_gluen X n (k+1))⁻¹ᵉ* ~*
+    (equiv_gluen X n k)⁻¹ᵉ* ∘* Ω→[k] (equiv_glue X (n +' k))⁻¹ᵉ* ∘* !loopn_succ_in :=
+  begin
+    refine !trans_pinv ⬝* pwhisker_left _ _, refine !trans_pinv ⬝* _, refine pwhisker_left _ !pinv_pinv
+  end
+
+  definition succ_str_add_eq_int_add (n : ℤ) (m : ℕ) : @succ_str.add sint n m = n + m :=
+  begin
+    induction m with m IH,
+    { symmetry, exact add_zero n },
+    { exact ap int.succ IH ⬝ add.assoc n m 1 }
+  end
+
   -- a square when we compose glue with transporting over a path in N
   definition glue_ptransport {N : succ_str} (X : gen_prespectrum N) {n n' : N} (p : n = n') :
     glue X n' ∘* ptransport X p ~* Ω→ (ptransport X (ap S p)) ∘* glue X n :=
@@ -309,14 +333,16 @@ namespace spectrum
     { exact spectrum_pequiv_of_pequiv_succ -[1+succ n] IH }
   end
 
-  -- definition spectrum_pequiv_of_nat_add {E F : spectrum} (m : ℕ)
-  --   (e : Π(n : ℕ), E (n + m) ≃* F (n + m)) : Π(n : ℤ), E n ≃* F n :=
-  -- begin
-  --   apply spectrum_pequiv_of_nat,
-  --   refine nat.rec_down _ m e _,
-  --   intro n f m, cases m with m,
-
-  -- end
+  definition spectrum_pequiv_of_nat_add {E F : spectrum} (m : ℕ)
+    (e : Π(n : ℕ), E (n + m) ≃* F (n + m)) : Π(n : ℤ), E n ≃* F n :=
+  begin
+    apply spectrum_pequiv_of_nat,
+    refine nat.rec_down _ m e _,
+    intro n f k, cases k with k,
+    exact spectrum_pequiv_of_pequiv_succ _ (f 0),
+    exact pequiv_ap E (ap of_nat (succ_add k n)) ⬝e* f k ⬝e*
+          pequiv_ap F (ap of_nat (succ_add k n))⁻¹
+  end
 
   definition is_contr_spectrum_of_nat {E : spectrum} (e : Π(n : ℕ), is_contr (E n)) (n : ℤ) :
     is_contr (E n)  :=
@@ -674,6 +700,56 @@ set_option pp.coercions true
     refine !sglue_square ⬝v* ap1_psquare !pequiv_of_eq_commute
   end
 
+  definition homotopy_group_spectrum_irrel_one {n m : ℤ} {k : ℕ} (E : spectrum) (p : n + 1 = m + k)
+    [Hk : is_succ k] : πg[k] (E n) ≃g π₁ (E m) :=
+  begin
+    induction Hk with k,
+    change π₁ (Ω[k] (E n)) ≃g π₁ (E m),
+    apply homotopy_group_isomorphism_of_pequiv 0,
+    symmetry,
+    have m + k = n, from (pred_succ (m + k))⁻¹ ⬝ ap pred (add.assoc m k 1 ⬝ p⁻¹) ⬝ pred_succ n,
+    induction (succ_str_add_eq_int_add m k ⬝ this),
+    exact equiv_gluen E m k
+  end
+
+  definition homotopy_group_spectrum_irrel {n m : ℤ} {l k : ℕ} (E : spectrum) (p : n + l = m + k)
+    [Hk : is_succ k] [Hl : is_succ l] : πg[k] (E n) ≃g πg[l] (E m) :=
+  have Πa b c : ℤ, a + (b + c) = c + (b + a), from λa b c,
+  !add.assoc⁻¹ ⬝ add.comm (a + b) c ⬝ ap (λx, c + x) (add.comm a b),
+  have n + 1 = m + 1 - l + k, from
+  ap succ (add_sub_cancel n l)⁻¹ ⬝ !add.assoc ⬝ ap (λx, x + (-l + 1)) p ⬝ !add.assoc ⬝
+  ap (λx, m + x) (this k (-l) 1) ⬝ !add.assoc⁻¹ ⬝ !add.assoc⁻¹,
+  homotopy_group_spectrum_irrel_one E this ⬝g
+  (homotopy_group_spectrum_irrel_one E (sub_add_cancel (m+1) l)⁻¹)⁻¹ᵍ
+
+  definition shomotopy_group_isomorphism_homotopy_group {n m : ℤ} {l : ℕ} (E : spectrum) (p : n + m = l)
+    [H : is_succ l] : πₛ[n] E ≃g πg[l] (E m) :=
+  have 2 - n + l = m + 2, from
+  ap (λx, 2 - n + x) p⁻¹ ⬝ !add.assoc⁻¹ ⬝ ap (λx, x + m) (sub_add_cancel 2 n) ⬝ add.comm 2 m,
+  homotopy_group_spectrum_irrel E this
+
+  definition shomotopy_group_pequiv_homotopy_group_ab {n m : ℤ} {l : ℕ} (E : spectrum) (p : n + m = l)
+    [H : is_at_least_two l] : πₛ[n] E ≃g πag[l] (E m) :=
+  begin
+    induction H with l,
+    exact shomotopy_group_isomorphism_homotopy_group E p
+  end
+
+  definition shomotopy_group_pequiv_homotopy_group {n m : ℤ} {l : ℕ} (E : spectrum) (p : n + m = l) :
+    πₛ[n] E ≃* π[l] (E m) :=
+  begin
+    cases l with l,
+    { apply ptrunc_pequiv_ptrunc, symmetry,
+      change E m ≃* Ω (Ω (E (2 - n))),
+      refine !equiv_glue ⬝e* loop_pequiv_loop _,
+      refine !equiv_glue ⬝e* loop_pequiv_loop _,
+      apply pequiv_ap E,
+      have -n = m, from neg_eq_of_add_eq_zero p,
+      induction this,
+      rexact add.assoc (-n) 1 1 ⬝ add.comm (-n) 2 },
+    { exact pequiv_of_isomorphism (shomotopy_group_isomorphism_homotopy_group E p) }
+  end
+
   section
   open chain_complex prod fin group
 
@@ -936,23 +1012,6 @@ set_option pp.coercions true
   definition spectrify [constructor] {N : succ_str} (X : gen_prespectrum N) : gen_spectrum N :=
   spectrum.MK (spectrify_type X) (spectrify_pequiv X)
 
-  definition gluen {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ)
-    : X n →* Ω[k] (X (n +' k)) :=
-  by induction k with k f; reflexivity; exact !loopn_succ_in⁻¹ᵉ* ∘* Ω→[k] (glue X (n +' k)) ∘* f
-
-  -- note: the forward map is (currently) not definitionally equal to gluen. Is that a problem?
-  definition equiv_gluen {N : succ_str} (X : gen_spectrum N) (n : N) (k : ℕ)
-    : X n ≃* Ω[k] (X (n +' k)) :=
-  by induction k with k f; reflexivity; exact f ⬝e* (loopn_pequiv_loopn k (equiv_glue X (n +' k))
-                                                ⬝e* !loopn_succ_in⁻¹ᵉ*)
-
-  definition equiv_gluen_inv_succ {N : succ_str} (X : gen_spectrum N) (n : N) (k : ℕ) :
-    (equiv_gluen X n (k+1))⁻¹ᵉ* ~*
-    (equiv_gluen X n k)⁻¹ᵉ* ∘* Ω→[k] (equiv_glue X (n +' k))⁻¹ᵉ* ∘* !loopn_succ_in :=
-  begin
-    refine !trans_pinv ⬝* pwhisker_left _ _, refine !trans_pinv ⬝* _, refine pwhisker_left _ !pinv_pinv
-  end
-
   definition spectrify_map {N : succ_str} {X : gen_prespectrum N} : X →ₛ spectrify X :=
   begin
     fapply smap.mk,
@@ -1081,6 +1140,13 @@ spectrify_fun (smash_prespectrum_fun f g)
   pequiv_of_is_contr _ _
     (is_contr_spectrum_of_nat (λk, is_contr_EM k !is_trunc_lift) n)
     !is_trunc_lift
+
+  definition is_contr_EM_spectrum_neg (G : AbGroup) (n : ℕ) : is_contr (EM_spectrum G (-[1+n])) :=
+  begin
+    induction n with n IH,
+    { apply is_contr_loop, exact is_trunc_EM G 0 },
+    { apply is_contr_loop_of_is_contr, exact IH }
+  end
 
   /- Wedge of prespectra -/
 
