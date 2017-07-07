@@ -23,8 +23,9 @@ namespace wedge
     induction x,
     { reflexivity },
     { reflexivity },
-    { apply eq_pathover_id_right, apply hdeg_square,
-      exact ap_compose wedge_flip _ _ ⬝ ap02 _ !elim_glue ⬝ !ap_inv ⬝ !elim_glue⁻² ⬝ !inv_inv }
+    { apply eq_pathover_id_right, 
+     apply hdeg_square,
+     exact ap_compose wedge_flip _ _ ⬝ ap02 _ !elim_glue ⬝ !ap_inv ⬝ !elim_glue⁻² ⬝ !inv_inv }
   end
 
   definition pwedge_comm [constructor] (A B : Type*) : A ∨ B ≃* B ∨ A :=
@@ -38,6 +39,20 @@ namespace wedge
 
   -- TODO: wedge is associative
 
+  definition wedge_shift [unfold 3] {A B C : Type*} (x : (A ∨ B) ∨ C) : (A ∨ (B ∨ C)) :=
+  begin
+    induction x with l,
+    induction l with a,
+    exact inl a,
+    exact inr (inl a),
+    exact (glue ⋆),
+    exact inr (inr a),
+    -- exact elim_glue _ _ _,
+    
+
+  end
+
+
   definition pwedge_pequiv [constructor] {A A' B B' : Type*} (a : A ≃* A') (b : B ≃* B') : A ∨ B ≃* A' ∨ B' :=
   begin
     fapply pequiv_of_equiv,
@@ -50,3 +65,5 @@ namespace wedge
                        ... ≃* plift.{u v} A ∨ plift.{u v} B : by exact pwedge_pequiv !pequiv_plift !pequiv_plift
 
 end wedge
+
+

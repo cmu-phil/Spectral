@@ -7,7 +7,7 @@ The Wedge Sum of a family of Pointed Types
 -/
 import homotopy.wedge ..move_to_lib ..choice ..pointed_pi
 
-open eq is_equiv pushout pointed unit trunc_index sigma bool equiv trunc choice unit is_trunc sigma.ops lift function
+open eq is_equiv pushout pointed unit trunc_index sigma bool equiv choice unit is_trunc sigma.ops lift function pi prod
 
 definition fwedge' {I : Type} (F : I → Type*) : Type := pushout (λi, ⟨i, Point (F i)⟩) (λi, ⋆)
 definition pt' [constructor] {I : Type} {F : I → Type*} : fwedge' F := inr ⋆
@@ -82,7 +82,7 @@ namespace fwedge
         { reflexivity },
         { apply eq_pathover_id_right,
           refine ap_compose pwedge_of_fwedge _ _ ⬝ ap02 _ !elim_glue ⬝ !ap_con ⬝
-                 !elim_glue ◾ (!ap_inv ⬝ !elim_glue⁻²) ⬝ph _, exact hrfl } end end}},
+                 !elim_glue ◾ (!ap_inv ⬝ !elim_glue⁻²) ⬝ph _, exact hrfl } end end}},   
     { exact glue ff }
   end
 
@@ -102,6 +102,13 @@ namespace fwedge
         exact pt,
         exact respect_pt (f i) },
     { reflexivity }
+  end
+
+ definition pwedge_pmap [constructor] {A B : Type*} {X : Type*} (f : A →* X) (g : B →* X) : (A ∨ B) →* X :=
+  begin
+    fapply pmap.mk,
+    { intro x, induction x, exact (f a), exact (g a), exact (respect_pt (f) ⬝ (respect_pt g)⁻¹) },
+    { exact respect_pt f }
   end
 
   definition fwedge_pmap_beta [constructor] {I : Type} {F : I → Type*} {X : Type*} (f : Πi, F i →* X) (i : I) :
@@ -142,6 +149,13 @@ namespace fwedge
     { intro g, apply eq_of_phomotopy, exact fwedge_pmap_eta g }
   end
 
+  definition pwedge_pmap_equiv  [constructor] (A B X : Type*) :
+    ((A ∨ B) →* X) ≃ ((A →* X) × (B →* X)) :=
+    calc (A ∨ B) →* X ≃ ⋁(bool.rec A B) →* X : by exact pequiv_ppcompose_right (pwedge_pequiv_fwedge A B)⁻¹ᵉ*
+            ...       ≃ Πi, (bool.rec A B) i →* X : by exact fwedge_pmap_equiv (bool.rec A B) X
+            ...       ≃  (A →* X) × (B →* X) : by exact pi_bool_left (λ i, bool.rec A B i →* X)
+
+
   definition fwedge_pmap_nat₂ {I : Type}(F : I → Type*){X Y : Type*}
                               (f : X →* Y) (h : Πi, F i →* X) (w : fwedge F) :
              (f ∘* (fwedge_pmap h)) w = fwedge_pmap (λi, f ∘* (h i)) w :=
@@ -155,6 +169,61 @@ namespace fwedge
       apply whisker_br,
       apply !hrefl
   end
+
+-- making the maps in hsquare 1:
+
+  -- top and bottom:
+  definition prod_pi_bool_comp_funct {A B : Type*}(X : Type*) : (A →* X) × (B →* X) → Π u, (bool.rec A B u →* X) :=
+   begin
+     refine equiv.symm _,
+     fapply pi_bool_left
+   end
+
+  -- left:
+  definition prod_funct_comp {A B X Y : Type*} (f : X →* Y) : (A →* X) × (B →* X) → (A →* Y) × (B →* Y) := 
+   prod_functor (pcompose f) (pcompose f)
+
+  -- right:
+  definition left_comp_pi_bool_funct {A B X Y : Type*} (f : X →* Y) : (Π u, (bool.rec A B u →* X)) →  (Π u, (bool.rec A B u →* Y)) := 
+  begin
+    intro, intro, exact f ∘* (a u)
+  end
+
+  definition left_comp_pi_bool {A B X Y : Type*} (f : X →* Y) : Π u, ((bool.rec A B u →* X) →  (bool.rec A B u →* Y)) := 
+  begin
+    intro, intro, exact f∘* a
+  end
+
+-- hsquare 1:
+ definition prod_to_pi_bool_nat_square {A B X Y : Type*} (f : X →* Y) : 
+   hsquare (prod_pi_bool_comp_funct X) (prod_pi_bool_comp_funct Y) (prod_funct_comp f) (@left_comp_pi_bool_funct A B X Y f) :=
+  begin 
+   intro x, fapply eq_of_homotopy, intro u, induction u, esimp, esimp
+  end
+
+-- hsquare 2:
+  definition fwedge_pmap_nat_square {A B X Y : Type*} (f : X →* Y) : 
+       hsquare (fwedge_pmap_equiv (bool.rec A B) X)⁻¹ᵉ (fwedge_pmap_equiv (bool.rec A B) Y)⁻¹ᵉ (left_comp_pi_bool_funct f) (pcompose f) :=
+  begin 
+   intro h, esimp, fapply pmap_eq, 
+   exact fwedge_pmap_nat₂ (λ u, bool.rec A B u) f h,
+   esimp,
+  end
+
+-- hsquare 3:
+  definition fwedge_to_pwedge_nat_square {A B X Y : Type*} (f : X →* Y) : 
+        hsquare (pequiv_ppcompose_right (pwedge_pequiv_fwedge A B)) (pequiv_ppcompose_right (pwedge_pequiv_fwedge A B)) (pcompose f) (pcompose f) := 
+  begin 
+    exact sorry
+  end
+
+ definition pwedge_pmap_nat₂ (A B X Y : Type*) (f : X →* Y) (h : A →* X) (k : B →* X) : Π (w : A ∨ B), 
+    (f ∘* (pwedge_pmap h k)) w = pwedge_pmap (f ∘* h )(f ∘* k) w  :=
+have H : _, from
+    (@prod_to_pi_bool_nat_square A B X Y f) ⬝htyh (fwedge_pmap_nat_square f) ⬝htyh (fwedge_to_pwedge_nat_square f),
+proof H qed
+
+-- SA to here 7/5
 
   definition fwedge_pmap_phomotopy {I : Type} {F : I → Type*} {X : Type*} {f g : Π i, F i →* X}
     (h : Π i, f i ~* g i) : fwedge_pmap f ~* fwedge_pmap g :=
@@ -177,6 +246,10 @@ namespace fwedge
     { reflexivity }
   end
 
+
+
+
+  open trunc
   definition trunc_fwedge_pmap_equiv.{u} {n : ℕ₋₂} {I : Type.{u}} (H : has_choice n I)
     (F : I → pType.{u}) (X : pType.{u}) : trunc n (⋁F →* X) ≃ Πi, trunc n (F i →* X) :=
   trunc_equiv_trunc n (fwedge_pmap_equiv F X) ⬝e choice_equiv (λi, F i →* X)
