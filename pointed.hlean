@@ -4,7 +4,7 @@
 
 import types.pointed2 .move_to_lib
 
-open pointed eq equiv function is_equiv unit is_trunc trunc nat algebra sigma group
+open pointed eq equiv function is_equiv unit is_trunc trunc nat algebra sigma group lift option
 
 namespace pointed
 
@@ -226,6 +226,21 @@ namespace pointed
     f ~* g :=
   phomotopy.mk (λa, ap f !is_prop.elim ⬝ respect_pt f ⬝ (respect_pt g)⁻¹ ⬝ ap g !is_prop.elim)
     begin rewrite [▸*, is_prop_elim_self, +ap_idp, idp_con, con_idp, inv_con_cancel_right] end
+
+  definition add_point_over [unfold 3] {A : Type} (B : A → Type*) : A₊ → Type*
+  | (some a) := B a
+  | none     := plift punit
+
+  definition phomotopy_group_plift_punit.{u} (n : ℕ) [H : is_at_least_two n] :
+    πag[n] (plift.{0 u} punit) ≃g trivial_ab_group_lift.{u} :=
+  begin
+    induction H with n,
+    have H : 0 <[ℕ] n+2, from !zero_lt_succ,
+    have is_set unit, from _,
+    have is_trunc (trunc_index.of_nat 0) punit, from this,
+    exact isomorphism_of_is_contr (@trivial_homotopy_group_of_is_trunc _ _ _ !is_trunc_lift H)
+      !is_trunc_lift
+  end
 
 
 end pointed

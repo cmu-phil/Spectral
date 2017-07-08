@@ -70,14 +70,6 @@ definition cohomology_equiv_shomotopy_group_sp_cotensor (X : Type*) (Y : spectru
 trunc_equiv_trunc 0 (!pfunext ⬝e loop_pequiv_loop !pfunext ⬝e loopn_pequiv_loopn 2
   (pequiv_of_eq (ap (λn, ppmap X (Y n)) (add.comm n 2 ⬝ ap (add 2) !neg_neg⁻¹))))
 
-definition cohomology_isomorphism_shomotopy_group_sp_cotensor (X : Type*) (Y : spectrum) {n m : ℤ}
-  (p : -m = n) : H^n[X, Y] ≃g πₛ[m] (sp_cotensor X Y) :=
-sorry /- TODO FOR SSS -/
-
-definition unreduced_cohomology_isomorphism_shomotopy_group_sp_ucotensor (X : Type) (Y : spectrum)
-  {n m : ℤ} (p : -m = n) : uH^n[X, Y] ≃g πₛ[m] (sp_ucotensor X Y) :=
-sorry /- TODO FOR SSS -/
-
 definition parametrized_cohomology_isomorphism_shomotopy_group_spi {X : Type*} (Y : X → spectrum)
   {n m : ℤ} (p : -m = n) : pH^n[(x : X), Y x] ≃g πₛ[m] (spi X Y) :=
 begin
@@ -90,7 +82,24 @@ end
 
 definition unreduced_parametrized_cohomology_isomorphism_shomotopy_group_supi {X : Type}
   (Y : X → spectrum) {n m : ℤ} (p : -m = n) : upH^n[(x : X), Y x] ≃g πₛ[m] (supi X Y) :=
+begin
+  refine parametrized_cohomology_isomorphism_shomotopy_group_spi (add_point_spectrum Y) p ⬝g _,
+  apply shomotopy_group_isomorphism_of_pequiv, intro k,
+  apply pppi_add_point_over
+end
+
+definition cohomology_isomorphism_shomotopy_group_sp_cotensor (X : Type*) (Y : spectrum) {n m : ℤ}
+  (p : -m = n) : H^n[X, Y] ≃g πₛ[m] (sp_cotensor X Y) :=
 sorry /- TODO FOR SSS -/
+
+definition unreduced_cohomology_isomorphism_shomotopy_group_sp_ucotensor (X : Type) (Y : spectrum)
+  {n m : ℤ} (p : -m = n) : uH^n[X, Y] ≃g πₛ[m] (sp_ucotensor X Y) :=
+begin
+  refine cohomology_isomorphism_shomotopy_group_sp_cotensor X₊ Y p ⬝g _,
+  apply shomotopy_group_isomorphism_of_pequiv, intro k, apply ppmap_add_point
+end
+
+
 
 /- functoriality -/
 
@@ -133,7 +142,10 @@ sorry /- TODO FOR SSS -/
 
 definition parametrized_cohomology_isomorphism_right {X : Type*} {Y Y' : X → spectrum}
   (e : Πx n, Y x n ≃* Y' x n) (n : ℤ) : pH^n[(x : X), Y x] ≃g pH^n[(x : X), Y' x] :=
-sorry /- TODO FOR SSS -/
+parametrized_cohomology_isomorphism_shomotopy_group_spi Y !neg_neg ⬝g
+shomotopy_group_isomorphism_of_pequiv (-n) (λk, ppi_pequiv_right sorry) ⬝g
+(parametrized_cohomology_isomorphism_shomotopy_group_spi Y' !neg_neg)⁻¹ᵍ
+--sorry /- TODO FOR SSS -/
 
 definition unreduced_parametrized_cohomology_isomorphism_right {X : Type} {Y Y' : X → spectrum}
   (e : Πx n, Y x n ≃* Y' x n) (n : ℤ) : upH^n[(x : X), Y x] ≃g upH^n[(x : X), Y' x] :=

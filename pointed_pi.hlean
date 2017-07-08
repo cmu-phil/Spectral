@@ -6,7 +6,7 @@ Authors: Ulrik Buchholtz, Floris van Doorn
 
 import homotopy.connectedness types.pointed2 .move_to_lib .pointed
 
-open eq pointed equiv sigma is_equiv trunc
+open eq pointed equiv sigma is_equiv trunc option
 
 /-
   In this file we define dependent pointed maps and properties of them.
@@ -153,8 +153,6 @@ namespace pointed
                    : sigma_equiv_sigma_right (λp, eq_equiv_eq_symm _ _)
             ...  ≃ (k ~~* l) : ppi_homotopy.sigma_char k l
 
-
-  variables
   -- the same as pmap_eq
   variables {k l}
   definition ppi_eq (h : k ~~* l) : k = l :=
@@ -470,6 +468,28 @@ namespace pointed
 
   -- definition pppi_ppmap {A C : Type*} {B : A → Type*} :
   --   ppmap (/- dependent smash of B -/) C ≃* Π*(a : A), ppmap (B a) C :=
+
+  definition ppi_add_point_over {A : Type} (B : A → Type*) :
+    (Π*a, add_point_over B a) ≃ Πa, B a :=
+  begin
+    fapply equiv.MK,
+    { intro f a, exact f (some a) },
+    { intro f, fconstructor,
+        intro a, cases a, exact pt, exact f a,
+        reflexivity },
+    { intro f, reflexivity },
+    { intro f, cases f with f p, apply ppi_eq, fapply ppi_homotopy.mk,
+      { intro a, cases a, exact p⁻¹, reflexivity },
+      { exact con.left_inv p }},
+  end
+
+  definition pppi_add_point_over {A : Type} (B : A → Type*) :
+    (Π*a, add_point_over B a) ≃* Πᵘ*a, B a :=
+  pequiv_of_equiv (ppi_add_point_over B) idp
+
+  definition ppmap_add_point {A : Type} (B : Type*) :
+    ppmap A₊ B ≃* A →ᵘ* B :=
+  pequiv_of_equiv (pmap_equiv_left A B) idp
 
   -- TODO: homotopy_of_eq and apd10 should be the same
   -- TODO: there is also apd10_eq_of_homotopy in both pi and eq(?)
