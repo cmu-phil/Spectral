@@ -90,7 +90,12 @@ end
 
 definition cohomology_isomorphism_shomotopy_group_sp_cotensor (X : Type*) (Y : spectrum) {n m : ℤ}
   (p : -m = n) : H^n[X, Y] ≃g πₛ[m] (sp_cotensor X Y) :=
-sorry /- TODO FOR SSS -/
+begin
+  refine !trunc_ppi_isomorphic_pmap⁻¹ᵍ ⬝g _,
+  refine parametrized_cohomology_isomorphism_shomotopy_group_spi (λx, Y) p ⬝g _,
+  apply shomotopy_group_isomorphism_of_pequiv, intro k,
+  apply pppi_pequiv_ppmap
+end
 
 definition unreduced_cohomology_isomorphism_shomotopy_group_sp_ucotensor (X : Type) (Y : spectrum)
   {n m : ℤ} (p : -m = n) : uH^n[X, Y] ≃g πₛ[m] (sp_ucotensor X Y) :=
@@ -98,8 +103,6 @@ begin
   refine cohomology_isomorphism_shomotopy_group_sp_cotensor X₊ Y p ⬝g _,
   apply shomotopy_group_isomorphism_of_pequiv, intro k, apply ppmap_add_point
 end
-
-
 
 /- functoriality -/
 
@@ -138,23 +141,24 @@ definition cohomology_isomorphism_refl (X : Type*) (Y : spectrum) (n : ℤ) (x :
 
 definition cohomology_isomorphism_right (X : Type*) {Y Y' : spectrum} (e : Πn, Y n ≃* Y' n)
   (n : ℤ) : H^n[X, Y] ≃g H^n[X, Y'] :=
-sorry /- TODO FOR SSS -/
+cohomology_isomorphism_shomotopy_group_sp_cotensor X Y !neg_neg ⬝g
+shomotopy_group_isomorphism_of_pequiv (-n) (λk, pequiv_ppcompose_left (e k)) ⬝g
+(cohomology_isomorphism_shomotopy_group_sp_cotensor X Y' !neg_neg)⁻¹ᵍ
 
 definition parametrized_cohomology_isomorphism_right {X : Type*} {Y Y' : X → spectrum}
   (e : Πx n, Y x n ≃* Y' x n) (n : ℤ) : pH^n[(x : X), Y x] ≃g pH^n[(x : X), Y' x] :=
 parametrized_cohomology_isomorphism_shomotopy_group_spi Y !neg_neg ⬝g
-shomotopy_group_isomorphism_of_pequiv (-n) (λk, ppi_pequiv_right sorry) ⬝g
+shomotopy_group_isomorphism_of_pequiv (-n) (λk, ppi_pequiv_right (λx, e x k)) ⬝g
 (parametrized_cohomology_isomorphism_shomotopy_group_spi Y' !neg_neg)⁻¹ᵍ
---sorry /- TODO FOR SSS -/
 
 definition unreduced_parametrized_cohomology_isomorphism_right {X : Type} {Y Y' : X → spectrum}
   (e : Πx n, Y x n ≃* Y' x n) (n : ℤ) : upH^n[(x : X), Y x] ≃g upH^n[(x : X), Y' x] :=
-sorry /- TODO FOR SSS -/
+parametrized_cohomology_isomorphism_right (λx' k, add_point_over_pequiv (λx, e x k) x') n
 
 definition unreduced_ordinary_parametrized_cohomology_isomorphism_right {X : Type}
   {G G' : X → AbGroup} (e : Πx, G x ≃g G' x) (n : ℤ) :
   uopH^n[(x : X), G x] ≃g uopH^n[(x : X), G' x] :=
-sorry /- TODO FOR SSS -/
+unreduced_parametrized_cohomology_isomorphism_right (λx, EM_spectrum_pequiv (e x)) n
 
 definition ordinary_cohomology_isomorphism_right (X : Type*) {G G' : AbGroup} (e : G ≃g G')
   (n : ℤ) : oH^n[X, G] ≃g oH^n[X, G'] :=
