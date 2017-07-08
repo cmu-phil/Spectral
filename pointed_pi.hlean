@@ -219,6 +219,49 @@ namespace pointed
     (Π*(a : A), P a) →* Π*(a : A), Q a :=
   pmap.mk (pmap_compose_ppi g) (ppi_eq (pmap_compose_ppi_const_right g))
 
+  -- ppi_compose_left is associative in the following sense.
+  definition ppi_assoc_compose_left {A : Type*} {B C D : A → Type*}
+    (f : Π (a : A), B a →* C a) (g : Π (a : A), C a →* D a)
+    : (ppi_compose_left g ∘* ppi_compose_left f) ~* ppi_compose_left (λ a, g a ∘* f a) :=
+  begin
+    fapply phomotopy.mk,
+    intro h, fapply eq_of_ppi_homotopy,
+    fapply ppi_homotopy.mk,
+--    intro a, reflexivity,
+--    esimp,
+    repeat exact sorry,
+  end /- TODO FOR SSS -/
+
+  definition psquare_loop_ppi_compose_left {A : Type*} {X Y : A → Type*} (f :  Π (a : A), X a →* Y a) :
+    psquare 
+      (Ω→ (ppi_compose_left f))
+      (ppi_compose_left (λ a, Ω→ (f a)))
+      (ppi_loop_pequiv)
+      (ppi_loop_pequiv)
+    :=
+  begin
+    fapply psquare_of_phomotopy,
+    fapply phomotopy.mk, intro g, 
+    fapply eq_of_ppi_homotopy, fapply ppi_homotopy.mk, intro a,
+    repeat exact sorry
+  end /- TODO FOR SSS -/
+
+  definition psquare_of_ppi_compose_left {A : Type*} {B C D E : A → Type*}
+    {ftop : Π (a : A), B a →* C a} {fbot : Π (a : A), D a →* E a}
+    {fleft : Π (a : A), B a →* D a} {fright : Π (a : A), C a →* E a}
+    (psq : Π (a :A), psquare (ftop a) (fbot a) (fleft a) (fright a))
+    : psquare
+        (ppi_compose_left ftop)
+        (ppi_compose_left fbot)
+        (ppi_compose_left fleft)
+        (ppi_compose_left fright)
+    :=
+  begin
+    refine (ppi_assoc_compose_left ftop fright) ⬝* _ ⬝* (ppi_assoc_compose_left fleft fbot)⁻¹*,
+    refine eq_of_homotopy (λ a, eq_of_phomotopy (psq a)) ▸ phomotopy.rfl,
+    -- the last step is probably an unnecessary application of function extensionality.
+  end
+
   definition pmap_compose_ppi_phomotopy_left [constructor] {g g' : Π(a : A), ppmap (P a) (Q a)}
     (f : Π*(a : A), P a) (p : Πa, g a ~* g' a) : pmap_compose_ppi g f ~~* pmap_compose_ppi g' f :=
   ppi_homotopy.mk (λa, p a (f a))
