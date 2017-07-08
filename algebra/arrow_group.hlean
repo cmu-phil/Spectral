@@ -1,7 +1,11 @@
-/- various groups of maps. Most importantly we define a group structure on trunc 0 (A →* Ω B),
-   which is used in the definition of cohomology -/
+/-
+Copyright (c) 2016-2017 Floris van Doorn. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Floris van Doorn, Ulrik Buchholtz
 
---author: Floris van Doorn
+Various groups of maps. Most importantly we define a group structure
+on trunc 0 (A →* Ω B), which is used in the definition of cohomology.
+-/
 
 import algebra.group_theory ..pointed ..pointed_pi eq2 homotopy.susp
 open pi pointed algebra group eq equiv is_trunc trunc susp

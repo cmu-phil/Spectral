@@ -1,3 +1,11 @@
+/-
+Copyright (c) 2017 Floris van Doorn and Ulrik Buchholtz. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Floris van Doorn, Ulrik Buchholtz
+
+Truncatedness and truncation of spectra
+-/
+
 import .spectrum .EM
 
 namespace int
