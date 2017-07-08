@@ -77,7 +77,7 @@ begin
   apply homotopy_group_isomorphism_of_pequiv 0, esimp,
   have q : sub 2 m = n + 2,
   from (int.add_comm (of_nat 2) (-m) ⬝ ap (λk, k + of_nat 2) p),
-  rewrite q, symmetry, apply ppi_loop_pequiv
+  rewrite q, symmetry, apply loop_pppi_pequiv
 end
 
 definition unreduced_parametrized_cohomology_isomorphism_shomotopy_group_supi {X : Type}
