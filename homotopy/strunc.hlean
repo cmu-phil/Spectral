@@ -210,8 +210,8 @@ end
 open option
 definition is_strunc_add_point_spectrum {X : Type} {Y : X → spectrum} {s₀ : ℤ}
   (H : Πx, is_strunc s₀ (Y x)) : Π(x : X₊), is_strunc s₀ (add_point_spectrum Y x)
-| (some x) := H x
-| none     := is_strunc_sunit s₀
+| (some x) := proof H x qed
+| none     := begin intro k, apply is_trunc_lift, apply is_trunc_unit end
 
 definition is_strunc_EM_spectrum (G : AbGroup)
   : is_strunc 0 (EM_spectrum G) :=
