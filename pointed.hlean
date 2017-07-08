@@ -231,6 +231,11 @@ namespace pointed
   | (some a) := B a
   | none     := plift punit
 
+  definition add_point_over_pequiv {A : Type} {B B' : A → Type*} (e : Πa, B a ≃* B' a) :
+    Π(a : A₊), add_point_over B a ≃* add_point_over B' a
+  | (some a) := e a
+  | none     := pequiv.rfl
+
   definition phomotopy_group_plift_punit.{u} (n : ℕ) [H : is_at_least_two n] :
     πag[n] (plift.{0 u} punit) ≃g trivial_ab_group_lift.{u} :=
   begin
