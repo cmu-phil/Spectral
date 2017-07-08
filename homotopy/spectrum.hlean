@@ -698,6 +698,20 @@ set_option pp.coercions true
       intro a, exact glue_square (f a) n,
     end
 
+  definition psquare_loop_ppi_compose_left {A : Type*} {X Y : A → Type*} (f :  Π (a : A), X a →* Y a) :
+    psquare 
+      (Ω→ (ppi_compose_left f))
+      (ppi_compose_left (λ a, Ω→ (f a)))
+      (ppi_loop_pequiv)
+      (ppi_loop_pequiv)
+    :=
+  begin
+    fapply psquare_of_phomotopy,
+    fapply phomotopy.mk, intro g, 
+    fapply eq_of_ppi_homotopy, fapply ppi_homotopy.mk, intro a,
+    repeat exact sorry
+  end /- TODO FOR SSS -/
+
   definition spi_compose_left_botsq
     {N : succ_str} {A : Type*} {E F : A → gen_spectrum N} (f : Π a, (E a) →ₛ (F a)) (n : N)
     : psquare
@@ -707,8 +721,9 @@ set_option pp.coercions true
         (pequiv.to_pmap ppi_loop_pequiv⁻¹ᵉ*)
     :=
     begin
-      exact sorry
-    end /- TODO FOR SSS -/
+      refine (_)⁻¹ᵛ*,
+      fapply psquare_loop_ppi_compose_left,
+    end 
 
   definition spi_compose_left [constructor] {N : succ_str} {A : Type*} {E F : A -> gen_spectrum N}
     (f : Πa, E a →ₛ F a) : spi A E →ₛ spi A F :=
