@@ -439,6 +439,13 @@ namespace group
   definition isomorphism_of_is_contr {G H : Group} (hG : is_contr G) (hH : is_contr H) : G ≃g H :=
   trivial_group_of_is_contr G ⬝g (trivial_group_of_is_contr H)⁻¹ᵍ
 
+  definition trunc_isomorphism_of_equiv {A B : Type} [inf_group A] [inf_group B] (f : A ≃ B)
+    (h : is_mul_hom f) : Group.mk (trunc 0 A) (trunc_group A) ≃g Group.mk (trunc 0 B) (trunc_group B) :=
+  begin
+    apply isomorphism_of_equiv (equiv.mk (trunc_functor 0 f) (is_equiv_trunc_functor 0 f)), intros x x',
+    induction x with a, induction x' with a', apply ap tr, exact h a a'
+  end
+
 end group open group
 
 namespace fiber

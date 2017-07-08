@@ -1,7 +1,11 @@
-/- various groups of maps. Most importantly we define a group structure on trunc 0 (A →* Ω B),
-   which is used in the definition of cohomology -/
+/-
+Copyright (c) 2016-2017 Floris van Doorn. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Floris van Doorn, Ulrik Buchholtz
 
---author: Floris van Doorn
+Various groups of maps. Most importantly we define a group structure
+on trunc 0 (A →* Ω B), which is used in the definition of cohomology.
+-/
 
 import algebra.group_theory ..pointed ..pointed_pi eq2 homotopy.susp
 open pi pointed algebra group eq equiv is_trunc trunc susp
@@ -242,5 +246,59 @@ namespace group
   definition AbGroup_trunc_ppi [reducible] [constructor] {A : Type*} (B : A → Type*) : AbGroup :=
   AbGroup.mk (trunc 0 (Π*a, Ω (Ω (B a)))) _
 
+  definition trunc_ppi_isomorphic_pmap (A B : Type*)
+    : Group.mk (trunc 0 (Π*(a : A), Ω B)) !trunc_group
+      ≃g Group.mk (trunc 0 (A →* Ω B)) !trunc_group :=
+  begin
+    apply trunc_isomorphism_of_equiv (ppi_equiv_pmap A (Ω B)),
+    intro h k, induction h with h h_pt, induction k with k k_pt, reflexivity
+  end
+
+  section
+
+  universe variables u v
+
+  variables {A : pType.{u}} {B : A → Type.{v}} {x₀ : B pt} {k l m : ppi_gen B x₀}
+
+  definition ppi_homotopy_of_eq_homomorphism (p : k = l) (q : l = m)
+    : ppi_homotopy_of_eq (p ⬝ q) = ppi_homotopy_of_eq p ⬝*' ppi_homotopy_of_eq q :=
+  begin
+    induction q, induction p, induction k with k q, induction q, reflexivity
+  end
+
+  protected definition ppi_mul_loop.lemma1 {X : Type} {x : X} (p q : x = x) (p_pt : idp = p) (q_pt : idp = q)
+    : refl (p ⬝ q) ⬝ whisker_left p q_pt⁻¹ ⬝ p_pt⁻¹ = p_pt⁻¹ ◾ q_pt⁻¹ :=
+  by induction p_pt; induction q_pt; reflexivity
+
+  protected definition ppi_mul_loop.lemma2 {X : Type} {x : X} (p q : x = x) (p_pt : p = idp) (q_pt : q = idp)
+    : refl (p ⬝ q) ⬝ whisker_left p q_pt ⬝ p_pt = p_pt ◾ q_pt :=
+  by rewrite [-(inv_inv p_pt),-(inv_inv q_pt)]; exact ppi_mul_loop.lemma1 p q p_pt⁻¹ q_pt⁻¹
+
+  definition ppi_mul_loop {h : Πa, B a} (f g : ppi_gen.mk h idp ~~* ppi_gen.mk h idp) : f ⬝*' g = ppi_mul f g :=
+  begin
+    apply ap (ppi_gen.mk (λa, f a ⬝ g a)),
+    apply ppi_gen.rec_on f, intros f' f_pt, apply ppi_gen.rec_on g, intros g' g_pt,
+    clear f g, esimp at *, exact ppi_mul_loop.lemma2 (f' pt) (g' pt) f_pt g_pt
+  end
+
+  variable (k)
+
+  definition trunc_ppi_loop_isomorphism_lemma
+    : isomorphism.{(max u v) (max u v)}
+      (Group.mk (trunc 0 (k = k)) (@trunc_group (k = k) !inf_group_loop))
+      (Group.mk (trunc 0 (Π*(a : A), Ω (pType.mk (B a) (k a)))) !trunc_group) :=
+  begin
+    apply @trunc_isomorphism_of_equiv _ _ !inf_group_loop !inf_group_ppi (ppi_loop_equiv k),
+    intro f g, induction k with k p, induction p,
+    apply trans (ppi_homotopy_of_eq_homomorphism f g),
+    exact ppi_mul_loop (ppi_homotopy_of_eq f) (ppi_homotopy_of_eq g)
+  end
+
+  end
+
+  definition trunc_ppi_loop_isomorphism {A : Type*} (B : A → Type*)
+    : Group.mk (trunc 0 (Ω (Π*(a : A), B a))) !trunc_group
+      ≃g Group.mk (trunc 0 (Π*(a : A), Ω (B a))) !trunc_group :=
+  trunc_ppi_loop_isomorphism_lemma (ppi_const B)
 
 end group

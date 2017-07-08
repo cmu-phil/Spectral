@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2016 Floris van Doorn. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Floris van Doorn
+Authors: Floris van Doorn, Ulrik Buchholtz
 
 Reduced cohomology of spectra and cohomology theories
 -/
@@ -80,7 +80,13 @@ sorry /- TODO FOR SSS -/
 
 definition parametrized_cohomology_isomorphism_shomotopy_group_spi {X : Type*} (Y : X → spectrum)
   {n m : ℤ} (p : -m = n) : pH^n[(x : X), Y x] ≃g πₛ[m] (spi X Y) :=
-sorry /- TODO FOR SSS -/
+begin
+  apply isomorphism.trans (trunc_ppi_loop_isomorphism (λx, Ω (Y x (n + 2))))⁻¹ᵍ,
+  apply homotopy_group_isomorphism_of_pequiv 0, esimp,
+  have q : sub 2 m = n + 2,
+  from (int.add_comm (of_nat 2) (-m) ⬝ ap (λk, k + of_nat 2) p),
+  rewrite q, symmetry, apply ppi_loop_pequiv
+end
 
 definition unreduced_parametrized_cohomology_isomorphism_shomotopy_group_supi {X : Type}
   (Y : X → spectrum) {n m : ℤ} (p : -m = n) : upH^n[(x : X), Y x] ≃g πₛ[m] (supi X Y) :=

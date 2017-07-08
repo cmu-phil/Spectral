@@ -98,4 +98,4 @@ These projects are mostly done
 - We will try to make sure that this repository compiles with the newest version of Lean 2.
 - Installation instructions for Lean 2 can be found [here](https://github.com/leanprover/lean2).
 - Some notes on the Emacs mode can be found [here](https://github.com/leanprover/lean2/blob/master/src/emacs/README.md) (for example if some unicode characters don't show up, or increase the spacing between lines by a lot).
-- If you contribute, please use rebase instead off merge (e.g. `git pull -r`).
+- If you contribute, please use rebase instead of merge (e.g. `git pull -r`).

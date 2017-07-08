@@ -190,27 +190,13 @@ namespace pointed
     induction t, exact eq_ppi_homotopy_refl_ppi_homotopy_of_eq_refl k ▸ q,
   end
 
-  definition ppi_loop_equiv_lemma (p : k ~ k)
-    : (p pt ⬝ ppi_gen.resp_pt k = ppi_gen.resp_pt k) ≃ (p pt = idp) :=
-    calc (p pt ⬝ ppi_gen.resp_pt k = ppi_gen.resp_pt k)
-      ≃ (p pt ⬝ ppi_gen.resp_pt k = idp ⬝ ppi_gen.resp_pt k)
-        : equiv_eq_closed_right (p pt ⬝ ppi_gen.resp_pt k) (inverse (idp_con (ppi_gen.resp_pt k)))
-  ... ≃ (p pt = idp)
-        : eq_equiv_con_eq_con_right
-
   variables (k l)
+
   definition ppi_loop_equiv : (k = k) ≃ Π*(a : A), Ω (pType.mk (B a) (k a)) :=
-    calc (k = k) ≃ (k ~~* k)
-                   : ppi_eq_equiv
-             ... ≃ Σ(p : k ~ k), p pt ⬝ ppi_gen.resp_pt k = ppi_gen.resp_pt k
-                   : ppi_homotopy.sigma_char k k
-             ... ≃ Σ(p : k ~ k), p pt = idp
-                   : sigma_equiv_sigma_right
-                       (λ p, ppi_loop_equiv_lemma p)
-             ... ≃ Π*(a : A), pType.mk (k a = k a) idp
-                   : ppi.sigma_char
-             ... ≃ Π*(a : A), Ω (pType.mk (B a) (k a))
-                   : erfl
+  begin
+    induction k with k p, induction p,
+    exact ppi_eq_equiv (ppi_gen.mk k idp) (ppi_gen.mk k idp)
+  end
 
   variables {k l}
   -- definition eq_of_ppi_homotopy (h : k ~~* l) : k = l :=
