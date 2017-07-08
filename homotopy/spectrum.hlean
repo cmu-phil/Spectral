@@ -660,6 +660,30 @@ set_option pp.coercions true
     (λn, !ppi_loop_pequiv⁻¹ᵉ* ∘*ᵉ ppi_pequiv_right (λa, equiv_glue (E a) n))
 
   print glue_square,
+  
+  definition spi_compose_left_topsq 
+    {N : succ_str} {A : Type*} {E F : A → gen_spectrum N} (f : Π a, (E a) →ₛ (F a)) (n : N) 
+    : psquare 
+        (ppi_compose_left (λ a, f a n)) 
+        (ppi_compose_left (λ a, Ω→ (f a (S n)))) 
+        (ppi_pequiv_right (λ a, equiv_glue (E a) n))
+        (ppi_pequiv_right (λ a, equiv_glue (F a) n))
+    :=
+    begin
+      exact sorry
+    end /- TODO FOR SSS -/
+
+  definition spi_compose_left_botsq
+    {N : succ_str} {A : Type*} {E F : A → gen_spectrum N} (f : Π a, (E a) →ₛ (F a)) (n : N)
+    : psquare
+        (ppi_compose_left (λ a, Ω→ (to_fun (f a) (S n))))
+        (Ω→ (ppi_compose_left (λ a, to_fun (f a) (S n))))
+        (pequiv.to_pmap ppi_loop_pequiv⁻¹ᵉ*)
+        (pequiv.to_pmap ppi_loop_pequiv⁻¹ᵉ*)
+    :=
+    begin
+      exact sorry
+    end /- TODO FOR SSS -/
 
   definition spi_compose_left [constructor] {N : succ_str} {A : Type*} {E F : A -> gen_spectrum N}
     (f : Πa, E a →ₛ F a) : spi A E →ₛ spi A F :=
@@ -676,10 +700,10 @@ set_option pp.coercions true
       ⬝* _ ⬝* 
       (passoc (Ω→ (ppi_compose_left (λ a, to_fun (f a) (S n)))) _ _), 
     { refine (pwhisker_left (ppi_loop_pequiv⁻¹ᵉ*) _), 
-      exact sorry},
+      fapply spi_compose_left_topsq},
     { refine (pwhisker_right (ppi_pequiv_right (λ a, equiv_glue (E a) n)) _), 
-      exact sorry},
-  end --sorry /- TODO FOR SSS -/
+      fapply spi_compose_left_botsq},
+  end
 
 
   -- unpointed spi
