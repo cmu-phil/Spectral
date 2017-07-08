@@ -657,20 +657,6 @@ set_option pp.coercions true
   spectrum.MK (λn, Π*a, E a n)
     (λn, !ppi_loop_pequiv⁻¹ᵉ* ∘*ᵉ ppi_pequiv_right (λa, equiv_glue (E a) n))
   
-  definition spi_compose_left_topsq 
-    {N : succ_str} {A : Type*} {E F : A → gen_spectrum N} (f : Π a, (E a) →ₛ (F a)) (n : N) 
-    : psquare 
-        (ppi_compose_left (λ a, f a n)) 
-        (ppi_compose_left (λ a, Ω→ (f a (S n)))) 
-        (ppi_pequiv_right (λ a, equiv_glue (E a) n))
-        (ppi_pequiv_right (λ a, equiv_glue (F a) n))
-    :=
-    begin
-      exact sorry
-    end /- TODO FOR SSS -/
-
-set_option pp.coercions true
-
   definition ppi_assoc_compose_left {A : Type*} {B C D : A → Type*}
     (f : Π (a : A), B a →* C a) (g : Π (a : A), C a →* D a)
     : (ppi_compose_left g ∘* ppi_compose_left f) ~* ppi_compose_left (λ a, g a ∘* f a) :=
@@ -681,7 +667,7 @@ set_option pp.coercions true
 --    intro a, reflexivity,
 --    esimp, 
     repeat exact sorry,
-  end
+  end /- TODO FOR SSS -/
 
   definition psquare_of_ppi_compose_left {A : Type*} {B C D E : A → Type*} 
     {ftop : Π (a : A), B a →* C a} {fbot : Π (a : A), D a →* E a}
@@ -699,6 +685,19 @@ set_option pp.coercions true
     -- the last step is probably an unnecessary application of function extensionality.
   end
 
+  definition spi_compose_left_topsq 
+    {N : succ_str} {A : Type*} {E F : A → gen_spectrum N} (f : Π a, (E a) →ₛ (F a)) (n : N) 
+    : psquare 
+        (ppi_compose_left (λ a, f a n)) 
+        (ppi_compose_left (λ a, Ω→ (f a (S n)))) 
+        (ppi_pequiv_right (λ a, equiv_glue (E a) n))
+        (ppi_pequiv_right (λ a, equiv_glue (F a) n))
+    :=
+    begin
+      fapply psquare_of_ppi_compose_left,
+      intro a, exact glue_square (f a) n,
+    end
+
   definition spi_compose_left_botsq
     {N : succ_str} {A : Type*} {E F : A → gen_spectrum N} (f : Π a, (E a) →ₛ (F a)) (n : N)
     : psquare
@@ -708,7 +707,6 @@ set_option pp.coercions true
         (pequiv.to_pmap ppi_loop_pequiv⁻¹ᵉ*)
     :=
     begin
---      fapply psquare_of_ppi_compose_left,
       exact sorry
     end /- TODO FOR SSS -/
 
