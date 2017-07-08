@@ -77,6 +77,13 @@ namespace pointed
   infix ` ⬝*' `:75 := ppi_homotopy.trans
   postfix `⁻¹*'`:(max+1) := ppi_homotopy.symm
 
+  definition ppi_trans_refl (p : k ~~* l) : p ⬝*' ppi_homotopy.refl l = p :=
+  begin
+    unfold ppi_homotopy.trans,
+    induction A with A a₀,
+    induction k with k k₀, induction l with l l₀, induction p with p p₀, esimp at p, induction l₀, esimp at p₀, induction p₀, reflexivity, 
+  end
+
   definition ppi_equiv_pmap [constructor] (A B : Type*) : (Π*(a : A), B) ≃ (A →* B) :=
   begin
     fapply equiv.MK,
@@ -174,6 +181,39 @@ namespace pointed
     induction p, reflexivity
   end
 
+  definition ppi_homotopy_of_eq_refl 
+    : ppi_homotopy.refl k = ppi_homotopy_of_eq (refl k)
+    :=
+  begin
+    induction k with k k₀, induction k₀, reflexivity,
+  end
+
+  definition ppi_homotopy_of_eq_con {A : Type*} {B : A → Type*} {f g h : Π* (a : A), B a} (p : f = g) (q : g = h) :
+    ppi_homotopy_of_eq (p ⬝ q) = ppi_homotopy_of_eq p ⬝*' ppi_homotopy_of_eq q :=
+  begin induction q, induction p, 
+    fapply eq_of_ppi_homotopy,
+    rewrite [!idp_con],
+    refine transport (λ x, x ~~* x ⬝*' x) !ppi_homotopy_of_eq_refl _,
+    fapply ppi_homotopy_of_eq,
+    refine (ppi_trans_refl (ppi_homotopy.refl f))⁻¹  
+  end
+
+--  definition ppi_homotopy_of_eq_of_ppi_homotopy 
+
+  definition ppi_homotopy_mk_ppmap [constructor] 
+    {A : Type*} {X : A → Type*} {Y : Π (a : A), X a → Type*} 
+    {f g : Π* (a : A), Π*(x : (X a)), (Y a x)} 
+    (p : Πa, f a ~~* g a)
+    (q : p pt ⬝*' ppi_homotopy_of_eq (ppi_resp_pt g) = ppi_homotopy_of_eq (ppi_resp_pt f))
+    : f ~~* g :=
+  begin
+    apply ppi_homotopy.mk (λa, eq_of_ppi_homotopy (p a)),
+    apply eq_of_fn_eq_fn (ppi_eq_equiv _ _),
+    refine !ppi_homotopy_of_eq_con ⬝ _,
+    repeat exact sorry
+--    refine !ppi_homotopy_of_eq_of_ppi_homotopy ◾** idp ⬝ q,
+  end
+
   variable {k}
 
   definition ppi_homotopy_rec_on_eq [recursor] {k' : ppi_gen B x₀}
@@ -227,7 +267,8 @@ namespace pointed
     fapply phomotopy.mk,
     intro h, fapply eq_of_ppi_homotopy,
     fapply ppi_homotopy.mk,
---    intro a, reflexivity,
+    intro a, reflexivity,
+    refine !idp_con ⬝ _,
 --    esimp,
     repeat exact sorry,
   end /- TODO FOR SSS -/
