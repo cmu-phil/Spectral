@@ -659,9 +659,28 @@ set_option pp.coercions true
   spectrum.MK (λn, Π*a, E a n)
     (λn, !ppi_loop_pequiv⁻¹ᵉ* ∘*ᵉ ppi_pequiv_right (λa, equiv_glue (E a) n))
 
+  print glue_square,
+
   definition spi_compose_left [constructor] {N : succ_str} {A : Type*} {E F : A -> gen_spectrum N}
     (f : Πa, E a →ₛ F a) : spi A E →ₛ spi A F :=
-  smap.mk (λn, ppi_compose_left (λa, f a n)) sorry /- TODO FOR SSS -/
+  smap.mk (λn, ppi_compose_left (λa, f a n))
+  begin
+    intro n,
+    fapply psquare_of_phomotopy,
+    refine 
+      (passoc _ _ (ppi_compose_left (λ a, to_fun (f a) n))) 
+      ⬝* _ ⬝* 
+      (passoc (!ppi_loop_pequiv⁻¹ᵉ*) 
+              (ppi_compose_left (λ a, Ω→ (f a (S n)))) 
+              (ppi_pequiv_right (λa, equiv_glue (E a) n)))⁻¹*
+      ⬝* _ ⬝* 
+      (passoc (Ω→ (ppi_compose_left (λ a, to_fun (f a) (S n)))) _ _), 
+    { refine (pwhisker_left (ppi_loop_pequiv⁻¹ᵉ*) _), 
+      exact sorry},
+    { refine (pwhisker_right (ppi_pequiv_right (λ a, equiv_glue (E a) n)) _), 
+      exact sorry},
+  end --sorry /- TODO FOR SSS -/
+
 
   -- unpointed spi
   definition supi [constructor] {N : succ_str} (A : Type) (E : A → gen_spectrum N) :
