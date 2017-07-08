@@ -599,8 +599,6 @@ set_option pp.coercions true
     exact pwhisker_left_refl _ _,
   end
 
-  print ap1_phomotopy_refl
-
   /- homotopy group of a prespectrum -/
 
   definition pshomotopy_group_hom (n : ℤ) (E : prespectrum) (k : ℕ)
@@ -658,8 +656,6 @@ set_option pp.coercions true
     gen_spectrum N :=
   spectrum.MK (λn, Π*a, E a n)
     (λn, !ppi_loop_pequiv⁻¹ᵉ* ∘*ᵉ ppi_pequiv_right (λa, equiv_glue (E a) n))
-
-  print glue_square,
   
   definition spi_compose_left_topsq 
     {N : succ_str} {A : Type*} {E F : A → gen_spectrum N} (f : Π a, (E a) →ₛ (F a)) (n : N) 
@@ -682,8 +678,8 @@ set_option pp.coercions true
     fapply phomotopy.mk, 
     intro h, fapply eq_of_ppi_homotopy,
     fapply ppi_homotopy.mk,
-    intro a, reflexivity,
-    esimp, 
+--    intro a, reflexivity,
+--    esimp, 
     repeat exact sorry,
   end
 
