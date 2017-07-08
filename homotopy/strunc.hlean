@@ -3,17 +3,34 @@ import .spectrum .EM
 namespace int
 
   -- TODO move this
-  open trunc_index nat algebra
+  open nat algebra
   section
   private definition maxm2_le.lemma₁ {n k : ℕ} : n+(1:int) + -[1+ k] ≤ n :=
   le.intro (
-    calc n + 1 + -[1+ k] + k = n + 1 - (k + 1) + k : by reflexivity
-                         ... = n                   : sorry) /- TODO FOR SSS -/
+    calc n + 1 + -[1+ k] + k
+      = n + 1 + (-(k + 1)) + k : by reflexivity
+  ... = n + 1 + (-1 - k) + k    : by krewrite (neg_add_rev k 1)
+  ... = n + 1 + (-1 - k + k)    : add.assoc
+  ... = n + 1 + (-1 + -k + k)   : by reflexivity
+  ... = n + 1 + (-1 + (-k + k)) : add.assoc
+  ... = n + 1 + (-1 + 0)        : add.left_inv
+  ... = n + (1 + (-1 + 0))      : add.assoc
+  ... = n                       : int.add_zero)
 
   private definition maxm2_le.lemma₂ {n : ℕ} {k : ℤ} : -[1+ n] + 1 + k ≤ k :=
   le.intro (
-    calc -[1+ n] + 1 + k + n = - (n + 1) + 1 + k + n : by reflexivity
-                         ... = k                     : sorry) /- TODO FOR SSS -/
+    calc -[1+ n] + 1 + k + n
+      = - (n + 1) + 1 + k + n : by reflexivity
+  ... = -n - 1 + 1 + k + n    : by rewrite (neg_add n 1)
+  ... = -n + (-1 + 1) + k + n : by krewrite (int.add_assoc (-n) (-1) 1)
+  ... = -n + 0 + k + n        : add.left_inv 1
+  ... = -n + k + n            : int.add_zero
+  ... = k + -n + n            : int.add_comm
+  ... = k + (-n + n)          : int.add_assoc
+  ... = k + 0                 : add.left_inv n
+  ... = k                     : int.add_zero)
+
+  open trunc_index
 
   definition maxm2_le (n k : ℤ) : maxm2 (n+1+k) ≤ (maxm1m1 n).+1+2+(maxm1m1 k) :=
   begin
