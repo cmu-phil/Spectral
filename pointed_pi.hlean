@@ -185,11 +185,26 @@ namespace pointed
     {b b' : B pt} (p : b = b') : psigma_gen B b ≃* psigma_gen B b' :=
   psigma_gen_pequiv_psigma_gen_right (λa, erfl) p
 
-  definition loop_psigma_gen {A : Type*} (B : A → Type) (b₀ : B pt) :
+  definition loop_psigma_gen [constructor] {A : Type*} (B : A → Type) (b₀ : B pt) :
     Ω (psigma_gen B b₀) ≃* @psigma_gen (Ω A) (λp, pathover B b₀ p b₀) idpo :=
   pequiv_of_equiv (sigma_eq_equiv pt pt) idp
 
-  /- maybe this needs to be generalized to ap1_gen -/
+  -- open sigma.ops
+  -- definition eq.rec_sigma {A : Type} {B : A → Type} {a₀ : A} {b₀ : B a₀}
+  --   {P : Π(a : A) (b : B a), ⟨a₀, b₀⟩ = ⟨a, b⟩ → Type} (H : P a₀ b₀ idp) {a : A} {b : B a}
+  --   (p : ⟨a₀, b₀⟩ = ⟨a, b⟩) : P a b p :=
+  -- sorry
+  open sigma.ops
+  definition ap1_gen_sigma {A A' : Type} {B : A → Type} {B' : A' → Type}
+    {x₀ x₁ : Σa, B a} {a₀' a₁' : A'} {b₀' : B' a₀'} {b₁' : B' a₁'} (f : A → A')
+    (p₀ : f x₀.1 = a₀') (p₁ : f x₁.1 = a₁') (g : Πa, B a → B' (f a))
+    (q₀ : g x₀.1 x₀.2 =[p₀] b₀') (q₁ : g x₁.1 x₁.2 =[p₁] b₁') (r : x₀ = x₁) :
+    (λx, ⟨x..1, x..2⟩) (ap1_gen (sigma_functor f g) (sigma_eq p₀ q₀) (sigma_eq p₁ q₁) r) =
+    ⟨ap1_gen f p₀ p₁ r..1, q₀⁻¹ᵒ ⬝o pathover_ap B' f (apo g r..2) ⬝o q₁⟩ :=
+  begin
+    induction r, induction q₀, induction q₁, reflexivity
+  end
+
   definition loop_psigma_gen_natural {A A' : Type*} {B : A → Type}
     {B' : A' → Type} {b : B pt} {b' : B' pt} (f : A →* A')
     (g : Πa, B a → B' (f a)) (p : g pt b =[respect_pt f] b') :
@@ -197,7 +212,42 @@ namespace pointed
             (psigma_gen_functor (Ω→ f) (λq r, p⁻¹ᵒ ⬝o pathover_ap _ _ (apo g r) ⬝o p)
             !cono.left_inv)
             (loop_psigma_gen B b) (loop_psigma_gen B' b') :=
-  sorry /- TODO FOR SSS -/
+  begin
+    fapply phomotopy.mk,
+    { exact ap1_gen_sigma f (respect_pt f) (respect_pt f) g p p },
+    { induction f with f f₀, induction A' with A' a₀', esimp at * ⊢,
+      induction p, reflexivity }
+  end
+
+  definition psigma_gen_functor_pcompose [constructor] {A₁ A₂ A₃ : Type*}
+    {B₁ : A₁ → Type} {B₂ : A₂ → Type} {B₃ : A₃ → Type}
+    {b₁ : B₁ pt} {b₂ : B₂ pt} {b₃ : B₃ pt}
+    {f₁ : A₁ →* A₂} {f₂ : A₂ →* A₃}
+    (g₁ : Π⦃a⦄, B₁ a → B₂ (f₁ a)) (g₂ : Π⦃a⦄, B₂ a → B₃ (f₂ a))
+    (p₁ : pathover B₂ (g₁ b₁) (respect_pt f₁) b₂)
+    (p₂ : pathover B₃ (g₂ b₂) (respect_pt f₂) b₃) :
+    psigma_gen_functor (f₂ ∘* f₁) (λa, @g₂ (f₁ a) ∘ @g₁ a) (pathover_ap B₃ f₂ (apo g₂ p₁) ⬝o p₂) ~*
+    psigma_gen_functor f₂ g₂ p₂ ∘* psigma_gen_functor f₁ g₁ p₁ :=
+  begin
+    fapply phomotopy.mk,
+    { intro x, reflexivity },
+    { refine !idp_con ⬝ _, esimp,
+      refine whisker_right _ !ap_sigma_functor_eq_dpair ⬝ _,
+      induction f₁ with f₁ f₁₀, induction f₂ with f₂ f₂₀, induction A₂ with A₂ a₂₀,
+      induction A₃ with A₃ a₃₀, esimp at * ⊢, induction p₁, induction p₂, reflexivity }
+  end
+
+  definition psigma_gen_functor_phomotopy [constructor] {A₁ A₂ : Type*}
+    {B₁ : A₁ → Type} {B₂ : A₂ → Type} {b₁ : B₁ pt} {b₂ : B₂ pt} {f₁ f₂ : A₁ →* A₂}
+    {g₁ : Π⦃a⦄, B₁ a → B₂ (f₁ a)} {g₂ : Π⦃a⦄, B₁ a → B₂ (f₂ a)}
+    {p₁ : pathover B₂ (g₁ b₁) (respect_pt f₁) b₂} {p₂ : pathover B₂ (g₂ b₁) (respect_pt f₂) b₂}
+    (h₁ : f₁ ~* f₂)
+    (h₂ : Π⦃a⦄ (b : B₁ a), pathover B₂ (g₁ b) (h₁ a) (g₂ b))
+    (h₃ : change_path (to_homotopy_pt h₁)⁻¹ p₁ = h₂ b₁ ⬝o p₂) :
+    psigma_gen_functor f₁ g₁ p₁ ~* psigma_gen_functor f₂ g₂ p₂ :=
+  begin
+    exact sorry
+  end
 
   definition psigma_gen_functor_psquare [constructor] {A₀₀ A₀₂ A₂₀ A₂₂ : Type*}
     {B₀₀ : A₀₀ → Type} {B₀₂ : A₀₂ → Type} {B₂₀ : A₂₀ → Type} {B₂₂ : A₂₂ → Type}
@@ -205,8 +255,10 @@ namespace pointed
     {f₀₁ : A₀₀ →* A₀₂} {f₁₀ : A₀₀ →* A₂₀} {f₂₁ : A₂₀ →* A₂₂} {f₁₂ : A₀₂ →* A₂₂}
     {g₀₁ : Π⦃a⦄, B₀₀ a → B₀₂ (f₀₁ a)} {g₁₀ : Π⦃a⦄, B₀₀ a → B₂₀ (f₁₀ a)}
     {g₂₁ : Π⦃a⦄, B₂₀ a → B₂₂ (f₂₁ a)} {g₁₂ : Π⦃a⦄, B₀₂ a → B₂₂ (f₁₂ a)}
-    {p₀₁ : g₀₁ b₀₀ =[respect_pt f₀₁] b₀₂} {p₁₀ : g₁₀ b₀₀ =[respect_pt f₁₀] b₂₀}
-    {p₂₁ : g₂₁ b₂₀ =[respect_pt f₂₁] b₂₂} {p₁₂ : g₁₂ b₀₂ =[respect_pt f₁₂] b₂₂}
+    {p₀₁ : pathover B₀₂ (g₀₁ b₀₀) (respect_pt f₀₁) b₀₂}
+    {p₁₀ : pathover B₂₀ (g₁₀ b₀₀) (respect_pt f₁₀) b₂₀}
+    {p₂₁ : pathover B₂₂ (g₂₁ b₂₀) (respect_pt f₂₁) b₂₂}
+    {p₁₂ : pathover B₂₂ (g₁₂ b₀₂) (respect_pt f₁₂) b₂₂}
     (h₁ : psquare f₁₀ f₁₂ f₀₁ f₂₁)
     (h₂ : Π⦃a⦄ (b : B₀₀ a), pathover B₂₂ (g₂₁ (g₁₀ b)) (h₁ a) (g₁₂ (g₀₁ b)))
     (h₃ : squareover B₂₂ (square_of_eq (!con_idp ⬝ (to_homotopy_pt h₁)⁻¹))
@@ -215,7 +267,10 @@ namespace pointed
                          (h₂ b₀₀) idpo) :
     psquare (psigma_gen_functor f₁₀ g₁₀ p₁₀) (psigma_gen_functor f₁₂ g₁₂ p₁₂)
             (psigma_gen_functor f₀₁ g₀₁ p₀₁) (psigma_gen_functor f₂₁ g₂₁ p₂₁) :=
-  sorry /- TODO FOR SSS -/
+  proof
+    !psigma_gen_functor_pcompose⁻¹* ⬝* sorry ⬝* !psigma_gen_functor_pcompose
+  qed
+
 
 end pointed open pointed
 
@@ -279,7 +334,7 @@ namespace pointed
   begin
     unfold ppi_homotopy.trans,
     induction A with A a₀,
-    induction k with k k₀, induction l with l l₀, induction p with p p₀, esimp at p, induction l₀, esimp at p₀, induction p₀, reflexivity, 
+    induction k with k k₀, induction l with l l₀, induction p with p p₀, esimp at p, induction l₀, esimp at p₀, induction p₀, reflexivity,
   end
 
   definition ppi_equiv_pmap [constructor] (A B : Type*) : (Π*(a : A), B) ≃ (A →* B) :=
@@ -379,7 +434,7 @@ namespace pointed
     induction p, reflexivity
   end
 
-  definition ppi_homotopy_of_eq_refl 
+  definition ppi_homotopy_of_eq_refl
     : ppi_homotopy.refl k = ppi_homotopy_of_eq (refl k)
     :=
   begin
@@ -388,19 +443,19 @@ namespace pointed
 
   definition ppi_homotopy_of_eq_con {A : Type*} {B : A → Type*} {f g h : Π* (a : A), B a} (p : f = g) (q : g = h) :
     ppi_homotopy_of_eq (p ⬝ q) = ppi_homotopy_of_eq p ⬝*' ppi_homotopy_of_eq q :=
-  begin induction q, induction p, 
+  begin induction q, induction p,
     fapply eq_of_ppi_homotopy,
     rewrite [!idp_con],
     refine transport (λ x, x ~~* x ⬝*' x) !ppi_homotopy_of_eq_refl _,
     fapply ppi_homotopy_of_eq,
-    refine (ppi_trans_refl (ppi_homotopy.refl f))⁻¹  
+    refine (ppi_trans_refl (ppi_homotopy.refl f))⁻¹
   end
 
---  definition ppi_homotopy_of_eq_of_ppi_homotopy 
+--  definition ppi_homotopy_of_eq_of_ppi_homotopy
 
-  definition ppi_homotopy_mk_ppmap [constructor] 
-    {A : Type*} {X : A → Type*} {Y : Π (a : A), X a → Type*} 
-    {f g : Π* (a : A), Π*(x : (X a)), (Y a x)} 
+  definition ppi_homotopy_mk_ppmap [constructor]
+    {A : Type*} {X : A → Type*} {Y : Π (a : A), X a → Type*}
+    {f g : Π* (a : A), Π*(x : (X a)), (Y a x)}
     (p : Πa, f a ~~* g a)
     (q : p pt ⬝*' ppi_homotopy_of_eq (ppi_resp_pt g) = ppi_homotopy_of_eq (ppi_resp_pt f))
     : f ~~* g :=
@@ -535,7 +590,7 @@ namespace pointed
     (Π*(a : A), B a) ≃* @psigma_gen (Πᵘ*a, B a) (λf, f pt = pt) idp :=
   proof pequiv_of_equiv !ppi.sigma_char idp qed
 
-  definition pppi_sigma_char_natural_bottom {B B' : A → Type*} (f : Πa, B a →* B' a) :
+  definition pppi_sigma_char_natural_bottom [constructor] {B B' : A → Type*} (f : Πa, B a →* B' a) :
     @psigma_gen (Πᵘ*a, B a) (λg, g pt = pt) idp →* @psigma_gen (Πᵘ*a, B' a) (λg, g pt = pt) idp :=
   psigma_gen_functor
     (pupi_functor_right f)
@@ -548,7 +603,14 @@ namespace pointed
   definition pppi_sigma_char_natural {B B' : A → Type*} (f : Πa, B a →* B' a) :
     psquare (ppi_compose_left f) (pppi_sigma_char_natural_bottom f)
             (pppi.sigma_char B) (pppi.sigma_char B') :=
-  sorry /- TODO FOR SSS -/
+  begin
+    fapply phomotopy.mk,
+    { intro g, reflexivity },
+    { refine !idp_con ⬝ !idp_con ⬝ _, esimp,
+      fapply sigma_eq2,
+      { refine !sigma_eq_pr1 ⬝ _ ⬝ !ap_sigma_pr1⁻¹, exact sorry },
+      { exact sorry }}
+  end /- TODO FOR SSS -/
 
   definition ppi_gen_functor_right [constructor] {A : Type*} {B B' : A → Type}
     {b : B pt} {b' : B' pt} (f : Πa, B a → B' a) (p : f pt b = b') (g : ppi_gen B b)

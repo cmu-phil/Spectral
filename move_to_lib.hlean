@@ -378,6 +378,15 @@ namespace is_trunc
 end is_trunc
 namespace sigma
 
+  definition ap_sigma_pr1 {A B : Type} {C : B → Type} {a₁ a₂ : A} (f : A → B) (g : Πa, C (f a))
+    (p : a₁ = a₂) : (ap (λa, ⟨f a, g a⟩) p)..1 = ap f p :=
+  by induction p; reflexivity
+
+  definition ap_sigma_pr2 {A B : Type} {C : B → Type} {a₁ a₂ : A} (f : A → B) (g : Πa, C (f a))
+    (p : a₁ = a₂) : (ap (λa, ⟨f a, g a⟩) p)..2 =
+    change_path (ap_sigma_pr1 f g p)⁻¹ (pathover_ap C f (apd g p)) :=
+  by induction p; reflexivity
+
   -- definition sigma_pathover_equiv_of_is_prop {A : Type} {B : A → Type} {C : Πa, B a → Type}
   --   {a a' : A} {p : a = a'} {b : B a} {b' : B a'} {c : C a b} {c' : C a' b'}
   --   [Πa b, is_prop (C a b)] : ⟨b, c⟩ =[p] ⟨b', c'⟩ ≃ b =[p] b' :=
@@ -865,5 +874,5 @@ namespace pi
 
   definition pi_bool_left_inv_nat {A B : bool → Type} (g : Πx, A x -> B x) :
               hsquare (pi_bool_left A)⁻¹ᵉ (pi_bool_left B)⁻¹ᵉ (prod_functor (g ff) (g tt)) (pi_functor_right g) := hhinverse (pi_bool_left_nat g)
- 
+
 end pi
