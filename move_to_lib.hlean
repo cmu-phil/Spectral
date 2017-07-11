@@ -387,6 +387,12 @@ namespace sigma
     change_path (ap_sigma_pr1 f g p)⁻¹ (pathover_ap C f (apd g p)) :=
   by induction p; reflexivity
 
+  -- open sigma.ops
+  -- definition eq.rec_sigma {A : Type} {B : A → Type} {a₀ : A} {b₀ : B a₀}
+  --   {P : Π(a : A) (b : B a), ⟨a₀, b₀⟩ = ⟨a, b⟩ → Type} (H : P a₀ b₀ idp) {a : A} {b : B a}
+  --   (p : ⟨a₀, b₀⟩ = ⟨a, b⟩) : P a b p :=
+  -- sorry
+
   -- definition sigma_pathover_equiv_of_is_prop {A : Type} {B : A → Type} {C : Πa, B a → Type}
   --   {a a' : A} {p : a = a'} {b : B a} {b' : B a'} {c : C a b} {c' : C a' b'}
   --   [Πa b, is_prop (C a b)] : ⟨b, c⟩ =[p] ⟨b', c'⟩ ≃ b =[p] b' :=

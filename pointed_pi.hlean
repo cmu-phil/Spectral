@@ -189,11 +189,6 @@ namespace pointed
     Ω (psigma_gen B b₀) ≃* @psigma_gen (Ω A) (λp, pathover B b₀ p b₀) idpo :=
   pequiv_of_equiv (sigma_eq_equiv pt pt) idp
 
-  -- open sigma.ops
-  -- definition eq.rec_sigma {A : Type} {B : A → Type} {a₀ : A} {b₀ : B a₀}
-  --   {P : Π(a : A) (b : B a), ⟨a₀, b₀⟩ = ⟨a, b⟩ → Type} (H : P a₀ b₀ idp) {a : A} {b : B a}
-  --   (p : ⟨a₀, b₀⟩ = ⟨a, b⟩) : P a b p :=
-  -- sorry
   open sigma.ops
   definition ap1_gen_sigma {A A' : Type} {B : A → Type} {B' : A' → Type}
     {x₀ x₁ : Σa, B a} {a₀' a₁' : A'} {b₀' : B' a₀'} {b₁' : B' a₁'} (f : A → A')
@@ -215,8 +210,7 @@ namespace pointed
   begin
     fapply phomotopy.mk,
     { exact ap1_gen_sigma f (respect_pt f) (respect_pt f) g p p },
-    { induction f with f f₀, induction A' with A' a₀', esimp at * ⊢,
-      induction p, reflexivity }
+    { induction f with f f₀, induction A' with A' a₀', esimp at * ⊢, induction p, reflexivity }
   end
 
   definition psigma_gen_functor_pcompose [constructor] {A₁ A₂ A₃ : Type*}
@@ -243,10 +237,17 @@ namespace pointed
     {p₁ : pathover B₂ (g₁ b₁) (respect_pt f₁) b₂} {p₂ : pathover B₂ (g₂ b₁) (respect_pt f₂) b₂}
     (h₁ : f₁ ~* f₂)
     (h₂ : Π⦃a⦄ (b : B₁ a), pathover B₂ (g₁ b) (h₁ a) (g₂ b))
-    (h₃ : change_path (to_homotopy_pt h₁)⁻¹ p₁ = h₂ b₁ ⬝o p₂) :
+    (h₃ : squareover B₂ (square_of_eq (to_homotopy_pt h₁)⁻¹) p₁ p₂ (h₂ b₁) idpo) :
     psigma_gen_functor f₁ g₁ p₁ ~* psigma_gen_functor f₂ g₂ p₂ :=
   begin
-    exact sorry
+    induction h₁ using phomotopy_rec_on_idp,
+    fapply phomotopy.mk,
+    { intro x, induction x with a b, exact ap (dpair (f₁ a)) (eq_of_pathover_idp (h₂ b)) },
+    { induction f₁ with f f₀, induction A₂ with A₂ a₂₀, esimp at * ⊢,
+      induction f₀, esimp, induction p₂ using idp_rec_on,
+      rewrite [to_right_inv !eq_con_inv_equiv_con_eq at h₃],
+      have h₂ b₁ = p₁, from (eq_top_of_squareover h₃)⁻¹, induction this,
+      refine !ap_dpair ⬝ ap (sigma_eq _) _, exact to_left_inv !pathover_idp (h₂ b₁) }
   end
 
   definition psigma_gen_functor_psquare [constructor] {A₀₀ A₀₂ A₂₀ A₂₂ : Type*}
@@ -261,14 +262,16 @@ namespace pointed
     {p₁₂ : pathover B₂₂ (g₁₂ b₀₂) (respect_pt f₁₂) b₂₂}
     (h₁ : psquare f₁₀ f₁₂ f₀₁ f₂₁)
     (h₂ : Π⦃a⦄ (b : B₀₀ a), pathover B₂₂ (g₂₁ (g₁₀ b)) (h₁ a) (g₁₂ (g₀₁ b)))
-    (h₃ : squareover B₂₂ (square_of_eq (!con_idp ⬝ (to_homotopy_pt h₁)⁻¹))
+    (h₃ : squareover B₂₂ (square_of_eq (to_homotopy_pt h₁)⁻¹)
                          (pathover_ap B₂₂ f₂₁ (apo g₂₁ p₁₀) ⬝o p₂₁)
                          (pathover_ap B₂₂ f₁₂ (apo g₁₂ p₀₁) ⬝o p₁₂)
                          (h₂ b₀₀) idpo) :
     psquare (psigma_gen_functor f₁₀ g₁₀ p₁₀) (psigma_gen_functor f₁₂ g₁₂ p₁₂)
             (psigma_gen_functor f₀₁ g₀₁ p₀₁) (psigma_gen_functor f₂₁ g₂₁ p₂₁) :=
   proof
-    !psigma_gen_functor_pcompose⁻¹* ⬝* sorry ⬝* !psigma_gen_functor_pcompose
+    !psigma_gen_functor_pcompose⁻¹* ⬝*
+    psigma_gen_functor_phomotopy h₁ h₂ h₃ ⬝*
+    !psigma_gen_functor_pcompose
   qed
 
 
