@@ -333,13 +333,6 @@ namespace pointed
   infix ` ⬝*' `:75 := ppi_homotopy.trans
   postfix `⁻¹*'`:(max+1) := ppi_homotopy.symm
 
-  definition ppi_trans_refl (p : k ~~* l) : p ⬝*' ppi_homotopy.refl l = p :=
-  begin
-    unfold ppi_homotopy.trans,
-    induction A with A a₀,
-    induction k with k k₀, induction l with l l₀, induction p with p p₀, esimp at p, induction l₀, esimp at p₀, induction p₀, reflexivity,
-  end
-
   definition ppi_equiv_pmap [constructor] (A B : Type*) : (Π*(a : A), B) ≃ (A →* B) :=
   begin
     fapply equiv.MK,
@@ -372,6 +365,8 @@ namespace pointed
     all_goals reflexivity
   end
 
+  definition ppi_homotopy_of_eq (p : k = l) : k ~~* l :=
+  ppi_homotopy.mk (ap010 ppi_gen.to_fun p) begin induction p, refine !idp_con end
 
   variables (k l)
 
@@ -396,7 +391,7 @@ namespace pointed
   end
 
   -- the same as pmap_eq_equiv
-  definition ppi_eq_equiv : (k = l) ≃ (k ~~* l) :=
+  definition ppi_eq_equiv_internal : (k = l) ≃ (k ~~* l) :=
     calc (k = l) ≃ ppi_gen.sigma_char B x₀ k = ppi_gen.sigma_char B x₀ l
                    : eq_equiv_fn_eq (ppi_gen.sigma_char B x₀) k l
             ...  ≃ Σ(p : k = l),
@@ -416,18 +411,31 @@ namespace pointed
                    : sigma_equiv_sigma_right (λp, eq_equiv_eq_symm _ _)
             ...  ≃ (k ~~* l) : ppi_homotopy.sigma_char k l
 
-  -- the same as pmap_eq
+  definition ppi_eq_equiv_internal_idp :
+    ppi_eq_equiv_internal k k idp = ppi_homotopy.refl k :=
+  begin
+    apply ap (ppi_homotopy.mk (homotopy.refl _)), induction k with k k₀,
+    esimp at * ⊢, induction k₀, reflexivity
+  end
+
+  definition ppi_eq_equiv [constructor] : (k = l) ≃ (k ~~* l) :=
+  begin
+    refine equiv_change_fun (ppi_eq_equiv_internal k l) _,
+    { apply ppi_homotopy_of_eq },
+    { intro p, induction p, exact ppi_eq_equiv_internal_idp k }
+  end
+
   variables {k l}
+
+  -- the same as pmap_eq
   definition ppi_eq (h : k ~~* l) : k = l :=
   (ppi_eq_equiv k l)⁻¹ᵉ h
 
   definition eq_of_ppi_homotopy (h : k ~~* l) : k = l := ppi_eq h
 
-  definition ppi_homotopy_of_eq (p : k = l) : k ~~* l := ppi_eq_equiv k l p
-
   definition ppi_homotopy_of_eq_of_ppi_homotopy (h : k ~~* l) :
     ppi_homotopy_of_eq (eq_of_ppi_homotopy h) = h :=
-  to_right_inv (ppi_eq_equiv k l) h
+  proof to_right_inv (ppi_eq_equiv k l) h qed
 
   variable (k)
 
@@ -444,6 +452,33 @@ namespace pointed
     induction k with k k₀, induction k₀, reflexivity,
   end
 
+  variable {k}
+  definition ppi_homotopy_rec_on_eq [recursor] {k' : ppi_gen B x₀}
+    {Q : (k ~~* k') → Type} (p : k ~~* k') (H : Π(q : k = k'), Q (ppi_homotopy_of_eq q)) : Q p :=
+  ppi_homotopy_of_eq_of_ppi_homotopy p ▸ H (eq_of_ppi_homotopy p)
+
+  definition ppi_homotopy_rec_on_idp [recursor]
+    {Q : Π {k' : ppi_gen B x₀},  (k ~~* k') → Type}
+    (q : Q (ppi_homotopy.refl k)) {k' : ppi_gen B x₀} (H : k ~~* k') : Q H :=
+  begin
+    induction H using ppi_homotopy_rec_on_eq with t,
+    induction t, exact eq_ppi_homotopy_refl_ppi_homotopy_of_eq_refl k ▸ q,
+  end
+  attribute ppi_homotopy.rec' [recursor]
+
+  definition ppi_trans_refl (p : k ~~* l) : p ⬝*' ppi_homotopy.refl l = p :=
+  begin
+    unfold ppi_homotopy.trans,
+    induction A with A a₀,
+    induction k with k k₀, induction l with l l₀, induction p with p p₀, esimp at p, induction l₀, esimp at p₀, induction p₀, reflexivity,
+  end
+
+  definition ppi_refl_trans (p : k ~~* l) :  ppi_homotopy.refl k ⬝*' p = p :=
+  begin
+    induction p using ppi_homotopy_rec_on_idp,
+    apply ppi_trans_refl
+  end
+
   definition ppi_homotopy_of_eq_con {A : Type*} {B : A → Type*} {f g h : Π* (a : A), B a} (p : f = g) (q : g = h) :
     ppi_homotopy_of_eq (p ⬝ q) = ppi_homotopy_of_eq p ⬝*' ppi_homotopy_of_eq q :=
   begin induction q, induction p,
@@ -451,10 +486,20 @@ namespace pointed
     rewrite [!idp_con],
     refine transport (λ x, x ~~* x ⬝*' x) !ppi_homotopy_of_eq_refl _,
     fapply ppi_homotopy_of_eq,
-    refine (ppi_trans_refl (ppi_homotopy.refl f))⁻¹
+    refine (ppi_trans_refl (ppi_homotopy.refl f))⁻¹ᵖ
   end
 
 --  definition ppi_homotopy_of_eq_of_ppi_homotopy
+
+  definition phomotopy_mk_ppi [constructor] {A : Type*} {B : Type*} {C : B → Type*}
+    {f g : A →* (Π*b, C b)} (p : Πa, f a ~~* g a)
+    (q : p pt ⬝*' ppi_homotopy_of_eq (respect_pt g) = ppi_homotopy_of_eq (respect_pt f)) : f ~* g :=
+  begin
+    apply phomotopy.mk (λa, eq_of_ppi_homotopy (p a)),
+    apply eq_of_fn_eq_fn !ppi_eq_equiv,
+    refine !ppi_homotopy_of_eq_con ⬝ _, esimp,
+    refine ap (λx, x ⬝*' _) !ppi_homotopy_of_eq_of_ppi_homotopy ⬝ q
+  end
 
   definition ppi_homotopy_mk_ppmap [constructor]
     {A : Type*} {X : A → Type*} {Y : Π (a : A), X a → Type*}
@@ -471,18 +516,6 @@ namespace pointed
   end
 
   variable {k}
-
-  definition ppi_homotopy_rec_on_eq [recursor] {k' : ppi_gen B x₀}
-    {Q : (k ~~* k') → Type} (p : k ~~* k') (H : Π(q : k = k'), Q (ppi_homotopy_of_eq q)) : Q p :=
-  ppi_homotopy_of_eq_of_ppi_homotopy p ▸ H (eq_of_ppi_homotopy p)
-
-  definition ppi_homotopy_rec_on_idp [recursor]
-    {Q : Π {k' : ppi_gen B x₀},  (k ~~* k') → Type}
-    (q : Q (ppi_homotopy.refl k)) {k' : ppi_gen B x₀} (H : k ~~* k') : Q H :=
-  begin
-    induction H using ppi_homotopy_rec_on_eq with t,
-    induction t, exact eq_ppi_homotopy_refl_ppi_homotopy_of_eq_refl k ▸ q,
-  end
 
   variables (k l)
 
@@ -512,19 +545,37 @@ namespace pointed
     (Π*(a : A), P a) →* Π*(a : A), Q a :=
   pmap.mk (pmap_compose_ppi g) (ppi_eq (pmap_compose_ppi_const_right g))
 
-  -- ppi_compose_left is associative in the following sense.
-  definition ppi_assoc_compose_left {A : Type*} {B C D : A → Type*}
-    (f : Π (a : A), B a →* C a) (g : Π (a : A), C a →* D a)
-    : (ppi_compose_left g ∘* ppi_compose_left f) ~* ppi_compose_left (λ a, g a ∘* f a) :=
+  definition ppi_assoc [constructor] (h : Π (a : A), Q a →* R a)
+    (g : Π (a : A), P a →* Q a) (f : Π*a, P a) :
+    pmap_compose_ppi (λa, h a ∘* g a) f ~~* pmap_compose_ppi h (pmap_compose_ppi g f) :=
   begin
-    fapply phomotopy.mk,
-    intro h, fapply eq_of_ppi_homotopy,
     fapply ppi_homotopy.mk,
-    intro a, reflexivity,
-    refine !idp_con ⬝ _,
---    esimp,
-    repeat exact sorry,
+    { intro a, reflexivity },
+    exact !idp_con ⬝ whisker_right _ (!ap_con ⬝ whisker_right _ !ap_compose⁻¹) ⬝ !con.assoc
+  end
+
+  -- ppi_compose_left is a functor in the following sense
+  definition ppi_compose_left_pcompose (g : Π (a : A), Q a →* R a) (f : Π (a : A), P a →* Q a)
+    : ppi_compose_left (λ a, g a ∘* f a) ~* (ppi_compose_left g ∘* ppi_compose_left f) :=
+  begin
+    fapply phomotopy_mk_ppi,
+    { exact ppi_assoc g f },
+    { exact sorry /-ap (λx, _ ⬝*' x) _ ⬝ _ ⬝ _⁻¹,-/ },
   end /- TODO FOR SSS -/
+
+/-    fapply phomotopy_mk_ppmap,
+    { exact passoc h g },
+    { refine idp ◾** (!phomotopy_of_eq_con ⬝
+        (ap phomotopy_of_eq !pcompose_left_eq_of_phomotopy ⬝ !phomotopy_of_eq_of_phomotopy) ◾**
+        !phomotopy_of_eq_of_phomotopy) ⬝ _ ⬝ !phomotopy_of_eq_of_phomotopy⁻¹,
+      exact passoc_pconst_right h g } -/
+
+  definition ppi_compose_left_phomotopy [constructor] {g g' : Π(a : A), ppmap (P a) (Q a)}
+    (p : Πa, g a ~* g' a) : ppi_compose_left g ~* ppi_compose_left g' :=
+  begin
+    apply phomotopy_of_eq, apply ap ppi_compose_left, apply eq_of_homotopy, intro a,
+    apply eq_of_phomotopy, exact p a
+  end
 
   definition psquare_of_ppi_compose_left {A : Type*} {B C D E : A → Type*}
     {ftop : Π (a : A), B a →* C a} {fbot : Π (a : A), D a →* E a}
@@ -537,8 +588,9 @@ namespace pointed
         (ppi_compose_left fright)
     :=
   begin
-    refine (ppi_assoc_compose_left ftop fright) ⬝* _ ⬝* (ppi_assoc_compose_left fleft fbot)⁻¹*,
-    refine eq_of_homotopy (λ a, eq_of_phomotopy (psq a)) ▸ phomotopy.rfl,
+    refine (ppi_compose_left_pcompose fright ftop)⁻¹* ⬝* _ ⬝*
+           (ppi_compose_left_pcompose fbot fleft),
+    exact ppi_compose_left_phomotopy psq
     -- the last step is probably an unnecessary application of function extensionality.
   end
 
