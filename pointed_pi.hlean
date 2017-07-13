@@ -547,6 +547,14 @@ namespace pointed
     refine (ppi_trans_refl (ppi_homotopy.refl f))⁻¹ᵖ
   end
 
+  definition apd10_to_fun_ppi_eq (h : f ~~* g)
+    : apd10 (ap (λ k, ppi.to_fun k) (ppi_eq h)) = ppi_to_homotopy h :=
+  begin
+    induction h using ppi_homotopy_rec_on_idp, rewrite ppi_eq_refl
+  end
+
+--  definition ppi_homotopy_of_eq_of_ppi_homotopy
+
   definition phomotopy_mk_ppi [constructor] {A : Type*} {B : Type*} {C : B → Type*}
     {f g : A →* (Π*b, C b)} (p : Πa, f a ~~* g a)
     (q : p pt ⬝*' ppi_homotopy_of_eq (respect_pt g) = ppi_homotopy_of_eq (respect_pt f)) : f ~* g :=
@@ -784,9 +792,11 @@ namespace pointed
     { intro g, reflexivity },
     { refine !idp_con ⬝ !idp_con ⬝ _,
       fapply sigma_eq2,
-      { refine !sigma_eq_pr1 ⬝ _ ⬝ !ap_sigma_pr1⁻¹, exact sorry },
-      { exact sorry }
-    }
+      { refine !sigma_eq_pr1 ⬝ _ ⬝ !ap_sigma_pr1⁻¹,
+        apply eq_of_fn_eq_fn eq_equiv_homotopy,
+        refine !apd10_eq_of_homotopy ⬝ _ ⬝ !apd10_to_fun_ppi_eq⁻¹,
+        apply eq_of_homotopy, intro a, reflexivity },
+      { exact sorry } }
   end /- TODO FOR SSS -/
 
   definition ppi_gen_functor_right [constructor] {A : Type*} {B B' : A → Type}
