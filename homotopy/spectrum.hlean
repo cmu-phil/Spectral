@@ -657,52 +657,13 @@ set_option pp.coercions true
   spectrum.MK (λn, Π*a, E a n)
     (λn, !loop_pppi_pequiv⁻¹ᵉ* ∘*ᵉ ppi_pequiv_right (λa, equiv_glue (E a) n))
 
-  definition spi_compose_left_topsq
-    {N : succ_str} {A : Type*} {E F : A → gen_spectrum N} (f : Π a, (E a) →ₛ (F a)) (n : N)
-    : psquare
-        (ppi_compose_left (λ a, f a n))
-        (ppi_compose_left (λ a, Ω→ (f a (S n))))
-        (ppi_pequiv_right (λ a, equiv_glue (E a) n))
-        (ppi_pequiv_right (λ a, equiv_glue (F a) n))
-    :=
-    begin
-      fapply psquare_of_ppi_compose_left,
-      intro a, exact glue_square (f a) n,
-    end
-
-  definition spi_compose_left_botsq
-    {N : succ_str} {A : Type*} {E F : A → gen_spectrum N} (f : Π a, (E a) →ₛ (F a)) (n : N)
-    : psquare
-        (ppi_compose_left (λ a, Ω→ (to_fun (f a) (S n))))
-        (Ω→ (ppi_compose_left (λ a, to_fun (f a) (S n))))
-        (!loop_pppi_pequiv⁻¹ᵉ*)
-        (!loop_pppi_pequiv⁻¹ᵉ*)
-    :=
-    begin
-      refine (_)⁻¹ᵛ*,
-      fapply psquare_loop_ppi_compose_left,
-    end
-
   definition spi_compose_left [constructor] {N : succ_str} {A : Type*} {E F : A -> gen_spectrum N}
     (f : Πa, E a →ₛ F a) : spi A E →ₛ spi A F :=
   smap.mk (λn, ppi_compose_left (λa, f a n))
-  begin
-    intro n,
-    fapply psquare_of_phomotopy,
-    refine
-      (passoc _ _ (ppi_compose_left (λ a, to_fun (f a) n)))
-      ⬝* _ ⬝*
-      (passoc (!loop_pppi_pequiv⁻¹ᵉ*)
-              (ppi_compose_left (λ a, Ω→ (f a (S n))))
-              (ppi_pequiv_right (λa, equiv_glue (E a) n)))⁻¹*
-      ⬝* _ ⬝*
-      (passoc (Ω→ (ppi_compose_left (λ a, to_fun (f a) (S n)))) _ _),
-    { refine (pwhisker_left (!loop_pppi_pequiv⁻¹ᵉ*) _),
-      fapply spi_compose_left_topsq},
-    { refine (pwhisker_right (ppi_pequiv_right (λ a, equiv_glue (E a) n)) _),
-      fapply spi_compose_left_botsq},
-  end
-
+    begin
+      intro n,
+      exact psquare_ppi_compose_left (λa, (glue_square (f a) n)) ⬝v* !loop_pppi_pequiv_natural⁻¹ᵛ*
+    end
 
   -- unpointed spi
   definition supi [constructor] {N : succ_str} (A : Type) (E : A → gen_spectrum N) :

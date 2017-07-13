@@ -39,9 +39,6 @@ namespace pointed
     ((Σa, B a) →ᵘ* C) ≃* Πᵘ*a, B a →ᵘ* C :=
   pequiv_of_equiv (equiv_sigma_rec _)⁻¹ᵉ idp
 
-  definition loop_pupi [constructor] {A : Type} (B : A → Type*) : Ω (Πᵘ*a, B a) ≃* Πᵘ*a, Ω (B a) :=
-  pequiv_of_equiv eq_equiv_homotopy idp
-
   definition phomotopy_mk_pupi [constructor] {A : Type*} {B : Type} {C : B → Type*}
     {f g : A →* (Πᵘ*b, C b)} (p : f ~2 g)
     (q : p pt ⬝hty apd10 (respect_pt g) ~ apd10 (respect_pt f)) : f ~* g :=
@@ -115,8 +112,40 @@ namespace pointed
     (Πᵘ*a, B a) ≃* (Πᵘ*a, B' a) :=
   pupi_pequiv erfl f
 
-  definition loop_pumap [constructor] (A : Type) (B : Type*) : Ω (A →ᵘ* B) ≃* A →ᵘ* Ω B :=
-  loop_pupi (λa, B)
+  definition loop_pupi [constructor] {A : Type} (B : A → Type*) : Ω (Πᵘ*a, B a) ≃* Πᵘ*a, Ω (B a) :=
+  pequiv_of_equiv eq_equiv_homotopy idp
+
+  -- definition loop_pupi_natural [constructor] {A : Type} {B B' : A → Type*} (f : Πa, B a →* B' a) :
+  --   psquare (Ω→ (pupi_functor_right f)) (pupi_functor_right (λa, Ω→ (f a)))
+  --           (loop_pupi B) (loop_pupi B') :=
+
+  definition ap1_gen_pi {A A' : Type} {B : A → Type} {B' : A' → Type}
+    {h₀ h₁ : Πa, B a} {h₀' h₁' : Πa', B' a'} (f : A' → A) (g : Πa, B (f a) → B' a)
+    (p₀ : pi_functor f g h₀ ~ h₀') (p₁ : pi_functor f g h₁ ~ h₁') (r : h₀ = h₁) (a' : A') :
+    apd10 (ap1_gen (pi_functor f g) (eq_of_homotopy p₀) (eq_of_homotopy p₁) r) a' =
+    ap1_gen (g a') (p₀ a') (p₁ a') (apd10 r (f a')) :=
+  begin
+    induction r, induction p₀ using homotopy.rec_idp, induction p₁ using homotopy.rec_idp, esimp,
+    exact ap (λx, apd10 (ap1_gen _ x x _) _) !eq_of_homotopy_idp
+  end
+
+  -- definition ap1_gen_pi_idp {A A' : Type} {B : A → Type} {B' : A' → Type}
+  --   {h₀ : Πa, B a} (f : A' → A) (g : Πa, B (f a) → B' a) (a' : A') :
+  --   ap1_gen_pi f g (homotopy.refl (pi_functor f g h₀)) (homotopy.refl (pi_functor f g h₀)) idp a' =
+  --   begin esimp [ap1_gen] end :=
+  -- begin
+
+  -- end
+
+  definition loop_pupi_natural [constructor] {A : Type} {B B' : A → Type*} (f : Πa, B a →* B' a) :
+    psquare (Ω→ (pupi_functor_right f)) (pupi_functor_right (λa, Ω→ (f a)))
+            (loop_pupi B) (loop_pupi B') :=
+  begin
+    fapply phomotopy_mk_pupi,
+    { intro p a, exact ap1_gen_pi id f (λa, respect_pt (f a)) (λa, respect_pt (f a)) p a },
+    { intro a, revert B' f, refine fiberwise_pointed_map_rec _ _, intro B' f,
+      exact sorry }
+  end
 
   definition phomotopy_mk_pumap [constructor] {A C : Type*} {B : Type} {f g : A →* (B →ᵘ* C)}
     (p : f ~2 g) (q : p pt ⬝hty apd10 (respect_pt g) ~ apd10 (respect_pt f))
@@ -151,6 +180,9 @@ namespace pointed
   definition pumap_pequiv_left [constructor] {A A' : Type} (B : Type*) (f : A ≃ A') :
     (A →ᵘ* B) ≃* (A' →ᵘ* B) :=
   pumap_pequiv f pequiv.rfl
+
+  definition loop_pumap [constructor] (A : Type) (B : Type*) : Ω (A →ᵘ* B) ≃* A →ᵘ* Ω B :=
+  loop_pupi (λa, B)
 
   /- the pointed sigma type -/
   definition psigma_gen [constructor] {A : Type*} (P : A → Type) (x : P pt) : Type* :=
@@ -652,23 +684,6 @@ namespace pointed
     exact !pmap_compose_ppi2_refl⁻¹
   end
 
-  /- TODO: computation rule -/
-  definition fiberwise_pointed_map_rec {A : Type} {B : A → Type*}
-    (P : Π(C : A → Type*) (g : Πa, B a →* C a), Type)
-    (H : Π(C : A → Type) (g : Πa, B a → C a), P _ (λa, pmap_of_map_pt (g a))) :
-    Π⦃C : A → Type*⦄ (g : Πa, B a →* C a), P C g :=
-  begin
-    refine equiv_rect (!sigma_pi_equiv_pi_sigma ⬝e
-             arrow_equiv_arrow_right A !pType.sigma_char⁻¹ᵉ) _ _,
-    intro R, cases R with R r₀,
-    refine equiv_rect (!sigma_pi_equiv_pi_sigma ⬝e
-            pi_equiv_pi_right (λa, !pmap.sigma_char⁻¹ᵉ)) _ _,
-    intro g, cases g with g g₀, esimp at (g, g₀),
-    revert g₀, change (Π(g : (λa, g a (Point (B a))) ~ r₀), _),
-    refine homotopy.rec_idp _ _, esimp,
-    apply H
-  end
-
   definition ppi_assoc_ppi_const_right (g : Πa, Q a →* R a) (f : Πa, P a →* Q a) :
     ppi_assoc g f (ppi_const P) ⬝*'
     (pmap_compose_ppi_phomotopy_right _ (pmap_compose_ppi_ppi_const f) ⬝*'
@@ -700,7 +715,7 @@ namespace pointed
     apply eq_of_phomotopy, exact p a
   end
 
-  definition psquare_of_ppi_compose_left {A : Type*} {B C D E : A → Type*}
+  definition psquare_ppi_compose_left {A : Type*} {B C D E : A → Type*}
     {ftop : Π (a : A), B a →* C a} {fbot : Π (a : A), D a →* E a}
     {fleft : Π (a : A), B a →* D a} {fright : Π (a : A), C a →* E a}
     (psq : Π (a :A), psquare (ftop a) (fbot a) (fleft a) (fright a))
@@ -714,7 +729,6 @@ namespace pointed
     refine (ppi_compose_left_pcompose fright ftop)⁻¹* ⬝* _ ⬝*
            (ppi_compose_left_pcompose fbot fleft),
     exact ppi_compose_left_phomotopy psq
-    -- the last step is probably an unnecessary application of function extensionality.
   end
 
   definition ppi_pequiv_right [constructor] (g : Π(a : A), P a ≃* Q a) :
@@ -886,33 +900,6 @@ namespace pointed
   sorry
 --  psigma_gen_pequiv_psigma_gen (pppi_pequiv_ppmap A B) (λf, begin esimp, exact ppi_gen_equiv_ppi_gen_right (λa, _) _ end) _
 
-  definition pfiber_ppcompose_left (f : B →* C) :
-    pfiber (@ppcompose_left A B C f) ≃* ppmap A (pfiber f) :=
-  calc
-    pfiber (@ppcompose_left A B C f) ≃*
-             psigma_gen (λ(g : ppmap A B), f ∘* g = pconst A C)
-             proof (eq_of_phomotopy (pcompose_pconst f)) qed :
-             by exact !pfiber.sigma_char'
-      ... ≃* psigma_gen (λ(g : ppmap A B), f ∘* g ~* pconst A C) proof (pcompose_pconst f) qed :
-             by exact psigma_gen_pequiv_psigma_gen_right (λa, !pmap_eq_equiv)
-                        !phomotopy_of_eq_of_phomotopy
-      ... ≃* psigma_gen (λ(g : ppmap A B), ppi_gen (λa, f (g a) = pt)
-               (transport (λb, f b = pt) (respect_pt g)⁻¹ (respect_pt f)))
-               (ppi_const _) :
-             begin
-               refine psigma_gen_pequiv_psigma_gen_right
-                        (λg, ppi_gen_equiv_ppi_gen_basepoint (_ ⬝ !eq_transport_Fl⁻¹)) _,
-               intro g, refine !con_idp ⬝ _, apply whisker_right,
-               exact ap02 f !inv_inv⁻¹ ⬝ !ap_inv,
-               apply ppi_eq, fapply ppi_homotopy.mk,
-                 intro x, reflexivity,
-                 refine !idp_con ⬝ _, symmetry, refine !ap_id ◾ !idp_con ⬝ _, apply con.right_inv
-             end
-      ... ≃* ppmap A (psigma_gen (λb, f b = pt) (respect_pt f)) :
-             by exact (ppmap_psigma _ _)⁻¹ᵉ*
-      ... ≃* ppmap A (pfiber f) : by exact pequiv_ppcompose_left !pfiber.sigma_char'⁻¹ᵉ*
-
-
   definition pfiber_ppi_compose_left {B C : A → Type*} (f : Πa, B a →* C a) :
     pfiber (ppi_compose_left f) ≃* Π*(a : A), pfiber (f a) :=
   calc
@@ -938,6 +925,33 @@ namespace pointed
       ... ≃* Π*(a : A), (psigma_gen (λb, f a b = pt) (respect_pt (f a))) :
              by exact (ppi_psigma _ _)⁻¹ᵉ*
       ... ≃* Π*(a : A), pfiber (f a) : by exact ppi_pequiv_right (λa, !pfiber.sigma_char'⁻¹ᵉ*)
+
+  /- TODO: proof the following as a special case of pfiber_ppi_compose_left -/
+  definition pfiber_ppcompose_left (f : B →* C) :
+    pfiber (@ppcompose_left A B C f) ≃* ppmap A (pfiber f) :=
+  calc
+    pfiber (@ppcompose_left A B C f) ≃*
+             psigma_gen (λ(g : ppmap A B), f ∘* g = pconst A C)
+             proof (eq_of_phomotopy (pcompose_pconst f)) qed :
+             by exact !pfiber.sigma_char'
+      ... ≃* psigma_gen (λ(g : ppmap A B), f ∘* g ~* pconst A C) proof (pcompose_pconst f) qed :
+             by exact psigma_gen_pequiv_psigma_gen_right (λa, !pmap_eq_equiv)
+                        !phomotopy_of_eq_of_phomotopy
+      ... ≃* psigma_gen (λ(g : ppmap A B), ppi_gen (λa, f (g a) = pt)
+               (transport (λb, f b = pt) (respect_pt g)⁻¹ (respect_pt f)))
+               (ppi_const _) :
+             begin
+               refine psigma_gen_pequiv_psigma_gen_right
+                        (λg, ppi_gen_equiv_ppi_gen_basepoint (_ ⬝ !eq_transport_Fl⁻¹)) _,
+               intro g, refine !con_idp ⬝ _, apply whisker_right,
+               exact ap02 f !inv_inv⁻¹ ⬝ !ap_inv,
+               apply ppi_eq, fapply ppi_homotopy.mk,
+                 intro x, reflexivity,
+                 refine !idp_con ⬝ _, symmetry, refine !ap_id ◾ !idp_con ⬝ _, apply con.right_inv
+             end
+      ... ≃* ppmap A (psigma_gen (λb, f b = pt) (respect_pt f)) :
+             by exact (ppmap_psigma _ _)⁻¹ᵉ*
+      ... ≃* ppmap A (pfiber f) : by exact pequiv_ppcompose_left !pfiber.sigma_char'⁻¹ᵉ*
 
   -- definition pppi_ppmap {A C : Type*} {B : A → Type*} :
   --   ppmap (/- dependent smash of B -/) C ≃* Π*(a : A), ppmap (B a) C :=
@@ -978,13 +992,12 @@ namespace pointed
     exact (pppi.sigma_char (Ω ∘ B))⁻¹ᵉ*
   end
 
-  definition psquare_loop_ppi_compose_left {A : Type*} {X Y : A → Type*} (f :  Π (a : A), X a →* Y a) :
+  definition loop_pppi_pequiv_natural {A : Type*} {X Y : A → Type*} (f :  Π (a : A), X a →* Y a) :
     psquare
       (Ω→ (ppi_compose_left f))
       (ppi_compose_left (λ a, Ω→ (f a)))
       (loop_pppi_pequiv X)
-      (loop_pppi_pequiv Y)
-    :=
+      (loop_pppi_pequiv Y) :=
   begin
     refine ap1_psquare (pppi_sigma_char_natural f) ⬝v* _,
     refine !loop_psigma_gen_natural ⬝v* _,

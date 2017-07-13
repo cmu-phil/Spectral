@@ -251,4 +251,23 @@ namespace pointed
     A →* pointed.MK B (f pt) :=
   pmap.mk f idp
 
+  /- TODO: computation rule -/
+  open pi
+  definition fiberwise_pointed_map_rec {A : Type} {B : A → Type*}
+    (P : Π(C : A → Type*) (g : Πa, B a →* C a), Type)
+    (H : Π(C : A → Type) (g : Πa, B a → C a), P _ (λa, pmap_of_map_pt (g a))) :
+    Π⦃C : A → Type*⦄ (g : Πa, B a →* C a), P C g :=
+  begin
+    refine equiv_rect (!sigma_pi_equiv_pi_sigma ⬝e
+             arrow_equiv_arrow_right A !pType.sigma_char⁻¹ᵉ) _ _,
+    intro R, cases R with R r₀,
+    refine equiv_rect (!sigma_pi_equiv_pi_sigma ⬝e
+            pi_equiv_pi_right (λa, !pmap.sigma_char⁻¹ᵉ)) _ _,
+    intro g, cases g with g g₀, esimp at (g, g₀),
+    revert g₀, change (Π(g : (λa, g a (Point (B a))) ~ r₀), _),
+    refine homotopy.rec_idp _ _, esimp,
+    apply H
+  end
+
+
 end pointed
