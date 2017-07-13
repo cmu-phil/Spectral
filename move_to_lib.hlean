@@ -5,6 +5,8 @@ import homotopy.sphere2 homotopy.cofiber homotopy.wedge hit.prop_trunc hit.set_q
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc pi group
      is_trunc function sphere unit prod bool
 
+attribute pType.sigma_char sigma_pi_equiv_pi_sigma sigma.coind_unc [constructor]
+
 namespace eq
 
   definition apd10_prepostcompose_nondep {A B C D : Type} (h : C → D) {g g' : B → C} (p : g = g')
@@ -126,6 +128,27 @@ namespace eq
   definition homotopy_group_succ_in_natural (n : ℕ) {A B : Type*} (f : A →* B) :
     hsquare (homotopy_group_succ_in A n) (homotopy_group_succ_in B n) (π→[n+1] f) (π→[n] (Ω→ f)) :=
   trunc_functor_hsquare _ (loopn_succ_in_natural n f)⁻¹*
+
+  definition homotopy2.refl {A} {B : A → Type} {C : Π⦃a⦄, B a → Type} (f : Πa (b : B a), C b) :
+    f ~2 f :=
+  λa b, idp
+
+  definition homotopy2.rfl [refl] {A} {B : A → Type} {C : Π⦃a⦄, B a → Type}
+    {f : Πa (b : B a), C b} : f ~2 f :=
+  λa b, idp
+
+  definition homotopy3.refl {A} {B : A → Type} {C : Πa, B a → Type}
+    {D : Π⦃a⦄ ⦃b : B a⦄, C a b → Type} (f : Πa b (c : C a b), D c) : f ~3 f :=
+  λa b c, idp
+
+  definition homotopy3.rfl {A} {B : A → Type} {C : Πa, B a → Type}
+    {D : Π⦃a⦄ ⦃b : B a⦄, C a b → Type} {f : Πa b (c : C a b), D c} : f ~3 f :=
+  λa b c, idp
+
+  definition homotopy.rec_idp [recursor] {A : Type} {P : A → Type} {f : Πa, P a}
+    (Q : Π{g}, (f ~ g) → Type) (H : Q (homotopy.refl f)) {g : Π x, P x} (p : f ~ g) : Q p :=
+  homotopy.rec_on_idp p H
+
 
 end eq open eq
 
@@ -882,3 +905,24 @@ namespace pi
               hsquare (pi_bool_left A)⁻¹ᵉ (pi_bool_left B)⁻¹ᵉ (prod_functor (g ff) (g tt)) (pi_functor_right g) := hhinverse (pi_bool_left_nat g)
 
 end pi
+
+namespace equiv
+
+  definition rec_eq_of_equiv {A : Type} {P : A → A → Type} (e : Πa a', a = a' ≃ P a a')
+    {a a' : A} (Q : P a a' → Type) (H : Π(q : a = a'), Q (e a a' q)) :
+    Π(p : P a a'), Q p :=
+  equiv_rect (e a a') Q H
+
+  definition rec_idp_of_equiv {A : Type} {P : A → A → Type} (e : Πa a', a = a' ≃ P a a') {a : A}
+    (r : P a a) (s : e a a idp = r) (Q : Πa', P a a' → Type) (H : Q a r) ⦃a' : A⦄ (p : P a a') :
+    Q a' p :=
+  rec_eq_of_equiv e _ begin intro q, induction q, induction s, exact H end p
+
+  definition rec_idp_of_equiv_idp {A : Type} {P : A → A → Type} (e : Πa a', a = a' ≃ P a a') {a : A}
+    (r : P a a) (s : e a a idp = r) (Q : Πa', P a a' → Type) (H : Q a r) :
+    rec_idp_of_equiv e r s Q H r = H :=
+  begin
+    induction s, refine !is_equiv_rect_comp ⬝ _, reflexivity
+  end
+
+end equiv

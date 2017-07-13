@@ -247,5 +247,8 @@ namespace pointed
       !is_trunc_lift
   end
 
+  definition pmap_of_map_pt [constructor] {A : Type*} {B : Type} (f : A → B) :
+    A →* pointed.MK B (f pt) :=
+  pmap.mk f idp
 
 end pointed
