@@ -6,6 +6,7 @@ Some of these things still need to be changes, some of them are already changed,
 - Pointed maps should be special cases of dependent pointed maps. Pointed homotopies (between dependent pointed maps) should be special cases of dependent pointed maps, and pointed homotopies should be related themselves by pointed homotopies.
 - Type classes don't work well together with bundled structures and coercions in Lean (the instance is_contr_unit will not unify with (is_contr punit).
 - Overloading doesn't work well in Lean (mostly by degrading error messages)
+- avoid rec_on, don't formulate induction principles using "on", the order of arguments is worse
 - It is useful to do categorical properties more uniformly. Define a 1-coherent ∞-category, which is a precategory (or category?) where the homs are not assumed to be sets. Examples include
   + `Type` (with `→`),
   + `A → B` (with `~`),

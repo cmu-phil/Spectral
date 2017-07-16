@@ -126,16 +126,27 @@ namespace pointed
     ap1_gen (g a') (p₀ a') (p₁ a') (apd10 r (f a')) :=
   begin
     induction r, induction p₀ using homotopy.rec_idp, induction p₁ using homotopy.rec_idp, esimp,
-    exact ap (λx, apd10 (ap1_gen _ x x _) _) !eq_of_homotopy_idp
+    exact apd10 (ap apd10 !ap1_gen_idp) a',
+
+
+--    exact ap (λx, apd10 (ap1_gen _ x x _) _) !eq_of_homotopy_idp
   end
 
-  -- definition ap1_gen_pi_idp {A A' : Type} {B : A → Type} {B' : A' → Type}
-  --   {h₀ : Πa, B a} (f : A' → A) (g : Πa, B (f a) → B' a) (a' : A') :
-  --   ap1_gen_pi f g (homotopy.refl (pi_functor f g h₀)) (homotopy.refl (pi_functor f g h₀)) idp a' =
-  --   begin esimp [ap1_gen] end :=
-  -- begin
-
-  -- end
+  definition ap1_gen_pi_idp {A A' : Type} {B : A → Type} {B' : A' → Type}
+    {h₀ : Πa, B a} (f : A' → A) (g : Πa, B (f a) → B' a) (a' : A') :
+    ap1_gen_pi f g (homotopy.refl (pi_functor f g h₀)) (homotopy.refl (pi_functor f g h₀)) idp a' =
+    apd10 (ap apd10 !ap1_gen_idp) a' :=
+--    apd10 (ap apd10 (ap1_gen_idp (pi_functor id f) (eq_of_homotopy (λ a, idp)))) a' :=
+    -- ap (λp, apd10 p a') (ap1_gen_idp (pi_functor f g) (eq_of_homotopy homotopy.rfl)) :=
+  begin
+    esimp [ap1_gen_pi],
+    refine !homotopy_rec_idp_refl ⬝ !homotopy_rec_idp_refl,
+  end
+-- print homotopy.rec_
+-- print apd10_ap_postcompose
+-- print pi_functor
+-- print ap1_gen_idp
+-- print ap1_gen_pi
 
   definition loop_pupi_natural [constructor] {A : Type} {B B' : A → Type*} (f : Πa, B a →* B' a) :
     psquare (Ω→ (pupi_functor_right f)) (pupi_functor_right (λa, Ω→ (f a)))
@@ -144,7 +155,7 @@ namespace pointed
     fapply phomotopy_mk_pupi,
     { intro p a, exact ap1_gen_pi id f (λa, respect_pt (f a)) (λa, respect_pt (f a)) p a },
     { intro a, revert B' f, refine fiberwise_pointed_map_rec _ _, intro B' f,
-      exact sorry }
+      refine !ap1_gen_pi_idp ◾ (ap (λx, apd10 x _) !idp_con ⬝ !apd10_eq_of_homotopy) }
   end
 
   definition phomotopy_mk_pumap [constructor] {A C : Type*} {B : Type} {f g : A →* (B →ᵘ* C)}
@@ -509,6 +520,7 @@ namespace pointed
     induction H using ppi_homotopy_rec_on_eq with t,
     induction t, exact eq_ppi_homotopy_refl_ppi_homotopy_of_eq_refl k ▸ q,
   end
+
   attribute ppi_homotopy.rec' [recursor]
 
   definition ppi_homotopy_rec_on_eq_ppi_homotopy_of_eq
@@ -523,6 +535,20 @@ namespace pointed
   definition ppi_homotopy_rec_on_idp_refl {Q : Π {k' : ppi_gen B b₀}, (k ~~* k') → Type}
     (q : Q (ppi_homotopy.refl k)) : ppi_homotopy_rec_on_idp ppi_homotopy.rfl q = q :=
   ppi_homotopy_rec_on_eq_ppi_homotopy_of_eq _ idp
+
+  definition ppi_homotopy_rec_idp'
+    (Q : Π ⦃k' : ppi_gen B b₀⦄, (k ~~* k') → (k = k') → Type)
+    (q : Q (ppi_homotopy.refl k) idp) ⦃k' : ppi_gen B b₀⦄ (H : k ~~* k') : Q H (ppi_eq H) :=
+  begin
+    induction H using ppi_homotopy_rec_on_idp,
+    exact transport (Q ppi_homotopy.rfl) !ppi_eq_refl⁻¹ q
+  end
+
+  definition ppi_homotopy_rec_idp'_refl
+    (Q : Π ⦃k' : ppi_gen B b₀⦄, (k ~~* k') → (k = k') → Type)
+    (q : Q (ppi_homotopy.refl k) idp) :
+    ppi_homotopy_rec_idp' Q q ppi_homotopy.rfl = transport (Q ppi_homotopy.rfl) !ppi_eq_refl⁻¹ q :=
+  !ppi_homotopy_rec_on_idp_refl
 
   definition ppi_trans_refl (p : k ~~* l) : p ⬝*' ppi_homotopy.refl l = p :=
   begin
@@ -797,7 +823,7 @@ namespace pointed
         refine !apd10_eq_of_homotopy ⬝ _ ⬝ !apd10_to_fun_ppi_eq⁻¹,
         apply eq_of_homotopy, intro a, reflexivity },
       { exact sorry } }
-  end /- TODO FOR SSS -/
+  end
 
   definition ppi_gen_functor_right [constructor] {A : Type*} {B B' : A → Type}
     {b : B pt} {b' : B' pt} (f : Πa, B a → B' a) (p : f pt b = b') (g : ppi_gen B b)
@@ -988,10 +1014,84 @@ namespace pointed
     ppmap A₊ B ≃* A →ᵘ* B :=
   pequiv_of_equiv (pmap_equiv_left A B) idp
 
-  -- TODO: homotopy_of_eq and apd10 should be the same
-  -- TODO: there is also apd10_eq_of_homotopy in both pi and eq(?)
+  definition ppi_eq_equiv_natural_gen_lem {B C : A → Type} {b₀ : B pt} {c₀ : C pt}
+    {f : Π(a : A), B a → C a} {f₀ : f pt b₀ = c₀} {k : ppi_gen B b₀} {k' : ppi_gen C c₀}
+    (p : pmap_compose_ppi_gen f f₀ k ~~* k') :
+    ap1_gen (f pt) (p pt) f₀ (ppi_gen.resp_pt k) = ppi_gen.resp_pt k' :=
+  begin
+    symmetry,
+    refine _ ⬝ !con.assoc⁻¹,
+    exact eq_inv_con_of_con_eq (ppi_to_homotopy_pt p),
+  end
 
-  definition loop_pppi_pequiv {A : Type*} (B : A → Type*) : Ω (Π*a, B a) ≃* Π*(a : A), Ω (B a) :=
+  definition ppi_eq_equiv_natural_gen_lem2 {B C : A → Type} {b₀ : B pt} {c₀ : C pt}
+    {f : Π(a : A), B a → C a} {f₀ : f pt b₀ = c₀} {k l : ppi_gen B b₀}
+    {k' l' : ppi_gen C c₀} (p : pmap_compose_ppi_gen f f₀ k ~~* k')
+    (q : pmap_compose_ppi_gen f f₀ l ~~* l') :
+      ap1_gen (f pt) (p pt) (q pt) (ppi_gen.resp_pt k ⬝ (ppi_gen.resp_pt l)⁻¹) =
+      ppi_gen.resp_pt k' ⬝ (ppi_gen.resp_pt l')⁻¹ :=
+  (ap1_gen_con (f pt) _ f₀ _ _ _ ⬝ (ppi_eq_equiv_natural_gen_lem p) ◾
+  (!ap1_gen_inv ⬝ (ppi_eq_equiv_natural_gen_lem q)⁻²))
+
+  definition ppi_eq_equiv_natural_gen {B C : A → Type} {b₀ : B pt} {c₀ : C pt}
+    {f : Π(a : A), B a → C a} {f₀ : f pt b₀ = c₀} {k l : ppi_gen B b₀}
+    {k' l' : ppi_gen C c₀} (p : pmap_compose_ppi_gen f f₀ k ~~* k')
+    (q : pmap_compose_ppi_gen f f₀ l ~~* l') :
+    hsquare (ap1_gen (pmap_compose_ppi_gen f f₀) (ppi_eq p) (ppi_eq q))
+            (pmap_compose_ppi_gen (λa, ap1_gen (f a) (p a) (q a))
+              (ppi_eq_equiv_natural_gen_lem2 p q))
+            ppi_homotopy_of_eq
+            ppi_homotopy_of_eq :=
+  begin
+    intro r, induction r,
+    induction f₀,
+    induction k with k k₀,
+    induction k₀,
+    refine idp ⬝ _,
+    revert l' q, refine ppi_homotopy_rec_idp' _ _,
+    revert k' p, refine ppi_homotopy_rec_idp' _ _,
+    reflexivity
+  end
+
+  definition ppi_eq_equiv_natural_gen_refl {B C : A → Type}
+    {f : Π(a : A), B a → C a} {k : Πa, B a} :
+    ppi_eq_equiv_natural_gen (ppi_homotopy.refl (pmap_compose_ppi_gen f idp (ppi_gen.mk k idp)))
+      (ppi_homotopy.refl (pmap_compose_ppi_gen f idp (ppi_gen.mk k idp))) idp =
+    ap ppi_homotopy_of_eq !ap1_gen_idp :=
+  begin
+    refine !idp_con ⬝ _,
+    refine ppi_homotopy_rec_idp'_refl _ _ ⬝ _,
+    refine ap (transport _ _) !ppi_homotopy_rec_idp'_refl ⬝ _,
+    refine !tr_diag_eq_tr_tr⁻¹ ⬝ _,
+    refine !eq_transport_Fl ⬝ _,
+    refine !ap_inv⁻² ⬝ !inv_inv ⬝ !ap_compose ⬝ ap02 _ _,
+    exact !ap1_gen_idp_eq⁻¹
+  end
+
+  definition loop_pppi_pequiv [constructor] {A : Type*} (B : A → Type*) :
+    Ω (Π*a, B a) ≃* Π*(a : A), Ω (B a) :=
+  pequiv_of_equiv !ppi_eq_equiv idp
+
+  definition loop_pppi_pequiv_natural {A : Type*} {X Y : A → Type*} (f :  Π (a : A), X a →* Y a) :
+    psquare
+      (Ω→ (ppi_compose_left f))
+      (ppi_compose_left (λ a, Ω→ (f a)))
+      (loop_pppi_pequiv X)
+      (loop_pppi_pequiv Y) :=
+  begin
+    revert Y f, refine fiberwise_pointed_map_rec _ _, intro Y f,
+    fapply phomotopy.mk,
+    { exact ppi_eq_equiv_natural_gen (pmap_compose_ppi_ppi_const (λa, pmap_of_map (f a) pt))
+              (pmap_compose_ppi_ppi_const (λa, pmap_of_map (f a) pt)) },
+    { exact !ppi_eq_equiv_natural_gen_refl ◾ (!idp_con ⬝ !ppi_eq_refl) }
+  end
+
+/- below is an alternate proof strategy for the naturality of loop_pppi_pequiv_natural,
+  where we define loop_pppi_pequiv as composite of pointed equivalences, and proved the
+  naturality individually. That turned out to be harder.
+-/
+
+/-  definition loop_pppi_pequiv2 {A : Type*} (B : A → Type*) : Ω (Π*a, B a) ≃* Π*(a : A), Ω (B a) :=
   begin
     refine loop_pequiv_loop (pppi.sigma_char B) ⬝e* _,
     refine !loop_psigma_gen ⬝e* _,
@@ -1002,20 +1102,21 @@ namespace pointed
     exact (pppi.sigma_char (Ω ∘ B))⁻¹ᵉ*
   end
 
-  definition loop_pppi_pequiv_natural {A : Type*} {X Y : A → Type*} (f :  Π (a : A), X a →* Y a) :
+  definition loop_pppi_pequiv_natural2 {A : Type*} {X Y : A → Type*} (f :  Π (a : A), X a →* Y a) :
     psquare
       (Ω→ (ppi_compose_left f))
       (ppi_compose_left (λ a, Ω→ (f a)))
-      (loop_pppi_pequiv X)
-      (loop_pppi_pequiv Y) :=
+      (loop_pppi_pequiv2 X)
+      (loop_pppi_pequiv2 Y) :=
   begin
     refine ap1_psquare (pppi_sigma_char_natural f) ⬝v* _,
     refine !loop_psigma_gen_natural ⬝v* _,
     refine _ ⬝v* (pppi_sigma_char_natural (λ a, Ω→ (f a)))⁻¹ᵛ*,
     fapply psigma_gen_functor_psquare,
-
-    repeat exact sorry
-  end /- TODO FOR SSS -/
+    { apply loop_pupi_natural },
+    { intro p q, exact sorry },
+    { exact sorry }
+  end-/
 
 end pointed open pointed
 

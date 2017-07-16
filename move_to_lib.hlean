@@ -6,6 +6,10 @@ open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc pi gr
      is_trunc function sphere unit prod bool
 
 attribute pType.sigma_char sigma_pi_equiv_pi_sigma sigma.coind_unc [constructor]
+attribute ap1_gen [unfold 8 9 10]
+attribute ap010 [unfold 7]
+  -- TODO: homotopy_of_eq and apd10 should be the same
+  -- TODO: there is also apd10_eq_of_homotopy in both pi and eq(?)
 
 namespace eq
 
@@ -148,6 +152,27 @@ namespace eq
   definition homotopy.rec_idp [recursor] {A : Type} {P : A → Type} {f : Πa, P a}
     (Q : Π{g}, (f ~ g) → Type) (H : Q (homotopy.refl f)) {g : Π x, P x} (p : f ~ g) : Q p :=
   homotopy.rec_on_idp p H
+
+  open funext
+  definition homotopy_rec_on_apd10 {A : Type} {P : A → Type} {f g : Πa, P a}
+    (Q : f ~ g → Type) (H : Π(q : f = g), Q (apd10 q)) (p : f = g) :
+    homotopy.rec_on (apd10 p) H = H p :=
+  begin
+    unfold [homotopy.rec_on],
+    refine ap (λp, p ▸ _) !adj ⬝ _,
+    refine !tr_compose⁻¹ ⬝ _,
+    apply apdt
+  end
+
+  definition homotopy_rec_idp_refl {A : Type} {P : A → Type} {f : Πa, P a}
+    (Q : Π{g}, f ~ g → Type) (H : Q homotopy.rfl) :
+    homotopy.rec_idp @Q H homotopy.rfl = H :=
+  !homotopy_rec_on_apd10
+
+  definition phomotopy_rec_on_idp_refl {A B : Type*} (f : A →* B)
+    {Q : Π{g}, (f ~* g) → Type} (H : Q (phomotopy.refl f)) :
+    phomotopy_rec_on_idp phomotopy.rfl H = H :=
+  !phomotopy_rec_on_eq_phomotopy_of_eq
 
 
 end eq open eq

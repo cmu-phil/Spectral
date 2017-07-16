@@ -269,5 +269,9 @@ namespace pointed
     apply H
   end
 
+definition ap1_gen_idp_eq {A B : Type} (f : A → B) {a : A} (q : f a = f a) (r : q = idp) :
+  ap1_gen_idp f q = ap (λx, ap1_gen f x x idp) r :=
+begin cases r, reflexivity end
+
 
 end pointed
