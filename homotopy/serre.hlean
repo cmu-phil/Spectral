@@ -267,5 +267,4 @@ section serre
  qed
 end serre
 
-
 end spectrum

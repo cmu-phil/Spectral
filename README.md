@@ -1,6 +1,9 @@
 # Spectral Sequences
 
-Formalization project of the CMU HoTT group towards formalizing the Serre spectral sequence.
+Formalization project of the CMU HoTT group to formalize the Serre spectral sequence.
+
+*Update July 16*: The construction of the Serre spectral sequence has been completed. The result is `serre_convergence` in `homotopy.serre`.
+The main algebra part is in `algebra.spectral_sequence`.
 
 This repository also contains the contents of the MRC group on formalizing homology in Lean.
 
@@ -18,7 +21,7 @@ Jeremy Avigad, Steve Awodey, Ulrik Buchholtz, Floris van Doorn, Clive Newstead, 
 
 ### Outline
 
-These projects are mostly done
+These projects are done
 
 - Given a sequence of spectra and maps, indexed over `ℤ`, we get an exact couple, indexed over `ℤ × ℤ`.
 - We can derive an exact couple.
