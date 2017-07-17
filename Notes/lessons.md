@@ -2,6 +2,7 @@ In this file I (Floris) will collect some lessons learned from building and work
 Some of these things still need to be changes, some of them are already changed, and some of them are not worth the effort to change.
 
 - Spheres should be indexed by ℕ, it is not worth the effort to start counting at -1 (pointed spheres are much more useful anyway).
+- I think the type `trunc_index` / `ℕ₋₂` is superfluous and `ℤ` should be used instead (defined so that `is_trunc n A`and `trunc n A is` constant for `n ≤ -2`). This saves defining operations and proving properties on an additional type, and it is useful when defining truncations / truncatedness for spectra, which are naturally indexed by `ℤ`.
 - Don't have both susp and psusp. psusp should be the default (otherwise there is a distinction between iterate susp and iterate psusp)
 - Pointed maps should be special cases of dependent pointed maps. Pointed homotopies (between dependent pointed maps) should be special cases of dependent pointed maps, and pointed homotopies should be related themselves by pointed homotopies.
 - Type classes don't work well together with bundled structures and coercions in Lean (the instance is_contr_unit will not unify with (is_contr punit).

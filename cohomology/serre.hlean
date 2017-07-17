@@ -68,39 +68,6 @@ this⁻¹ᵛ*
 end pointed open pointed
 
 namespace spectrum
-/- begin move -/
-definition is_strunc_strunc_pred (X : spectrum) (k : ℤ) : is_strunc k (strunc (k - 1) X) :=
-λn, @(is_trunc_of_le _ (maxm2_monotone (add_le_add_right (sub_one_le k) n))) !is_strunc_strunc
-
-definition ptrunc_maxm2_pred {n m : ℤ} (A : Type*) (p : n - 1 = m) :
-  ptrunc (maxm2 m) A ≃* ptrunc (trunc_index.pred (maxm2 n)) A :=
-begin
-  cases n with n, cases n with n, apply pequiv_of_is_contr,
-        induction p, apply is_trunc_trunc,
-      apply is_contr_ptrunc_minus_one,
-    exact ptrunc_change_index (ap maxm2 (p⁻¹ ⬝ !add_sub_cancel)) A,
-  exact ptrunc_change_index (ap maxm2 p⁻¹) A
-end
-
-definition ptrunc_maxm2_pred_nat {n : ℕ} {m l : ℤ} (A : Type*)
-  (p : nat.succ n = l) (q : pred l = m) (r : maxm2 m = trunc_index.pred (maxm2 (nat.succ n))) :
-  @ptrunc_maxm2_pred (nat.succ n) m A (ap pred p ⬝ q) ~* ptrunc_change_index r A :=
-begin
-  have ap maxm2 ((ap pred p ⬝ q)⁻¹ ⬝ add_sub_cancel n 1) = r, from !is_set.elim,
-  induction this, reflexivity
-end
-
-definition EM_type_pequiv_EM (A : spectrum) (n k : ℤ) (l : ℕ) (p : n + k = l) :
-  EM_type (A k) l ≃* EM (πₛ[n] A) l :=
-begin
-  symmetry,
-  cases l with l,
-  { exact shomotopy_group_pequiv_homotopy_group A p },
-  { cases l with l,
-    { apply EM1_pequiv_EM1, exact shomotopy_group_isomorphism_homotopy_group A p },
-    { apply EMadd1_pequiv_EMadd1 (l+1), exact shomotopy_group_isomorphism_homotopy_group A p }}
-end
-/- end move -/
 
 definition postnikov_smap [constructor] (X : spectrum) (k : ℤ) :
   strunc k X →ₛ strunc (k - 1) X :=
@@ -123,7 +90,7 @@ definition pfiber_postnikov_map_pred' (A : spectrum) (n k l : ℤ) (p : n + k = 
 begin
   cases l with l l,
   { refine pfiber_postnikov_map_pred (A k) l ⬝e* _,
-    exact EM_type_pequiv_EM A n k l p },
+    exact EM_type_pequiv_EM A p },
   { apply pequiv_of_is_contr, apply is_contr_pfiber_pid,
     apply is_contr_EM_spectrum_neg }
 end
@@ -265,6 +232,9 @@ section serre
      exact (sigma_pumap F (Y k))⁻¹ᵉ*
     end
  qed
+
+
 end serre
+
 
 end spectrum

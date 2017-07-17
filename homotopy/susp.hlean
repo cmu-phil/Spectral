@@ -1,9 +1,15 @@
 import homotopy.susp types.pointed2 ..move_to_lib
 
-open susp eq pointed function is_equiv lift equiv is_trunc
+open susp eq pointed function is_equiv lift equiv is_trunc nat
 
 namespace susp
   variables {X X' Y Y' Z : Type*}
+
+  /- TODO: remove susp and rename psusp to susp -/
+  definition psuspn : ℕ → Type* → Type*
+  | psuspn 0 X          := X
+  | psuspn (succ n) X   := psusp (psuspn n X)
+
   definition susp_functor_pconst_homotopy [unfold 3] {X Y : Type*} (x : psusp X) :
     psusp_functor (pconst X Y) x = pt :=
   begin

@@ -3,7 +3,7 @@
 import homotopy.sphere2 homotopy.cofiber homotopy.wedge hit.prop_trunc hit.set_quotient eq2 types.pointed2
 
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc pi group
-     is_trunc function sphere unit prod bool
+     is_trunc function unit prod bool
 
 attribute pType.sigma_char sigma_pi_equiv_pi_sigma sigma.coind_unc [constructor]
 attribute ap1_gen [unfold 8 9 10]
@@ -220,6 +220,31 @@ end trunc_index
 
 namespace int
 
+  private definition maxm2_le.lemma₁ {n k : ℕ} : n+(1:int) + -[1+ k] ≤ n :=
+  le.intro (
+    calc n + 1 + -[1+ k] + k
+      = n + 1 + (-(k + 1)) + k : by reflexivity
+  ... = n + 1 + (- 1 - k) + k    : by krewrite (neg_add_rev k 1)
+  ... = n + 1 + (- 1 - k + k)    : add.assoc
+  ... = n + 1 + (- 1 + -k + k)   : by reflexivity
+  ... = n + 1 + (- 1 + (-k + k)) : add.assoc
+  ... = n + 1 + (- 1 + 0)        : add.left_inv
+  ... = n + (1 + (- 1 + 0))      : add.assoc
+  ... = n                       : int.add_zero)
+
+  private definition maxm2_le.lemma₂ {n : ℕ} {k : ℤ} : -[1+ n] + 1 + k ≤ k :=
+  le.intro (
+    calc -[1+ n] + 1 + k + n
+      = - (n + 1) + 1 + k + n : by reflexivity
+  ... = -n - 1 + 1 + k + n    : by rewrite (neg_add n 1)
+  ... = -n + (- 1 + 1) + k + n : by krewrite (int.add_assoc (-n) (- 1) 1)
+  ... = -n + 0 + k + n        : add.left_inv 1
+  ... = -n + k + n            : int.add_zero
+  ... = k + -n + n            : int.add_comm
+  ... = k + (-n + n)          : int.add_assoc
+  ... = k + 0                 : add.left_inv n
+  ... = k                     : int.add_zero)
+
   open trunc_index
   /-
     The function from integers to truncation indices which sends
@@ -289,6 +314,24 @@ namespace int
 
   definition le_add_one (n : ℤ) : n ≤ n + 1:=
   le_add_nat n 1
+
+  open trunc_index
+
+  definition maxm2_le (n k : ℤ) : maxm2 (n+1+k) ≤ (maxm1m1 n).+1+2+(maxm1m1 k) :=
+  begin
+    rewrite [-(maxm1_eq_succ n)],
+    induction n with n n,
+    { induction k with k k,
+      { induction k with k IH,
+        { apply le.tr_refl },
+        { exact succ_le_succ IH } },
+      { exact trunc_index.le_trans (maxm2_monotone maxm2_le.lemma₁)
+                                   (maxm2_le_maxm1 n) } },
+    { krewrite (add_plus_two_comm -1 (maxm1m1 k)),
+      rewrite [-(maxm1_eq_succ k)],
+      exact trunc_index.le_trans (maxm2_monotone maxm2_le.lemma₂)
+                                 (maxm2_le_maxm1 k) }
+  end
 
 end int open int
 
@@ -389,6 +432,15 @@ namespace trunc
 
   definition trunc_index.pred [unfold 1] (n : ℕ₋₂) : ℕ₋₂ :=
   begin cases n with n, exact -2, exact n end
+
+  /- A more general version of ptrunc_elim_phomotopy, where the proofs of truncatedness might be different -/
+  definition ptrunc_elim_phomotopy2 [constructor] (k : ℕ₋₂) {A B : Type*} {f g : A →* B} (H₁ : is_trunc k B)
+    (H₂ : is_trunc k B) (p : f ~* g) : @ptrunc.elim k A B H₁ f ~* @ptrunc.elim k A B H₂ g :=
+  begin
+    fapply phomotopy.mk,
+    { intro x, induction x with a, exact p a },
+    { exact to_homotopy_pt p }
+  end
 
 end trunc
 

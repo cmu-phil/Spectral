@@ -303,7 +303,13 @@ namespace EM
   EMadd1_pequiv_succ_natural f n !isomorphism.refl !isomorphism.refl (π→g[n+2] f)
     proof λa, idp qed
 
-  /- The Eilenberg-MacLane space K(G,n) with the same homotopy group as X on level n -/
+  /- The Eilenberg-MacLane space K(G,n) with the same homotopy group as X on level n.
+     On paper this is written K(πₙ(X), n). The problem is that for
+     * n = 0 the expression π₀(X) is a pointed set, and K(X,0) needs X to be a pointed set
+     * n = 1 the expression π₁(X) is a group, and K(G,1) needs G to be a group
+     * n ≥ 2 the expression πₙ(X) is an abelian, and K(G,n) needs X to be an abelian group
+
+  -/
   definition EM_type (X : Type*) : ℕ → Type*
   | 0     := ptrunc 0 X
   | 1     := EM1 (π₁ X)

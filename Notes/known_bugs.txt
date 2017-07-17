@@ -32,3 +32,5 @@ equiv.MK f
 this has the additional advantage that if f and/or g are defined using induction, they will only reduce if they are applied to arguments for which they actually reduce (assuming they have the correct [unfold n] flag.
 
 - unfold [foo] also does various (sometimes unwanted) reductions (as if you called esimp)
+
+- The Emacs flycheck mode has a hard time with nonrelative paths to files in the same directory. This means that for importing files from the Lean 2 HoTT library use absolute paths (e.g. `import algebra.group`) and for importing files in the Spectral repository use relative paths (e.g. for a file in the `homotopy` folder use `import ..algebra.subgroup`)

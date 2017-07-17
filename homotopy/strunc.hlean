@@ -7,62 +7,11 @@ Truncatedness and truncation of spectra
 -/
 
 import .spectrum .EM
-
-namespace int
-
-  -- TODO move this
-  open nat algebra
-  section
-  private definition maxm2_le.lemma₁ {n k : ℕ} : n+(1:int) + -[1+ k] ≤ n :=
-  le.intro (
-    calc n + 1 + -[1+ k] + k
-      = n + 1 + (-(k + 1)) + k : by reflexivity
-  ... = n + 1 + (-1 - k) + k    : by krewrite (neg_add_rev k 1)
-  ... = n + 1 + (-1 - k + k)    : add.assoc
-  ... = n + 1 + (-1 + -k + k)   : by reflexivity
-  ... = n + 1 + (-1 + (-k + k)) : add.assoc
-  ... = n + 1 + (-1 + 0)        : add.left_inv
-  ... = n + (1 + (-1 + 0))      : add.assoc
-  ... = n                       : int.add_zero)
-
-  private definition maxm2_le.lemma₂ {n : ℕ} {k : ℤ} : -[1+ n] + 1 + k ≤ k :=
-  le.intro (
-    calc -[1+ n] + 1 + k + n
-      = - (n + 1) + 1 + k + n : by reflexivity
-  ... = -n - 1 + 1 + k + n    : by rewrite (neg_add n 1)
-  ... = -n + (-1 + 1) + k + n : by krewrite (int.add_assoc (-n) (-1) 1)
-  ... = -n + 0 + k + n        : add.left_inv 1
-  ... = -n + k + n            : int.add_zero
-  ... = k + -n + n            : int.add_comm
-  ... = k + (-n + n)          : int.add_assoc
-  ... = k + 0                 : add.left_inv n
-  ... = k                     : int.add_zero)
-
-  open trunc_index
-
-  definition maxm2_le (n k : ℤ) : maxm2 (n+1+k) ≤ (maxm1m1 n).+1+2+(maxm1m1 k) :=
-  begin
-    rewrite [-(maxm1_eq_succ n)],
-    induction n with n n,
-    { induction k with k k,
-      { induction k with k IH,
-        { apply le.tr_refl },
-        { exact succ_le_succ IH } },
-      { exact trunc_index.le_trans (maxm2_monotone maxm2_le.lemma₁)
-                                   (maxm2_le_maxm1 n) } },
-    { krewrite (add_plus_two_comm -1 (maxm1m1 k)),
-      rewrite [-(maxm1_eq_succ k)],
-      exact trunc_index.le_trans (maxm2_monotone maxm2_le.lemma₂)
-                                 (maxm2_le_maxm1 k) }
-  end
-  end
-
-end int
-
 open int trunc eq is_trunc lift unit pointed equiv is_equiv algebra EM
 
 namespace spectrum
 
+/- interactions of ptrunc / trunc with maxm2 -/
 definition ptrunc_maxm2_change_int {k l : ℤ} (p : k = l) (X : Type*)
   : ptrunc (maxm2 k) X ≃* ptrunc (maxm2 l) X :=
 ptrunc_change_index (ap maxm2 p) X
@@ -93,14 +42,6 @@ begin
     cases k with k,
     { change is_set (trunc 0 X), apply _ },
     { change is_set (trunc -2 X), apply _ }}
-end
-
-definition ptrunc_elim_phomotopy2 [constructor] (k : ℕ₋₂) {A B : Type*} {f g : A →* B} (H₁ : is_trunc k B)
-  (H₂ : is_trunc k B) (p : f ~* g) : @ptrunc.elim k A B H₁ f ~* @ptrunc.elim k A B H₂ g :=
-begin
-  fapply phomotopy.mk,
-  { intro x, induction x with a, exact p a },
-  { exact to_homotopy_pt p }
 end
 
 definition loop_ptrunc_maxm2_pequiv_ptrunc_elim' {k : ℤ} {l : ℕ₋₂} (p : maxm2 (k+1) = l)
@@ -136,15 +77,25 @@ definition is_trunc_of_is_trunc_maxm2 (k : ℤ) (X : Type)
   : is_trunc (maxm2 k) X → is_trunc (max0 k) X :=
 λ H, @is_trunc_of_le X _ _ (maxm2_le_maxm0 k) H
 
-definition strunc [constructor] (k : ℤ) (E : spectrum) : spectrum :=
-spectrum.MK (λ(n : ℤ), ptrunc (maxm2 (k + n)) (E n))
-            (λ(n : ℤ), ptrunc_pequiv_ptrunc (maxm2 (k + n)) (equiv_glue E n)
-              ⬝e* (loop_ptrunc_maxm2_pequiv (ap maxm2 (add.assoc k n 1)) (E (n+1)))⁻¹ᵉ*)
+definition ptrunc_maxm2_pred {n m : ℤ} (A : Type*) (p : n - 1 = m) :
+  ptrunc (maxm2 m) A ≃* ptrunc (trunc_index.pred (maxm2 n)) A :=
+begin
+  cases n with n, cases n with n, apply pequiv_of_is_contr,
+        induction p, apply is_trunc_trunc,
+      apply is_contr_ptrunc_minus_one,
+    exact ptrunc_change_index (ap maxm2 (p⁻¹ ⬝ !add_sub_cancel)) A,
+  exact ptrunc_change_index (ap maxm2 p⁻¹) A
+end
 
-definition strunc_change_int [constructor] {k l : ℤ} (E : spectrum) (p : k = l) :
-  strunc k E →ₛ strunc l E :=
-begin induction p, reflexivity end
+definition ptrunc_maxm2_pred_nat {n : ℕ} {m l : ℤ} (A : Type*)
+  (p : nat.succ n = l) (q : pred l = m) (r : maxm2 m = trunc_index.pred (maxm2 (nat.succ n))) :
+  @ptrunc_maxm2_pred (nat.succ n) m A (ap pred p ⬝ q) ~* ptrunc_change_index r A :=
+begin
+  have ap maxm2 ((ap pred p ⬝ q)⁻¹ ⬝ add_sub_cancel n 1) = r, from !is_set.elim,
+  induction this, reflexivity
+end
 
+/- truncatedness of spectra -/
 definition is_strunc [reducible] (k : ℤ) (E : spectrum) : Type :=
 Π (n : ℤ), is_trunc (maxm2 (k + n)) (E n)
 
@@ -162,45 +113,6 @@ end
 definition is_strunc_pequiv_closed {k : ℤ} {E F : spectrum} (H : Πn, E n ≃* F n)
   (H2 : is_strunc k E) : is_strunc k F :=
 λn, is_trunc_equiv_closed (maxm2 (k + n)) (H n)
-
-definition is_strunc_strunc (k : ℤ) (E : spectrum)
-  : is_strunc k (strunc k E) :=
-λ n, is_trunc_trunc (maxm2 (k + n)) (E n)
-
-definition is_strunc_strunc_of_is_strunc (k : ℤ) {l : ℤ} {E : spectrum} (H : is_strunc l E)
-  : is_strunc l (strunc k E) :=
-λ n, !is_trunc_trunc_of_is_trunc
-
-definition str [constructor] (k : ℤ) (E : spectrum) : E →ₛ strunc k E :=
-smap.mk (λ n, ptr (maxm2 (k + n)) (E n))
-  abstract begin
-    intro n,
-    apply psquare_of_phomotopy,
-    refine !passoc ⬝* pwhisker_left _ !ptr_natural ⬝* _,
-    refine !passoc⁻¹* ⬝* pwhisker_right _ !loop_ptrunc_maxm2_pequiv_ptr⁻¹*,
-  end end
-
-definition strunc_elim [constructor] {k : ℤ} {E F : spectrum} (f : E →ₛ F)
-  (H : is_strunc k F) : strunc k E →ₛ F :=
-smap.mk (λn, ptrunc.elim (maxm2 (k + n)) (f n))
-  abstract begin
-    intro n,
-    apply psquare_of_phomotopy,
-    symmetry,
-    refine !passoc⁻¹* ⬝* pwhisker_right _ !loop_ptrunc_maxm2_pequiv_ptrunc_elim' ⬝* _,
-    refine @(ptrunc_elim_ptrunc_functor _ _ _) _ ⬝* _,
-    refine _ ⬝* @(ptrunc_elim_pcompose _ _ _) _ _,
-      apply is_trunc_maxm2_loop,
-      refine is_trunc_of_eq _ (H (n+1)), exact ap maxm2 (add.assoc k n 1)⁻¹,
-    apply ptrunc_elim_phomotopy2,
-    apply phomotopy_of_psquare,
-    apply ptranspose,
-    apply smap.glue_square
-  end end
-
-definition strunc_functor [constructor] (k : ℤ) {E F : spectrum} (f : E →ₛ F) :
-  strunc k E →ₛ strunc k F :=
-strunc_elim (str k F ∘ₛ f) (is_strunc_strunc k F)
 
 definition is_strunc_sunit (n : ℤ) : is_strunc n sunit :=
 begin
@@ -241,6 +153,59 @@ have I : m < 2, from
   (is_trunc_of_is_trunc_maxm2 m (E (2 - k)) (K (2 - k)))
   (nat.succ_le_succ (max0_le_of_le (le_sub_one_of_lt I)))
 
+/- truncation of spectra -/
+definition strunc [constructor] (k : ℤ) (E : spectrum) : spectrum :=
+spectrum.MK (λ(n : ℤ), ptrunc (maxm2 (k + n)) (E n))
+            (λ(n : ℤ), ptrunc_pequiv_ptrunc (maxm2 (k + n)) (equiv_glue E n)
+              ⬝e* (loop_ptrunc_maxm2_pequiv (ap maxm2 (add.assoc k n 1)) (E (n+1)))⁻¹ᵉ*)
+
+definition strunc_change_int [constructor] {k l : ℤ} (E : spectrum) (p : k = l) :
+  strunc k E →ₛ strunc l E :=
+begin induction p, reflexivity end
+
+definition is_strunc_strunc (k : ℤ) (E : spectrum)
+  : is_strunc k (strunc k E) :=
+λ n, is_trunc_trunc (maxm2 (k + n)) (E n)
+
+definition is_strunc_strunc_pred (X : spectrum) (k : ℤ) : is_strunc k (strunc (k - 1) X) :=
+λn, @(is_trunc_of_le _ (maxm2_monotone (add_le_add_right (sub_one_le k) n))) !is_strunc_strunc
+
+definition is_strunc_strunc_of_is_strunc (k : ℤ) {l : ℤ} {E : spectrum} (H : is_strunc l E)
+  : is_strunc l (strunc k E) :=
+λ n, !is_trunc_trunc_of_is_trunc
+
+definition str [constructor] (k : ℤ) (E : spectrum) : E →ₛ strunc k E :=
+smap.mk (λ n, ptr (maxm2 (k + n)) (E n))
+  abstract begin
+    intro n,
+    apply psquare_of_phomotopy,
+    refine !passoc ⬝* pwhisker_left _ !ptr_natural ⬝* _,
+    refine !passoc⁻¹* ⬝* pwhisker_right _ !loop_ptrunc_maxm2_pequiv_ptr⁻¹*,
+  end end
+
+definition strunc_elim [constructor] {k : ℤ} {E F : spectrum} (f : E →ₛ F)
+  (H : is_strunc k F) : strunc k E →ₛ F :=
+smap.mk (λn, ptrunc.elim (maxm2 (k + n)) (f n))
+  abstract begin
+    intro n,
+    apply psquare_of_phomotopy,
+    symmetry,
+    refine !passoc⁻¹* ⬝* pwhisker_right _ !loop_ptrunc_maxm2_pequiv_ptrunc_elim' ⬝* _,
+    refine @(ptrunc_elim_ptrunc_functor _ _ _) _ ⬝* _,
+    refine _ ⬝* @(ptrunc_elim_pcompose _ _ _) _ _,
+      apply is_trunc_maxm2_loop,
+      refine is_trunc_of_eq _ (H (n+1)), exact ap maxm2 (add.assoc k n 1)⁻¹,
+    apply ptrunc_elim_phomotopy2,
+    apply phomotopy_of_psquare,
+    apply ptranspose,
+    apply smap.glue_square
+  end end
+
+definition strunc_functor [constructor] (k : ℤ) {E F : spectrum} (f : E →ₛ F) :
+  strunc k E →ₛ strunc k F :=
+strunc_elim (str k F ∘ₛ f) (is_strunc_strunc k F)
+
+/- truncated spectra -/
 structure truncspectrum (n : ℤ) :=
   (carrier : spectrum)
   (struct : is_strunc n carrier)
@@ -249,12 +214,18 @@ notation n `-spectrum` := truncspectrum n
 
 attribute truncspectrum.carrier [coercion]
 
-definition genspectrum_of_truncspectrum (n : ℤ)
-  : n-spectrum → gen_spectrum +ℤ :=
+definition genspectrum_of_truncspectrum [coercion] (n : ℤ) : n-spectrum → gen_spectrum +ℤ :=
 λ E, truncspectrum.carrier E
 
-attribute genspectrum_of_truncspectrum [coercion]
+/- Comment (by Floris):
 
+  I think we should really not bundle truncated spectra up,
+  unless we are interested in the type of truncated spectra (e.g. when proving n-spectrum ≃ ...).
+  Properties of truncated a spectrum should just be stated with two assumptions
+  (X : spectrum) (H : is_strunc n X)
+-/
+
+/- truncatedness of spi and sp_cotensor assuming the domain has a level of connectedness -/
 section
 
   open is_conn

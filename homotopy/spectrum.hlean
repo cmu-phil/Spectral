@@ -5,10 +5,10 @@ Authors: Michael Shulman, Floris van Doorn, Egbert Rijke, Stefano Piceghello, Yu
 
 -/
 
-import homotopy.LES_of_homotopy_groups .splice ..colim types.pointed2 .EM ..pointed_pi .smash_adjoint ..algebra.seq_colim .fwedge .pointed_cubes
+import homotopy.LES_of_homotopy_groups ..algebra.splice ..algebra.seq_colim .EM .fwedge .pointed_cubes
 
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
-     seq_colim succ_str EM EM.ops function unit lift is_trunc
+     succ_str EM EM.ops function unit lift is_trunc
 
 /---------------------
   Basic definitions
@@ -302,11 +302,147 @@ namespace spectrum
     exact phhinverse ((shomotopy.glue_homotopy p) n)
   end
 
+
+  /- Comparing the structure of shomotopy with a Σ-type -/
+  definition shomotopy_sigma {N : succ_str} {X Y : gen_prespectrum N} (f g : X →ₛ Y) : Type :=
+  Σ (phtpy : Π (n : N), f n ~* g n),
+    Πn, ptube_v
+      (phtpy n)
+      (ap1_phomotopy (phtpy (S n)))
+      (glue_square f n)
+      (glue_square g n)
+
+  definition shomotopy_to_sigma [unfold 6] {N : succ_str} {X Y : gen_prespectrum N} {f g : X →ₛ Y} (H : f ~ₛ g) : shomotopy_sigma f g :=
+  begin
+    induction H with H Hsq,
+    exact sigma.mk H Hsq,
+  end
+
+  definition shomotopy_to_struct [unfold 6] {N : succ_str} {X Y : gen_prespectrum N} {f g : X →ₛ Y} (H : shomotopy_sigma f g) : f ~ₛ g :=
+  begin
+    induction H with H Hsq,
+    exact shomotopy.mk H Hsq,
+  end
+
+  definition shomotopy_to_sigma_isretr {N : succ_str} {X Y : gen_prespectrum N} {f g : X →ₛ Y} (H : shomotopy_sigma f g) :
+    shomotopy_to_sigma (shomotopy_to_struct H) = H
+  :=
+  begin
+    induction H with H Hsq, reflexivity
+  end
+
+  definition shomotopy_to_sigma_issec {N : succ_str} {X Y : gen_prespectrum N} {f g : X →ₛ Y} (H : f ~ₛ g) :
+    shomotopy_to_struct (shomotopy_to_sigma H) = H
+  :=
+  begin
+    induction H, reflexivity
+  end
+
+  definition shomotopy_sigma_equiv [constructor] {N : succ_str} {X Y : gen_prespectrum N} (f g : X →ₛ Y) :
+    shomotopy_sigma f g ≃ (f ~ₛ g) :=
+  begin
+    fapply equiv.mk,
+    exact shomotopy_to_struct,
+    fapply adjointify,
+    exact shomotopy_to_sigma,
+    exact shomotopy_to_sigma_issec,
+    exact shomotopy_to_sigma_isretr,
+  end
+
+  /- equivalence of shomotopy and eq -/
+  /-
+  definition eq_of_shomotopy_pfun {N : succ_str} {X Y : gen_prespectrum N} {f g : X →ₛ Y} (H : f ~ₛ g) (n : N) : f n = g n :=
+  begin
+    fapply eq_of_fn_eq_fn (smap_sigma_equiv X Y),
+    repeat exact sorry
+  end-/
+
+  definition fam_phomotopy_of_eq
+    {N : Type} {X Y: N → Type*} (f g : Π n, X n →* Y n) : (f = g) ≃ (Π n, f n ~* g n) :=
+    (eq.eq_equiv_homotopy) ⬝e pi_equiv_pi_right (λ n, pmap_eq_equiv (f n) (g n))
+
+/-
+  definition ppi_homotopy_rec_on_eq [recursor]
+    {k' : ppi_gen B x₀}
+    {Q : (k ~~* k') → Type}
+    (p : k ~~* k')
+    (H : Π(q : k = k'), Q (ppi_homotopy_of_eq q))
+    : Q p :=
+  ppi_homotopy_of_eq_of_ppi_homotopy p ▸ H (eq_of_ppi_homotopy p)
+-/
+  definition fam_phomotopy_rec_on_eq {N : Type} {X Y : N → Type*} (f g : Π n, X n →* Y n)
+    {Q : (Π n, f n ~* g n) → Type}
+    (p : Π n, f n ~* g n)
+    (H : Π (q : f = g), Q (fam_phomotopy_of_eq f g q)) : Q p :=
+  begin
+    refine _ ▸ H ((fam_phomotopy_of_eq f g)⁻¹ᵉ p),
+    have q : to_fun (fam_phomotopy_of_eq f g) (to_fun (fam_phomotopy_of_eq f g)⁻¹ᵉ p) = p,
+    from right_inv (fam_phomotopy_of_eq f g) p,
+    krewrite q
+  end
+
+/-
+  definition ppi_homotopy_rec_on_idp [recursor]
+    {Q : Π {k' : ppi_gen B x₀},  (k ~~* k') → Type}
+    (q : Q (ppi_homotopy.refl k)) {k' : ppi_gen B x₀} (H : k ~~* k') : Q H :=
+  begin
+    induction H using ppi_homotopy_rec_on_eq with t,
+    induction t, exact eq_ppi_homotopy_refl_ppi_homotopy_of_eq_refl k ▸ q,
+  end
+-/
+
+--set_option pp.coercions true
+
+  definition fam_phomotopy_rec_on_idp {N : Type} {X Y : N → Type*} (f : Π n, X n →* Y n)
+    (Q : Π (g : Π n, X n →* Y n) (H : Π n, f n ~* g n), Type)
+    (q : Q f (λ n, phomotopy.rfl))
+    (g : Π n, X n →* Y n) (H : Π n, f n ~* g n) : Q g H :=
+  begin
+    fapply fam_phomotopy_rec_on_eq,
+    refine λ(p : f = g), _, --ugly trick
+    intro p, induction p,
+    exact q,
+  end
+
+  definition eq_of_shomotopy {N : succ_str} {X Y : gen_prespectrum N} {f g : X →ₛ Y} (H : f ~ₛ g) : f = g :=
+  begin
+    fapply eq_of_fn_eq_fn (smap_sigma_equiv X Y)⁻¹ᵉ,
+    induction f with f fsq,
+    induction g with g gsq,
+    induction H with H Hsq,
+    fapply sigma_eq,
+    fapply eq_of_homotopy,
+    intro n, fapply eq_of_phomotopy, exact H n,
+    fapply pi_pathover_constant,
+    intro n,
+    esimp at *,
+    revert g H gsq Hsq n,
+    refine fam_phomotopy_rec_on_idp f _ _,
+    intro gsq Hsq n,
+    refine change_path _ _,
+--    have p : eq_of_homotopy (λ n, eq_of_phomotopy phomotopy.rfl) = refl f,
+    reflexivity,
+    refine (eq_of_homotopy_eta rfl)⁻¹ ⬝ _,
+    fapply ap (eq_of_homotopy), fapply eq_of_homotopy, intro n, refine (eq_of_phomotopy_refl _)⁻¹,
+--    fapply eq_of_ppi_homotopy,
+    fapply pathover_idp_of_eq,
+    note Hsq' := ptube_v_eq_bot phomotopy.rfl (ap1_phomotopy_refl _) (fsq n) (gsq n) (Hsq n),
+    unfold ptube_v at *,
+    unfold phsquare at *,
+    refine _ ⬝ Hsq'⁻¹ ⬝ _,
+    refine (trans_refl (fsq n))⁻¹ ⬝ _,
+    exact idp ◾** (pwhisker_right_refl _ _)⁻¹,
+    refine _ ⬝ (refl_trans (gsq n)),
+    refine _ ◾** idp,
+    exact pwhisker_left_refl _ _,
+  end
+
   -- incoherent homotopies. this is a bit gross, but
   -- a) we don't need the higher coherences for most basic things
   --   (you need it for higher algebra, e.g. power operations)
   -- b) homotopies of maps between spectra are really hard
 
+  /- TODO: change this to sequences of pointed homotopies -/
   structure shomotopy_incoh {N : succ_str} {E F : gen_prespectrum N} (f g : E →ₛ F) :=
   (to_phomotopy : Πn, f n ~* g n)
 
@@ -415,22 +551,32 @@ namespace spectrum
     fapply is_sequiv_of_smap_issec f H,
   end
 
-  ------------------------------
-  -- Suspension prespectra
-  ------------------------------
+  /---------
+    Fibers
+  ----------/
 
-  -- This should probably go in 'susp'
-  definition psuspn : ℕ → Type* → Type*
-  | psuspn 0 X          := X
-  | psuspn (succ n) X   := psusp (psuspn n X)
+  definition sfiber [constructor] {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y) :
+    gen_spectrum N :=
+    spectrum.MK (λn, pfiber (f n))
+       (λn, (loop_pfiber (f (S n)))⁻¹ᵉ* ∘*ᵉ pfiber_pequiv_of_square _ _ (sglue_square f n))
 
-  -- Suspension prespectra are one that's naturally indexed on the natural numbers
-  definition psp_susp (X : Type*) : gen_prespectrum +ℕ :=
-    gen_prespectrum.mk (λn, psuspn n X) (λn, loop_psusp_unit (psuspn n X))
+  /- the map from the fiber to the domain -/
+  definition spoint {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y) : sfiber f →ₛ X :=
+  smap.mk (λn, ppoint (f n))
+    begin
+      intro n,
+      refine _ ⬝* !passoc,
+      refine _ ⬝* pwhisker_right _ !ppoint_loop_pfiber_inv⁻¹*,
+      rexact (pfiber_pequiv_of_square_ppoint (equiv_glue X n) (equiv_glue Y n) (sglue_square f n))⁻¹*
+    end
 
-  -- The sphere prespectrum
-  definition psp_sphere : gen_prespectrum +ℕ :=
-    psp_susp bool.pbool
+  definition scompose_spoint {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y)
+    : f ∘ₛ spoint f ~ₛ !szero :=
+  begin
+    fapply shomotopy.mk,
+    { intro n, exact pcompose_ppoint (f n) },
+    { intro n, exact sorry }
+  end
 
   /---------------------
     Homotopy groups
@@ -465,239 +611,7 @@ namespace spectrum
     exact (shomotopy_incoh.to_phomotopy p) (2 - n)
   end
 
-  /- Comparing the structure of shomotopy with a Σ-type -/
-  definition shomotopy_sigma {N : succ_str} {X Y : gen_prespectrum N} (f g : X →ₛ Y) : Type :=
-  Σ (phtpy : Π (n : N), f n ~* g n),
-    Πn, ptube_v
-      (phtpy n)
-      (ap1_phomotopy (phtpy (S n)))
-      (glue_square f n)
-      (glue_square g n)
-
-  definition shomotopy_to_sigma [unfold 6] {N : succ_str} {X Y : gen_prespectrum N} {f g : X →ₛ Y} (H : f ~ₛ g) : shomotopy_sigma f g :=
-  begin
-    induction H with H Hsq,
-    exact sigma.mk H Hsq,
-  end
-
-  definition shomotopy_to_struct [unfold 6] {N : succ_str} {X Y : gen_prespectrum N} {f g : X →ₛ Y} (H : shomotopy_sigma f g) : f ~ₛ g :=
-  begin
-    induction H with H Hsq,
-    exact shomotopy.mk H Hsq,
-  end
-
-  definition shomotopy_to_sigma_isretr {N : succ_str} {X Y : gen_prespectrum N} {f g : X →ₛ Y} (H : shomotopy_sigma f g) :
-    shomotopy_to_sigma (shomotopy_to_struct H) = H
-  :=
-  begin
-    induction H with H Hsq, reflexivity
-  end
-
-  definition shomotopy_to_sigma_issec {N : succ_str} {X Y : gen_prespectrum N} {f g : X →ₛ Y} (H : f ~ₛ g) :
-    shomotopy_to_struct (shomotopy_to_sigma H) = H
-  :=
-  begin
-    induction H, reflexivity
-  end
-
-  definition shomotopy_sigma_equiv [constructor] {N : succ_str} {X Y : gen_prespectrum N} (f g : X →ₛ Y) :
-    shomotopy_sigma f g ≃ (f ~ₛ g) :=
-  begin
-    fapply equiv.mk,
-    exact shomotopy_to_struct,
-    fapply adjointify,
-    exact shomotopy_to_sigma,
-    exact shomotopy_to_sigma_issec,
-    exact shomotopy_to_sigma_isretr,
-  end
-
-  /- equivalence of shomotopy and eq -/
-  /-
-  definition eq_of_shomotopy_pfun {N : succ_str} {X Y : gen_prespectrum N} {f g : X →ₛ Y} (H : f ~ₛ g) (n : N) : f n = g n :=
-  begin
-    fapply eq_of_fn_eq_fn (smap_sigma_equiv X Y),
-    repeat exact sorry
-  end-/
-
-  definition fam_phomotopy_of_eq
-    {N : Type} {X Y: N → Type*} (f g : Π n, X n →* Y n) : (f = g) ≃ (Π n, f n ~* g n) :=
-    (eq.eq_equiv_homotopy) ⬝e pi_equiv_pi_right (λ n, pmap_eq_equiv (f n) (g n))
-
-/-
-  definition ppi_homotopy_rec_on_eq [recursor]
-    {k' : ppi_gen B x₀}
-    {Q : (k ~~* k') → Type}
-    (p : k ~~* k')
-    (H : Π(q : k = k'), Q (ppi_homotopy_of_eq q))
-    : Q p :=
-  ppi_homotopy_of_eq_of_ppi_homotopy p ▸ H (eq_of_ppi_homotopy p)
--/
-  definition fam_phomotopy_rec_on_eq {N : Type} {X Y : N → Type*} (f g : Π n, X n →* Y n)
-    {Q : (Π n, f n ~* g n) → Type}
-    (p : Π n, f n ~* g n)
-    (H : Π (q : f = g), Q (fam_phomotopy_of_eq f g q)) : Q p :=
-  begin
-    refine _ ▸ H ((fam_phomotopy_of_eq f g)⁻¹ᵉ p),
-    have q : to_fun (fam_phomotopy_of_eq f g) (to_fun (fam_phomotopy_of_eq f g)⁻¹ᵉ p) = p,
-    from right_inv (fam_phomotopy_of_eq f g) p,
-    krewrite q
-  end
-
-/-
-  definition ppi_homotopy_rec_on_idp [recursor]
-    {Q : Π {k' : ppi_gen B x₀},  (k ~~* k') → Type}
-    (q : Q (ppi_homotopy.refl k)) {k' : ppi_gen B x₀} (H : k ~~* k') : Q H :=
-  begin
-    induction H using ppi_homotopy_rec_on_eq with t,
-    induction t, exact eq_ppi_homotopy_refl_ppi_homotopy_of_eq_refl k ▸ q,
-  end
--/
-
-set_option pp.coercions true
-
-  definition fam_phomotopy_rec_on_idp {N : Type} {X Y : N → Type*} (f : Π n, X n →* Y n)
-    (Q : Π (g : Π n, X n →* Y n) (H : Π n, f n ~* g n), Type)
-    (q : Q f (λ n, phomotopy.rfl))
-    (g : Π n, X n →* Y n) (H : Π n, f n ~* g n) : Q g H :=
-  begin
-    fapply fam_phomotopy_rec_on_eq,
-    refine λ(p : f = g), _, --ugly trick
-    intro p, induction p,
-    exact q,
-  end
-
-  definition eq_of_shomotopy {N : succ_str} {X Y : gen_prespectrum N} {f g : X →ₛ Y} (H : f ~ₛ g) : f = g :=
-  begin
-    fapply eq_of_fn_eq_fn (smap_sigma_equiv X Y)⁻¹ᵉ,
-    induction f with f fsq,
-    induction g with g gsq,
-    induction H with H Hsq,
-    fapply sigma_eq,
-    fapply eq_of_homotopy,
-    intro n, fapply eq_of_phomotopy, exact H n,
-    fapply pi_pathover_constant,
-    intro n,
-    esimp at *,
-    revert g H gsq Hsq n,
-    refine fam_phomotopy_rec_on_idp f _ _,
-    intro gsq Hsq n,
-    refine change_path _ _,
---    have p : eq_of_homotopy (λ n, eq_of_phomotopy phomotopy.rfl) = refl f,
-    reflexivity,
-    refine (eq_of_homotopy_eta rfl)⁻¹ ⬝ _,
-    fapply ap (eq_of_homotopy), fapply eq_of_homotopy, intro n, refine (eq_of_phomotopy_refl _)⁻¹,
---    fapply eq_of_ppi_homotopy,
-    fapply pathover_idp_of_eq,
-    note Hsq' := ptube_v_eq_bot phomotopy.rfl (ap1_phomotopy_refl _) (fsq n) (gsq n) (Hsq n),
-    unfold ptube_v at *,
-    unfold phsquare at *,
-    refine _ ⬝ Hsq'⁻¹ ⬝ _,
-    refine (trans_refl (fsq n))⁻¹ ⬝ _,
-    exact idp ◾** (pwhisker_right_refl _ _)⁻¹,
-    refine _ ⬝ (refl_trans (gsq n)),
-    refine _ ◾** idp,
-    exact pwhisker_left_refl _ _,
-  end
-
-  /- homotopy group of a prespectrum -/
-
-  definition pshomotopy_group_hom (n : ℤ) (E : prespectrum) (k : ℕ)
-    : πag[k + 2] (E (-n - 2 + k)) →g πag[k + 3] (E (-n - 2 + (k + 1))) :=
-  begin
-    refine _ ∘g π→g[k+2] (glue E _),
-    refine (ghomotopy_group_succ_in _ (k+1))⁻¹ᵍ ∘g _,
-    refine homotopy_group_isomorphism_of_pequiv (k+1)
-      (loop_pequiv_loop (pequiv_of_eq (ap E (add.assoc (-n - 2) k 1))))
-  end
-
-  definition pshomotopy_group (n : ℤ) (E : prespectrum) : AbGroup :=
-  group.seq_colim (λ(k : ℕ), πag[k+2] (E (-n - 2 + k))) (pshomotopy_group_hom n E)
-
-  notation `πₚₛ[`:95 n:0 `]`:0 := pshomotopy_group n
-
-  definition pshomotopy_group_fun (n : ℤ) {E F : prespectrum} (f : E →ₛ F) :
-    πₚₛ[n] E →g πₚₛ[n] F :=
-  group.seq_colim_functor (λk, π→g[k+2] (f (-n - 2 +[ℤ] k)))
-    begin
-      intro k,
-      note sq1 := homotopy_group_homomorphism_psquare (k+2) (ptranspose (smap.glue_square f (-n - 2 +[ℤ] k))),
-      note sq2 := homotopy_group_functor_hsquare (k+2) (ap1_psquare (ptransport_natural E F f (add.assoc (-n - 2) k 1))),
-      note sq3 := (homotopy_group_succ_in_natural (k+2) (f (-n - 2 +[ℤ] (k+1))))⁻¹ʰᵗʸʰ,
-      note sq4 := hsquare_of_psquare sq2,
-      note rect := sq1 ⬝htyh sq4 ⬝htyh sq3,
-      exact sorry --sq1 ⬝htyh sq4 ⬝htyh sq3,
-    end
-
-  notation `πₚₛ→[`:95 n:0 `]`:0 := pshomotopy_group_fun n
-
-  /-------------------------------
-    Cotensor of spectra by types
-  -------------------------------/
-
-  -- Makes sense for any indexing succ_str.  Could be done for
-  -- prespectra too, but as with truncation, why bother?
-
-  definition sp_cotensor [constructor] {N : succ_str} (A : Type*) (B : gen_spectrum N) :
-    gen_spectrum N :=
-    spectrum.MK (λn, ppmap A (B n))
-      (λn, (loop_ppmap_commute A (B (S n)))⁻¹ᵉ* ∘*ᵉ (pequiv_ppcompose_left (equiv_glue B n)))
-
-  /- unpointed cotensor -/
-  definition sp_ucotensor [constructor] {N : succ_str} (A : Type) (B : gen_spectrum N) :
-    gen_spectrum N :=
-  spectrum.MK (λn, A →ᵘ* B n)
-              (λn, pumap_pequiv_right A (equiv_glue B n) ⬝e* (loop_pumap A (B (S n)))⁻¹ᵉ*)
-
-  ----------------------------------------
-  -- Sections of parametrized spectra
-  ----------------------------------------
-
-  definition spi [constructor] {N : succ_str} (A : Type*) (E : A → gen_spectrum N) :
-    gen_spectrum N :=
-  spectrum.MK (λn, Π*a, E a n)
-    (λn, !loop_pppi_pequiv⁻¹ᵉ* ∘*ᵉ ppi_pequiv_right (λa, equiv_glue (E a) n))
-
-  definition spi_compose_left [constructor] {N : succ_str} {A : Type*} {E F : A -> gen_spectrum N}
-    (f : Πa, E a →ₛ F a) : spi A E →ₛ spi A F :=
-  smap.mk (λn, ppi_compose_left (λa, f a n))
-    begin
-      intro n,
-      exact psquare_ppi_compose_left (λa, (glue_square (f a) n)) ⬝v* !loop_pppi_pequiv_natural⁻¹ᵛ*
-    end
-
-  -- unpointed spi
-  definition supi [constructor] {N : succ_str} (A : Type) (E : A → gen_spectrum N) :
-    gen_spectrum N :=
-  spectrum.MK (λn, Πᵘ*a, E a n)
-              (λn, pupi_pequiv_right (λa, equiv_glue (E a) n) ⬝e* (loop_pupi (λa, E a (S n)))⁻¹ᵉ*)
-
-  /-----------------------------------------
-    Fibers and long exact sequences
-  -----------------------------------------/
-
-  definition sfiber [constructor] {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y) :
-    gen_spectrum N :=
-    spectrum.MK (λn, pfiber (f n))
-       (λn, (loop_pfiber (f (S n)))⁻¹ᵉ* ∘*ᵉ pfiber_pequiv_of_square _ _ (sglue_square f n))
-
-  /- the map from the fiber to the domain -/
-  definition spoint {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y) : sfiber f →ₛ X :=
-  smap.mk (λn, ppoint (f n))
-    begin
-      intro n,
-      refine _ ⬝* !passoc,
-      refine _ ⬝* pwhisker_right _ !ppoint_loop_pfiber_inv⁻¹*,
-      rexact (pfiber_pequiv_of_square_ppoint (equiv_glue X n) (equiv_glue Y n) (sglue_square f n))⁻¹*
-    end
-
-  definition scompose_spoint {N : succ_str} {X Y : gen_spectrum N} (f : X →ₛ Y)
-    : f ∘ₛ spoint f ~ₛ !szero :=
-  begin
-    fapply shomotopy.mk,
-    { intro n, exact pcompose_ppoint (f n) },
-    { intro n, exact sorry }
-  end
-
+  /- properties about homotopy groups -/
   definition equiv_glue_neg (X : spectrum) (n : ℤ) : X (2 - succ n) ≃* Ω (X (2 - n)) :=
   have H : succ (2 - succ n) = 2 - n, from ap succ !sub_sub⁻¹ ⬝ sub_add_cancel (2-n) 1,
   equiv_glue X (2 - succ n) ⬝e* loop_pequiv_loop (pequiv_of_eq (ap X H))
@@ -770,7 +684,8 @@ set_option pp.coercions true
     { exact pequiv_of_isomorphism (shomotopy_group_isomorphism_homotopy_group E p) }
   end
 
-  section
+  /- the long exact sequence of homotopy groups for spectra -/
+  section LES
   open chain_complex prod fin group
 
   universe variable u
@@ -823,7 +738,41 @@ set_option pp.coercions true
                              πg_glue Y n ∘g (by reflexivity) qed
   | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
 --(homomorphism_LES_of_homotopy_groups_fun (f (2 - n)) (1, 2) ∘g πg_glue Y n)
+  end LES
+
+  /- homotopy group of a prespectrum -/
+
+  definition pshomotopy_group_hom (n : ℤ) (E : prespectrum) (k : ℕ)
+    : πag[k + 2] (E (-n - 2 + k)) →g πag[k + 3] (E (-n - 2 + (k + 1))) :=
+  begin
+    refine _ ∘g π→g[k+2] (glue E _),
+    refine (ghomotopy_group_succ_in _ (k+1))⁻¹ᵍ ∘g _,
+    refine homotopy_group_isomorphism_of_pequiv (k+1)
+      (loop_pequiv_loop (pequiv_of_eq (ap E (add.assoc (-n - 2) k 1))))
   end
+
+  definition pshomotopy_group (n : ℤ) (E : prespectrum) : AbGroup :=
+  group.seq_colim (λ(k : ℕ), πag[k+2] (E (-n - 2 + k))) (pshomotopy_group_hom n E)
+
+  notation `πₚₛ[`:95 n:0 `]`:0 := pshomotopy_group n
+
+  definition pshomotopy_group_fun (n : ℤ) {E F : prespectrum} (f : E →ₛ F) :
+    πₚₛ[n] E →g πₚₛ[n] F :=
+  group.seq_colim_functor (λk, π→g[k+2] (f (-n - 2 +[ℤ] k)))
+    begin
+      intro k,
+      note sq1 := homotopy_group_homomorphism_psquare (k+2) (ptranspose (smap.glue_square f (-n - 2 +[ℤ] k))),
+      note sq2 := homotopy_group_functor_hsquare (k+2) (ap1_psquare (ptransport_natural E F f (add.assoc (-n - 2) k 1))),
+      note sq3 := (homotopy_group_succ_in_natural (k+2) (f (-n - 2 +[ℤ] (k+1))))⁻¹ʰᵗʸʰ,
+      note sq4 := hsquare_of_psquare sq2,
+      note rect := sq1 ⬝htyh sq4 ⬝htyh sq3,
+      exact sorry --sq1 ⬝htyh sq4 ⬝htyh sq3,
+    end
+
+  notation `πₚₛ→[`:95 n:0 `]`:0 := pshomotopy_group_fun n
+
+
+  /- a chain complex of spectra (not yet used anywhere) -/
 
   structure sp_chain_complex (N : succ_str) : Type :=
     (car : N → spectrum)
@@ -839,256 +788,69 @@ set_option pp.coercions true
       := sp_chain_complex.is_chain_complex X n
   end
 
+
+  ------------------------------
+  -- Suspension prespectra
+  ------------------------------
+
+  -- Suspension prespectra are one that's naturally indexed on the natural numbers
+  definition psp_susp (X : Type*) : gen_prespectrum +ℕ :=
+    gen_prespectrum.mk (λn, psuspn n X) (λn, loop_psusp_unit (psuspn n X))
+
+  -- The sphere prespectrum
+  definition psp_sphere : gen_prespectrum +ℕ :=
+    psp_susp bool.pbool
+
+
+  /-------------------------------
+    Cotensor of spectra by types
+  -------------------------------/
+
+  -- Makes sense for any indexing succ_str.  Could be done for
+  -- prespectra too, but as with truncation, why bother?
+
+  definition sp_cotensor [constructor] {N : succ_str} (A : Type*) (B : gen_spectrum N) :
+    gen_spectrum N :=
+    spectrum.MK (λn, ppmap A (B n))
+      (λn, (loop_ppmap_commute A (B (S n)))⁻¹ᵉ* ∘*ᵉ (pequiv_ppcompose_left (equiv_glue B n)))
+
+  /- unpointed cotensor -/
+  definition sp_ucotensor [constructor] {N : succ_str} (A : Type) (B : gen_spectrum N) :
+    gen_spectrum N :=
+  spectrum.MK (λn, A →ᵘ* B n)
+              (λn, pumap_pequiv_right A (equiv_glue B n) ⬝e* (loop_pumap A (B (S n)))⁻¹ᵉ*)
+
+  ----------------------------------------
+  -- Sections of parametrized spectra
+  ----------------------------------------
+
+  definition spi [constructor] {N : succ_str} (A : Type*) (E : A → gen_spectrum N) :
+    gen_spectrum N :=
+  spectrum.MK (λn, Π*a, E a n)
+    (λn, !loop_pppi_pequiv⁻¹ᵉ* ∘*ᵉ ppi_pequiv_right (λa, equiv_glue (E a) n))
+
+  definition spi_compose_left [constructor] {N : succ_str} {A : Type*} {E F : A -> gen_spectrum N}
+    (f : Πa, E a →ₛ F a) : spi A E →ₛ spi A F :=
+  smap.mk (λn, ppi_compose_left (λa, f a n))
+    begin
+      intro n,
+      exact psquare_ppi_compose_left (λa, (glue_square (f a) n)) ⬝v* !loop_pppi_pequiv_natural⁻¹ᵛ*
+    end
+
+  -- unpointed spi
+  definition supi [constructor] {N : succ_str} (A : Type) (E : A → gen_spectrum N) :
+    gen_spectrum N :=
+  spectrum.MK (λn, Πᵘ*a, E a n)
+              (λn, pupi_pequiv_right (λa, equiv_glue (E a) n) ⬝e* (loop_pupi (λa, E a (S n)))⁻¹ᵉ*)
+
   /- Mapping spectra -/
   -- note: see also cotensor above
-
-  /- Prespectrification -/
-  definition is_sconnected {N : succ_str} {X Y : gen_prespectrum N} (h : X →ₛ Y) : Type :=
-  Π (E : gen_spectrum N), is_equiv (λ g : Y →ₛ E, g ∘ₛ h)
-
-  -- We introduce a prespectrification operation X ↦ prespectrification X, with the goal of implementing spectrification as the sequential colimit of iterated applications of the prespectrification operation.
-  definition prespectrification [constructor] {N : succ_str} (X : gen_prespectrum N) : gen_prespectrum N :=
-  gen_prespectrum.mk (λ n, Ω (X (S n))) (λ n, Ω→ (glue X (S n)))
-
-  -- To define the unit η : X → prespectrification X, we need its underlying family of pointed maps
-  definition to_prespectrification_pfun {N : succ_str} (X : gen_prespectrum N) (n : N) : X n →* prespectrification X n :=
-  glue X n
-
-  -- And similarly we need the pointed homotopies witnessing that the squares commute
-  definition to_prespectrification_psq {N : succ_str} (X : gen_prespectrum N) (n : N) :
-  psquare (to_prespectrification_pfun X n) (Ω→ (to_prespectrification_pfun X (S n))) (glue X n)
-    (glue (prespectrification X) n) :=
-  psquare_of_phomotopy phomotopy.rfl
-
-  -- We bundle the previous two definitions into a morphism of prespectra
-  definition to_prespectrification {N : succ_str} (X : gen_prespectrum N) : X →ₛ prespectrification X :=
-  begin
-    fapply smap.mk,
-    exact to_prespectrification_pfun X,
-    exact to_prespectrification_psq X,
-  end
-
-  -- When E is a spectrum, then the map η : E → prespectrification E is an equivalence.
-  definition is_sequiv_smap_to_prespectrification_of_is_spectrum {N : succ_str} (E : gen_prespectrum N) (H : is_spectrum E) : is_sequiv_smap (to_prespectrification E) :=
-  begin
-    intro n, induction E, induction H, exact is_equiv_glue n,
-  end
-
-  -- If η : E → prespectrification E is an equivalence, then E is a spectrum.
-  definition is_spectrum_of_is_sequiv_smap_to_prespectrification {N : succ_str} (E : gen_prespectrum N) (H : is_sequiv_smap (to_prespectrification E)) : is_spectrum E :=
-  begin
-    fapply is_spectrum.mk,
-    exact H
-  end
-
-  -- Our next goal is to show that if X is a prespectrum and E is a spectrum, then maps X →ₛ E extend uniquely along η : X → prespectrification X.
-
-  -- In the following we define the underlying family of pointed maps of such an extension
-  definition is_sconnected_to_prespectrification_inv_pfun {N : succ_str} {X : gen_prespectrum N} {E : gen_spectrum N} : (X →ₛ E) → Π (n : N), prespectrification X n →* E n :=
-  λ (f : X →ₛ E) n, (equiv_glue E n)⁻¹ᵉ* ∘* Ω→ (f (S n))
-
-  -- In the following we define the commuting squares of the extension
-  definition is_sconnected_to_prespectrification_inv_psq {N : succ_str} {X : gen_prespectrum N} {E : gen_spectrum N} (f : X →ₛ E) (n : N) :
-  psquare (is_sconnected_to_prespectrification_inv_pfun f n)
-      (Ω→ (is_sconnected_to_prespectrification_inv_pfun f (S n)))
-      (glue (prespectrification X) n)
-      (glue (gen_spectrum.to_prespectrum E) n)
-  :=
-  begin
-    fapply psquare_of_phomotopy,
-    refine (passoc (glue (gen_spectrum.to_prespectrum E) n) (pequiv.to_pmap
-    (equiv_glue (gen_spectrum.to_prespectrum E) n)⁻¹ᵉ*) (Ω→ (to_fun f (S n))))⁻¹* ⬝* _,
-    refine pwhisker_right (Ω→ (to_fun f (S n))) (pright_inv (equiv_glue E n)) ⬝* _,
-    refine _ ⬝* pwhisker_right (glue (prespectrification X) n) ((ap1_pcompose (pequiv.to_pmap (equiv_glue (gen_spectrum.to_prespectrum E) (S n))⁻¹ᵉ*) (Ω→ (to_fun f (S (S n)))))⁻¹*),
-    refine pid_pcompose (Ω→ (f (S n))) ⬝* _,
-    repeat exact sorry
-  end
-
-  -- Now we bundle the definition into a map (X →ₛ E) → (prespectrification X →ₛ E)
-  definition is_sconnected_to_prespectrification_inv {N : succ_str} (X : gen_prespectrum N) (E : gen_spectrum N)
-  : (X →ₛ E) → (prespectrification X →ₛ E) :=
-  begin
-    intro f,
-    fapply smap.mk,
-    exact is_sconnected_to_prespectrification_inv_pfun f,
-    exact is_sconnected_to_prespectrification_inv_psq f
-  end
-
-  definition is_sconnected_to_prespectrification_isretr_pfun {N : succ_str} {X : gen_prespectrum N} {E : gen_spectrum N} (f : prespectrification X →ₛ E) (n : N) : to_fun (is_sconnected_to_prespectrification_inv X E (f ∘ₛ to_prespectrification X)) n ~* to_fun f n := begin exact sorry end
-
-  definition is_sconnected_to_prespectrification_isretr_psq {N : succ_str} {X : gen_prespectrum N} {E : gen_spectrum N} (f : prespectrification X →ₛ E) (n : N) :
-  ptube_v (is_sconnected_to_prespectrification_isretr_pfun f n)
-      (Ω⇒ (is_sconnected_to_prespectrification_isretr_pfun f (S n)))
-      (glue_square (is_sconnected_to_prespectrification_inv X E (f ∘ₛ to_prespectrification X)) n)
-      (glue_square f n)
-  :=
-  begin
-    repeat exact sorry
-  end
-
-  definition is_sconnected_to_prespectrification_isretr {N : succ_str} (X : gen_prespectrum N) (E : gen_spectrum N) (f : prespectrification X →ₛ E) : is_sconnected_to_prespectrification_inv X E (f ∘ₛ to_prespectrification X) = f :=
-  begin
-    fapply eq_of_shomotopy,
-    fapply shomotopy.mk,
-    exact is_sconnected_to_prespectrification_isretr_pfun f,
-    exact is_sconnected_to_prespectrification_isretr_psq f,
-  end
-
-  definition is_sconnected_to_prespectrification_issec_pfun {N : succ_str} {X : gen_prespectrum N} {E : gen_spectrum N} (g : X →ₛ E) (n : N) :
-  to_fun (is_sconnected_to_prespectrification_inv X E g ∘ₛ to_prespectrification X) n ~* to_fun g n
-  :=
-  begin
-    repeat exact sorry
-  end
-
-  definition is_sconnected_to_prespectrification_issec_psq {N : succ_str} {X : gen_prespectrum N} {E : gen_spectrum N} (g : X →ₛ E) (n : N) :
-  ptube_v (is_sconnected_to_prespectrification_issec_pfun g n)
-      (Ω⇒ (is_sconnected_to_prespectrification_issec_pfun g (S n)))
-      (glue_square (is_sconnected_to_prespectrification_inv X E g ∘ₛ to_prespectrification X) n)
-      (glue_square g n)
-  :=
-  begin
-    repeat exact sorry
-  end
-
-  definition is_sconnected_to_prespectrification_issec {N : succ_str} (X : gen_prespectrum N) (E : gen_spectrum N) (g : X →ₛ E) :
-  is_sconnected_to_prespectrification_inv X E g ∘ₛ to_prespectrification X = g :=
-  begin
-    fapply eq_of_shomotopy,
-    fapply shomotopy.mk,
-    exact is_sconnected_to_prespectrification_issec_pfun g,
-    exact is_sconnected_to_prespectrification_issec_psq g,
-  end
-
-  definition is_sconnected_to_prespectrify {N : succ_str} (X : gen_prespectrum N) :
-    is_sconnected (to_prespectrification X) :=
-  begin
-    intro E,
-    fapply adjointify,
-    exact is_sconnected_to_prespectrification_inv X E,
-    exact is_sconnected_to_prespectrification_issec X E,
-    exact is_sconnected_to_prespectrification_isretr X E
-  end
-
-  -- Conjecture
-  definition is_spectrum_of_local (X : gen_prespectrum +ℕ) (Hyp : is_equiv (λ (f : prespectrification (psp_sphere) →ₛ X), f ∘ₛ to_prespectrification (psp_sphere))) : is_spectrum X :=
-  begin
-    fapply is_spectrum.mk,
-    exact sorry
-  end
-
-  /- Spectrification -/
-
-  open chain_complex
-  definition spectrify_type_term {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ) : Type* :=
-  Ω[k] (X (n +' k))
-
-  definition spectrify_type_fun' {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ) :
-    Ω[k] (X n) →* Ω[k+1] (X (S n)) :=
-  !loopn_succ_in⁻¹ᵉ* ∘* Ω→[k] (glue X n)
-
-  definition spectrify_type_fun {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ) :
-    spectrify_type_term X n k →* spectrify_type_term X n (k+1) :=
-  spectrify_type_fun' X (n +' k) k
-
-  definition spectrify_type_fun_zero {N : succ_str} (X : gen_prespectrum N) (n : N) :
-    spectrify_type_fun X n 0 ~* glue X n :=
-  !pid_pcompose
-
-  definition spectrify_type {N : succ_str} (X : gen_prespectrum N) (n : N) : Type* :=
-  pseq_colim (spectrify_type_fun X n)
-
-  /-
-    Let Y = spectify X ≡ colim_k Ω^k X (n + k). Then
-    Ω Y (n+1) ≡ Ω colim_k Ω^k X ((n + 1) + k)
-          ... = colim_k Ω^{k+1} X ((n + 1) + k)
-          ... = colim_k Ω^{k+1} X (n + (k + 1))
-          ... = colim_k Ω^k X(n + k)
-          ... ≡ Y n
-  -/
-
-  definition spectrify_type_fun'_succ {N : succ_str} (X : gen_prespectrum N) (n : N) (k : ℕ) :
-    spectrify_type_fun' X n (succ k) ~* Ω→ (spectrify_type_fun' X n k) :=
-  begin
-    refine !ap1_pcompose⁻¹*
-  end
-
-  definition spectrify_pequiv {N : succ_str} (X : gen_prespectrum N) (n : N) :
-    spectrify_type X n ≃* Ω (spectrify_type X (S n)) :=
-  begin
-    refine !pshift_equiv ⬝e* _,
-    transitivity pseq_colim (λk, spectrify_type_fun' X (S n +' k) (succ k)),
-    fapply pseq_colim_pequiv,
-    { intro n, apply loopn_pequiv_loopn, apply pequiv_ap X, apply succ_str.add_succ },
-    { exact abstract begin intro k,
-      refine !passoc⁻¹* ⬝* _, refine pwhisker_right _ (loopn_succ_in_inv_natural (succ k) _) ⬝* _,
-      refine !passoc ⬝* _ ⬝* !passoc⁻¹*, apply pwhisker_left,
-      refine !apn_pcompose⁻¹* ⬝* _ ⬝* !apn_pcompose, apply apn_phomotopy,
-      exact !glue_ptransport⁻¹* end end },
-    refine _ ⬝e* !pseq_colim_loop⁻¹ᵉ*,
-    exact pseq_colim_equiv_constant (λn, !spectrify_type_fun'_succ),
-  end
-
-  definition spectrify [constructor] {N : succ_str} (X : gen_prespectrum N) : gen_spectrum N :=
-  spectrum.MK (spectrify_type X) (spectrify_pequiv X)
-
-  definition spectrify_map {N : succ_str} {X : gen_prespectrum N} : X →ₛ spectrify X :=
-  begin
-    fapply smap.mk,
-    { intro n, exact pinclusion _ 0 },
-    { intro n, apply phomotopy_of_psquare,
-      refine !pid_pcompose⁻¹* ⬝ph* _,
-      refine !passoc ⬝* pwhisker_left _ (pshift_equiv_pinclusion (spectrify_type_fun X n) 0) ⬝* _,
-      refine !passoc⁻¹* ⬝* _,
-      refine _ ◾* (spectrify_type_fun_zero X n ⬝* !pid_pcompose⁻¹*),
-      refine !passoc ⬝* pwhisker_left _ !pseq_colim_pequiv_pinclusion ⬝* _,
-      refine pwhisker_left _ (pwhisker_left _ (ap1_pid) ⬝* !pcompose_pid) ⬝* _,
-      refine !passoc ⬝* pwhisker_left _ !seq_colim_equiv_constant_pinclusion ⬝* _,
-      apply pinv_left_phomotopy_of_phomotopy,
-      exact !pseq_colim_loop_pinclusion⁻¹*
-    }
-  end
-
-  definition spectrify.elim_n {N : succ_str} {X : gen_prespectrum N} {Y : gen_spectrum N}
-    (f : X →ₛ Y) (n : N) : (spectrify X) n →* Y n :=
-  begin
-    fapply pseq_colim.elim,
-    { intro k, refine !equiv_gluen⁻¹ᵉ* ∘* apn k (f (n +' k)) },
-    { intro k, refine !passoc ⬝* pwhisker_right _ !equiv_gluen_inv_succ ⬝* _,
-      refine !passoc ⬝* _, apply pwhisker_left,
-      refine !passoc ⬝* _,
-      refine pwhisker_left _ ((passoc _ _ (_ ∘* _))⁻¹*) ⬝* _,
-      refine pwhisker_left _ !passoc⁻¹* ⬝* _,
-      refine pwhisker_left _ (pwhisker_right _ (phomotopy_pinv_right_of_phomotopy (!loopn_succ_in_natural)⁻¹*)⁻¹*) ⬝* _,
-      refine pwhisker_right _ !apn_pinv ⬝* _,
-      refine (phomotopy_pinv_left_of_phomotopy _)⁻¹*,
-      refine apn_psquare k _,
-      refine psquare_of_phomotopy !smap.glue_square }
-  end
-
-  definition spectrify.elim {N : succ_str} {X : gen_prespectrum N} {Y : gen_spectrum N}
-    (f : X →ₛ Y) : spectrify X →ₛ Y :=
-  begin
-    fapply smap.mk,
-    { intro n, exact spectrify.elim_n f n },
-    { intro n, exact sorry }
-  end
-
-  definition phomotopy_spectrify.elim {N : succ_str} {X : gen_prespectrum N} {Y : gen_spectrum N}
-    (f : X →ₛ Y) (n : N) : spectrify.elim_n f n ∘* spectrify_map n ~* f n :=
-  begin
-    refine pseq_colim.elim_pinclusion _ _ 0 ⬝* _,
-    exact !pid_pcompose
-  end
-
-  definition spectrify_fun {N : succ_str} {X Y : gen_prespectrum N} (f : X →ₛ Y) : spectrify X →ₛ spectrify Y :=
-  spectrify.elim ((@spectrify_map _ Y) ∘ₛ f)
 
   /-
     suspension of a spectrum
 
-    this is just a shift. A shift in the other direction is loopn,
-    but we might not want to define that yet.
+    this is just a shift. We could call a shift in the other direction loopn,
+    though it might be more convenient to just take a negative suspension
   -/
 
   definition ssusp [constructor] {N : succ_str} (X : gen_spectrum N) : gen_spectrum N :=
@@ -1108,43 +870,7 @@ set_option pp.coercions true
 
   /- Tensor by spaces -/
 
-  /- Smash product of spectra -/
-
-open smash
-
-definition smash_prespectrum (X : Type*) (Y : prespectrum) : prespectrum :=
-prespectrum.mk (λ z, X ∧ Y z) begin
-  intro n, refine loop_psusp_pintro (X ∧ Y n) (X ∧ Y (n + 1)) _,
-  refine _ ∘* (smash_psusp X (Y n))⁻¹ᵉ*,
-  refine smash_functor !pid _,
-  refine psusp_pelim (Y n) (Y (n + 1)) _,
-  exact !glue
-end
-
-definition smash_prespectrum_fun {X X' : Type*} {Y Y' : prespectrum} (f : X →* X') (g : Y →ₛ Y') : smash_prespectrum X Y →ₛ smash_prespectrum X' Y' :=
-smap.mk (λn, smash_functor f (g n)) begin
-  intro n,
-  refine susp_to_loop_psquare _ _ _ _ _,
-  refine pvconcat (psquare_transpose (phinverse (smash_psusp_natural f (g n)))) _,
-  refine vconcat_phomotopy _ (smash_functor_split f (g (S n))),
-  refine phomotopy_vconcat (smash_functor_split f (psusp_functor (g n))) _,
-  refine phconcat _ _,
-  let glue_adjoint := psusp_pelim (Y n) (Y (S n)) (glue Y n),
-  exact pid X' ∧→ glue_adjoint,
-  exact smash_functor_psquare (pvrefl f) (phrefl glue_adjoint),
-  refine smash_functor_psquare (phrefl (pid X')) _,
-  refine loop_to_susp_square _ _ _ _ _,
-  exact smap.glue_square g n
-end
-
-definition smash_spectrum (X : Type*) (Y : spectrum) : spectrum :=
-spectrify (smash_prespectrum X Y)
-
-definition smash_spectrum_fun {X X' : Type*} {Y Y' : spectrum} (f : X →* X') (g : Y →ₛ Y') : smash_spectrum X Y →ₛ smash_spectrum X' Y' :=
-spectrify_fun (smash_prespectrum_fun f g)
-
   /- Cofibers and stability -/
-
 
   ------------------------------
   -- Contractible spectrum
@@ -1194,6 +920,18 @@ spectrify_fun (smash_prespectrum_fun f g)
     { apply is_contr_loop_of_is_contr, exact IH }
   end
 
+  /- K(πₗ(Aₖ),l) ≃* K(πₙ(A),l) for l = n + k -/
+  definition EM_type_pequiv_EM (A : spectrum) {n k : ℤ} {l : ℕ} (p : n + k = l) :
+    EM_type (A k) l ≃* EM (πₛ[n] A) l :=
+  begin
+    symmetry,
+    cases l with l,
+    { exact shomotopy_group_pequiv_homotopy_group A p },
+    { cases l with l,
+      { apply EM1_pequiv_EM1, exact shomotopy_group_isomorphism_homotopy_group A p },
+      { apply EMadd1_pequiv_EMadd1 (l+1), exact shomotopy_group_isomorphism_homotopy_group A p }}
+  end
+
   /- Wedge of prespectra -/
 
 open fwedge
@@ -1203,8 +941,7 @@ open fwedge
     fconstructor,
     { intro n, exact fwedge (λ i, X i n) },
     { intro n, fapply fwedge_pmap,
-      intro i, exact Ω→ !pinl ∘* !glue
-  }
+      intro i, exact Ω→ !pinl ∘* !glue }
   end
 
 end spectrum
