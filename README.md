@@ -2,7 +2,7 @@
 
 Formalization project of the CMU HoTT group to formalize the Serre spectral sequence.
 
-*Update July 16*: The construction of the Serre spectral sequence has been completed. The result is `serre_convergence` in `homotopy.serre`.
+*Update July 16*: The construction of the Serre spectral sequence has been completed. The result is `serre_convergence` in `cohomology.serre`.
 The main algebra part is in `algebra.spectral_sequence`.
 
 This repository also contains the contents of the MRC group on formalizing homology in Lean.
@@ -70,6 +70,14 @@ These projects are done
 - Parametrized and unreduced homology
 - Steenrod squares
 - ...
+
+#### To do (short-term easy projects)
+
+- Compute cohomology groups of `K(ℤ, n)`
+- Compute cohomology groups of `ΩSⁿ`
+- Show that all fibration sequences between spheres are of the form `Sⁿ → S²ⁿ⁺¹ → Sⁿ⁺¹`.
+- Compute fiber of `K(φ, n)` for group hom `φ` in general and if it's injective/surjective
+- [Steve] Prove `Σ (X × Y) ≃* Σ X ∨ Σ Y ∨ Σ (X ∧ Y)`, where `Σ` is suspension. See `homotopy.susp_product`
 
 #### In Progress
 - [prespectra](http://ncatlab.org/nlab/show/spectrum+object) and [spectra](http://ncatlab.org/nlab/show/spectrum), indexed over an arbitrary type with a successor
