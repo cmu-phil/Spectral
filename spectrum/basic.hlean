@@ -438,20 +438,6 @@ namespace spectrum
     exact pwhisker_left_refl _ _,
   end
 
-  -- incoherent homotopies. this is a bit gross, but
-  -- a) we don't need the higher coherences for most basic things
-  --   (you need it for higher algebra, e.g. power operations)
-  -- b) homotopies of maps between spectra are really hard
-
-  /- TODO: change this to sequences of pointed homotopies -/
-  structure shomotopy_incoh {N : succ_str} {E F : gen_prespectrum N} (f g : E →ₛ F) :=
-  (to_phomotopy : Πn, f n ~* g n)
-
-  infix ` ~ₛi `:50 := shomotopy_incoh
-
-  definition shomotopy_to_incoh [coercion] {N : succ_str} {E F : gen_prespectrum N} {f g : E →ₛ F} (p : f ~ₛ g) : shomotopy_incoh f g :=
-  shomotopy_incoh.mk (λn, (shomotopy.to_phomotopy p) n)
-
   ------------------------------
   -- Equivalences of prespectra
   ------------------------------
@@ -593,24 +579,17 @@ namespace spectrum
 
   definition shomotopy_group_fun (n : ℤ) {E F : spectrum} (f : E →ₛ F) :
     πₛ[n] E →g πₛ[n] F :=
-  π→g[2] (f (2 - n))
+  proof π→g[2] (f (2 - n)) qed
 
   definition shomotopy_group_isomorphism_of_pequiv (n : ℤ) {E F : spectrum} (f : Πn, E n ≃* F n) :
     πₛ[n] E ≃g πₛ[n] F :=
-  homotopy_group_isomorphism_of_pequiv 1 (f (2 - n))
+  proof homotopy_group_isomorphism_of_pequiv 1 (f (2 - n)) qed
 
   definition shomotopy_group_isomorphism_of_pequiv_nat (n : ℕ) {E F : spectrum}
     (f : Πn, E n ≃* F n) : πₛ[n] E ≃g πₛ[n] F :=
   shomotopy_group_isomorphism_of_pequiv n (spectrum_pequiv_of_nat f)
 
   notation `πₛ→[`:95 n:0 `]`:0 := shomotopy_group_fun n
-
-  -- what an awful name
-  definition shomotopy_group_fun_shomotopy_incoh {E F : spectrum} {f g : E →ₛ F} (n : ℤ) (p : f ~ₛi g) : πₛ→[n] f ~ πₛ→[n] g :=
-  begin
-    refine homotopy_group_functor_phomotopy 2 _,
-    exact (shomotopy_incoh.to_phomotopy p) (2 - n)
-  end
 
   /- properties about homotopy groups -/
   definition equiv_glue_neg (X : spectrum) (n : ℤ) : X (2 - succ n) ≃* Ω (X (2 - n)) :=
@@ -649,6 +628,7 @@ namespace spectrum
 
   definition homotopy_group_spectrum_irrel {n m : ℤ} {l k : ℕ} (E : spectrum) (p : n + l = m + k)
     [Hk : is_succ k] [Hl : is_succ l] : πg[k] (E n) ≃g πg[l] (E m) :=
+  proof
   have Πa b c : ℤ, a + (b + c) = c + (b + a), from λa b c,
   !add.assoc⁻¹ ⬝ add.comm (a + b) c ⬝ ap (λx, c + x) (add.comm a b),
   have n + 1 = m + 1 - l + k, from
@@ -656,6 +636,7 @@ namespace spectrum
   ap (λx, m + x) (this k (-l) 1) ⬝ !add.assoc⁻¹ ⬝ !add.assoc⁻¹,
   homotopy_group_spectrum_irrel_one E this ⬝g
   (homotopy_group_spectrum_irrel_one E (sub_add_cancel (m+1) l)⁻¹)⁻¹ᵍ
+  qed
 
   definition shomotopy_group_isomorphism_homotopy_group {n m : ℤ} {l : ℕ} (E : spectrum) (p : n + m = l)
     [H : is_succ l] : πₛ[n] E ≃g πg[l] (E m) :=
@@ -759,6 +740,7 @@ namespace spectrum
 
   definition pshomotopy_group_fun (n : ℤ) {E F : prespectrum} (f : E →ₛ F) :
     πₚₛ[n] E →g πₚₛ[n] F :=
+  proof
   group.seq_colim_functor (λk, π→g[k+2] (f (-n - 2 +[ℤ] k)))
     begin
       intro k,
@@ -769,6 +751,7 @@ namespace spectrum
       note rect := sq1 ⬝htyh sq4 ⬝htyh sq3,
       exact sorry --sq1 ⬝htyh sq4 ⬝htyh sq3,
     end
+  qed
 
   notation `πₚₛ→[`:95 n:0 `]`:0 := pshomotopy_group_fun n
 
