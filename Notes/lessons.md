@@ -7,6 +7,7 @@ Some of these things still need to be changes, some of them are already changed,
 - Type classes don't work well together with bundled structures and coercions in Lean (the instance is_contr_unit will not unify with (is_contr punit).
 - Overloading doesn't work well in Lean (mostly by degrading error messages)
 - avoid rec_on, don't formulate induction principles using "on", the order of arguments is worse
+- squares of maps, pointed maps and similar objects should be defined with operations on them. Squares of maps should be a structure, because we don't want that `hsquare t b l r` is definitionally equal to `hsquare (r ∘ t) b l id`.
 - It is useful to do categorical properties more uniformly. Define a 1-coherent ∞-category, which is a precategory (or category?) where the homs are not assumed to be sets. Examples include
   + `Type` (with `→`),
   + `A → B` (with `~`),
@@ -16,4 +17,7 @@ Some of these things still need to be changes, some of them are already changed,
   + spectrum (with `→ₛ`)
   + ...
   You cannot formulate everything in this, but it would be useful to compose natural transformations (instead of composing functions and manually show naturality).
-  Disadvantage: doesn't work
+  Disadvantage: doesn't work for everything, at some point you have to resort to higher categorical reasoning. Also, it might be challenging to formulate things like functoriality of pi's and sigma's.
+- Type class inference for equivalences doesn't really work in Lean, since it recognizes that `f ∘ id` is definitionally `f`, hence it can always apply `is_equiv_compose` and get trapped in a loop.
+- Coercions should all be defined *immediately* after defining a structure, *before* declaring any
+  instances. This is because the coercion graph is updated after each declared coercion.
