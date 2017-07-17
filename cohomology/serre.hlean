@@ -1,4 +1,4 @@
-import ..algebra.spectral_sequence .strunc .cohomology
+import ..algebra.spectral_sequence ..homotopy.strunc .basic
 
 open eq spectrum trunc is_trunc pointed int EM algebra left_module fiber lift equiv is_equiv
      cohomology group sigma unit is_conn

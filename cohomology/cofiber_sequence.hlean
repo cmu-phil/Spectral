@@ -6,7 +6,7 @@ Authors: Floris van Doorn
 Cofiber sequence of a pointed map
 -/
 
-import .cohomology .pushout
+import .basic ..homotopy.pushout
 
 open pointed eq cohomology sigma sigma.ops fiber cofiber chain_complex nat succ_str algebra prod group pushout int
 

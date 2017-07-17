@@ -6,7 +6,7 @@ Authors: Floris van Doorn, Ulrik Buchholtz
 Reduced cohomology of spectra and cohomology theories
 -/
 
-import .spectrum ..algebra.arrow_group .fwedge ..choice .pushout ..algebra.product_group
+import ..homotopy.spectrum ..algebra.arrow_group homotopy.fwedge ..choice ..homotopy.pushout ..algebra.product_group
 
 open eq spectrum int trunc pointed EM group algebra circle sphere nat EM.ops equiv susp is_trunc
      function fwedge cofiber bool lift sigma is_equiv choice pushout algebra unit pi

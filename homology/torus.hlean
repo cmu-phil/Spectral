@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author: Kuen-Bang Hou (Favonia)
 -/
 
-import .homology .sphere ..susp_product
+import .basic .sphere ..homotopy.susp_product
 
 open eq pointed group algebra circle sphere nat equiv susp
      function sphere homology int lift prod smash

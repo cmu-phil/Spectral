@@ -7,7 +7,7 @@ Various groups of maps. Most importantly we define a group structure
 on trunc 0 (A →* Ω B), which is used in the definition of cohomology.
 -/
 
-import algebra.group_theory ..pointed ..pointed_pi eq2 homotopy.susp
+import algebra.group_theory ..pointed ..pointed_pi eq2
 open pi pointed algebra group eq equiv is_trunc trunc susp
 namespace group
 

@@ -1,3 +1,4 @@
+-- Author: Floris van Doorn
 
 open eq is_trunc
 
