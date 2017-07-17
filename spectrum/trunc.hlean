@@ -6,7 +6,7 @@ Authors: Floris van Doorn, Ulrik Buchholtz
 Truncatedness and truncation of spectra
 -/
 
-import .spectrum .EM
+import .basic
 open int trunc eq is_trunc lift unit pointed equiv is_equiv algebra EM
 
 namespace spectrum

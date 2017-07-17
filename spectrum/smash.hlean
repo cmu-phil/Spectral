@@ -1,4 +1,4 @@
-import .spectrification .smash_adjoint
+import .spectrification ..homotopy.smash_adjoint
 
 open pointed is_equiv equiv eq susp succ_str smash int
 namespace spectrum

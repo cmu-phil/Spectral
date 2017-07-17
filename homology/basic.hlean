@@ -6,7 +6,7 @@ Authors: Yuri Sulyma, Favonia, Floris van Doorn
 Reduced homology theories
 -/
 
-import ..homotopy.smash_spectrum ..homotopy.wedge
+import ..spectrum.smash ..homotopy.wedge
 
 open eq spectrum int pointed group algebra sphere nat equiv susp is_trunc
      function fwedge cofiber lift is_equiv choice algebra pi smash wedge

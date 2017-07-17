@@ -1,4 +1,4 @@
-import .spectrum ..colim
+import .basic ..colim
 
 open eq pointed succ_str is_equiv equiv spectrum.smap seq_colim nat
 

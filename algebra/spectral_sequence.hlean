@@ -5,7 +5,7 @@
 
 -- Author: Floris van Doorn
 
-import .graded ..homotopy.spectrum .product_group
+import .graded ..spectrum.basic .product_group
 
 open algebra is_trunc left_module is_equiv equiv eq function nat sigma sigma.ops set_quotient
 

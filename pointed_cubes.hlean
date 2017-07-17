@@ -10,7 +10,7 @@ The goal of this file is to extend the library of pointed types and pointed maps
 
 -/
 
-import types.pointed2 ..pointed_pi
+import types.pointed2 .pointed_pi
 
 open eq pointed
 

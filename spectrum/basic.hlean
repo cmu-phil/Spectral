@@ -5,7 +5,8 @@ Authors: Michael Shulman, Floris van Doorn, Egbert Rijke, Stefano Piceghello, Yu
 
 -/
 
-import homotopy.LES_of_homotopy_groups ..algebra.splice ..algebra.seq_colim .EM .fwedge .pointed_cubes
+import homotopy.LES_of_homotopy_groups ..algebra.splice ..algebra.seq_colim ..homotopy.EM ..homotopy.fwedge
+       ..pointed_cubes
 
 open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
      succ_str EM EM.ops function unit lift is_trunc
