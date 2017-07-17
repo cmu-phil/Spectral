@@ -583,4 +583,77 @@ namespace EM
 --EM_spectrum (πₛ[s] (spi X Y)) k ≃* spi X (λx, EM_spectrum (πₛ[s] (Y x))) k
 
 
+  /- fiber of EM_functor -/
+  open fiber
+  definition is_trunc_fiber_EM1_functor {G H : Group} (φ : G →g H) : is_trunc 1 (pfiber (EM1_functor φ)) :=
+  !is_trunc_fiber
+
+  definition is_conn_fiber_EM1_functor {G H : Group} (φ : G →g H) : is_conn -1 (pfiber (EM1_functor φ)) :=
+  begin
+    apply is_conn_fiber, apply is_conn_of_is_conn_succ
+  end
+
+  definition is_trunc_fiber_EMadd1_functor {G H : AbGroup} (φ : G →g H) (n : ℕ) :
+    is_trunc (n+1) (pfiber (EMadd1_functor φ n)) :=
+  begin
+    apply is_trunc_fiber
+  end
+
+  definition is_conn_fiber_EMadd1_functor {G H : AbGroup} (φ : G →g H) (n : ℕ) :
+    is_conn (n.-1) (pfiber (EMadd1_functor φ n)) :=
+  begin
+    apply is_conn_fiber, apply is_conn_of_is_conn_succ, apply is_conn_EMadd1,
+    apply is_conn_EMadd1
+  end
+
+  definition is_trunc_fiber_EM_functor {G H : AbGroup} (φ : G →g H) (n : ℕ) :
+    is_trunc n (pfiber (EM_functor φ n)) :=
+  begin
+    apply is_trunc_fiber
+  end
+
+  definition is_conn_fiber_EM_functor {G H : AbGroup} (φ : G →g H) (n : ℕ) :
+    is_conn (n.-2) (pfiber (EM_functor φ n)) :=
+  begin
+    apply is_conn_fiber, apply is_conn_of_is_conn_succ
+  end
+
+  section --move
+    open chain_complex succ_str
+  -- definition isomorphism_kernel_of_trivial {N : succ_str} (X : chain_complex N) {n : N}
+  --   (H1 : is_exact_at X n) (H2 : is_exact_at X (S n))
+  --   (HX1 : is_contr (X n)) (HG2 : pgroup (X (S n)))
+  --   : Group_of_pgroup (X (S n)) ≃g kernel (homomorphism.mk (cc_to_fn X _) _) :=
+  -- _
+
+
+  end
+  -- definition is_equiv_of_trivial (X : chain_complex N) {n : N}
+  --   (H1 : is_exact_at X n) (H2 : is_exact_at X (S n))
+  --   [HX1 : is_contr (X n)] [HX2 : is_contr (X (S (S (S n))))]
+  --   [pgroup (X (S n))] [pgroup (X (S (S n)))] [is_mul_hom (cc_to_fn X (S n))]
+  --   : is_equiv (cc_to_fn X (S n)) :=
+  -- begin
+  --   apply is_equiv_of_is_surjective_of_is_embedding,
+  --   { apply is_embedding_of_trivial X, apply H2},
+  --   { apply is_surjective_of_trivial X, apply H1},
+  -- end
+
+
+  definition homotopy_group_fiber_EM1_functor {G H : Group} (φ : G →g H) :
+    π₁ (pfiber (EM1_functor φ)) ≃g kernel φ :=
+  sorry
+
+  definition homotopy_group_fiber_EMadd1_functor {G H : AbGroup} (φ : G →g H) (n : ℕ) :
+    πg[n+1] (pfiber (EMadd1_functor φ n)) ≃g kernel φ :=
+  sorry
+
+  /- TODO: move-/
+  definition cokernel {G H : AbGroup} (φ : G →g H) : AbGroup :=
+  quotient_ab_group (image_subgroup φ)
+
+  definition trunc_fiber_EM1_functor {G H : Group} (φ : G →g H) :
+    ptrunc 0 (pfiber (EM1_functor φ)) ≃* sorry :=
+  sorry
+
 end EM

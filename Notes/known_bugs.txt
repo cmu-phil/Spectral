@@ -34,3 +34,7 @@ this has the additional advantage that if f and/or g are defined using induction
 - unfold [foo] also does various (sometimes unwanted) reductions (as if you called esimp)
 
 - The Emacs flycheck mode has a hard time with nonrelative paths to files in the same directory. This means that for importing files from the Lean 2 HoTT library use absolute paths (e.g. `import algebra.group`) and for importing files in the Spectral repository use relative paths (e.g. for a file in the `homotopy` folder use `import ..algebra.subgroup`)
+
+- The induction tactic doesn't fail if it fails to solve the type class constraint. This means that it will accept the tactics until the end of the tactic proof, when it raises the error that the term has unsolved metavariables
+
+- Sometimes the lean-server doesn't give information anymore (and then it causes tab complete to hang). In this case, execute `M-x lean-server-restart-all-processes`. You can stop tab-complete from hanging by pressing `C-g` multiple times, once for each time you pressed TAB.

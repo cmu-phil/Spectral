@@ -600,6 +600,16 @@ namespace is_conn
 
   open unit trunc_index nat is_trunc pointed.ops
 
+  definition is_conn_zero {A : Type} (a₀ : trunc 0 A) (p : Πa a' : A, ∥ a = a' ∥) : is_conn 0 A :=
+  is_conn_succ_intro a₀ (λa a', is_conn_minus_one _ (p a a'))
+
+  definition is_conn_zero_pointed {A : Type*} (p : Πa a' : A, ∥ a = a' ∥) : is_conn 0 A :=
+  is_conn_zero (tr pt) p
+
+  definition is_conn_fiber (n : ℕ₋₂) {A B : Type} (f : A → B) (b : B) [is_conn n A] [is_conn (n.+1) B] :
+    is_conn n (fiber f b) :=
+  is_conn_equiv_closed_rev _ !fiber.sigma_char _
+
   definition is_conn_fun_compose {n : ℕ₋₂} {A B C : Type} (g : B → C) (f : A → B)
     (H : is_conn_fun n g) (K : is_conn_fun n f) : is_conn_fun n (g ∘ f) :=
   sorry
