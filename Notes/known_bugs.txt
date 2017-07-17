@@ -1,3 +1,5 @@
+A list of bugs and/or unintuitive behavior in Lean 2:
+
 - When using the "have" or "assert" tactic, no coercion is applied to the type. So you have to write for example
 `have g : Group.carrier G, from _,`
 instead of
@@ -27,5 +29,6 @@ equiv.MK f
          abstract (* long proof *) end
          abstract (* long proof *) end
 ```
+this has the additional advantage that if f and/or g are defined using induction, they will only reduce if they are applied to arguments for which they actually reduce (assuming they have the correct [unfold n] flag.
 
 - unfold [foo] also does various (sometimes unwanted) reductions (as if you called esimp)
