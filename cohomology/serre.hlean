@@ -177,7 +177,7 @@ section atiyah_hirzebruch
       refine _ ⬝g (parametrized_cohomology_isomorphism_shomotopy_group_spi _ idp)⁻¹ᵍ,
       refine _ ⬝g !shomotopy_group_ssuspn,
       apply shomotopy_group_isomorphism_of_pequiv n, intro k,
-      refine !pfiber_ppi_compose_left ⬝e* _,
+      refine !pfiber_pppi_compose_left ⬝e* _,
       exact ppi_pequiv_right (λx, sfiber_postnikov_smap_pequiv (Y x) s k)
     end
     begin

@@ -559,7 +559,8 @@ namespace smash
   end
 
 print axioms smash_susp_natural
-  definition smash_iterate_susp (n : ℕ) (A B : Type*) : A ∧ iterate_susp n B ≃* iterate_susp n (A ∧ B) :=
+  definition smash_iterate_susp (n : ℕ) (A B : Type*) :
+    A ∧ iterate_susp n B ≃* iterate_susp n (A ∧ B) :=
   begin
     induction n with n e,
     { reflexivity },

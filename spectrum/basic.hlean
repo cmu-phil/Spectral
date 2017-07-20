@@ -364,7 +364,7 @@ namespace spectrum
 
 /-
   definition ppi_homotopy_rec_on_eq [recursor]
-    {k' : ppi_gen B x₀}
+    {k' : ppi B x₀}
     {Q : (k ~~* k') → Type}
     (p : k ~~* k')
     (H : Π(q : k = k'), Q (ppi_homotopy_of_eq q))
@@ -384,8 +384,8 @@ namespace spectrum
 
 /-
   definition ppi_homotopy_rec_on_idp [recursor]
-    {Q : Π {k' : ppi_gen B x₀},  (k ~~* k') → Type}
-    (q : Q (ppi_homotopy.refl k)) {k' : ppi_gen B x₀} (H : k ~~* k') : Q H :=
+    {Q : Π {k' : ppi B x₀},  (k ~~* k') → Type}
+    (q : Q (ppi_homotopy.refl k)) {k' : ppi B x₀} (H : k ~~* k') : Q H :=
   begin
     induction H using ppi_homotopy_rec_on_eq with t,
     induction t, exact eq_ppi_homotopy_refl_ppi_homotopy_of_eq_refl k ▸ q,
@@ -815,10 +815,10 @@ namespace spectrum
 
   definition spi_compose_left [constructor] {N : succ_str} {A : Type*} {E F : A -> gen_spectrum N}
     (f : Πa, E a →ₛ F a) : spi A E →ₛ spi A F :=
-  smap.mk (λn, ppi_compose_left (λa, f a n))
+  smap.mk (λn, pppi_compose_left (λa, f a n))
     begin
       intro n,
-      exact psquare_ppi_compose_left (λa, (glue_square (f a) n)) ⬝v* !loop_pppi_pequiv_natural⁻¹ᵛ*
+      exact psquare_pppi_compose_left (λa, (glue_square (f a) n)) ⬝v* !loop_pppi_pequiv_natural⁻¹ᵛ*
     end
 
   -- unpointed spi
