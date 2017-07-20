@@ -510,10 +510,10 @@ namespace smash
     ppmap (A ∧ susp B) X ≃* ppmap (susp (A ∧ B)) X :=
   calc
     ppmap (A ∧ susp B) X ≃* ppmap (susp B) (ppmap A X) : smash_adjoint_pmap A (susp B) X
-    ... ≃* ppmap B (Ω (ppmap A X)) : susp_adjoint_loop' B (ppmap A X)
+    ... ≃* ppmap B (Ω (ppmap A X)) : susp_adjoint_loop B (ppmap A X)
     ... ≃* ppmap B (ppmap A (Ω X)) : pequiv_ppcompose_left (loop_ppmap_commute A X)
     ... ≃* ppmap (A ∧ B) (Ω X) : smash_adjoint_pmap A B (Ω X)
-    ... ≃* ppmap (susp (A ∧ B)) X : susp_adjoint_loop' (A ∧ B) X
+    ... ≃* ppmap (susp (A ∧ B)) X : susp_adjoint_loop (A ∧ B) X
 
   definition smash_susp_elim_natural_right (A B : Type*) (f : X →* X') :
     psquare (smash_susp_elim_equiv A B X) (smash_susp_elim_equiv A B X')

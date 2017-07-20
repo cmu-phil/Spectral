@@ -249,7 +249,7 @@ definition theorem_III_3 (n : ℕ)
   : sphere n ≃ sigma (realprojective_cov n) :=
 begin
   induction n with n IH,
-  { symmetry, apply sorry /-sigma_empty_left-/ },
+  { symmetry, exact sorry },
   { apply equiv.trans (join_bool (sphere n))⁻¹ᵉ,
     apply equiv.trans (join_equiv_join erfl IH),
     symmetry, refine equiv.trans _ !join_symm,
