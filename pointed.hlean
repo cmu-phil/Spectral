@@ -37,6 +37,7 @@ namespace pointed
     pmap_eq (λx, idpath (f x)) !idp_con⁻¹ = idpath f :=
   ap (λx, eq_of_phomotopy (phomotopy.mk _ x)) !inv_inv ⬝ eq_of_phomotopy_refl f
 
+  /- remove some duplicates: loop_ppmap_commute, loop_ppmap_pequiv, loop_ppmap_pequiv', pfunext -/
   definition pfunext (X Y : Type*) : ppmap X (Ω Y) ≃* Ω (ppmap X Y) :=
   (loop_ppmap_commute X Y)⁻¹ᵉ*
 

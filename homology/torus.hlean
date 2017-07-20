@@ -17,23 +17,23 @@ section
 
   open ordinary_homology_theory
 
-  theorem Hptorus : Π(n : ℤ)(m : ℕ), HH theory n (plift (psphere m ×* psphere m)) ≃g
-    HH theory n (plift (psphere m)) ×g (HH theory n (plift (psphere m)) ×g HH theory n (plift (psphere (m + m)))) := λ n m,
-    calc        HH theory n (plift (psphere m ×* psphere m))
-             ≃g HH theory (n + 1) (plift (⅀ (psphere m ×* psphere m))) : by exact (Hplift_psusp theory n (psphere m ×* psphere m))⁻¹ᵍ
-         ... ≃g HH theory (n + 1) (plift (⅀ (psphere m) ∨ (⅀ (psphere m) ∨ ⅀ (psphere m ∧ psphere m))))
-                   : by exact Hplift_isomorphism theory (n + 1) (susp_product (psphere m) (psphere m))
-         ... ≃g HH theory (n + 1) (plift (⅀ (psphere m))) ×g HH theory (n + 1) (plift (⅀ (psphere m) ∨ (⅀ (psphere m ∧ psphere m))))
-                   : by exact Hplift_pwedge theory (n + 1) (⅀ (psphere m)) (⅀ (psphere m) ∨ (⅀ (psphere m ∧ psphere m)))
-         ... ≃g HH theory n (plift (psphere m)) ×g (HH theory n (plift (psphere m)) ×g HH theory n (plift (psphere (m + m))))
-                   : by exact product_isomorphism (Hplift_psusp theory n (psphere m))
+  theorem Hptorus : Π(n : ℤ)(m : ℕ), HH theory n (plift (sphere m ×* sphere m)) ≃g
+    HH theory n (plift (sphere m)) ×g (HH theory n (plift (sphere m)) ×g HH theory n (plift (sphere (m + m)))) := λ n m,
+    calc        HH theory n (plift (sphere m ×* sphere m))
+             ≃g HH theory (n + 1) (plift (⅀ (sphere m ×* sphere m))) : by exact (Hplift_susp theory n (sphere m ×* sphere m))⁻¹ᵍ
+         ... ≃g HH theory (n + 1) (plift (⅀ (sphere m) ∨ (⅀ (sphere m) ∨ ⅀ (sphere m ∧ sphere m))))
+                   : by exact Hplift_isomorphism theory (n + 1) (susp_product (sphere m) (sphere m))
+         ... ≃g HH theory (n + 1) (plift (⅀ (sphere m))) ×g HH theory (n + 1) (plift (⅀ (sphere m) ∨ (⅀ (sphere m ∧ sphere m))))
+                   : by exact Hplift_wedge theory (n + 1) (⅀ (sphere m)) (⅀ (sphere m) ∨ (⅀ (sphere m ∧ sphere m)))
+         ... ≃g HH theory n (plift (sphere m)) ×g (HH theory n (plift (sphere m)) ×g HH theory n (plift (sphere (m + m))))
+                   : by exact product_isomorphism (Hplift_susp theory n (sphere m))
              (calc
-                     HH theory (n + 1) (plift (⅀ (psphere m) ∨ (⅀ (psphere m ∧ psphere m))))
-                  ≃g HH theory (n + 1) (plift (⅀ (psphere m))) ×g HH theory (n + 1) (plift (⅀ (psphere m ∧ psphere m)))
-                     : by exact Hplift_pwedge theory (n + 1) (⅀ (psphere m)) (⅀ (psphere m ∧ psphere m))
-              ... ≃g HH theory n (plift (psphere m)) ×g HH theory n (plift (psphere (m + m)))
-                     : by exact product_isomorphism (Hplift_psusp theory n (psphere m))
-                                  (Hplift_psusp theory n (psphere m ∧ psphere m) ⬝g Hplift_isomorphism theory n (sphere_smash_sphere m m)))
+                     HH theory (n + 1) (plift (⅀ (sphere m) ∨ (⅀ (sphere m ∧ sphere m))))
+                  ≃g HH theory (n + 1) (plift (⅀ (sphere m))) ×g HH theory (n + 1) (plift (⅀ (sphere m ∧ sphere m)))
+                     : by exact Hplift_wedge theory (n + 1) (⅀ (sphere m)) (⅀ (sphere m ∧ sphere m))
+              ... ≃g HH theory n (plift (sphere m)) ×g HH theory n (plift (sphere (m + m)))
+                     : by exact product_isomorphism (Hplift_susp theory n (sphere m))
+                                  (Hplift_susp theory n (sphere m ∧ sphere m) ⬝g Hplift_isomorphism theory n (sphere_smash_sphere m m)))
 
 end
 

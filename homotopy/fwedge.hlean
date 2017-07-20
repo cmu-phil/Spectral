@@ -48,7 +48,7 @@ attribute fwedge.il fwedge.inl [constructor]
 
 namespace fwedge
 
-  definition fwedge_of_pwedge [unfold 3] {A B : Type*} (x : A ∨ B) : ⋁(bool.rec A B) :=
+  definition fwedge_of_wedge [unfold 3] {A B : Type*} (x : A ∨ B) : ⋁(bool.rec A B) :=
   begin
     induction x with a b,
     { exact inl ff a },
@@ -56,7 +56,7 @@ namespace fwedge
     { exact glue ff ⬝ (glue tt)⁻¹ }
   end
 
-  definition pwedge_of_fwedge [unfold 3] {A B : Type*} (x : ⋁(bool.rec A B)) : A ∨ B :=
+  definition wedge_of_fwedge [unfold 3] {A B : Type*} (x : ⋁(bool.rec A B)) : A ∨ B :=
   begin
     induction x with b x b,
     { induction b, exact pushout.inl x, exact pushout.inr x },
@@ -64,24 +64,24 @@ namespace fwedge
     { induction b, exact pushout.glue ⋆, reflexivity }
   end
 
-  definition pwedge_pequiv_fwedge [constructor] (A B : Type*) : A ∨ B ≃* ⋁(bool.rec A B) :=
+  definition wedge_pequiv_fwedge [constructor] (A B : Type*) : A ∨ B ≃* ⋁(bool.rec A B) :=
   begin
     fapply pequiv_of_equiv,
     { fapply equiv.MK,
-      { exact fwedge_of_pwedge },
-      { exact pwedge_of_fwedge },
+      { exact fwedge_of_wedge },
+      { exact wedge_of_fwedge },
       { exact abstract begin intro x, induction x with b x b,
         { induction b: reflexivity },
         { exact glue tt },
         { apply eq_pathover_id_right,
-          refine ap_compose fwedge_of_pwedge _ _ ⬝ ap02 _ !elim_glue ⬝ph _,
+          refine ap_compose fwedge_of_wedge _ _ ⬝ ap02 _ !elim_glue ⬝ph _,
           induction b, exact !elim_glue ⬝ph whisker_bl _ hrfl, apply square_of_eq idp }
         end end },
       { exact abstract begin intro x, induction x with a b,
         { reflexivity },
         { reflexivity },
         { apply eq_pathover_id_right,
-          refine ap_compose pwedge_of_fwedge _ _ ⬝ ap02 _ !elim_glue ⬝ !ap_con ⬝
+          refine ap_compose wedge_of_fwedge _ _ ⬝ ap02 _ !elim_glue ⬝ !ap_con ⬝
                  !elim_glue ◾ (!ap_inv ⬝ !elim_glue⁻²) ⬝ph _, exact hrfl } end end}},
     { exact glue ff }
   end
@@ -104,7 +104,7 @@ namespace fwedge
     { reflexivity }
   end
 
- definition pwedge_pmap [constructor] {A B : Type*} {X : Type*} (f : A →* X) (g : B →* X) : (A ∨ B) →* X :=
+ definition wedge_pmap [constructor] {A B : Type*} {X : Type*} (f : A →* X) (g : B →* X) : (A ∨ B) →* X :=
   begin
     fapply pmap.mk,
     { intro x, induction x, exact (f a), exact (g a), exact (respect_pt (f) ⬝ (respect_pt g)⁻¹) },
@@ -149,9 +149,9 @@ namespace fwedge
     { intro g, apply eq_of_phomotopy, exact fwedge_pmap_eta g }
   end
 
-  definition pwedge_pmap_equiv  [constructor] (A B X : Type*) :
+  definition wedge_pmap_equiv  [constructor] (A B X : Type*) :
     ((A ∨ B) →* X) ≃ ((A →* X) × (B →* X)) :=
-    calc (A ∨ B) →* X ≃ ⋁(bool.rec A B) →* X : by exact pequiv_ppcompose_right (pwedge_pequiv_fwedge A B)⁻¹ᵉ*
+    calc (A ∨ B) →* X ≃ ⋁(bool.rec A B) →* X : by exact pequiv_ppcompose_right (wedge_pequiv_fwedge A B)⁻¹ᵉ*
             ...       ≃ Πi, (bool.rec A B) i →* X : by exact fwedge_pmap_equiv (bool.rec A B) X
             ...       ≃  (A →* X) × (B →* X) : by exact pi_bool_left (λ i, bool.rec A B i →* X)
 
@@ -211,16 +211,16 @@ namespace fwedge
   end
 
 -- hsquare 3:
-  definition fwedge_to_pwedge_nat_square {A B X Y : Type*} (f : X →* Y) :
-        hsquare (pequiv_ppcompose_right (pwedge_pequiv_fwedge A B)) (pequiv_ppcompose_right (pwedge_pequiv_fwedge A B)) (pcompose f) (pcompose f) :=
+  definition fwedge_to_wedge_nat_square {A B X Y : Type*} (f : X →* Y) :
+        hsquare (pequiv_ppcompose_right (wedge_pequiv_fwedge A B)) (pequiv_ppcompose_right (wedge_pequiv_fwedge A B)) (pcompose f) (pcompose f) :=
   begin
     exact sorry
   end
 
- definition pwedge_pmap_nat₂ (A B X Y : Type*) (f : X →* Y) (h : A →* X) (k : B →* X) : Π (w : A ∨ B),
-    (f ∘* (pwedge_pmap h k)) w = pwedge_pmap (f ∘* h )(f ∘* k) w  :=
+ definition wedge_pmap_nat₂ (A B X Y : Type*) (f : X →* Y) (h : A →* X) (k : B →* X) : Π (w : A ∨ B),
+    (f ∘* (wedge_pmap h k)) w = wedge_pmap (f ∘* h )(f ∘* k) w  :=
 have H : _, from
-    (@prod_to_pi_bool_nat_square A B X Y f) ⬝htyh (fwedge_pmap_nat_square f) ⬝htyh (fwedge_to_pwedge_nat_square f),
+    (@prod_to_pi_bool_nat_square A B X Y f) ⬝htyh (fwedge_pmap_nat_square f) ⬝htyh (fwedge_to_wedge_nat_square f),
 sorry
 
 -- SA to here 7/5

@@ -22,3 +22,13 @@ Some of these things still need to be changes, some of them are already changed,
 - Type class inference for equivalences doesn't really work in Lean, since it recognizes that `f ∘ id` is definitionally `f`, hence it can always apply `is_equiv_compose` and get trapped in a loop.
 - Coercions should all be defined *immediately* after defining a structure, *before* declaring any
   instances. This is because the coercion graph is updated after each declared coercion.
+- When you have a functor in two arguments (`→`, `×`, `Π`, `Σ`, pointed versions of these, `=`, `∧`,
+  `∨`, and so on), the functoriality should be stated in both arguments at once, and the special
+  cases where only one argument changes should be a special case of that one. This makes it easier
+  to prove properties about the functorial action, because you only have to do work once (although
+  that work is sometimes twice as much, but sometimes much less). We haven't always done this,
+  because it's sometimes easier to define a special case first (even though later you probably still
+  have to define the general case). Note that for `=` this gives square filling as primitive,
+  instead of concatenation (which can be seen as functoriality in the second argument), and Dan
+  Licata argued for that as primitive instead of concatenation. On the other hand, the definition
+  of the more general functor might be more complicated, in which case definitional reduction won't be as nice

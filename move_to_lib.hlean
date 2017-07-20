@@ -174,6 +174,10 @@ namespace eq
     phomotopy_rec_on_idp phomotopy.rfl H = H :=
   !phomotopy_rec_on_eq_phomotopy_of_eq
 
+  definition eq_tr_of_pathover_con_tr_eq_of_pathover {A : Type} {B : A → Type}
+    {a₁ a₂ : A} (p : a₁ = a₂) {b₁ : B a₁} {b₂ : B a₂} (q : b₁ =[p] b₂) :
+    eq_tr_of_pathover q ⬝ tr_eq_of_pathover q⁻¹ᵒ = idp :=
+  by induction q; reflexivity
 
 end eq open eq
 
@@ -477,6 +481,11 @@ namespace is_trunc
 
 end is_trunc
 namespace sigma
+  open sigma.ops
+
+  definition sigma_eq_equiv_of_is_prop_right [constructor] {A : Type} {B : A → Type} (u v : Σa, B a)
+    [H : Π a, is_prop (B a)] : u = v ≃ u.1 = v.1 :=
+  !sigma_eq_equiv ⬝e !sigma_equiv_of_is_contr_right
 
   definition ap_sigma_pr1 {A B : Type} {C : B → Type} {a₁ a₂ : A} (f : A → B) (g : Πa, C (f a))
     (p : a₁ = a₂) : (ap (λa, ⟨f a, g a⟩) p)..1 = ap f p :=
@@ -903,13 +912,13 @@ end category
 
 namespace sphere
 
-  -- definition constant_sphere_map_sphere {n m : ℕ} (H : n < m) (f : S* n →* S* m) :
-  --   f ~* pconst (S* n) (S* m) :=
+  -- definition constant_sphere_map_sphere {n m : ℕ} (H : n < m) (f : S n →* S m) :
+  --   f ~* pconst (S n) (S m) :=
   -- begin
-  --   assert H : is_contr (Ω[n] (S* m)),
+  --   assert H : is_contr (Ω[n] (S m)),
   --   { apply homotopy_group_sphere_le, },
   --   apply phomotopy_of_eq,
-  --   apply eq_of_fn_eq_fn !psphere_pmap_pequiv,
+  --   apply eq_of_fn_eq_fn !sphere_pmap_pequiv,
   --   apply @is_prop.elim
   -- end
 
@@ -948,8 +957,8 @@ end injective_surjective
 
 -- Yuri Sulyma's code from HoTT MRC
 
-notation `⅀→`:(max+5) := psusp_functor
-notation `⅀⇒`:(max+5) := psusp_functor_phomotopy
+notation `⅀→`:(max+5) := susp_functor
+notation `⅀⇒`:(max+5) := susp_functor_phomotopy
 notation `Ω⇒`:(max+5) := ap1_phomotopy
 
 definition ap1_phomotopy_symm {A B : Type*} {f g : A →* B} (p : f ~* g) : (Ω⇒ p)⁻¹* = Ω⇒ (p⁻¹*) :=

@@ -180,49 +180,49 @@ parametrized_cohomology_isomorphism_right
 
 /- suspension axiom -/
 
-definition cohomology_psusp_2 (Y : spectrum) (n : ℤ) :
+definition cohomology_susp_2 (Y : spectrum) (n : ℤ) :
   Ω (Ω[2] (Y ((n+1)+2))) ≃* Ω[2] (Y (n+2)) :=
 begin
   apply loopn_pequiv_loopn 2,
   exact loop_pequiv_loop (pequiv_of_eq (ap Y (add.right_comm n 1 2))) ⬝e* !equiv_glue⁻¹ᵉ*
 end
 
-definition cohomology_psusp_1 (X : Type*) (Y : spectrum) (n : ℤ) :
-  psusp X →* Ω (Ω (Y (n + 1 + 2))) ≃ X →* Ω (Ω (Y (n+2))) :=
+definition cohomology_susp_1 (X : Type*) (Y : spectrum) (n : ℤ) :
+  susp X →* Ω (Ω (Y (n + 1 + 2))) ≃ X →* Ω (Ω (Y (n+2))) :=
 calc
-  psusp X →* Ω[2] (Y (n + 1 + 2)) ≃ X →* Ω (Ω[2] (Y (n + 1 + 2))) : psusp_adjoint_loop_unpointed
+  susp X →* Ω[2] (Y (n + 1 + 2)) ≃ X →* Ω (Ω[2] (Y (n + 1 + 2))) : susp_adjoint_loop_unpointed
     ... ≃ X →* Ω[2] (Y (n+2)) : equiv_of_pequiv (pequiv_ppcompose_left
-                                                  (cohomology_psusp_2 Y n))
+                                                  (cohomology_susp_2 Y n))
 
-definition cohomology_psusp_1_pmap_mul {X : Type*} {Y : spectrum} {n : ℤ}
-  (f g : psusp X →* Ω (Ω (Y (n + 1 + 2)))) : cohomology_psusp_1 X Y n (pmap_mul f g) ~*
-  pmap_mul (cohomology_psusp_1 X Y n f) (cohomology_psusp_1 X Y n g) :=
+definition cohomology_susp_1_pmap_mul {X : Type*} {Y : spectrum} {n : ℤ}
+  (f g : susp X →* Ω (Ω (Y (n + 1 + 2)))) : cohomology_susp_1 X Y n (pmap_mul f g) ~*
+  pmap_mul (cohomology_susp_1 X Y n f) (cohomology_susp_1 X Y n g) :=
 begin
-  unfold [cohomology_psusp_1],
-  refine pwhisker_left _ !loop_psusp_intro_pmap_mul ⬝* _,
+  unfold [cohomology_susp_1],
+  refine pwhisker_left _ !loop_susp_intro_pmap_mul ⬝* _,
   apply pcompose_pmap_mul
 end
 
-definition cohomology_psusp_equiv (X : Type*) (Y : spectrum) (n : ℤ) :
-  H^n+1[psusp X, Y] ≃ H^n[X, Y] :=
-trunc_equiv_trunc _ (cohomology_psusp_1 X Y n)
+definition cohomology_susp_equiv (X : Type*) (Y : spectrum) (n : ℤ) :
+  H^n+1[susp X, Y] ≃ H^n[X, Y] :=
+trunc_equiv_trunc _ (cohomology_susp_1 X Y n)
 
-definition cohomology_psusp (X : Type*) (Y : spectrum) (n : ℤ) :
-  H^n+1[psusp X, Y] ≃g H^n[X, Y] :=
-isomorphism_of_equiv (cohomology_psusp_equiv X Y n)
+definition cohomology_susp (X : Type*) (Y : spectrum) (n : ℤ) :
+  H^n+1[susp X, Y] ≃g H^n[X, Y] :=
+isomorphism_of_equiv (cohomology_susp_equiv X Y n)
   begin
     intro f₁ f₂, induction f₁ with f₁, induction f₂ with f₂,
-    apply ap tr, apply eq_of_phomotopy, exact cohomology_psusp_1_pmap_mul f₁ f₂
+    apply ap tr, apply eq_of_phomotopy, exact cohomology_susp_1_pmap_mul f₁ f₂
   end
 
-definition cohomology_psusp_natural {X X' : Type*} (f : X →* X') (Y : spectrum) (n : ℤ) :
-  cohomology_psusp X Y n ∘ cohomology_functor (psusp_functor f) Y (n+1) ~
-  cohomology_functor f Y n ∘ cohomology_psusp X' Y n :=
+definition cohomology_susp_natural {X X' : Type*} (f : X →* X') (Y : spectrum) (n : ℤ) :
+  cohomology_susp X Y n ∘ cohomology_functor (susp_functor f) Y (n+1) ~
+  cohomology_functor f Y n ∘ cohomology_susp X' Y n :=
 begin
   refine (trunc_functor_compose _ _ _)⁻¹ʰᵗʸ ⬝hty _ ⬝hty trunc_functor_compose _ _ _,
   apply trunc_functor_homotopy, intro g,
   apply eq_of_phomotopy, refine _ ⬝* !passoc⁻¹*, apply pwhisker_left,
-  apply loop_psusp_intro_natural
+  apply loop_susp_intro_natural
 end
 
 /- exactness -/
@@ -284,9 +284,9 @@ structure cohomology_theory.{u} : Type.{u+1} :=
   (Hid : Π(n : ℤ) {X : Type*} (x : HH n X), Hh n (pid X) x = x)
   (Hcompose : Π(n : ℤ) {X Y Z : Type*} (g : Y →* Z) (f : X →* Y) (z : HH n Z),
     Hh n (g ∘* f) z = Hh n f (Hh n g z))
-  (Hsusp : Π(n : ℤ) (X : Type*), HH (succ n) (psusp X) ≃g HH n X)
+  (Hsusp : Π(n : ℤ) (X : Type*), HH (succ n) (susp X) ≃g HH n X)
   (Hsusp_natural : Π(n : ℤ) {X Y : Type*} (f : X →* Y),
-    Hsusp n X ∘ Hh (succ n) (psusp_functor f) ~ Hh n f ∘ Hsusp n Y)
+    Hsusp n X ∘ Hh (succ n) (susp_functor f) ~ Hh n f ∘ Hsusp n Y)
   (Hexact : Π(n : ℤ) {X Y : Type*} (f : X →* Y), is_exact_g (Hh n (pcod f)) (Hh n f))
   (Hadditive : Π(n : ℤ) {I : Type.{u}} (X : I → Type*), has_choice 0 I →
     is_equiv (Group_pi_intro (λi, Hh n (pinl i)) : HH n (⋁ X) → Πᵍ i, HH n (X i)))
@@ -301,19 +301,19 @@ open cohomology_theory
 definition Hequiv (H : cohomology_theory) (n : ℤ) {X Y : Type*} (f : X ≃* Y) : H n Y ≃ H n X :=
 equiv_of_isomorphism (Hiso H n f)
 
-definition Hsusp_neg (H : cohomology_theory) (n : ℤ) (X : Type*) : H n (psusp X) ≃g H (pred n) X :=
+definition Hsusp_neg (H : cohomology_theory) (n : ℤ) (X : Type*) : H n (susp X) ≃g H (pred n) X :=
 isomorphism_of_eq (ap (λn, H n _) proof (sub_add_cancel n 1)⁻¹ qed) ⬝g cohomology_theory.Hsusp H (pred n) X
 
 definition Hsusp_neg_natural (H : cohomology_theory) (n : ℤ) {X Y : Type*} (f : X →* Y) :
-  Hsusp_neg H n X ∘ H ^→ n (psusp_functor f) ~ H ^→ (pred n) f ∘ Hsusp_neg H n Y :=
+  Hsusp_neg H n X ∘ H ^→ n (susp_functor f) ~ H ^→ (pred n) f ∘ Hsusp_neg H n Y :=
 sorry
 
 definition Hsusp_inv_natural (H : cohomology_theory) (n : ℤ) {X Y : Type*} (f : X →* Y) :
-  H ^→ (succ n) (psusp_functor f) ∘g (Hsusp H n Y)⁻¹ᵍ ~ (Hsusp H n X)⁻¹ᵍ ∘ H ^→ n f :=
+  H ^→ (succ n) (susp_functor f) ∘g (Hsusp H n Y)⁻¹ᵍ ~ (Hsusp H n X)⁻¹ᵍ ∘ H ^→ n f :=
 sorry
 
 definition Hsusp_neg_inv_natural (H : cohomology_theory) (n : ℤ) {X Y : Type*} (f : X →* Y) :
-  H ^→ n (psusp_functor f) ∘g (Hsusp_neg H n Y)⁻¹ᵍ ~ (Hsusp_neg H n X)⁻¹ᵍ ∘ H ^→ (pred n) f :=
+  H ^→ n (susp_functor f) ∘g (Hsusp_neg H n Y)⁻¹ᵍ ~ (Hsusp_neg H n X)⁻¹ᵍ ∘ H ^→ (pred n) f :=
 sorry
 
 definition Hadditive_equiv (H : cohomology_theory) (n : ℤ) {I : Type} (X : I → Type*) (H2 : has_choice 0 I)
@@ -346,7 +346,7 @@ end
 
 -- definition Hwedge (H : cohomology_theory) (n : ℤ) (A B : Type*) : H n (A ∨ B) ≃g H n A ×ag H n B :=
 -- begin
---   refine Hiso H n (pwedge_pequiv_fwedge A B)⁻¹ᵉ* ⬝g _,
+--   refine Hiso H n (wedge_pequiv_fwedge A B)⁻¹ᵉ* ⬝g _,
 --   refine Hadditive_equiv H n _ _ ⬝g _
 -- end
 
@@ -360,8 +360,8 @@ cohomology_theory.mk
   (λn A B f x, cohomology_functor_phomotopy_refl f Y n x)
   (λn A x, cohomology_functor_pid A Y n x)
   (λn A B C g f x, cohomology_functor_pcompose g f Y n x)
-  (λn A, cohomology_psusp A Y n)
-  (λn A B f, cohomology_psusp_natural f Y n)
+  (λn A, cohomology_susp A Y n)
+  (λn A B f, cohomology_susp_natural f Y n)
   (λn A B f, cohomology_exact f Y n)
   (λn I A H, spectrum_additive H A Y n)
 

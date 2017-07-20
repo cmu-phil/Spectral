@@ -91,7 +91,7 @@ exit
   open susp
 
 
-  definition psusp_of_smash_pcircle [unfold 2] (x : smash A S¹*) : psusp A :=
+  definition susp_of_smash_pcircle [unfold 2] (x : smash A S¹*) : susp A :=
   begin
     induction x using smash.elim,
     { induction b, exact pt, exact merid a ⬝ (merid pt)⁻¹ },
@@ -102,7 +102,7 @@ exit
       exact !elim_loop ⬝ !con.right_inv }
   end
 
-  definition smash_pcircle_of_psusp [unfold 2] (x : psusp A) : smash A S¹* :=
+  definition smash_pcircle_of_susp [unfold 2] (x : susp A) : smash A S¹* :=
   begin
     induction x,
     { exact pt },
@@ -111,13 +111,13 @@ exit
   end
 
  -- the definitions below compile, but take a long time to do so and have sorry's in them
-  definition smash_pcircle_of_psusp_of_smash_pcircle_pt [unfold 3] (a : A) (x : S¹*) :
-    smash_pcircle_of_psusp (psusp_of_smash_pcircle (smash.mk a x)) = smash.mk a x :=
+  definition smash_pcircle_of_susp_of_smash_pcircle_pt [unfold 3] (a : A) (x : S¹*) :
+    smash_pcircle_of_susp (susp_of_smash_pcircle (smash.mk a x)) = smash.mk a x :=
   begin
     induction x,
     { exact gluel' pt a },
     { exact abstract begin apply eq_pathover,
-      refine ap_compose smash_pcircle_of_psusp _ _ ⬝ph _,
+      refine ap_compose smash_pcircle_of_susp _ _ ⬝ph _,
       refine ap02 _ (elim_loop north (merid a ⬝ (merid pt)⁻¹)) ⬝ph _,
       refine !ap_con ⬝ (!elim_merid ◾ (!ap_inv ⬝ !elim_merid⁻²)) ⬝ph _,
       -- make everything below this a lemma defined by path induction?
@@ -136,10 +136,10 @@ exit
       end end }
   end
 
-  -- definition smash_pcircle_of_psusp_of_smash_pcircle_gluer_base (b : S¹*)
-  --   : square (smash_pcircle_of_psusp_of_smash_pcircle_pt (Point A) b)
+  -- definition smash_pcircle_of_susp_of_smash_pcircle_gluer_base (b : S¹*)
+  --   : square (smash_pcircle_of_susp_of_smash_pcircle_pt (Point A) b)
   --            (gluer pt)
-  --            (ap smash_pcircle_of_psusp (ap (λ a, psusp_of_smash_pcircle a) (gluer b)))
+  --            (ap smash_pcircle_of_susp (ap (λ a, susp_of_smash_pcircle a) (gluer b)))
   --            (gluer b) :=
   -- begin
   --   refine ap02 _ !elim_gluer ⬝ph _,
@@ -149,36 +149,36 @@ exit
   -- end
 
 exit
-  definition smash_pcircle_pequiv [constructor] (A : Type*) : smash A S¹* ≃* psusp A :=
+  definition smash_pcircle_pequiv [constructor] (A : Type*) : smash A S¹* ≃* susp A :=
   begin
     fapply pequiv_of_equiv,
     { fapply equiv.MK,
-      { exact psusp_of_smash_pcircle },
-      { exact smash_pcircle_of_psusp },
+      { exact susp_of_smash_pcircle },
+      { exact smash_pcircle_of_susp },
       { exact abstract begin intro x, induction x,
         { reflexivity },
         { exact merid pt },
         { apply eq_pathover_id_right,
-          refine ap_compose psusp_of_smash_pcircle _ _ ⬝ph _,
+          refine ap_compose susp_of_smash_pcircle _ _ ⬝ph _,
           refine ap02 _ !elim_merid ⬝ph _,
           rewrite [↑gluel', +ap_con, +ap_inv, -ap_compose'],
           refine (_ ◾ _⁻² ◾ _ ◾ (_ ◾ _⁻²)) ⬝ph _,
-          rotate 5, do 2 (unfold [psusp_of_smash_pcircle]; apply elim_gluel),
-          esimp, apply elim_loop, do 2 (unfold [psusp_of_smash_pcircle]; apply elim_gluel),
+          rotate 5, do 2 (unfold [susp_of_smash_pcircle]; apply elim_gluel),
+          esimp, apply elim_loop, do 2 (unfold [susp_of_smash_pcircle]; apply elim_gluel),
           refine idp_con (merid a ⬝ (merid (Point A))⁻¹) ⬝ph _,
           apply square_of_eq, refine !idp_con ⬝ _⁻¹, apply inv_con_cancel_right } end end },
       { intro x, induction x using smash.rec,
-        { exact smash_pcircle_of_psusp_of_smash_pcircle_pt a b },
+        { exact smash_pcircle_of_susp_of_smash_pcircle_pt a b },
         { exact gluel pt },
         { exact gluer pt },
         { apply eq_pathover_id_right,
-          refine ap_compose smash_pcircle_of_psusp _ _ ⬝ph _,
-          unfold [psusp_of_smash_pcircle],
+          refine ap_compose smash_pcircle_of_susp _ _ ⬝ph _,
+          unfold [susp_of_smash_pcircle],
           refine ap02 _ !elim_gluel ⬝ph _,
           esimp, apply whisker_rt, exact vrfl },
         { apply eq_pathover_id_right,
-          refine ap_compose smash_pcircle_of_psusp _ _ ⬝ph _,
-          unfold [psusp_of_smash_pcircle],
+          refine ap_compose smash_pcircle_of_susp _ _ ⬝ph _,
+          unfold [susp_of_smash_pcircle],
           refine ap02 _ !elim_gluer ⬝ph _,
           induction b,
           { apply square_of_eq, exact whisker_right _ !con.right_inv },

@@ -20,15 +20,15 @@ namespace homology
     (Hpid : Π(n : ℤ) {X : Type*} (x : HH n X), Hh n (pid X) x = x)
     (Hpcompose : Π(n : ℤ) {X Y Z : Type*} (f : Y →* Z) (g : X →* Y),
       Hh n (f ∘* g) ~ Hh n f ∘ Hh n g)
-    (Hpsusp : Π(n : ℤ) (X : Type*), HH (succ n) (psusp X) ≃g HH n X)
-    (Hpsusp_natural : Π(n : ℤ) {X Y : Type*} (f : X →* Y),
-      Hpsusp n Y ∘ Hh (succ n) (psusp_functor f) ~ Hh n f ∘ Hpsusp n X)
+    (Hsusp : Π(n : ℤ) (X : Type*), HH (succ n) (susp X) ≃g HH n X)
+    (Hsusp_natural : Π(n : ℤ) {X Y : Type*} (f : X →* Y),
+      Hsusp n Y ∘ Hh (succ n) (susp_functor f) ~ Hh n f ∘ Hsusp n X)
     (Hexact : Π(n : ℤ) {X Y : Type*} (f : X →* Y), is_exact_g (Hh n f) (Hh n (pcod f)))
     (Hadditive : Π(n : ℤ) {I : Set.{u}} (X : I → Type*), is_equiv
       (dirsum_elim (λi, Hh n (pinl i)) : dirsum (λi, HH n (X i)) → HH n (⋁ X)))
 
   structure ordinary_homology_theory.{u} extends homology_theory.{u} : Type.{u+1} :=
-    (Hdimension : Π(n : ℤ), n ≠ 0 → is_contr (HH n (plift (psphere 0))))
+    (Hdimension : Π(n : ℤ), n ≠ 0 → is_contr (HH n (plift (sphere 0))))
 
   section
     universe variable u
@@ -37,20 +37,20 @@ namespace homology
 
     theorem HH_base_indep (n : ℤ) {A : Type} (a b : A)
       : HH theory n (pType.mk A a) ≃g HH theory n (pType.mk A b) :=
-      calc HH theory n (pType.mk A a) ≃g HH theory (int.succ n) (psusp A) : by exact (Hpsusp theory n (pType.mk A a)) ⁻¹ᵍ
-                                  ... ≃g HH theory n (pType.mk A b)       : by exact Hpsusp theory n (pType.mk A b)
+      calc HH theory n (pType.mk A a) ≃g HH theory (int.succ n) (susp A) : by exact (Hsusp theory n (pType.mk A a)) ⁻¹ᵍ
+                                  ... ≃g HH theory n (pType.mk A b)       : by exact Hsusp theory n (pType.mk A b)
 
     theorem Hh_homotopy' (n : ℤ) {A B : Type*} (f : A → B) (p q : f pt = pt)
       : Hh theory n (pmap.mk f p) ~ Hh theory n (pmap.mk f q) := λ x,
     calc       Hh theory n (pmap.mk f p) x
-             = Hh theory n (pmap.mk f p) (Hpsusp theory n A ((Hpsusp theory n A)⁻¹ᵍ x))
-               : by exact ap (Hh theory n (pmap.mk f p)) (equiv.to_right_inv (equiv_of_isomorphism (Hpsusp theory n A)) x)⁻¹
-         ... = Hpsusp theory n B (Hh theory (succ n) (pmap.mk (susp.functor f) !refl) ((Hpsusp theory n A)⁻¹ x))
-               : by exact (Hpsusp_natural theory n (pmap.mk f p) ((Hpsusp theory n A)⁻¹ᵍ x))⁻¹
-         ... = Hh theory n (pmap.mk f q) (Hpsusp theory n A ((Hpsusp theory n A)⁻¹ x))
-               : by exact Hpsusp_natural theory n (pmap.mk f q) ((Hpsusp theory n A)⁻¹ x)
+             = Hh theory n (pmap.mk f p) (Hsusp theory n A ((Hsusp theory n A)⁻¹ᵍ x))
+               : by exact ap (Hh theory n (pmap.mk f p)) (equiv.to_right_inv (equiv_of_isomorphism (Hsusp theory n A)) x)⁻¹
+         ... = Hsusp theory n B (Hh theory (succ n) (pmap.mk (susp_functor' f) !refl) ((Hsusp theory n A)⁻¹ x))
+               : by exact (Hsusp_natural theory n (pmap.mk f p) ((Hsusp theory n A)⁻¹ᵍ x))⁻¹
+         ... = Hh theory n (pmap.mk f q) (Hsusp theory n A ((Hsusp theory n A)⁻¹ x))
+               : by exact Hsusp_natural theory n (pmap.mk f q) ((Hsusp theory n A)⁻¹ x)
          ... = Hh theory n (pmap.mk f q) x
-               : by exact ap (Hh theory n (pmap.mk f q)) (equiv.to_right_inv (equiv_of_isomorphism (Hpsusp theory n A)) x)
+               : by exact ap (Hh theory n (pmap.mk f q)) (equiv.to_right_inv (equiv_of_isomorphism (Hsusp theory n A)) x)
 
     theorem Hh_homotopy (n : ℤ) {A B : Type*} (f g : A →* B) (h : f ~ g) : Hh theory n f ~ Hh theory n g := λ x,
     calc       Hh theory n f x
@@ -122,8 +122,8 @@ namespace homology
     definition Hfwedge (n : ℤ) {I : Type} [is_set I] (X : I → Type*): HH theory n (⋁ X) ≃g dirsum (λi, HH theory n (X i)) :=
       (isomorphism.mk _ (Hadditive theory n X))⁻¹ᵍ
 
-    definition Hpwedge (n : ℤ) (A B : Type*) : HH theory n (pwedge A B) ≃g HH theory n A ×g HH theory n B :=
-    calc HH theory n (A ∨ B) ≃g HH theory n (⋁ (bool.rec A B)) : by exact HH_isomorphism n (pwedge_pequiv_fwedge A B)
+    definition Hwedge (n : ℤ) (A B : Type*) : HH theory n (wedge A B) ≃g HH theory n A ×g HH theory n B :=
+    calc HH theory n (A ∨ B) ≃g HH theory n (⋁ (bool.rec A B)) : by exact HH_isomorphism n (wedge_pequiv_fwedge A B)
                          ... ≃g dirsum (λb, HH theory n (bool.rec A B b)) : by exact (Hadditive'_equiv n (bool.rec A B))⁻¹ᵍ
                          ... ≃g dirsum (bool.rec (HH theory n A) (HH theory n B)) : by exact dirsum_isomorphism (bool.rec !isomorphism.refl !isomorphism.refl)
                          ... ≃g HH theory n A ×g HH theory n B : by exact binary_dirsum (HH theory n A) (HH theory n B)
@@ -134,13 +134,13 @@ namespace homology
     parameter (theory : homology_theory.{max u v})
     open homology_theory
 
-    definition Hplift_psusp (n : ℤ) (A : Type*): HH theory (n + 1) (plift.{u v} (psusp A)) ≃g HH theory n (plift.{u v} A) :=
-    calc HH theory (n + 1) (plift.{u v} (psusp A)) ≃g HH theory (n + 1) (psusp (plift.{u v} A)) : by exact HH_isomorphism theory (n + 1) (plift_psusp _)
-                                               ... ≃g HH theory n (plift.{u v} A) : by exact Hpsusp theory n (plift.{u v} A)
+    definition Hplift_susp (n : ℤ) (A : Type*): HH theory (n + 1) (plift.{u v} (susp A)) ≃g HH theory n (plift.{u v} A) :=
+    calc HH theory (n + 1) (plift.{u v} (susp A)) ≃g HH theory (n + 1) (susp (plift.{u v} A)) : by exact HH_isomorphism theory (n + 1) (plift_susp _)
+                                               ... ≃g HH theory n (plift.{u v} A) : by exact Hsusp theory n (plift.{u v} A)
 
-    definition Hplift_pwedge (n : ℤ) (A B : Type*): HH theory n (plift.{u v} (A ∨ B)) ≃g HH theory n (plift.{u v} A) ×g HH theory n (plift.{u v} B) :=
-    calc HH theory n (plift.{u v} (A ∨ B)) ≃g HH theory n (plift.{u v} A ∨ plift.{u v} B) : by exact HH_isomorphism theory n (plift_pwedge A B)
-                                       ... ≃g HH theory n (plift.{u v} A) ×g HH theory n (plift.{u v} B) : by exact Hpwedge theory n (plift.{u v} A) (plift.{u v} B)
+    definition Hplift_wedge (n : ℤ) (A B : Type*): HH theory n (plift.{u v} (A ∨ B)) ≃g HH theory n (plift.{u v} A) ×g HH theory n (plift.{u v} B) :=
+    calc HH theory n (plift.{u v} (A ∨ B)) ≃g HH theory n (plift.{u v} A ∨ plift.{u v} B) : by exact HH_isomorphism theory n (plift_wedge A B)
+                                       ... ≃g HH theory n (plift.{u v} A) ×g HH theory n (plift.{u v} B) : by exact Hwedge theory n (plift.{u v} A) (plift.{u v} B)
 
     definition Hplift_isomorphism (n : ℤ) {A B : Type*} (e : A ≃* B) : HH theory n (plift.{u v} A) ≃g HH theory n (plift.{u v} B) :=
       HH_isomorphism theory n (!pequiv_plift⁻¹ᵉ* ⬝e* e ⬝e* !pequiv_plift)
@@ -175,11 +175,12 @@ definition homology_functor [constructor] {X Y : Type*} {E F : prespectrum} (f :
   (g : E →ₛ F) (n : ℤ) : homology X E n →g homology Y F n :=
 pshomotopy_group_fun n (smash_prespectrum_fun f g)
 
+print is_exact_g
+print is_exact
 definition homology_theory_spectrum_is_exact.{u} (E : spectrum.{u}) (n : ℤ) {X Y : Type*} (f : X →* Y) :
-  is_exact_g (homology_functor f (sid (gen_spectrum.to_prespectrum E)) n)
-      (homology_functor (pcod f) (sid (gen_spectrum.to_prespectrum E)) n) :=
+  is_exact_g (homology_functor f (sid E) n) (homology_functor (pcod f) (sid E) n) :=
 begin
-  esimp[is_exact_g],
+  esimp [is_exact_g],
   -- fconstructor,
   -- { intro a, exact sorry },
   -- { intro a, exact sorry }
@@ -211,8 +212,8 @@ begin
 --  (λn A B f x, cohomology_functor_phomotopy_refl f Y n x)
 --  (λn A x, cohomology_functor_pid A Y n x)
 --  (λn A B C g f x, cohomology_functor_pcompose g f Y n x)
---  (λn A, cohomology_psusp A Y n)
---  (λn A B f, cohomology_psusp_natural f Y n)
+--  (λn A, cohomology_susp A Y n)
+--  (λn A B f, cohomology_susp_natural f Y n)
 --  (λn A B f, cohomology_exact f Y n)
 --  (λn I A H, spectrum_additive H A Y n)
 end

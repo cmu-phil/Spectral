@@ -1,29 +1,29 @@
-import homotopy.join homotopy.smash
+import homotopy.join homotopy.smash types.nat.hott
 
-open eq equiv trunc function bool join sphere sphere_index sphere.ops prod
-open pointed sigma smash is_trunc
+open eq equiv trunc function bool join sphere sphere.ops prod
+open pointed sigma smash is_trunc nat
 
 namespace spherical_fibrations
 
   /- classifying type of spherical fibrations -/
-  definition BG (n : ℕ) : Type₁ :=
-  Σ(X : Type₀), ∥ X ≃ S n..-1 ∥
+  definition BG (n : ℕ) [is_succ n] : Type₁ :=
+  Σ(X : Type₀), ∥ X ≃ S (pred n) ∥
 
-  definition pointed_BG [instance] [constructor] (n : ℕ) : pointed (BG n) :=
-  pointed.mk ⟨ S n..-1 , tr erfl ⟩
+  definition pointed_BG [instance] [constructor] (n : ℕ) [is_succ n] : pointed (BG n) :=
+  pointed.mk ⟨ S (pred n) , tr erfl ⟩
 
-  definition pBG [constructor] (n : ℕ) : Type* := pointed.mk' (BG n)
+  definition pBG [constructor] (n : ℕ) [is_succ n] : Type* := pointed.mk' (BG n)
 
-  definition G (n : ℕ) : Type₁ :=
+  definition G (n : ℕ) [is_succ n] : Type₁ :=
   pt = pt :> BG n
 
-  definition G_char (n : ℕ) : G n ≃ (S n..-1 ≃ S n..-1) :=
+  definition G_char (n : ℕ) [is_succ n] : G n ≃ (S (pred n) ≃ S (pred n)) :=
   calc
-    G n ≃ Σ(p : S n..-1 = S n..-1), _ : sigma_eq_equiv
-    ... ≃ (S n..-1 = S n..-1) : sigma_equiv_of_is_contr_right
-    ... ≃ (S n..-1 ≃ S n..-1) : eq_equiv_equiv
+    G n ≃ Σ(p : pType.carrier (S (pred n)) = pType.carrier (S (pred n))), _ : sigma_eq_equiv
+    ... ≃ (pType.carrier (S (pred n)) = pType.carrier (S (pred n))) : sigma_equiv_of_is_contr_right
+    ... ≃ (S (pred n) ≃ S (pred n)) : eq_equiv_equiv
 
-  definition mirror (n : ℕ) : S n..-1 → G n :=
+  definition mirror (n : ℕ) [is_succ n] : S (pred n) → G n :=
   begin
     intro v, apply to_inv (G_char n),
     exact sorry
@@ -35,35 +35,38 @@ namespace spherical_fibrations
 
   Yes, let eval : BG (n+1) → S n be the evaluation map
 -/
+  definition is_succ_1 [instance] : is_succ 1 := is_succ.mk 0
 
   definition S_of_BG (n : ℕ) : Ω(pBG (n+1)) → S n :=
-  λ f, f..1 ▸ base
+  λ f, f..1 ▸ pt
 
-  definition BG_succ (n : ℕ) : BG n → BG (n+1) :=
+  definition BG_succ (n : ℕ) [H : is_succ n] : BG n → BG (n+1) :=
   begin
+    induction H with n,
     intro X, cases X with X p,
-    apply sigma.mk (susp X), induction p with f, apply tr,
-    apply susp.equiv f
+    refine sigma.mk (susp X) _, induction p with f, apply tr,
+    exact susp.equiv f
   end
 
   /- classifying type of pointed spherical fibrations -/
   definition BF (n : ℕ) : Type₁ :=
-  Σ(X : Type*), ∥ X ≃* S* n ∥
+  Σ(X : Type*), ∥ X ≃* S n ∥
 
   definition pointed_BF [instance] [constructor] (n : ℕ) : pointed (BF n) :=
-  pointed.mk ⟨ S* n , tr pequiv.rfl ⟩
+  pointed.mk ⟨ S n , tr pequiv.rfl ⟩
 
   definition pBF [constructor] (n : ℕ) : Type* := pointed.mk' (BF n)
 
   definition BF_succ (n : ℕ) : BF n → BF (n+1) :=
   begin
     intro X, cases X with X p,
-    apply sigma.mk (psusp X), induction p with f, apply tr,
-    apply susp.psusp_pequiv f
+    apply sigma.mk (susp X), induction p with f, apply tr,
+    apply susp.susp_pequiv f
   end
 
-  definition BF_of_BG {n : ℕ} : BG n → BF n :=
+  definition BF_of_BG {n : ℕ} [H : is_succ n] : BG n → BF n :=
   begin
+    induction H with n,
     intro X, cases X with X p,
     apply sigma.mk (pointed.MK (susp X) susp.north),
     induction p with f, apply tr,
@@ -78,13 +81,15 @@ namespace spherical_fibrations
     apply tr, exact fX
   end
 
-  definition BG_mul {n m : ℕ} (X : BG n) (Y : BG m) : BG (n + m) :=
+  definition BG_mul {n m : ℕ} [Hn : is_succ n] [Hm : is_succ m] (X : BG n) (Y : BG m) :
+    BG (n + m) :=
   begin
+    induction Hn with n, induction Hm with m,
     cases X with X pX, cases Y with Y pY,
     apply sigma.mk (join X Y),
     induction pX with fX, induction pY with fY,
-    apply tr, rewrite add_sub_one,
-    exact (join.equiv_closed fX fY) ⬝e (join.spheres n..-1 m..-1)
+    apply tr, rewrite [succ_add],
+    exact join_equiv_join fX fY ⬝e join_sphere n m
   end
 
   definition BF_mul {n m : ℕ} (X : BF n) (Y : BF m) : BF (n + m) :=
@@ -95,7 +100,7 @@ namespace spherical_fibrations
     exact sorry -- needs smash.spheres : psmash (S. n) (S. m) ≃ S. (n + m)
   end
 
-  definition BF_of_BG_mul (n m : ℕ) (X : BG n) (Y : BG m)
+  definition BF_of_BG_mul (n m : ℕ) [is_succ n] [is_succ m] (X : BG n) (Y : BG m)
     : BF_of_BG (BG_mul X Y) = BF_mul (BF_of_BG X) (BF_of_BG Y) :=
   sorry
 

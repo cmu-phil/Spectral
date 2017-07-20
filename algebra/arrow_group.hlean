@@ -58,8 +58,8 @@ namespace group
       refine !con.assoc ⬝ whisker_left _ _, apply ap1_gen_con_idp }
   end
 
-  definition loop_psusp_intro_pmap_mul {X Y : Type*} (f g : psusp X →* Ω Y) :
-    loop_psusp_intro (pmap_mul f g) ~* pmap_mul (loop_psusp_intro f) (loop_psusp_intro g) :=
+  definition loop_susp_intro_pmap_mul {X Y : Type*} (f g : susp X →* Ω Y) :
+    loop_susp_intro (pmap_mul f g) ~* pmap_mul (loop_susp_intro f) (loop_susp_intro g) :=
   pwhisker_right _ !ap1_pmap_mul ⬝* !pmap_mul_pcompose
 
   definition inf_group_pmap [constructor] [instance] (A B : Type*) : inf_group (A →* Ω B) :=

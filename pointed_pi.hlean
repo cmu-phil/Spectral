@@ -1014,6 +1014,8 @@ namespace pointed
     ppmap A₊ B ≃* A →ᵘ* B :=
   pequiv_of_equiv (pmap_equiv_left A B) idp
 
+  /- There are some lemma's needed to prove the naturality of the equivalence
+     Ω (Π*a, B a) ≃* Π*(a : A), Ω (B a) -/
   definition ppi_eq_equiv_natural_gen_lem {B C : A → Type} {b₀ : B pt} {c₀ : C pt}
     {f : Π(a : A), B a → C a} {f₀ : f pt b₀ = c₀} {k : ppi_gen B b₀} {k' : ppi_gen C c₀}
     (p : pmap_compose_ppi_gen f f₀ k ~~* k') :
@@ -1085,6 +1087,7 @@ namespace pointed
               (pmap_compose_ppi_ppi_const (λa, pmap_of_map (f a) pt)) },
     { exact !ppi_eq_equiv_natural_gen_refl ◾ (!idp_con ⬝ !ppi_eq_refl) }
   end
+
 
 /- below is an alternate proof strategy for the naturality of loop_pppi_pequiv_natural,
   where we define loop_pppi_pequiv as composite of pointed equivalences, and proved the

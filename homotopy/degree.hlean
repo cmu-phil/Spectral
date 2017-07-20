@@ -86,14 +86,14 @@ namespace sphere
     { unfold [πnSn], exact sorry}
   end
 
-  definition deg {n : ℕ} [H : is_succ n] (f : S* n →* S* n) : ℤ :=
+  definition deg {n : ℕ} [H : is_succ n] (f : S n →* S n) : ℤ :=
   by induction H with n; exact πnSn n (π→g[n+1] f (tr surf))
 
-  definition deg_id (n : ℕ) [H : is_succ n] : deg (pid (S* n)) = (1 : ℤ) :=
+  definition deg_id (n : ℕ) [H : is_succ n] : deg (pid (S n)) = (1 : ℤ) :=
   by induction H with n;
-     exact ap (πnSn n) (homotopy_group_functor_pid (succ n) (S* (succ n)) (tr surf)) ⬝ πnSn_surf n
+     exact ap (πnSn n) (homotopy_group_functor_pid (succ n) (S (succ n)) (tr surf)) ⬝ πnSn_surf n
 
-  definition deg_phomotopy {n : ℕ} [H : is_succ n] {f g : S* n →* S* n} (p : f ~* g) :
+  definition deg_phomotopy {n : ℕ} [H : is_succ n] {f g : S n →* S n} (p : f ~* g) :
     deg f = deg g :=
   begin
     induction H with n,
@@ -115,7 +115,7 @@ namespace sphere
     { symmetry, exact to_right_inv (equiv_of_isomorphism e) n}
   end
 
-  definition deg_compose {n : ℕ} [H : is_succ n] (f g : S* n →* S* n) :
+  definition deg_compose {n : ℕ} [H : is_succ n] (f g : S n →* S n) :
     deg (g ∘* f) = deg g *[ℤ] deg f :=
   begin
     induction H with n,
@@ -123,7 +123,7 @@ namespace sphere
     apply endomorphism_equiv_Z !πnSn !πnSn_surf (π→g[n+1] g)
   end
 
-  definition deg_equiv {n : ℕ} [H : is_succ n] (f : S* n ≃* S* n) :
+  definition deg_equiv {n : ℕ} [H : is_succ n] (f : S n ≃* S n) :
     deg f = 1 ⊎ deg f = -1 :=
   begin
     induction H with n,

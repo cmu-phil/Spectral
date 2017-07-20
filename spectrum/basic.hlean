@@ -779,7 +779,7 @@ namespace spectrum
 
   -- Suspension prespectra are one that's naturally indexed on the natural numbers
   definition psp_susp (X : Type*) : gen_prespectrum +ℕ :=
-    gen_prespectrum.mk (λn, psuspn n X) (λn, loop_psusp_unit (psuspn n X))
+    gen_prespectrum.mk (λn, iterate_susp n X) (λn, loop_susp_unit (iterate_susp n X))
 
   -- The sphere prespectrum
   definition psp_sphere : gen_prespectrum +ℕ :=

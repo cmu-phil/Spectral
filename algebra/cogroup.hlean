@@ -74,28 +74,28 @@ section prod
   definition wpr2 (A B : Type*) : (A ∨ B) →* B :=
   pmap.mk (wedge.elim (pconst A B) (pid B) idp) idp
 
-  definition ppr1_pprod_of_pwedge (A B : Type*)
-    : ppr1 ∘* pprod_of_pwedge A B ~* wpr1 A B :=
+  definition ppr1_pprod_of_wedge (A B : Type*)
+    : ppr1 ∘* pprod_of_wedge A B ~* wpr1 A B :=
   begin
     fconstructor,
     { intro w, induction w with a b,
       { reflexivity },
       { reflexivity },
       { apply eq_pathover, apply hdeg_square,
-        apply trans (ap_compose ppr1 (pprod_of_pwedge A B) (pushout.glue star)),
+        apply trans (ap_compose ppr1 (pprod_of_wedge A B) (pushout.glue star)),
         krewrite pushout.elim_glue, krewrite pushout.elim_glue } },
     { reflexivity }
   end
 
-  definition ppr2_pprod_of_pwedge (A B : Type*)
-    : ppr2 ∘* pprod_of_pwedge A B ~* wpr2 A B :=
+  definition ppr2_pprod_of_wedge (A B : Type*)
+    : ppr2 ∘* pprod_of_wedge A B ~* wpr2 A B :=
   begin
     fconstructor,
     { intro w, induction w with a b,
       { reflexivity },
       { reflexivity },
       { apply eq_pathover, apply hdeg_square,
-        apply trans (ap_compose ppr2 (pprod_of_pwedge A B) (pushout.glue star)),
+        apply trans (ap_compose ppr2 (pprod_of_wedge A B) (pushout.glue star)),
         krewrite pushout.elim_glue, krewrite pushout.elim_glue } },
     { reflexivity }
   end
@@ -103,7 +103,7 @@ section prod
 end prod
 structure co_h_space [class] (A : Type*) :=
 (comul : A →* (A ∨ A))
-(colaw : pprod_of_pwedge A A ∘* comul ~* pdiag A)
+(colaw : pprod_of_wedge A A ∘* comul ~* pdiag A)
 
 open co_h_space
 
@@ -113,18 +113,18 @@ definition co_h_space_of_counit_laws {A : Type*}
   : co_h_space A :=
 co_h_space.mk c (pair_phomotopy
   (calc
-    ppr1 ∘* pprod_of_pwedge A A ∘* c
-        ~* (ppr1 ∘* pprod_of_pwedge A A) ∘* c
-        : (passoc ppr1 (pprod_of_pwedge A A) c)⁻¹*
+    ppr1 ∘* pprod_of_wedge A A ∘* c
+        ~* (ppr1 ∘* pprod_of_wedge A A) ∘* c
+        : (passoc ppr1 (pprod_of_wedge A A) c)⁻¹*
     ... ~* wpr1 A A ∘* c
-        : pwhisker_right c (ppr1_pprod_of_pwedge A A)
+        : pwhisker_right c (ppr1_pprod_of_wedge A A)
     ... ~* pid A : l)
   (calc
-    ppr2 ∘* pprod_of_pwedge A A ∘* c
-        ~* (ppr2 ∘* pprod_of_pwedge A A) ∘* c
-        : (passoc ppr2 (pprod_of_pwedge A A) c)⁻¹*
+    ppr2 ∘* pprod_of_wedge A A ∘* c
+        ~* (ppr2 ∘* pprod_of_wedge A A) ∘* c
+        : (passoc ppr2 (pprod_of_wedge A A) c)⁻¹*
     ... ~* wpr2 A A ∘* c
-        : pwhisker_right c (ppr2_pprod_of_pwedge A A)
+        : pwhisker_right c (ppr2_pprod_of_wedge A A)
     ... ~* pid A : r))
 
 section
@@ -134,20 +134,20 @@ section
   definition counit_left : wpr1 A A ∘* comul A ~* pid A :=
   calc
     wpr1 A A ∘* comul A
-        ~* (ppr1 ∘* (pprod_of_pwedge A A)) ∘* comul A
-        : (pwhisker_right (comul A) (ppr1_pprod_of_pwedge A A))⁻¹*
-    ... ~* ppr1 ∘* ((pprod_of_pwedge A A) ∘* comul A)
-        : passoc ppr1 (pprod_of_pwedge A A) (comul A)
+        ~* (ppr1 ∘* (pprod_of_wedge A A)) ∘* comul A
+        : (pwhisker_right (comul A) (ppr1_pprod_of_wedge A A))⁻¹*
+    ... ~* ppr1 ∘* ((pprod_of_wedge A A) ∘* comul A)
+        : passoc ppr1 (pprod_of_wedge A A) (comul A)
     ... ~* pid A
         : pwhisker_left ppr1 (colaw A)
 
   definition counit_right : wpr2 A A ∘* comul A ~* pid A :=
   calc
     wpr2 A A ∘* comul A
-        ~* (ppr2 ∘* (pprod_of_pwedge A A)) ∘* comul A
-        : (pwhisker_right (comul A) (ppr2_pprod_of_pwedge A A))⁻¹*
-    ... ~* ppr2 ∘* ((pprod_of_pwedge A A) ∘* comul A)
-        : passoc ppr2 (pprod_of_pwedge A A) (comul A)
+        ~* (ppr2 ∘* (pprod_of_wedge A A)) ∘* comul A
+        : (pwhisker_right (comul A) (ppr2_pprod_of_wedge A A))⁻¹*
+    ... ~* ppr2 ∘* ((pprod_of_wedge A A) ∘* comul A)
+        : passoc ppr2 (pprod_of_wedge A A) (comul A)
     ... ~* pid A
         : pwhisker_left ppr2 (colaw A)
 
@@ -169,7 +169,7 @@ end
 section
   variable (A : Type*)
 
-  definition pinch : ⅀ A →* pwedge (⅀ A) (⅀ A) :=
+  definition pinch : ⅀ A →* wedge (⅀ A) (⅀ A) :=
   begin
     fapply pmap.mk,
     { intro sa, induction sa with a,
@@ -178,7 +178,7 @@ section
     { reflexivity }
   end
 
-  definition co_h_space_psusp : co_h_space (⅀ A) :=
+  definition co_h_space_susp : co_h_space (⅀ A) :=
   co_h_space_of_counit_laws (pinch A)
   begin
     fapply phomotopy.mk,

@@ -4,7 +4,7 @@
 import homotopy.join
 
 open eq nat susp pointed pmap sigma is_equiv equiv fiber is_trunc trunc
-  trunc_index is_conn sphere_index bool unit join pushout
+  trunc_index is_conn bool unit join pushout
 
 definition of_is_contr (A : Type) : is_contr A → A := @center A
 
@@ -23,7 +23,7 @@ definition sigma_eq_equiv' {A : Type} (B : A → Type)
   : (⟨a₁, b₁⟩ = ⟨a₂, b₂⟩) ≃ (Σ(p : a₁ = a₂), p ▸ b₁ = b₂) :=
 calc (⟨a₁, b₁⟩ = ⟨a₂, b₂⟩)
     ≃ Σ(p : a₁ = a₂), b₁ =[p] b₂  : sigma_eq_equiv
-... ≃ Σ(p : a₁ = a₂), p ▸ b₁ = b₂ 
+... ≃ Σ(p : a₁ = a₂), p ▸ b₁ = b₂
  : by apply sigma_equiv_sigma_right; intro e; apply pathover_equiv_tr_eq
 
 definition dec_eq_is_prop [instance] (A : Type) : is_prop (decidable_eq A) :=
@@ -88,7 +88,7 @@ calc (A = B)
 ... ≃ (BoolType.carrier A = BoolType.carrier B)
     : begin
         induction A with A p, induction B with B q,
-        symmetry, esimp, apply equiv_subtype 
+        symmetry, esimp, apply equiv_subtype
       end
 ... ≃ (A ≃ B) : eq_equiv_equiv A B
 
@@ -134,7 +134,7 @@ begin
     induction f with f, induction f, induction x,
     { apply is_contr.mk ⟨ equiv_bnot, idp ⟩,
       intro w, induction w with e p, symmetry,
-      apply to_inv (lemma_II_4 tt ff e equiv_bnot p idp), 
+      apply to_inv (lemma_II_4 tt ff e equiv_bnot p idp),
       fapply sigma.mk,
       { intro b, induction b,
         { exact theorem_II_2_lemma_2 e p },
@@ -220,19 +220,19 @@ begin
     { intro w, apply is_prop.elimo } }
 end
 
-definition realprojective_two_cover : ℕ₋₁ → two_cover :=
-sphere_index.rec empty_two_cover (λ x, two_cover_step)
+definition realprojective_two_cover : ℕ → two_cover :=
+nat.rec (two_cover_step empty_two_cover) (λ x, two_cover_step)
 
-definition realprojective : ℕ₋₁ → Type₀ :=
+definition realprojective : ℕ → Type₀ :=
 λ n, carrier (realprojective_two_cover n)
 
-definition realprojective_cov [reducible] (n : ℕ₋₁)
+definition realprojective_cov [reducible] (n : ℕ)
   : realprojective n → BoolType :=
 λ x, BoolType.mk
   (cov (realprojective_two_cover n) x)
   (cov_eq (realprojective_two_cover n) x)
 
-definition theorem_III_3_u [reducible] (n : ℕ₋₁)
+definition theorem_III_3_u [reducible] (n : ℕ)
   : (Σ (w : Σ x, realprojective_cov n x), realprojective_cov n w.1)
   ≃ (Σ x, realprojective_cov n x) × bool :=
 calc  (Σ (w : Σ x, realprojective_cov n x), realprojective_cov n w.1)
@@ -245,14 +245,14 @@ calc  (Σ (w : Σ x, realprojective_cov n x), realprojective_cov n w.1)
 ... ≃ (Σ x, realprojective_cov n x) × bool
   : equiv_prod
 
-definition theorem_III_3 (n : ℕ₋₁)
+definition theorem_III_3 (n : ℕ)
   : sphere n ≃ sigma (realprojective_cov n) :=
 begin
   induction n with n IH,
-  { symmetry, apply sigma_empty_left },
-  { apply equiv.trans (join.bool (sphere n))⁻¹ᵉ,
-    apply equiv.trans (join.equiv_closed erfl IH),
-    symmetry, refine equiv.trans _ !join.symm,
+  { symmetry, apply sorry /-sigma_empty_left-/ },
+  { apply equiv.trans (join_bool (sphere n))⁻¹ᵉ,
+    apply equiv.trans (join_equiv_join erfl IH),
+    symmetry, refine equiv.trans _ !join_symm,
     apply equiv.trans !pushout.flattening, esimp,
     fapply pushout.equiv,
     { unfold function.compose, exact theorem_III_3_u n},

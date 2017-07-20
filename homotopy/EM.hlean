@@ -1,7 +1,7 @@
 -- Authors: Floris van Doorn
 
 import homotopy.EM algebra.category.functor.equivalence types.pointed2 ..pointed_pi ..pointed
-       ..move_to_lib .susp
+       ..move_to_lib .susp ..algebra.quotient_group
 
 open eq equiv is_equiv algebra group nat pointed EM.ops is_trunc trunc susp function is_conn
 
@@ -10,7 +10,7 @@ open eq equiv is_equiv algebra group nat pointed EM.ops is_trunc trunc susp func
 namespace EM
 
   definition EMadd1_functor_succ [unfold_full] {G H : AbGroup} (φ : G →g H) (n : ℕ) :
-    EMadd1_functor φ (succ n) ~* ptrunc_functor (n+2) (psusp_functor (EMadd1_functor φ n)) :=
+    EMadd1_functor φ (succ n) ~* ptrunc_functor (n+2) (susp_functor (EMadd1_functor φ n)) :=
   by reflexivity
 
   definition EM1_functor_gid (G : Group) : EM1_functor (gid G) ~* !pid :=
@@ -28,7 +28,7 @@ namespace EM
     induction n with n p,
     { apply EM1_functor_gid },
     { refine !EMadd1_functor_succ ⬝* _,
-      refine ptrunc_functor_phomotopy _ (psusp_functor_phomotopy p ⬝* !psusp_functor_pid) ⬝* _,
+      refine ptrunc_functor_phomotopy _ (susp_functor_phomotopy p ⬝* !susp_functor_pid) ⬝* _,
       apply ptrunc_functor_pid }
   end
 
@@ -58,7 +58,7 @@ namespace EM
     induction n with n p,
     { apply EM1_functor_gcompose },
     { refine !EMadd1_functor_succ ⬝* _,
-      refine ptrunc_functor_phomotopy _ (psusp_functor_phomotopy p ⬝* !psusp_functor_pcompose) ⬝* _,
+      refine ptrunc_functor_phomotopy _ (susp_functor_phomotopy p ⬝* !susp_functor_pcompose) ⬝* _,
       apply ptrunc_functor_pcompose }
   end
 
@@ -87,7 +87,7 @@ namespace EM
   begin
     induction n with n q,
     { exact EM1_functor_phomotopy p },
-    { exact ptrunc_functor_phomotopy _ (psusp_functor_phomotopy q) }
+    { exact ptrunc_functor_phomotopy _ (susp_functor_phomotopy q) }
   end
 
   definition EM_functor_phomotopy {G H : AbGroup} {φ ψ : G →g H} (p : φ ~ ψ) (n : ℕ) :
@@ -154,7 +154,7 @@ namespace EM
   -- is_trunc_EMadd1 G n
 
   definition loop_EMadd1_succ (G : AbGroup) (n : ℕ) :
-    loop_EMadd1 G (n+1) ~* (loop_ptrunc_pequiv (n+1+1) (psusp (EMadd1 G (n+1))))⁻¹ᵉ* ∘*
+    loop_EMadd1 G (n+1) ~* (loop_ptrunc_pequiv (n+1+1) (susp (EMadd1 G (n+1))))⁻¹ᵉ* ∘*
     freudenthal_pequiv (EMadd1 G (n+1)) (add_mul_le_mul_add n 1 1) ∘*
     (ptrunc_pequiv (n+1+1) (EMadd1 G (n+1)))⁻¹ᵉ* :=
   by reflexivity
@@ -166,7 +166,7 @@ namespace EM
     induction n with n IH,
     { refine pwhisker_left _ !hopf.to_pmap_delooping_pinv ⬝* _ ⬝*
              pwhisker_right _ !hopf.to_pmap_delooping_pinv⁻¹*,
-      refine !loop_psusp_unit_natural⁻¹* ⬝h* _,
+      refine !loop_susp_unit_natural⁻¹* ⬝h* _,
       apply ap1_psquare,
       apply ptr_natural },
     { refine pwhisker_left _ !loop_EMadd1_succ ⬝* _ ⬝* pwhisker_right _ !loop_EMadd1_succ⁻¹*,
@@ -175,7 +175,7 @@ namespace EM
       refine pwhisker_left _ !to_pmap_freudenthal_pequiv ⬝* _ ⬝*
              pwhisker_right _ !to_pmap_freudenthal_pequiv⁻¹*,
       apply ptrunc_functor_psquare,
-      exact !loop_psusp_unit_natural⁻¹* }
+      exact !loop_susp_unit_natural⁻¹* }
   end
 
   definition apn_EMadd1_pequiv_EM1_natural {G H : AbGroup} (φ : G →g H) (n : ℕ) :
@@ -264,10 +264,10 @@ namespace EM
       refine (ptrunc_elim_pcompose ((succ n).+1) _ _)⁻¹* ⬝* _ ⬝*
              (ptrunc_elim_ptrunc_functor ((succ n).+1) _ _)⁻¹*,
       apply ptrunc_elim_phomotopy,
-      refine _ ⬝* !psusp_elim_psusp_functor⁻¹*,
-      refine _ ⬝* psusp_elim_phomotopy (IH _ _ _ _ _ (is_homomorphism_EM_up eX rX) _ (@is_conn_loop _ _ H1)
+      refine _ ⬝* !susp_elim_susp_functor⁻¹*,
+      refine _ ⬝* susp_elim_phomotopy (IH _ _ _ _ _ (is_homomorphism_EM_up eX rX) _ (@is_conn_loop _ _ H1)
                                            (@is_trunc_loop _ _ H2) _ _ (EM_up_natural φ f eX eY p)),
-      apply psusp_elim_natural }
+      apply susp_elim_natural }
   end
 
   definition EMadd1_pequiv'_natural {G H : AbGroup} {X Y : Type*} (f : X →* Y) (n : ℕ) (eX : Ω[succ n] X ≃* G)
@@ -374,7 +374,7 @@ namespace EM
   --   { exact EM1_pmap e⁻¹ᵉ* (equiv.inv_preserve_binary e concat mul r) },
   --   rewrite [EMadd1_succ],
   --   exact ptrunc.elim ((succ n).+1)
-  --           (psusp.elim (f _ (EM_up e) (is_mul_hom_EM_up e r) _ _)),
+  --           (susp.elim (f _ (EM_up e) (is_mul_hom_EM_up e r) _ _)),
   -- end
 
   -- definition is_set_pmap_ptruncconntype {n : ℕ₋₂} (X Y : (n.+1)-Type*[n]) : is_set (X →* Y) :=
@@ -550,7 +550,7 @@ namespace EM
   begin
     induction n with n IH,
     { exact is_contr_EM1 H },
-    { have is_contr (ptrunc (n+2) (psusp (EMadd1 G n))), from _,
+    { have is_contr (ptrunc (n+2) (susp (EMadd1 G n))), from _,
       exact this }
   end
 
@@ -640,6 +640,7 @@ namespace EM
   -- end
 
 
+  open group algebra
   definition homotopy_group_fiber_EM1_functor {G H : Group} (φ : G →g H) :
     π₁ (pfiber (EM1_functor φ)) ≃g kernel φ :=
   sorry

@@ -752,9 +752,9 @@ namespace smash
   definition smash_pequiv_right [constructor] (A : Type*) (g : B ≃* D) : A ∧ B ≃* A ∧ D :=
   smash_pequiv pequiv.rfl g
 
-  /- A ∧ B ≃* pcofiber (pprod_of_pwedge A B) -/
+  /- A ∧ B ≃* pcofiber (pprod_of_wedge A B) -/
 
-  definition prod_of_wedge [unfold 3] (v : pwedge A B) : A × B :=
+  definition prod_of_wedge [unfold 3] (v : wedge A B) : A × B :=
   begin
     induction v with a b ,
     { exact (a, pt) },
@@ -762,7 +762,7 @@ namespace smash
     { reflexivity }
   end
 
-  definition wedge_of_sum [unfold 3] (v : A + B) : pwedge A B :=
+  definition wedge_of_sum [unfold 3] (v : A + B) : wedge A B :=
   begin
     induction v with a b,
     { exact pushout.inl a },
@@ -780,7 +780,7 @@ end smash open smash
 
 namespace pushout
 
-  definition eq_inl_pushout_wedge_of_sum [unfold 3] (v : pwedge A B) :
+  definition eq_inl_pushout_wedge_of_sum [unfold 3] (v : wedge A B) :
     inl pt = inl v :> pushout wedge_of_sum bool_of_sum :=
   begin
     induction v with a b,
@@ -856,14 +856,14 @@ namespace smash
       refine !con.right_inv ⬝pv _, exact square_of_eq idp },
   end
 
-  definition pprod_of_pwedge [constructor] : pwedge A B →* A ×* B :=
+  definition pprod_of_wedge [constructor] : wedge A B →* A ×* B :=
   begin
     fconstructor,
     { exact prod_of_wedge },
     { reflexivity }
   end
 
-  definition smash_pequiv_pcofiber [constructor] : smash A B ≃* pcofiber (pprod_of_pwedge A B) :=
+  definition smash_pequiv_pcofiber [constructor] : smash A B ≃* pcofiber (pprod_of_wedge A B) :=
   begin
     apply pequiv_of_equiv (smash_equiv_cofiber A B),
     exact cofiber.glue pt

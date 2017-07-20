@@ -501,7 +501,7 @@ namespace pushout
 
   /- cofiber of pcod is suspension -/
 
-  definition pcofiber_pcod {A B : Type*} (f : A →* B) : pcofiber (pcod f) ≃* psusp A :=
+  definition pcofiber_pcod {A B : Type*} (f : A →* B) : pcofiber (pcod f) ≃* susp A :=
   begin
     fapply pequiv_of_equiv,
     { refine !pushout.symm ⬝e _,
