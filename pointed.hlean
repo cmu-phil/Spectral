@@ -33,10 +33,6 @@ namespace pointed
   --     apply equiv_eq_closed_right, exact !idp_con⁻¹ }
   -- end
 
-  definition pmap_eq_idp {X Y : Type*} (f : X →* Y) :
-    pmap_eq (λx, idpath (f x)) !idp_con⁻¹ = idpath f :=
-  ap (λx, eq_of_phomotopy (phomotopy.mk _ x)) !inv_inv ⬝ eq_of_phomotopy_refl f
-
   /- remove some duplicates: loop_ppmap_commute, loop_ppmap_pequiv, loop_ppmap_pequiv', pfunext -/
   definition pfunext (X Y : Type*) : ppmap X (Ω Y) ≃* Ω (ppmap X Y) :=
   (loop_ppmap_commute X Y)⁻¹ᵉ*
@@ -130,11 +126,11 @@ namespace pointed
     (to_fun : Π a : A, P a)
     (resp_pt : to_fun (Point A) = p)
   attribute ppi'.to_fun [coercion]
-  definition ppi_homotopy' {A : Type*} {P : A → Type} {x : P pt} (f g : ppi' A P x) : Type :=
+  definition phomotopy' {A : Type*} {P : A → Type} {x : P pt} (f g : ppi' A P x) : Type :=
   ppi' A (λa, f a = g a) (ppi'.resp_pt f ⬝ (ppi'.resp_pt g)⁻¹)
-  definition ppi_homotopy2' {A : Type*} {P : A → Type} {x : P pt} {f g : ppi' A P x}
-    (p q : ppi_homotopy' f g) : Type :=
-  ppi_homotopy' p q
+  definition phomotopy2' {A : Type*} {P : A → Type} {x : P pt} {f g : ppi' A P x}
+    (p q : phomotopy' f g) : Type :=
+  phomotopy' p q
 
   -- infix ` ~*2 `:50 := phomotopy2
 
@@ -145,7 +141,7 @@ namespace pointed
 
 /- Homotopy between a function and its eta expansion -/
 
-  definition pmap_eta {X Y : Type*} (f : X →* Y) : f ~* pmap.mk f (pmap.resp_pt f) :=
+  definition pmap_eta {X Y : Type*} (f : X →* Y) : f ~* pmap.mk f (respect_pt f) :=
   begin
     fapply phomotopy.mk,
     reflexivity,
@@ -218,15 +214,6 @@ namespace pointed
 
   definition loop_punit : Ω punit ≃* punit :=
   loop_pequiv_punit_of_is_set punit
-
-  definition phomotopy_of_is_contr_cod [constructor] {X Y : Type*} (f g : X →* Y) [is_contr Y] :
-    f ~* g :=
-  phomotopy.mk (λa, !eq_of_is_contr) !eq_of_is_contr
-
-  definition phomotopy_of_is_contr_dom [constructor] {X Y : Type*} (f g : X →* Y) [is_contr X] :
-    f ~* g :=
-  phomotopy.mk (λa, ap f !is_prop.elim ⬝ respect_pt f ⬝ (respect_pt g)⁻¹ ⬝ ap g !is_prop.elim)
-    begin rewrite [▸*, is_prop_elim_self, +ap_idp, idp_con, con_idp, inv_con_cancel_right] end
 
   definition add_point_over [unfold 3] {A : Type} (B : A → Type*) : A₊ → Type*
   | (some a) := B a

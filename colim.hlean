@@ -246,7 +246,7 @@ namespace seq_colim
   begin
     fapply pequiv_of_equiv,
     { apply shift_equiv },
-    { exact ap (ι _) !respect_pt }
+    { exact ap (ι _) (respect_pt (f 0)) }
   end
 
   definition pshift_equiv_pinclusion {A : ℕ → Type*} (f : Πn, A n →* A (succ n)) (n : ℕ) :
@@ -356,7 +356,7 @@ namespace seq_colim
       xrewrite[-IH],
       rewrite[-+ap_compose', -+con.assoc],
       apply whisker_right, esimp,
-      rewrite[(eq_con_inv_of_con_eq (!to_homotopy_pt))],
+      rewrite[(eq_con_inv_of_con_eq (to_homotopy_pt (@p _)))],
       rewrite[ap_con], esimp,
       rewrite[-+con.assoc, ap_con, -ap_compose', +ap_inv],
       rewrite[-+con.assoc],

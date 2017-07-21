@@ -56,7 +56,12 @@ namespace homology
     calc       Hh theory n f x
              = Hh theory n (pmap.mk f (respect_pt f)) x : by exact ap (λ f, Hh theory n f x) (pmap.eta f)⁻¹
          ... = Hh theory n (pmap.mk f (h pt ⬝ respect_pt g)) x : by exact Hh_homotopy' n f (respect_pt f) (h pt ⬝ respect_pt g) x
-         ... = Hh theory n g x : by exact ap (λ f, Hh theory n f x) (@pmap_eq _ _ (pmap.mk f (h pt ⬝ respect_pt g)) _ h (refl (h pt ⬝ respect_pt g)))
+         ... = Hh theory n g x :
+               begin
+                 apply ap (λ f, Hh theory n f x), apply eq_of_phomotopy, fapply phomotopy.mk,
+                 { exact h },
+                 reflexivity
+               end
 
     definition HH_isomorphism (n : ℤ) {A B : Type*} (e : A ≃* B)
       : HH theory n A ≃g HH theory n B :=
@@ -175,12 +180,9 @@ definition homology_functor [constructor] {X Y : Type*} {E F : prespectrum} (f :
   (g : E →ₛ F) (n : ℤ) : homology X E n →g homology Y F n :=
 pshomotopy_group_fun n (smash_prespectrum_fun f g)
 
-print is_exact_g
-print is_exact
-definition homology_theory_spectrum_is_exact.{u} (E : spectrum.{u}) (n : ℤ) {X Y : Type*} (f : X →* Y) :
-  is_exact_g (homology_functor f (sid E) n) (homology_functor (pcod f) (sid E) n) :=
+definition homology_theory_spectrum_is_exact.{u} (E : spectrum.{u}) (n : ℤ) {X Y : Type*}
+  (f : X →* Y) : is_exact_g (homology_functor f (sid E) n) (homology_functor (pcod f) (sid E) n) :=
 begin
-  esimp [is_exact_g],
   -- fconstructor,
   -- { intro a, exact sorry },
   -- { intro a, exact sorry }

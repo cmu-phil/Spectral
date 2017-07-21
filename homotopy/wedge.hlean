@@ -28,8 +28,10 @@ namespace wedge
      exact ap_compose wedge_flip' _ _ ⬝ ap02 _ !elim_glue ⬝ !ap_inv ⬝ !elim_glue⁻² ⬝ !inv_inv }
   end
 
-  definition wedge_flip_wedge_flip (A B : Type*) : wedge_flip B A ∘* wedge_flip A B ~* pid (A ∨ B) :=
-  phomotopy.mk wedge_flip'_wedge_flip' (whisker_right _ (!ap_inv ⬝ !wedge.elim_glue⁻²) ⬝ !con.left_inv)⁻¹
+  definition wedge_flip_wedge_flip (A B : Type*) :
+    wedge_flip B A ∘* wedge_flip A B ~* pid (A ∨ B) :=
+  phomotopy.mk wedge_flip'_wedge_flip'
+    proof (whisker_right _ (!ap_inv ⬝ !wedge.elim_glue⁻²) ⬝ !con.left_inv)⁻¹ qed
 
   definition wedge_comm [constructor] (A B : Type*) : A ∨ B ≃* B ∨ A :=
   begin

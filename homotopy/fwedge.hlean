@@ -96,7 +96,7 @@ namespace fwedge
 
   definition fwedge_pmap [constructor] {I : Type} {F : I → Type*} {X : Type*} (f : Πi, F i →* X) : ⋁F →* X :=
   begin
-    fconstructor,
+    fapply pmap.mk,
     { intro x, induction x,
         exact f i x,
         exact pt,
@@ -205,9 +205,9 @@ namespace fwedge
   definition fwedge_pmap_nat_square {A B X Y : Type*} (f : X →* Y) :
        hsquare (fwedge_pmap_equiv (bool.rec A B) X)⁻¹ᵉ (fwedge_pmap_equiv (bool.rec A B) Y)⁻¹ᵉ (left_comp_pi_bool_funct f) (pcompose f) :=
   begin
-   intro h, esimp, fapply pmap_eq,
+   intro h, esimp, fapply eq_of_phomotopy, fapply phomotopy.mk,
    exact fwedge_pmap_nat₂ (λ u, bool.rec A B u) f h,
-   esimp,
+   reflexivity
   end
 
 -- hsquare 3:

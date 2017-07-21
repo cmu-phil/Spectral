@@ -228,8 +228,8 @@ namespace smash
   definition smash_functor_phomotopy {f f' : A →* C} {g g' : B →* D}
     (h₁ : f ~* f') (h₂ : g ~* g') : f ∧→ g ~* f' ∧→ g' :=
   begin
-    induction h₁ using phomotopy_rec_on_idp,
-    induction h₂ using phomotopy_rec_on_idp,
+    induction h₁ using phomotopy_rec_idp,
+    induction h₂ using phomotopy_rec_idp,
     reflexivity
   end
 
@@ -265,13 +265,13 @@ namespace smash
 
   definition smash_functor_phomotopy_refl (f : A →* C) (g : B →* D) :
     smash_functor_phomotopy (phomotopy.refl f) (phomotopy.refl g) = phomotopy.rfl :=
-  !phomotopy_rec_on_idp_refl ⬝ !phomotopy_rec_on_idp_refl
+  !phomotopy_rec_idp_refl ⬝ !phomotopy_rec_idp_refl
 
   definition smash_functor_phomotopy_symm {f₁ f₂ : A →* C} {g₁ g₂ : B →* D}
     (h : f₁ ~* f₂) (k : g₁ ~* g₂) :
     smash_functor_phomotopy h⁻¹* k⁻¹* = (smash_functor_phomotopy h k)⁻¹* :=
   begin
-    induction h using phomotopy_rec_on_idp, induction k using phomotopy_rec_on_idp,
+    induction h using phomotopy_rec_idp, induction k using phomotopy_rec_idp,
     exact ap011 smash_functor_phomotopy !refl_symm !refl_symm ⬝ !smash_functor_phomotopy_refl ⬝
       !refl_symm⁻¹ ⬝ !smash_functor_phomotopy_refl⁻¹⁻²**
   end
@@ -281,8 +281,8 @@ namespace smash
     smash_functor_phomotopy (h₁ ⬝* h₂) (k₁ ⬝* k₂) =
     smash_functor_phomotopy h₁ k₁ ⬝* smash_functor_phomotopy h₂ k₂ :=
   begin
-    induction h₁ using phomotopy_rec_on_idp, induction h₂ using phomotopy_rec_on_idp,
-    induction k₁ using phomotopy_rec_on_idp, induction k₂ using phomotopy_rec_on_idp,
+    induction h₁ using phomotopy_rec_idp, induction h₂ using phomotopy_rec_idp,
+    induction k₁ using phomotopy_rec_idp, induction k₂ using phomotopy_rec_idp,
     refine ap011 smash_functor_phomotopy !trans_refl !trans_refl ⬝ !trans_refl⁻¹ ⬝ idp ◾** _,
     exact !smash_functor_phomotopy_refl⁻¹
   end
@@ -310,7 +310,7 @@ namespace smash
     (p : g ~* g') : ap (smash_functor f) (eq_of_phomotopy p) =
     eq_of_phomotopy (smash_functor_phomotopy phomotopy.rfl p) :=
   begin
-    induction p using phomotopy_rec_on_idp,
+    induction p using phomotopy_rec_idp,
     refine ap02 _ !eq_of_phomotopy_refl ⬝ _,
     refine !eq_of_phomotopy_refl⁻¹ ⬝ _,
     apply ap eq_of_phomotopy,
@@ -397,8 +397,8 @@ namespace smash
              (smash_functor_phomotopy (h₂ ◾* h₁) (k₂ ◾* k₁))
              (smash_functor_phomotopy h₂ k₂ ◾* smash_functor_phomotopy h₁ k₁) :=
   begin
-    induction h₁ using phomotopy_rec_on_idp, induction h₂ using phomotopy_rec_on_idp,
-    induction k₁ using phomotopy_rec_on_idp, induction k₂ using phomotopy_rec_on_idp,
+    induction h₁ using phomotopy_rec_idp, induction h₂ using phomotopy_rec_idp,
+    induction k₁ using phomotopy_rec_idp, induction k₂ using phomotopy_rec_idp,
     refine (ap011 smash_functor_phomotopy !pcompose2_refl !pcompose2_refl ⬝
       !smash_functor_phomotopy_refl) ⬝ph** phvrfl ⬝hp**
       (ap011 pcompose2 !smash_functor_phomotopy_refl !smash_functor_phomotopy_refl ⬝
@@ -457,7 +457,7 @@ namespace smash
     smash_functor_phomotopy p (phomotopy.refl (pconst B D)) ⬝* smash_functor_pconst_right f' =
     smash_functor_pconst_right f :=
   begin
-    induction p using phomotopy_rec_on_idp,
+    induction p using phomotopy_rec_idp,
     exact !smash_functor_phomotopy_refl ◾** idp ⬝ !refl_trans
   end
 

@@ -2,7 +2,7 @@
 
 import homotopy.sphere2 homotopy.cofiber homotopy.wedge hit.prop_trunc hit.set_quotient eq2 types.pointed2
 
-open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc pi group
+open eq nat int susp pointed sigma is_equiv equiv fiber algebra trunc pi group
      is_trunc function unit prod bool
 
 attribute pType.sigma_char sigma_pi_equiv_pi_sigma sigma.coind_unc [constructor]
@@ -148,31 +148,6 @@ namespace eq
   definition homotopy3.rfl {A} {B : A → Type} {C : Πa, B a → Type}
     {D : Π⦃a⦄ ⦃b : B a⦄, C a b → Type} {f : Πa b (c : C a b), D c} : f ~3 f :=
   λa b c, idp
-
-  definition homotopy.rec_idp [recursor] {A : Type} {P : A → Type} {f : Πa, P a}
-    (Q : Π{g}, (f ~ g) → Type) (H : Q (homotopy.refl f)) {g : Π x, P x} (p : f ~ g) : Q p :=
-  homotopy.rec_on_idp p H
-
-  open funext
-  definition homotopy_rec_on_apd10 {A : Type} {P : A → Type} {f g : Πa, P a}
-    (Q : f ~ g → Type) (H : Π(q : f = g), Q (apd10 q)) (p : f = g) :
-    homotopy.rec_on (apd10 p) H = H p :=
-  begin
-    unfold [homotopy.rec_on],
-    refine ap (λp, p ▸ _) !adj ⬝ _,
-    refine !tr_compose⁻¹ ⬝ _,
-    apply apdt
-  end
-
-  definition homotopy_rec_idp_refl {A : Type} {P : A → Type} {f : Πa, P a}
-    (Q : Π{g}, f ~ g → Type) (H : Q homotopy.rfl) :
-    homotopy.rec_idp @Q H homotopy.rfl = H :=
-  !homotopy_rec_on_apd10
-
-  definition phomotopy_rec_on_idp_refl {A B : Type*} (f : A →* B)
-    {Q : Π{g}, (f ~* g) → Type} (H : Q (phomotopy.refl f)) :
-    phomotopy_rec_on_idp phomotopy.rfl H = H :=
-  !phomotopy_rec_on_eq_phomotopy_of_eq
 
   definition eq_tr_of_pathover_con_tr_eq_of_pathover {A : Type} {B : A → Type}
     {a₁ a₂ : A} (p : a₁ = a₂) {b₁ : B a₁} {b₂ : B a₂} (q : b₁ =[p] b₂) :
@@ -963,16 +938,16 @@ notation `Ω⇒`:(max+5) := ap1_phomotopy
 
 definition ap1_phomotopy_symm {A B : Type*} {f g : A →* B} (p : f ~* g) : (Ω⇒ p)⁻¹* = Ω⇒ (p⁻¹*) :=
 begin
-  induction p using phomotopy_rec_on_idp,
+  induction p using phomotopy_rec_idp,
   rewrite ap1_phomotopy_refl,
-  rewrite [+refl_symm],
+  xrewrite [+refl_symm],
   rewrite ap1_phomotopy_refl
 end
 
 definition ap1_phomotopy_trans {A B : Type*} {f g h : A →* B} (q : g ~* h) (p : f ~* g) : Ω⇒ (p ⬝* q) = Ω⇒ p ⬝* Ω⇒ q :=
 begin
-  induction p using phomotopy_rec_on_idp,
-  induction q using phomotopy_rec_on_idp,
+  induction p using phomotopy_rec_idp,
+  induction q using phomotopy_rec_idp,
   rewrite trans_refl,
   rewrite [+ap1_phomotopy_refl],
   rewrite trans_refl

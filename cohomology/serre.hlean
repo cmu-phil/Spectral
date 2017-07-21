@@ -111,11 +111,11 @@ definition postnikov_smap_postnikov_map (A : spectrum) (n k l : ℤ) (p : n + k 
     (ptrunc_maxm2_change_int p (A k)) (ptrunc_maxm2_pred (A k) (ap pred p⁻¹ ⬝ add.right_comm n k (- 1))) :=
 begin
   cases l with l,
-  { cases l with l, apply phomotopy_of_is_contr_cod, apply is_contr_ptrunc_minus_one,
+  { cases l with l, apply phomotopy_of_is_contr_cod_pmap, apply is_contr_ptrunc_minus_one,
     refine psquare_postnikov_map_ptrunc_elim (A k) _ _ _ ⬝hp* _,
     exact ap maxm2 (add.right_comm n (- 1) k ⬝ ap pred p ⬝ !pred_succ),
     apply ptrunc_maxm2_pred_nat },
-  { apply phomotopy_of_is_contr_cod, apply is_trunc_trunc }
+  { apply phomotopy_of_is_contr_cod_pmap, apply is_trunc_trunc }
 end
 
 definition sfiber_postnikov_smap_pequiv (A : spectrum) (n : ℤ) (k : ℤ) :
@@ -148,7 +148,7 @@ section atiyah_hirzebruch
       (ppi_pequiv_right (λx, ptrunc_pequiv_ptrunc_of_is_trunc _ _ (H x n))) _,
     { intro x, apply maxm2_monotone, apply add_le_add_right, exact le.trans !le_add_one Hs },
     { intro x, apply maxm2_monotone, apply add_le_add_right, exact le_sub_one_of_lt Hs },
-    intro f, apply eq_of_ppi_homotopy,
+    intro f, apply eq_of_phomotopy,
     apply pmap_compose_ppi_phomotopy_left, intro x,
     fapply phomotopy.mk,
     { refine @trunc.rec _ _ _ _ _,

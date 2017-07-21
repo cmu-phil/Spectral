@@ -52,7 +52,7 @@ begin
   induction p, induction k with k k,
   { refine pwhisker_right _ (ap1_phomotopy _) ⬝* @(ap1_ptrunc_elim k f) H,
     apply ptrunc_elim_phomotopy2, reflexivity },
-  { apply phomotopy_of_is_contr_cod, exact is_trunc_maxm2_loop H }
+  { apply phomotopy_of_is_contr_cod_pmap, exact is_trunc_maxm2_loop H }
 end
 
 definition loop_ptrunc_maxm2_pequiv_ptrunc_elim {k : ℤ} {l : ℕ₋₂} (p : maxm2 (k+1) = l)
@@ -70,7 +70,8 @@ definition loop_ptrunc_maxm2_pequiv_ptr {k : ℤ} {l : ℕ₋₂} (p : maxm2 (k+
 begin
   induction p, induction k with k k,
   { exact ap1_ptr k A },
-  { apply phomotopy_pinv_left_of_phomotopy, apply phomotopy_of_is_contr_cod, apply is_trunc_trunc }
+  { apply phomotopy_pinv_left_of_phomotopy, apply phomotopy_of_is_contr_cod_pmap,
+    apply is_trunc_trunc }
 end
 
 definition is_trunc_of_is_trunc_maxm2 (k : ℤ) (X : Type)

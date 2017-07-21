@@ -3,7 +3,7 @@
 
 import homotopy.join
 
-open eq nat susp pointed pmap sigma is_equiv equiv fiber is_trunc trunc
+open eq nat susp pointed sigma is_equiv equiv fiber is_trunc trunc
   trunc_index is_conn bool unit join pushout
 
 definition of_is_contr (A : Type) : is_contr A → A := @center A

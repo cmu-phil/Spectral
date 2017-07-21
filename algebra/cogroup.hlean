@@ -16,17 +16,17 @@ section
     apply equiv.MK (λ f, (ppr1 ∘* f, ppr2 ∘* f))
                    (λ w, prod.elim w prod.pair_pmap),
     { intro p, induction p with f g, apply pair_eq,
-      { fapply pmap_eq,
+      { apply eq_of_phomotopy, fapply phomotopy.mk,
         { intro x, reflexivity },
-        { apply trans (prod_eq_pr1 (respect_pt f) (respect_pt g)),
+        { symmetry, apply trans (prod_eq_pr1 (respect_pt f) (respect_pt g)),
           apply inverse, apply idp_con } },
-      { fapply pmap_eq,
+      { apply eq_of_phomotopy, fapply phomotopy.mk,
         { intro x, reflexivity },
-        { apply trans (prod_eq_pr2 (respect_pt f) (respect_pt g)),
+        { symmetry, apply trans (prod_eq_pr2 (respect_pt f) (respect_pt g)),
           apply inverse, apply idp_con } } },
-    { intro f, fapply pmap_eq,
+    { intro f, apply eq_of_phomotopy, fapply phomotopy.mk,
       { intro x, apply prod.eta },
-      { exact prod.pair_eq_eta (respect_pt f) } }
+      { symmetry, exact prod.pair_eq_eta (respect_pt f) } }
   end
 
   -- since ~* is the identity type of pointed maps,

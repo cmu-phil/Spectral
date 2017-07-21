@@ -363,13 +363,13 @@ namespace spectrum
     (eq.eq_equiv_homotopy) ⬝e pi_equiv_pi_right (λ n, pmap_eq_equiv (f n) (g n))
 
 /-
-  definition ppi_homotopy_rec_on_eq [recursor]
+  definition phomotopy_rec_on_eq [recursor]
     {k' : ppi B x₀}
-    {Q : (k ~~* k') → Type}
-    (p : k ~~* k')
-    (H : Π(q : k = k'), Q (ppi_homotopy_of_eq q))
+    {Q : (k ~* k') → Type}
+    (p : k ~* k')
+    (H : Π(q : k = k'), Q (phomotopy_of_eq q))
     : Q p :=
-  ppi_homotopy_of_eq_of_ppi_homotopy p ▸ H (eq_of_ppi_homotopy p)
+  phomotopy_of_eq_of_phomotopy p ▸ H (eq_of_phomotopy p)
 -/
   definition fam_phomotopy_rec_on_eq {N : Type} {X Y : N → Type*} (f g : Π n, X n →* Y n)
     {Q : (Π n, f n ~* g n) → Type}
@@ -383,18 +383,18 @@ namespace spectrum
   end
 
 /-
-  definition ppi_homotopy_rec_on_idp [recursor]
-    {Q : Π {k' : ppi B x₀},  (k ~~* k') → Type}
-    (q : Q (ppi_homotopy.refl k)) {k' : ppi B x₀} (H : k ~~* k') : Q H :=
+  definition phomotopy_rec_idp [recursor]
+    {Q : Π {k' : ppi B x₀},  (k ~* k') → Type}
+    (q : Q (phomotopy.refl k)) {k' : ppi B x₀} (H : k ~* k') : Q H :=
   begin
-    induction H using ppi_homotopy_rec_on_eq with t,
-    induction t, exact eq_ppi_homotopy_refl_ppi_homotopy_of_eq_refl k ▸ q,
+    induction H using phomotopy_rec_on_eq with t,
+    induction t, exact eq_phomotopy_refl_phomotopy_of_eq_refl k ▸ q,
   end
 -/
 
 --set_option pp.coercions true
 
-  definition fam_phomotopy_rec_on_idp {N : Type} {X Y : N → Type*} (f : Π n, X n →* Y n)
+  definition fam_phomotopy_rec_idp {N : Type} {X Y : N → Type*} (f : Π n, X n →* Y n)
     (Q : Π (g : Π n, X n →* Y n) (H : Π n, f n ~* g n), Type)
     (q : Q f (λ n, phomotopy.rfl))
     (g : Π n, X n →* Y n) (H : Π n, f n ~* g n) : Q g H :=
@@ -418,14 +418,14 @@ namespace spectrum
     intro n,
     esimp at *,
     revert g H gsq Hsq n,
-    refine fam_phomotopy_rec_on_idp f _ _,
+    refine fam_phomotopy_rec_idp f _ _,
     intro gsq Hsq n,
     refine change_path _ _,
 --    have p : eq_of_homotopy (λ n, eq_of_phomotopy phomotopy.rfl) = refl f,
     reflexivity,
     refine (eq_of_homotopy_eta rfl)⁻¹ ⬝ _,
     fapply ap (eq_of_homotopy), fapply eq_of_homotopy, intro n, refine (eq_of_phomotopy_refl _)⁻¹,
---    fapply eq_of_ppi_homotopy,
+--    fapply eq_of_phomotopy,
     fapply pathover_idp_of_eq,
     note Hsq' := ptube_v_eq_bot phomotopy.rfl (ap1_phomotopy_refl _) (fsq n) (gsq n) (Hsq n),
     unfold ptube_v at *,
@@ -600,7 +600,11 @@ namespace spectrum
   homotopy_group_pequiv 2 (equiv_glue_neg X n)
 
   definition πg_glue (X : spectrum) (n : ℤ) : πg[2] (X (2 - succ n)) ≃g πg[3] (X (2 - n)) :=
-  by rexact homotopy_group_isomorphism_of_pequiv _ (equiv_glue_neg X n)
+  begin
+    change πg[2] (X (2 - succ n)) ≃g πg[2] (Ω (X (2 - n))),
+    apply homotopy_group_isomorphism_of_pequiv,
+    exact equiv_glue_neg X n
+  end
 
   definition πg_glue_homotopy_π_glue (X : spectrum) (n : ℤ) : πg_glue X n ~ π_glue X n :=
   by reflexivity

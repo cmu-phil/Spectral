@@ -79,7 +79,7 @@ namespace sphere
 --                 (pair 1 2))
 --              (tr surf))
 
-  definition πnSn_surf (n : ℕ) : πnSn n (tr surf) = 1 :> ℤ :=
+  definition πnSn_surf (n : ℕ) : πnSn (n+1) (tr surf) = 1 :> ℤ :=
   begin
     cases n with n IH,
     { refine ap (πnSn _ ∘ tr) surf_eq_loop ⬝ _, apply transport_code_loop },
@@ -87,17 +87,17 @@ namespace sphere
   end
 
   definition deg {n : ℕ} [H : is_succ n] (f : S n →* S n) : ℤ :=
-  by induction H with n; exact πnSn n (π→g[n+1] f (tr surf))
+  by induction H with n; exact πnSn (n+1) (π→g[n+1] f (tr surf))
 
   definition deg_id (n : ℕ) [H : is_succ n] : deg (pid (S n)) = (1 : ℤ) :=
   by induction H with n;
-     exact ap (πnSn n) (homotopy_group_functor_pid (succ n) (S (succ n)) (tr surf)) ⬝ πnSn_surf n
+     exact ap (πnSn (n+1)) (homotopy_group_functor_pid (succ n) (S (succ n)) (tr surf)) ⬝ πnSn_surf n
 
   definition deg_phomotopy {n : ℕ} [H : is_succ n] {f g : S n →* S n} (p : f ~* g) :
     deg f = deg g :=
   begin
     induction H with n,
-    exact ap (πnSn n) (homotopy_group_functor_phomotopy (succ n) p (tr surf)),
+    exact ap (πnSn (n+1)) (homotopy_group_functor_phomotopy (succ n) p (tr surf)),
   end
 
   definition endomorphism_int (f : gℤ →g gℤ) (n : ℤ) : f n = f (1 : ℤ) *[ℤ] n :=
@@ -119,7 +119,7 @@ namespace sphere
     deg (g ∘* f) = deg g *[ℤ] deg f :=
   begin
     induction H with n,
-    refine ap (πnSn n) (homotopy_group_functor_compose (succ n) g f (tr surf)) ⬝ _,
+    refine ap (πnSn (n+1)) (homotopy_group_functor_compose (succ n) g f (tr surf)) ⬝ _,
     apply endomorphism_equiv_Z !πnSn !πnSn_surf (π→g[n+1] g)
   end
 

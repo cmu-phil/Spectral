@@ -4,24 +4,132 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Floris van Doorn, Ulrik Buchholtz
 
 Various groups of maps. Most importantly we define a group structure
-on trunc 0 (A →* Ω B), which is used in the definition of cohomology.
+on trunc 0 (A →* Ω B) and the dependent version trunc 0 (ppi _ _),
+which are used in the definition of cohomology.
 -/
 
 import algebra.group_theory ..pointed ..pointed_pi eq2
 open pi pointed algebra group eq equiv is_trunc trunc susp
 namespace group
 
+  /- Group of dependent functions into a loop space -/
+  definition ppi_mul [constructor] {A : Type*} {B : A → Type*} (f g : Π*a, Ω (B a)) : Π*a, Ω (B a) :=
+  proof ppi.mk (λa, f a ⬝ g a) (respect_pt f ◾ respect_pt g ⬝ !idp_con) qed
+
+  definition ppi_inv [constructor] {A : Type*} {B : A → Type*} (f : Π*a, Ω (B a)) : Π*a, Ω (B a) :=
+  proof ppi.mk (λa, (f a)⁻¹ᵖ) (respect_pt f)⁻² qed
+
+  definition inf_group_ppi [constructor] [instance] {A : Type*} (B : A → Type*) :
+    inf_group (Π*a, Ω (B a)) :=
+  begin
+    fapply inf_group.mk,
+    { exact ppi_mul },
+    { intro f g h, apply eq_of_phomotopy, fapply phomotopy.mk,
+      { intro a, exact con.assoc (f a) (g a) (h a) },
+      { symmetry, rexact eq_of_square (con2_assoc (respect_pt f) (respect_pt g) (respect_pt h)) }},
+    { apply ppi_const },
+    { intros f, apply eq_of_phomotopy, fapply phomotopy.mk,
+      { intro a, exact one_mul (f a) },
+      { symmetry, apply eq_of_square, refine _ ⬝vp !ap_id, apply natural_square_tr }},
+    { intros f, apply eq_of_phomotopy, fapply phomotopy.mk,
+      { intro a, exact mul_one (f a) },
+      { reflexivity }},
+    { exact ppi_inv },
+    { intro f, apply eq_of_phomotopy, fapply phomotopy.mk,
+      { intro a, exact con.left_inv (f a) },
+      { exact !con_left_inv_idp }},
+  end
+
+  definition group_trunc_ppi [constructor] [instance] {A : Type*} (B : A → Type*) :
+    group (trunc 0 (Π*a, Ω (B a))) :=
+  !trunc_group
+
+  definition Group_trunc_ppi [reducible] [constructor] {A : Type*} (B : A → Type*) : Group :=
+  Group.mk (trunc 0 (Π*a, Ω (B a))) _
+
+  definition ab_inf_group_ppi [constructor] [instance] {A : Type*} (B : A → Type*) :
+    ab_inf_group (Π*a, Ω (Ω (B a))) :=
+  ⦃ab_inf_group, inf_group_ppi (λa, Ω (B a)), mul_comm :=
+    begin
+      intro f g, apply eq_of_phomotopy, fapply phomotopy.mk,
+      { intro a, exact eckmann_hilton (f a) (g a) },
+      { symmetry, rexact eq_of_square (eckmann_hilton_con2 (respect_pt f) (respect_pt g)) }
+    end⦄
+
+  definition ab_group_trunc_ppi [constructor] [instance] {A : Type*} (B : A → Type*) :
+    ab_group (trunc 0 (Π*a, Ω (Ω (B a)))) :=
+  !trunc_ab_group
+
+  definition AbGroup_trunc_ppi [reducible] [constructor] {A : Type*} (B : A → Type*) : AbGroup :=
+  AbGroup.mk (trunc 0 (Π*a, Ω (Ω (B a)))) _
+
+  definition trunc_ppi_isomorphic_pmap (A B : Type*)
+    : Group.mk (trunc 0 (Π*(a : A), Ω B)) !trunc_group
+      ≃g Group.mk (trunc 0 (A →* Ω B)) !trunc_group :=
+  begin
+    apply trunc_isomorphism_of_equiv (pppi_equiv_pmap A (Ω B)),
+    intro h k, induction h with h h_pt, induction k with k k_pt, reflexivity
+  end
+
+  section
+
+  universe variables u v
+
+  variables {A : pType.{u}} {B : A → Type.{v}} {x₀ : B pt} {k l m : ppi B x₀}
+
+  definition phomotopy_of_eq_homomorphism (p : k = l) (q : l = m)
+    : phomotopy_of_eq (p ⬝ q) = phomotopy_of_eq p ⬝* phomotopy_of_eq q :=
+  begin
+    induction q, induction p, induction k with k q, induction q, reflexivity
+  end
+
+  protected definition ppi_mul_loop.lemma1 {X : Type} {x : X} (p q : x = x) (p_pt : idp = p) (q_pt : idp = q)
+    : refl (p ⬝ q) ⬝ whisker_left p q_pt⁻¹ ⬝ p_pt⁻¹ = p_pt⁻¹ ◾ q_pt⁻¹ :=
+  by induction p_pt; induction q_pt; reflexivity
+
+  protected definition ppi_mul_loop.lemma2 {X : Type} {x : X} (p q : x = x) (p_pt : p = idp) (q_pt : q = idp)
+    : refl (p ⬝ q) ⬝ whisker_left p q_pt ⬝ p_pt = p_pt ◾ q_pt :=
+  by rewrite [-(inv_inv p_pt),-(inv_inv q_pt)]; exact ppi_mul_loop.lemma1 p q p_pt⁻¹ q_pt⁻¹
+
+  definition ppi_mul_loop {h : Πa, B a} (f g : ppi.mk h idp ~* ppi.mk h idp) : f ⬝* g = ppi_mul f g :=
+  begin
+    apply ap (ppi.mk (λa, f a ⬝ g a)),
+    apply ppi.rec_on f, intros f' f_pt, apply ppi.rec_on g, intros g' g_pt,
+    clear f g, esimp at *, exact ppi_mul_loop.lemma2 (f' pt) (g' pt) f_pt g_pt
+  end
+
+  variable (k)
+
+  definition trunc_ppi_loop_isomorphism_lemma
+    : isomorphism.{(max u v) (max u v)}
+      (Group.mk (trunc 0 (k = k)) (@trunc_group (k = k) !inf_group_loop))
+      (Group.mk (trunc 0 (Π*(a : A), Ω (pType.mk (B a) (k a)))) !trunc_group) :=
+  begin
+    apply @trunc_isomorphism_of_equiv _ _ !inf_group_loop !inf_group_ppi (ppi_loop_equiv k),
+    intro f g, induction k with k p, induction p,
+    apply trans (phomotopy_of_eq_homomorphism f g),
+    exact ppi_mul_loop (phomotopy_of_eq f) (phomotopy_of_eq g)
+  end
+
+  end
+
+  definition trunc_ppi_loop_isomorphism {A : Type*} (B : A → Type*)
+    : Group.mk (trunc 0 (Ω (Π*(a : A), B a))) !trunc_group
+      ≃g Group.mk (trunc 0 (Π*(a : A), Ω (B a))) !trunc_group :=
+  trunc_ppi_loop_isomorphism_lemma (ppi_const B)
+
+
   /- We first define the group structure on A →* Ω B (except for truncatedness).
      Instead of Ω B, we could also choose any infinity group. However, we need various 2-coherences,
      so it's easier to just do it for the loop space. -/
   definition pmap_mul [constructor] {A B : Type*} (f g : A →* Ω B) : A →* Ω B :=
-  pmap.mk (λa, f a ⬝ g a) (respect_pt f ◾ respect_pt g ⬝ !idp_con)
+  ppi_mul f g
 
   definition pmap_inv [constructor] {A B : Type*} (f : A →* Ω B) : A →* Ω B :=
-  pmap.mk (λa, (f a)⁻¹ᵖ) (respect_pt f)⁻²
+  ppi_inv f
 
-  /- we prove some coherences of the multiplication. We don't need them for the group structure, but they
-     are used to show that cohomology satisfies the Eilenberg-Steenrod axioms -/
+  /- we prove some coherences of the multiplication. We don't need them for the group structure,
+    but they are used to show that cohomology satisfies the Eilenberg-Steenrod axioms -/
   definition ap1_pmap_mul {X Y : Type*} (f g : X →* Ω Y) :
     Ω→ (pmap_mul f g) ~* pmap_mul (Ω→ f) (Ω→ g) :=
   begin
@@ -63,24 +171,7 @@ namespace group
   pwhisker_right _ !ap1_pmap_mul ⬝* !pmap_mul_pcompose
 
   definition inf_group_pmap [constructor] [instance] (A B : Type*) : inf_group (A →* Ω B) :=
-  begin
-    fapply inf_group.mk,
-    { exact pmap_mul },
-    { intro f g h, fapply pmap_eq,
-      { intro a, exact con.assoc (f a) (g a) (h a) },
-      { rexact eq_of_square (con2_assoc (respect_pt f) (respect_pt g) (respect_pt h)) }},
-    { apply pconst },
-    { intros f, fapply pmap_eq,
-      { intro a, exact one_mul (f a) },
-      { esimp, apply eq_of_square, refine _ ⬝vp !ap_id, apply natural_square_tr }},
-    { intros f, fapply pmap_eq,
-      { intro a, exact mul_one (f a) },
-      { reflexivity }},
-    { exact pmap_inv },
-    { intro f, fapply pmap_eq,
-      { intro a, exact con.left_inv (f a) },
-      { exact !con_left_inv_idp⁻¹ }},
-  end
+  !inf_group_ppi
 
   definition group_trunc_pmap [constructor] [instance] (A B : Type*) : group (trunc 0 (A →* Ω B)) :=
   !trunc_group
@@ -94,9 +185,9 @@ namespace group
     fapply homomorphism.mk,
     { apply trunc_functor, intro g, exact g ∘* f},
     { intro g h, induction g with g, induction h with h, apply ap tr,
-      fapply pmap_eq,
+      apply eq_of_phomotopy, fapply phomotopy.mk,
       { intro a, reflexivity },
-      { refine _ ⬝ !idp_con⁻¹,
+      { symmetry, refine _ ⬝ !idp_con⁻¹,
         refine whisker_right _ !ap_con_fn ⬝ _, apply con2_con_con2 }}
   end
 
@@ -152,9 +243,9 @@ namespace group
     ab_inf_group (A →* Ω (Ω B)) :=
   ⦃ab_inf_group, inf_group_pmap A (Ω B), mul_comm :=
     begin
-      intro f g, fapply pmap_eq,
+      intro f g, apply eq_of_phomotopy, fapply phomotopy.mk,
       { intro a, exact eckmann_hilton (f a) (g a) },
-      { rexact eq_of_square (eckmann_hilton_con2 (respect_pt f) (respect_pt g)) }
+      { symmetry, rexact eq_of_square (eckmann_hilton_con2 (respect_pt f) (respect_pt g)) }
     end⦄
 
   definition ab_group_trunc_pmap [constructor] [instance] (A B : Type*) :
@@ -194,111 +285,5 @@ namespace group
     { intro g a, exact f a g },
     { intro g h, apply eq_of_homotopy, intro a, exact respect_mul (f a) g h }
   end
-
-  /- Group of dependent functions into a loop space -/
-  definition ppi_mul [constructor] {A : Type*} {B : A → Type*} (f g : Π*a, Ω (B a)) : Π*a, Ω (B a) :=
-  proof ppi.mk (λa, f a ⬝ g a) (ppi.resp_pt f ◾ ppi.resp_pt g ⬝ !idp_con) qed
-
-  definition ppi_inv [constructor] {A : Type*} {B : A → Type*} (f : Π*a, Ω (B a)) : Π*a, Ω (B a) :=
-  proof ppi.mk (λa, (f a)⁻¹ᵖ) (ppi.resp_pt f)⁻² qed
-
-  definition inf_group_ppi [constructor] [instance] {A : Type*} (B : A → Type*) :
-    inf_group (Π*a, Ω (B a)) :=
-  begin
-    fapply inf_group.mk,
-    { exact ppi_mul },
-    { intro f g h, apply ppi_eq, fapply ppi_homotopy.mk,
-      { intro a, exact con.assoc (f a) (g a) (h a) },
-      { symmetry, rexact eq_of_square (con2_assoc (ppi.resp_pt f) (ppi.resp_pt g) (ppi.resp_pt h)) }},
-    { apply ppi_const },
-    { intros f, apply ppi_eq, fapply ppi_homotopy.mk,
-      { intro a, exact one_mul (f a) },
-      { symmetry, apply eq_of_square, refine _ ⬝vp !ap_id, apply natural_square_tr }},
-    { intros f, apply ppi_eq, fapply ppi_homotopy.mk,
-      { intro a, exact mul_one (f a) },
-      { reflexivity }},
-    { exact ppi_inv },
-    { intro f, apply ppi_eq, fapply ppi_homotopy.mk,
-      { intro a, exact con.left_inv (f a) },
-      { exact !con_left_inv_idp }},
-  end
-
-  definition group_trunc_ppi [constructor] [instance] {A : Type*} (B : A → Type*) :
-    group (trunc 0 (Π*a, Ω (B a))) :=
-  !trunc_group
-
-  definition Group_trunc_ppi [reducible] [constructor] {A : Type*} (B : A → Type*) : Group :=
-  Group.mk (trunc 0 (Π*a, Ω (B a))) _
-
-  definition ab_inf_group_ppi [constructor] [instance] {A : Type*} (B : A → Type*) :
-    ab_inf_group (Π*a, Ω (Ω (B a))) :=
-  ⦃ab_inf_group, inf_group_ppi (λa, Ω (B a)), mul_comm :=
-    begin
-      intro f g, apply ppi_eq, fapply ppi_homotopy.mk,
-      { intro a, exact eckmann_hilton (f a) (g a) },
-      { symmetry, rexact eq_of_square (eckmann_hilton_con2 (ppi.resp_pt f) (ppi.resp_pt g)) }
-    end⦄
-
-  definition ab_group_trunc_ppi [constructor] [instance] {A : Type*} (B : A → Type*) :
-    ab_group (trunc 0 (Π*a, Ω (Ω (B a)))) :=
-  !trunc_ab_group
-
-  definition AbGroup_trunc_ppi [reducible] [constructor] {A : Type*} (B : A → Type*) : AbGroup :=
-  AbGroup.mk (trunc 0 (Π*a, Ω (Ω (B a)))) _
-
-  definition trunc_ppi_isomorphic_pmap (A B : Type*)
-    : Group.mk (trunc 0 (Π*(a : A), Ω B)) !trunc_group
-      ≃g Group.mk (trunc 0 (A →* Ω B)) !trunc_group :=
-  begin
-    apply trunc_isomorphism_of_equiv (pppi_equiv_pmap A (Ω B)),
-    intro h k, induction h with h h_pt, induction k with k k_pt, reflexivity
-  end
-
-  section
-
-  universe variables u v
-
-  variables {A : pType.{u}} {B : A → Type.{v}} {x₀ : B pt} {k l m : ppi B x₀}
-
-  definition ppi_homotopy_of_eq_homomorphism (p : k = l) (q : l = m)
-    : ppi_homotopy_of_eq (p ⬝ q) = ppi_homotopy_of_eq p ⬝*' ppi_homotopy_of_eq q :=
-  begin
-    induction q, induction p, induction k with k q, induction q, reflexivity
-  end
-
-  protected definition ppi_mul_loop.lemma1 {X : Type} {x : X} (p q : x = x) (p_pt : idp = p) (q_pt : idp = q)
-    : refl (p ⬝ q) ⬝ whisker_left p q_pt⁻¹ ⬝ p_pt⁻¹ = p_pt⁻¹ ◾ q_pt⁻¹ :=
-  by induction p_pt; induction q_pt; reflexivity
-
-  protected definition ppi_mul_loop.lemma2 {X : Type} {x : X} (p q : x = x) (p_pt : p = idp) (q_pt : q = idp)
-    : refl (p ⬝ q) ⬝ whisker_left p q_pt ⬝ p_pt = p_pt ◾ q_pt :=
-  by rewrite [-(inv_inv p_pt),-(inv_inv q_pt)]; exact ppi_mul_loop.lemma1 p q p_pt⁻¹ q_pt⁻¹
-
-  definition ppi_mul_loop {h : Πa, B a} (f g : ppi.mk h idp ~~* ppi.mk h idp) : f ⬝*' g = ppi_mul f g :=
-  begin
-    apply ap (ppi.mk (λa, f a ⬝ g a)),
-    apply ppi.rec_on f, intros f' f_pt, apply ppi.rec_on g, intros g' g_pt,
-    clear f g, esimp at *, exact ppi_mul_loop.lemma2 (f' pt) (g' pt) f_pt g_pt
-  end
-
-  variable (k)
-
-  definition trunc_ppi_loop_isomorphism_lemma
-    : isomorphism.{(max u v) (max u v)}
-      (Group.mk (trunc 0 (k = k)) (@trunc_group (k = k) !inf_group_loop))
-      (Group.mk (trunc 0 (Π*(a : A), Ω (pType.mk (B a) (k a)))) !trunc_group) :=
-  begin
-    apply @trunc_isomorphism_of_equiv _ _ !inf_group_loop !inf_group_ppi (ppi_loop_equiv k),
-    intro f g, induction k with k p, induction p,
-    apply trans (ppi_homotopy_of_eq_homomorphism f g),
-    exact ppi_mul_loop (ppi_homotopy_of_eq f) (ppi_homotopy_of_eq g)
-  end
-
-  end
-
-  definition trunc_ppi_loop_isomorphism {A : Type*} (B : A → Type*)
-    : Group.mk (trunc 0 (Ω (Π*(a : A), B a))) !trunc_group
-      ≃g Group.mk (trunc 0 (Π*(a : A), Ω (B a))) !trunc_group :=
-  trunc_ppi_loop_isomorphism_lemma (ppi_const B)
 
 end group

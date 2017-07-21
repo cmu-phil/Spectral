@@ -305,7 +305,7 @@ namespace smash
   definition smash_elim_eq_of_phomotopy {f f' : A →* ppmap B C}
     (p : f ~* f') : ap smash_elim (eq_of_phomotopy p) = eq_of_phomotopy (smash_elim_phomotopy p) :=
   begin
-    induction p using phomotopy_rec_on_idp,
+    induction p using phomotopy_rec_idp,
     refine ap02 _ !eq_of_phomotopy_refl ⬝ _,
     refine !eq_of_phomotopy_refl⁻¹ ⬝ _,
     apply ap eq_of_phomotopy,
@@ -316,7 +316,7 @@ namespace smash
   definition smash_elim_inv_eq_of_phomotopy {f f' : A ∧ B →* C} (p : f ~* f') :
     ap smash_elim_inv (eq_of_phomotopy p) = eq_of_phomotopy (smash_elim_inv_phomotopy p) :=
   begin
-    induction p using phomotopy_rec_on_idp,
+    induction p using phomotopy_rec_idp,
     refine ap02 _ !eq_of_phomotopy_refl ⬝ _,
     refine !eq_of_phomotopy_refl⁻¹ ⬝ _,
     apply ap eq_of_phomotopy,

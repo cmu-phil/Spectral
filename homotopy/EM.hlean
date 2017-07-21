@@ -585,12 +585,14 @@ namespace EM
 
   /- fiber of EM_functor -/
   open fiber
-  definition is_trunc_fiber_EM1_functor {G H : Group} (φ : G →g H) : is_trunc 1 (pfiber (EM1_functor φ)) :=
+  definition is_trunc_fiber_EM1_functor {G H : Group} (φ : G →g H) :
+    is_trunc 1 (pfiber (EM1_functor φ)) :=
   !is_trunc_fiber
 
-  definition is_conn_fiber_EM1_functor {G H : Group} (φ : G →g H) : is_conn -1 (pfiber (EM1_functor φ)) :=
+  definition is_conn_fiber_EM1_functor {G H : Group} (φ : G →g H) :
+    is_conn -1 (pfiber (EM1_functor φ)) :=
   begin
-    apply is_conn_fiber, apply is_conn_of_is_conn_succ
+    apply is_conn_fiber
   end
 
   definition is_trunc_fiber_EMadd1_functor {G H : AbGroup} (φ : G →g H) (n : ℕ) :
