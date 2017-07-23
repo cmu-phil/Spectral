@@ -200,8 +200,8 @@ structure two_cover :=
   (cov_eq : Π x : carrier, ∥ bool = cov x ∥ )
 open two_cover
 
-definition empty_two_cover : two_cover :=
-two_cover.mk empty empty.elim (empty.rec _)
+definition unit_two_cover : two_cover :=
+two_cover.mk unit (λ u, bool) (λ u, tr idp)
 
 open sigma.ops
 
@@ -221,7 +221,7 @@ begin
 end
 
 definition realprojective_two_cover : ℕ → two_cover :=
-nat.rec (two_cover_step empty_two_cover) (λ x, two_cover_step)
+nat.rec unit_two_cover (λ x, two_cover_step)
 
 definition realprojective : ℕ → Type₀ :=
 λ n, carrier (realprojective_two_cover n)
@@ -249,7 +249,7 @@ definition theorem_III_3 (n : ℕ)
   : sphere n ≃ sigma (realprojective_cov n) :=
 begin
   induction n with n IH,
-  { symmetry, exact sorry },
+  { symmetry, apply sigma_unit_left },
   { apply equiv.trans (join_bool (sphere n))⁻¹ᵉ,
     apply equiv.trans (join_equiv_join erfl IH),
     symmetry, refine equiv.trans _ !join_symm,
