@@ -1,7 +1,7 @@
 -- Authors: Floris van Doorn
 
 import homotopy.EM algebra.category.functor.equivalence types.pointed2 ..pointed_pi ..pointed
-       ..move_to_lib .susp ..algebra.quotient_group
+       ..move_to_lib .susp ..algebra.exactness
 
 open eq equiv is_equiv algebra group nat pointed EM.ops is_trunc trunc susp function is_conn
 
@@ -620,31 +620,32 @@ namespace EM
     apply is_conn_fiber, apply is_conn_of_is_conn_succ
   end
 
-  section --move
-    open chain_complex succ_str
-  -- definition isomorphism_kernel_of_trivial {N : succ_str} (X : chain_complex N) {n : N}
-  --   (H1 : is_exact_at X n) (H2 : is_exact_at X (S n))
-  --   (HX1 : is_contr (X n)) (HG2 : pgroup (X (S n)))
-  --   : Group_of_pgroup (X (S n)) ≃g kernel (homomorphism.mk (cc_to_fn X _) _) :=
-  -- _
+  section
+    open chain_complex prod fin
 
+  /- TODO: other cases -/
+  definition LES_isomorphism_kernel_of_trivial.{u}
+    {X Y : pType.{u}} (f : X →* Y) (n : ℕ) [H : is_succ n]
+    (H1 : is_contr (πg[n+1] Y)) : πg[n] (pfiber f) ≃g kernel (π→g[n] f) :=
+  begin
+    induction H with n,
+    have H2 : is_exact (π→g[n+1] (ppoint f)) (π→g[n+1] f),
+    from is_exact_of_is_exact_at (is_exact_LES_of_homotopy_groups f (n+1, 0)),
+    have H3 : is_exact (π→g[n+1] (boundary_map f) ∘g ghomotopy_group_succ_in Y n)
+      (π→g[n+1] (ppoint f)),
+    from is_exact_of_is_exact_at (is_exact_LES_of_homotopy_groups f (n+1, 1)),
+    exact isomorphism_kernel_of_is_exact H3 H2 H1
+  end
 
   end
-  -- definition is_equiv_of_trivial (X : chain_complex N) {n : N}
-  --   (H1 : is_exact_at X n) (H2 : is_exact_at X (S n))
-  --   [HX1 : is_contr (X n)] [HX2 : is_contr (X (S (S (S n))))]
-  --   [pgroup (X (S n))] [pgroup (X (S (S n)))] [is_mul_hom (cc_to_fn X (S n))]
-  --   : is_equiv (cc_to_fn X (S n)) :=
-  -- begin
-  --   apply is_equiv_of_is_surjective_of_is_embedding,
-  --   { apply is_embedding_of_trivial X, apply H2},
-  --   { apply is_surjective_of_trivial X, apply H1},
-  -- end
 
-
-  open group algebra
-  definition homotopy_group_fiber_EM1_functor {G H : Group} (φ : G →g H) :
+  open group algebra is_trunc
+  definition homotopy_group_fiber_EM1_functor.{u} {G H : Group.{u}} (φ : G →g H) :
     π₁ (pfiber (EM1_functor φ)) ≃g kernel φ :=
+  have H1 : is_trunc 1 (EM1 H), from sorry,
+  have H2 : 1 <[ℕ] 1 + 1, from sorry,
+  LES_isomorphism_kernel_of_trivial (EM1_functor φ) 1
+    (@trivial_homotopy_group_of_is_trunc _ 1 2 H1 H2) ⬝g
   sorry
 
   definition homotopy_group_fiber_EMadd1_functor {G H : AbGroup} (φ : G →g H) (n : ℕ) :

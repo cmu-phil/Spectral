@@ -5,8 +5,8 @@ Authors: Jeremy Avigad
 
 Short exact sequences
 -/
-import homotopy.chain_complex eq2
-open pointed is_trunc equiv is_equiv eq algebra group trunc function
+import homotopy.chain_complex eq2 .quotient_group
+open pointed is_trunc equiv is_equiv eq algebra group trunc function fiber sigma
 
 structure is_exact_t {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
   ( im_in_ker : Π(a:A), g (f a) = pt)
@@ -34,7 +34,6 @@ begin
   induction h with a p, exact ap g p⁻¹ ⬝ is_exact.im_in_ker H a
 end
 
--- TO DO: give less univalency proof
 definition is_exact_homotopy {A B : Type} {C : Type*} {f f' : A → B} {g g' : B → C}
   (p : f ~ f') (q : g ~ g') (H : is_exact f g) : is_exact f' g' :=
 begin
@@ -54,8 +53,8 @@ begin
     exact image.mk (tr a) (ap tr r) }
 end
 
-definition is_contr_middle_of_is_exact {A B : Type} {C : Type*} {f : A → B} {g : B → C} (H : is_exact f g)
-  [is_contr A] [is_set B] [is_contr C] : is_contr B :=
+definition is_contr_middle_of_is_exact {A B : Type} {C : Type*} {f : A → B} {g : B → C}
+  (H : is_exact f g) [is_contr A] [is_set B] [is_contr C] : is_contr B :=
 begin
   apply is_contr.mk (f pt),
   intro b,
@@ -66,6 +65,99 @@ end
 definition is_surjective_of_is_exact_of_is_contr {A B : Type} {C : Type*} {f : A → B} {g : B → C}
   (H : is_exact f g) [is_contr C] : is_surjective f :=
 λb, is_exact.ker_in_im H b !is_prop.elim
+
+definition is_embedding_of_is_exact_g {A B C : Group} {g : B →g C} {f : A →g B}
+  (gf : is_exact_g f g) [is_contr A] : is_embedding g :=
+begin
+  apply to_is_embedding_homomorphism, intro a p,
+  induction is_exact.ker_in_im gf a p with x q,
+  exact q⁻¹ ⬝ ap f !is_prop.elim ⬝ to_respect_one f
+end
+
+definition map_left_of_is_exact {G₃' G₃ G₂ : Type} {G₁ : Type*}
+  {g : G₃ → G₂} {g' : G₃' → G₂} {f : G₂ → G₁} (H1 : is_exact g f) (H2 : is_exact g' f)
+  (Hg' : is_embedding g') : G₃ → G₃' :=
+begin
+  intro a,
+  have fiber g' (g a),
+  begin
+    have is_prop (fiber g' (g a)), from !is_prop_fiber_of_is_embedding,
+    induction is_exact.ker_in_im H2 (g a) (is_exact.im_in_ker H1 a) with a' p,
+    exact fiber.mk a' p
+  end,
+  exact point this
+end
+
+definition map_left_of_is_exact_compute {G₃' G₃ G₂ : Type} {G₁ : Type*}
+  {g : G₃ → G₂} {g' : G₃' → G₂} {f : G₂ → G₁} (H1 : is_exact g f) (H2 : is_exact g' f)
+  (Hg' : is_embedding g') (a : G₃) : g' (map_left_of_is_exact H1 H2 Hg' a) = g a :=
+@point_eq _ _ g' _ _
+
+definition map_left_of_is_exact_compose {G₃'' G₃' G₃ G₂ : Type} {G₁ : Type*}
+  {g : G₃ → G₂} {g' : G₃' → G₂} {g'' : G₃'' → G₂} {f : G₂ → G₁}
+  (H1 : is_exact g f) (H2 : is_exact g' f) (H3 : is_exact g'' f)
+  (Hg' : is_embedding g') (Hg'' : is_embedding g'') (a : G₃) :
+  map_left_of_is_exact H2 H3 Hg'' (map_left_of_is_exact H1 H2 Hg' a) =
+  map_left_of_is_exact H1 H3 Hg'' a :=
+begin
+  refine @is_injective_of_is_embedding _ _ g'' _ _ _ _,
+  refine !map_left_of_is_exact_compute ⬝ _ ⬝ !map_left_of_is_exact_compute⁻¹,
+  exact map_left_of_is_exact_compute H1 H2 Hg' a
+end
+
+definition map_left_of_is_exact_id {G₃ G₂ : Type} {G₁ : Type*}
+  {g : G₃ → G₂} {f : G₂ → G₁} (H1 : is_exact g f) (Hg : is_embedding g) (a : G₃) :
+  map_left_of_is_exact H1 H1 Hg a = a :=
+begin
+  refine @is_injective_of_is_embedding _ _ g _ _ _ _,
+  exact map_left_of_is_exact_compute H1 H1 Hg a
+end
+
+definition map_left_of_is_exact_homotopy {G₃' G₃ G₂ : Type} {G₁ : Type*}
+  {g : G₃ → G₂} {g' g'' : G₃' → G₂} {f : G₂ → G₁} (H1 : is_exact g f) (H2 : is_exact g' f)
+  (H3 : is_exact g'' f) (Hg' : is_embedding g') (Hg'' : is_embedding g'') (p : g' ~ g'') :
+  map_left_of_is_exact H1 H2 Hg' ~ map_left_of_is_exact H1 H3 Hg'' :=
+begin
+  intro a,
+  refine @is_injective_of_is_embedding _ _ g' _ _ _ _,
+  exact !map_left_of_is_exact_compute ⬝ (!p ⬝ !map_left_of_is_exact_compute)⁻¹,
+end
+
+definition homomorphism_left_of_is_exact_g {G₃' G₃ G₂ G₁ : Group}
+  {g : G₃ →g G₂} {g' : G₃' →g G₂} {f : G₂ →g G₁} (H1 : is_exact_g g f) (H2 : is_exact_g g' f)
+  (Hg' : is_embedding g') : G₃ →g G₃' :=
+begin
+  apply homomorphism.mk (map_left_of_is_exact H1 H2 Hg'),
+  { intro a a', refine @is_injective_of_is_embedding _ _ g' _ _ _ _,
+    exact !point_eq ⬝ to_respect_mul g a a' ⬝
+      (to_respect_mul g' _ _ ⬝ ap011 mul !point_eq !point_eq)⁻¹ }
+end
+
+definition isomorphism_left_of_is_exact_g {G₃' G₃ G₂ G₁ : Group}
+  {g : G₃ →g G₂} {g' : G₃' →g G₂} {f : G₂ →g G₁} (H1 : is_exact g f) (H2 : is_exact g' f)
+  (Hg : is_embedding g) (Hg' : is_embedding g') : G₃ ≃g G₃' :=
+begin
+  fapply isomorphism.mk, exact homomorphism_left_of_is_exact_g H1 H2 Hg',
+  fapply adjointify, exact homomorphism_left_of_is_exact_g H2 H1 Hg,
+  { intro a, refine @is_injective_of_is_embedding _ _ g' _ _ _ _,
+    refine map_left_of_is_exact_compute H1 H2 Hg' _ ⬝ map_left_of_is_exact_compute H2 H1 Hg a },
+  { intro a, refine @is_injective_of_is_embedding _ _ g _ _ _ _,
+    refine map_left_of_is_exact_compute H2 H1 Hg _ ⬝ map_left_of_is_exact_compute H1 H2 Hg' a },
+end
+
+definition is_exact_incl_of_subgroup {G H : Group} (f : G →g H) :
+  is_exact (incl_of_subgroup (kernel_subgroup f)) f :=
+begin
+  apply is_exact.mk,
+  { intro x, cases x with x p, exact p },
+  { intro x p, exact image.mk ⟨x, p⟩ idp }
+end
+
+definition isomorphism_kernel_of_is_exact {G₄ G₃ G₂ G₁ : Group}
+  {h : G₄ →g G₃} {g : G₃ →g G₂} {f : G₂ →g G₁} (H1 : is_exact h g) (H2 : is_exact g f)
+  (HG : is_contr G₄) : G₃ ≃g kernel f :=
+isomorphism_left_of_is_exact_g H2 (is_exact_incl_of_subgroup f)
+  (is_embedding_of_is_exact_g H1) (is_embedding_incl_of_subgroup _)
 
 section chain_complex
 open succ_str chain_complex
@@ -89,12 +181,10 @@ structure is_short_exact_t {A B : Type} {C : Type*} (f : A → B) (g : B → C) 
 lemma is_short_exact_of_is_exact {X A B C Y : Group}
   (k : X →g A) (f : A →g B) (g : B →g C) (l : C →g Y)
   (hX : is_contr X) (hY : is_contr Y)
-  (kf : is_exact k f) (fg : is_exact f g) (gl : is_exact g l) : is_short_exact f g :=
+  (kf : is_exact_g k f) (fg : is_exact_g f g) (gl : is_exact_g g l) : is_short_exact f g :=
 begin
   constructor,
-  { apply to_is_embedding_homomorphism, intro a p,
-    induction is_exact.ker_in_im kf a p with x q,
-    exact q⁻¹ ⬝ ap k !is_prop.elim ⬝ to_respect_one k },
+  { exact is_embedding_of_is_exact_g kf },
   { exact is_exact.im_in_ker fg },
   { exact is_exact.ker_in_im fg },
   { intro c, exact is_exact.ker_in_im gl c !is_prop.elim },
@@ -127,6 +217,48 @@ begin
   constructor,
   { exact is_short_exact.im_in_ker H },
   { exact is_short_exact.ker_in_im H }
+end
+
+/- TODO: move and remove other versions -/
+
+  definition is_surjective_qg_map {A : Group} (N : normal_subgroup_rel A) :
+    is_surjective (qg_map N) :=
+  begin
+    intro x, induction x,
+    fapply image.mk,
+    exact a, reflexivity,
+    apply is_prop.elimo
+  end
+
+  definition is_surjective_ab_qg_map {A : AbGroup} (N : subgroup_rel A) :
+    is_surjective (ab_qg_map N) :=
+  is_surjective_qg_map _
+
+  definition qg_map_eq_one {A : Group} {K : normal_subgroup_rel A} (g : A) (H : K g) :
+    qg_map K g = 1 :=
+  begin
+    apply set_quotient.eq_of_rel,
+    have e : g * 1⁻¹ = g,
+    from calc
+      g * 1⁻¹ = g * 1 : one_inv
+        ...   = g : mul_one,
+    exact transport (λx, K x) e⁻¹ H
+  end
+
+  definition ab_qg_map_eq_one {A : AbGroup} {K : subgroup_rel A} (g : A) (H : K g) :
+    ab_qg_map K g = 1 :=
+  qg_map_eq_one g H
+
+definition is_short_exact_normal_subgroup {G : Group} (S : normal_subgroup_rel G) :
+  is_short_exact (incl_of_subgroup S) (qg_map S) :=
+begin
+  fconstructor,
+  { exact is_embedding_incl_of_subgroup S },
+  { intro a, fapply qg_map_eq_one, induction a with b p, exact p },
+  { intro b p, fapply image.mk,
+    { apply sigma.mk b, fapply rel_of_qg_map_eq_one, exact p },
+    reflexivity },
+  { exact is_surjective_qg_map S },
 end
 
 end algebra
