@@ -128,6 +128,20 @@ namespace eq
             (trunc_functor n f₀₁) (trunc_functor n f₂₁) :=
   λa, !trunc_functor_compose⁻¹ ⬝ trunc_functor_homotopy n h a ⬝ !trunc_functor_compose
 
+  attribute hhconcat hvconcat [unfold_full]
+
+  definition rfl_hhconcat (q : hsquare f₃₀ f₃₂ f₂₁ f₄₁) : homotopy.rfl ⬝htyh q ~ q :=
+  homotopy.rfl
+
+  definition hhconcat_rfl (q : hsquare f₃₀ f₃₂ f₂₁ f₄₁) : q ⬝htyh homotopy.rfl ~ q :=
+  λx, !idp_con ⬝ ap_id (q x)
+
+  definition rfl_hvconcat (q : hsquare f₃₀ f₃₂ f₂₁ f₄₁) : homotopy.rfl ⬝htyv q ~ q :=
+  λx, inv_inv (q x)
+
+  definition hvconcat_rfl (q : hsquare f₃₀ f₃₂ f₂₁ f₄₁) : q ⬝htyv homotopy.rfl ~ q :=
+  λx, (!idp_con ⬝ !ap_id)⁻² ⬝ inv_inv (q x)
+
   end hsquare
   definition homotopy_group_succ_in_natural (n : ℕ) {A B : Type*} (f : A →* B) :
     hsquare (homotopy_group_succ_in A n) (homotopy_group_succ_in B n) (π→[n+1] f) (π→[n] (Ω→ f)) :=
@@ -316,6 +330,7 @@ end int open int
 
 namespace pmap
 
+  /- rename: pmap_eta in namespace pointed -/
   definition eta {A B : Type*} (f : A →* B) : pmap.mk f (respect_pt f) = f :=
   begin induction f, reflexivity end
 
@@ -680,6 +695,15 @@ namespace misc
     exact ptrunc_component' n A
   end
 
+  definition break_into_components (A : Type) : A ≃ Σ(x : trunc 0 A), Σ(a : A), ∥ tr a = x ∥ :=
+  calc
+    A ≃ Σ(a : A) (x : trunc 0 A), tr a = x :
+        by exact (@sigma_equiv_of_is_contr_right _ _ (λa, !is_contr_sigma_eq))⁻¹ᵉ
+  ... ≃ Σ(x : trunc 0 A) (a : A), tr a = x :
+        by apply sigma_comm_equiv
+  ... ≃ Σ(x : trunc 0 A), Σ(a : A), ∥ tr a = x ∥ :
+        by exact sigma_equiv_sigma_right (λx, sigma_equiv_sigma_right (λa, !trunc_equiv⁻¹ᵉ))
+
   definition pfiber_pequiv_component_of_is_contr [constructor] {A B : Type*} (f : A →* B) [is_contr B]
     /- extra condition, something like trunc_functor 0 f is an embedding -/ : pfiber f ≃* component A :=
   sorry
@@ -976,6 +1000,46 @@ namespace pi
               hsquare (pi_bool_left A)⁻¹ᵉ (pi_bool_left B)⁻¹ᵉ (prod_functor (g ff) (g tt)) (pi_functor_right g) := hhinverse (pi_bool_left_nat g)
 
 end pi
+
+namespace sum
+
+  infix ` +→ `:62 := sum_functor
+
+  variables {A₀₀ A₂₀ A₀₂ A₂₂ B₀₀ B₂₀ B₀₂ B₂₂ A A' B B' C C' : Type}
+    {f₁₀ : A₀₀ → A₂₀} {f₁₂ : A₀₂ → A₂₂} {f₀₁ : A₀₀ → A₀₂} {f₂₁ : A₂₀ → A₂₂}
+    {g₁₀ : B₀₀ → B₂₀} {g₁₂ : B₀₂ → B₂₂} {g₀₁ : B₀₀ → B₀₂} {g₂₁ : B₂₀ → B₂₂}
+    {h₀₁ : B₀₀ → A₀₂} {h₂₁ : B₂₀ → A₂₂}
+  definition sum_rec_hsquare [unfold 16] (h : hsquare f₁₀ f₁₂ f₀₁ f₂₁)
+    (k : hsquare g₁₀ f₁₂ h₀₁ h₂₁) : hsquare (f₁₀ +→ g₁₀) f₁₂ (sum.rec f₀₁ h₀₁) (sum.rec f₂₁ h₂₁) :=
+  begin intro x, induction x with a b, exact h a, exact k b end
+
+  definition sum_functor_hsquare [unfold 19] (h : hsquare f₁₀ f₁₂ f₀₁ f₂₁)
+    (k : hsquare g₁₀ g₁₂ g₀₁ g₂₁) : hsquare (f₁₀ +→ g₁₀) (f₁₂ +→ g₁₂) (f₀₁ +→ g₀₁) (f₂₁ +→ g₂₁) :=
+  sum_rec_hsquare (λa, ap inl (h a)) (λb, ap inr (k b))
+
+  definition sum_functor_compose (g : B → C) (f : A → B) (g' : B' → C') (f' : A' → B') :
+    (g ∘ f) +→ (g' ∘ f') ~ g +→ g' ∘ f +→ f' :=
+  begin intro x, induction x with a a': reflexivity end
+
+  definition sum_rec_sum_functor (g : B → C) (g' : B' → C) (f : A → B) (f' : A' → B') :
+    sum.rec g g' ∘ sum_functor f f' ~ sum.rec (g ∘ f) (g' ∘ f') :=
+  begin intro x, induction x with a a': reflexivity end
+
+  definition sum_rec_same_compose (g : B → C) (f : A → B) :
+    sum.rec (g ∘ f) (g ∘ f) ~ g ∘ sum.rec f f :=
+  begin intro x, induction x with a a': reflexivity end
+
+  definition sum_rec_same (f : A → B) :
+    sum.rec f f ~ f ∘ sum.rec id id :=
+  sum_rec_same_compose f id
+
+end sum
+
+namespace prod
+
+  infix ` ×→ `:63 := prod_functor
+
+end prod
 
 namespace equiv
 

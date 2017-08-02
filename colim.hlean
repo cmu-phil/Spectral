@@ -377,11 +377,12 @@ namespace seq_colim
     exact !pcompose_pid
   end
 
+/-
   definition seq_colim_equiv_zigzag (g : Π⦃n⦄, A n → A' n) (h : Π⦃n⦄, A' n → A (succ n))
     (p : Π⦃n⦄ (a : A n), h (g a) = f a) (q : Π⦃n⦄ (a : A' n), g (h a) = f' a) :
     seq_colim f ≃ seq_colim f' :=
   sorry
-
+-/
 
   definition is_equiv_seq_colim_rec (P : seq_colim f → Type) :
     is_equiv (seq_colim_rec_unc :
@@ -541,7 +542,7 @@ namespace seq_colim
 
   definition rep0_eq_diag {X : ℕ → Type} (f : seq_diagram X) (x y : X 0)
     : seq_diagram (λk, rep0 f k x = rep0 f k y) :=
-  proof λk, ap (@f (k)) qed
+  proof λk, ap (@f k) qed
 
   definition seq_colim_eq0 {X : ℕ → Type} (f : seq_diagram X) (x y : X 0) :
     (ι f x = ι f y) ≃ seq_colim (rep0_eq_diag f x y)  :=

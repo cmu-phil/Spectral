@@ -264,6 +264,42 @@ namespace pushout
     pushout f g ≃ pushout g f : pushout.symm f g
             ... ≃ B           : pushout_of_equiv_left g f
 
+  -- todo: define pushout.equiv (renamed to pushout_equiv_pushout) using this
+  variables {A₁ B₁ C₁ A₂ B₂ C₂ A₃ B₃ C₃ : Type} {f₁ : A₁ → B₁} {g₁ : A₁ → C₁}
+    {f₂ : A₂ → B₂} {g₂ : A₂ → C₂} {f₃ : A₃ → B₃} {g₃ : A₃ → C₃}
+    {h₂ : A₂ → A₃} {h₁ : A₁ → A₂}
+    {i₂ : B₂ → B₃} {i₁ : B₁ → B₂}
+    {j₂ : C₂ → C₃} {j₁ : C₁ → C₂}
+    (p₂ : i₂ ∘ f₂ ~ f₃ ∘ h₂) (q₂ : j₂ ∘ g₂ ~ g₃ ∘ h₂)
+    (p₁ : i₁ ∘ f₁ ~ f₂ ∘ h₁) (q₁ : j₁ ∘ g₁ ~ g₂ ∘ h₁)
+
+  definition pushout_functor_compose :
+    pushout.functor (h₂ ∘ h₁) (i₂ ∘ i₁) (j₂ ∘ j₁) (p₁ ⬝htyv p₂) (q₁ ⬝htyv q₂) ~
+    pushout.functor h₂ i₂ j₂ p₂ q₂ ∘ pushout.functor h₁ i₁ j₁ p₁ q₁ :=
+  begin
+    exact sorry
+  end
+
+  variables {p₁ q₁}
+  definition pushout_functor_homotopy_constant {p₁' : i₁ ∘ f₁ ~ f₂ ∘ h₁} {q₁' : j₁ ∘ g₁ ~ g₂ ∘ h₁}
+    (p : p₁ ~ p₁') (q : q₁ ~ q₁') :
+    pushout.functor h₁ i₁ j₁ p₁ q₁ ~ pushout.functor h₁ i₁ j₁ p₁' q₁' :=
+  begin
+    induction p, induction q, reflexivity
+  end
+
+  definition pushout_functor_homotopy {h₁ h₂ : A₁ → A₂} {i₁ i₂ : B₁ → B₂} {j₁ j₂ : C₁ → C₂}
+    {p₁ : i₁ ∘ f₁ ~ f₂ ∘ h₁} {q₁ : j₁ ∘ g₁ ~ g₂ ∘ h₁}
+    {p₂ : i₂ ∘ f₁ ~ f₂ ∘ h₂} {q₂ : j₂ ∘ g₁ ~ g₂ ∘ h₂}
+    (r : h₁ ~ h₂) (s : i₁ ~ i₂) (t : j₁ ~ j₂)
+    (u : r ⬝htyh p₁ ~ p₂ ⬝htyh s) (v : r ⬝htyh q₁ ~ q₂ ⬝htyh t) :
+    pushout.functor h₁ i₁ j₁ p₁ q₁ ~ pushout.functor h₂ i₂ j₂ p₂ q₂ :=
+  begin
+    induction r, induction s, induction t, apply pushout_functor_homotopy_constant,
+    { exact (rfl_hhconcat p₁)⁻¹ʰᵗʸ ⬝hty u ⬝hty hhconcat_rfl p₂ },
+    exact (rfl_hhconcat q₁)⁻¹ʰᵗʸ ⬝hty v ⬝hty hhconcat_rfl q₂
+  end
+
   /- pushout where one map is constant is a cofiber -/
 
   definition pushout_const_equiv_to [unfold 6] {A B C : Type} {f : A → B} {c₀ : C}
@@ -391,11 +427,11 @@ namespace pushout
     { induction x with b d, exact inl b, exact inr c₀ },
     { exact inr c },
     { induction x with a d, exact glue a, reflexivity }
-
   end
 
-  definition pushout_sum_equiv [constructor] {A B C : Type} (f : A → B) (g : A → C) (D : Type)
-    (c₀ : C) : pushout f g ≃ pushout (sum_functor f (@id D)) (sum.rec g (λd, c₀)) :=
+  /- The pushout of B <-- A --> C is the same as the pushout of B + D <-- A + D --> C -/
+  definition pushout_sum_cancel_equiv [constructor] {A B C : Type} (f : A → B) (g : A → C)
+    (D : Type) (c₀ : C) : pushout f g ≃ pushout (sum_functor f (@id D)) (sum.rec g (λd, c₀)) :=
   begin
     fapply equiv.MK,
     { exact pushout_to_sum D c₀ },
@@ -414,6 +450,152 @@ namespace pushout
       { apply eq_pathover_id_right, apply hdeg_square,
         refine ap_compose (pushout_from_sum D c₀) _ _ ⬝ ap02 _ !elim_glue ⬝ !elim_glue }}
   end
+
+end pushout
+
+namespace pushout
+
+variables {A A' B B' C C' : Type} {f : A → B} {g : A → C} {f' : A' → B'} {g' : A' → C'}
+definition sum_pushout_of_pushout_sum [unfold 11]
+  (x : pushout (sum_functor f f') (sum_functor g g')) : pushout f g ⊎ pushout f' g' :=
+begin
+  induction x with b c a,
+  { exact sum_functor inl inl b },
+  { exact sum_functor inr inr c },
+  { induction a with a a', exact ap sum.inl (glue a), exact ap sum.inr (glue a') }
+end
+
+definition pushout_sum_of_sum_pushout [unfold 11]
+  (x : pushout f g ⊎ pushout f' g') : pushout (sum_functor f f') (sum_functor g g') :=
+begin
+  induction x with x x,
+  { exact pushout.functor sum.inl sum.inl sum.inl homotopy.rfl homotopy.rfl x },
+  { exact pushout.functor sum.inr sum.inr sum.inr homotopy.rfl homotopy.rfl x }
+end
+
+variables (f g f' g')
+/-
+  do we want to define this in terms of sigma_pushout? One possible disadvantage is that the
+  computation on glue is less convenient
+-/
+definition pushout_sum_equiv_sum_pushout [constructor] :
+  pushout (sum_functor f f') (sum_functor g g') ≃ pushout f g ⊎ pushout f' g' :=
+equiv.MK sum_pushout_of_pushout_sum pushout_sum_of_sum_pushout
+  abstract begin
+    intro x, induction x with x x,
+    { induction x,
+      { reflexivity },
+      { reflexivity },
+      apply eq_pathover, apply hdeg_square, esimp,
+      exact ap_compose sum_pushout_of_pushout_sum _ _ ⬝
+        ap02 _ (!elim_glue ⬝ !con_idp ⬝ !idp_con) ⬝ !elim_glue },
+    { induction x,
+      { reflexivity },
+      { reflexivity },
+      apply eq_pathover, apply hdeg_square, esimp,
+      exact ap_compose sum_pushout_of_pushout_sum _ _ ⬝
+        ap02 _ (!elim_glue ⬝ !con_idp ⬝ !idp_con) ⬝ !elim_glue },
+  end end
+  abstract begin
+    intro x, induction x with b c a,
+    { induction b: reflexivity },
+    { induction c: reflexivity },
+    { apply eq_pathover_id_right,
+      refine ap_compose pushout_sum_of_sum_pushout _ _ ⬝ ap02 _ !elim_glue ⬝ph _,
+      induction a with a a':
+        (apply hdeg_square; refine !ap_compose'⁻¹ ⬝ !elim_glue ⬝ !con_idp ⬝ !idp_con) }
+  end end
+
+variables {f g f' g'}
+variables {D E F D' E' F' : Type} {h : D → E} {i : D → F} {h' : D' → E'} {i' : D' → F'}
+  {j : A → D} {k : B → E} {l : C → F} {j' : A' → D'} {k' : B' → E'} {l' : C' → F'}
+  {j₂ : A' → D} {k₂ : B' → E} {l₂ : C' → F}
+  (s : hsquare f h j k) (t : hsquare g i j l)
+  (s' : hsquare f' h' j' k') (t' : hsquare g' i' j' l')
+  (s₂ : hsquare f' h j₂ k₂) (t₂ : hsquare g' i j₂ l₂)
+
+definition sum_rec_pushout_sum_equiv_sum_pushout :
+  sum.rec (pushout.functor j k l s t) (pushout.functor j₂ k₂ l₂ s₂ t₂) ∘
+  pushout_sum_equiv_sum_pushout f g f' g' ~
+  pushout.functor (sum.rec j j₂) (sum.rec k k₂) (sum.rec l l₂)
+                  (sum_rec_hsquare s s₂) (sum_rec_hsquare t t₂) :=
+begin
+  intro x, induction x with b c a,
+  { induction b with b b': reflexivity },
+  { induction c with c c': reflexivity },
+  { exact abstract begin apply eq_pathover,
+    refine !ap_compose ⬝ ap02 _ !elim_glue ⬝ph _,
+    induction a with a a': exact hdeg_square (!ap_compose'⁻¹ ⬝ !elim_glue ⬝ !elim_glue⁻¹)
+    end end }
+end
+
+definition pushout_sum_equiv_sum_pushout_natural :
+  hsquare
+    (pushout.functor (j +→ j') (k +→ k') (l +→ l')
+                     (sum_functor_hsquare s s') (sum_functor_hsquare t t'))
+    (pushout.functor j k l s t +→ pushout.functor j' k' l' s' t')
+    (pushout_sum_equiv_sum_pushout f g f' g')
+    (pushout_sum_equiv_sum_pushout h i h' i') :=
+begin
+  intro x, induction x with b c a,
+  { induction b with b b': reflexivity },
+  { induction c with c c': reflexivity },
+  { exact abstract begin apply eq_pathover,
+    refine !ap_compose ⬝ ap02 _ !elim_glue ⬝ph _ ⬝hp (!ap_compose ⬝ ap02 _ !elim_glue)⁻¹,
+    refine !ap_con ⬝ (!ap_con ⬝ !ap_compose'⁻¹ ◾ !elim_glue) ◾ (!ap_compose'⁻¹ ⬝ !ap_inv) ⬝ph _,
+    induction a with a a',
+    { apply hdeg_square, refine !ap_compose'⁻¹ ◾ idp ◾ !ap_compose'⁻¹⁻² ⬝ _ ⬝ !ap_compose',
+      refine _ ⬝ (ap_compose sum.inl _ _ ⬝ ap02 _ !elim_glue)⁻¹,
+      exact (ap_compose sum.inl _ _ ◾ idp ⬝ !ap_con⁻¹) ◾ (!ap_inv⁻¹ ⬝ ap_compose sum.inl _ _) ⬝
+        !ap_con⁻¹ },
+    { apply hdeg_square, refine !ap_compose'⁻¹ ◾ idp ◾ !ap_compose'⁻¹⁻² ⬝ _ ⬝ !ap_compose',
+      refine _ ⬝ (ap_compose sum.inr _ _ ⬝ ap02 _ !elim_glue)⁻¹,
+      exact (ap_compose sum.inr _ _ ◾ idp ⬝ !ap_con⁻¹) ◾ (!ap_inv⁻¹ ⬝ ap_compose sum.inr _ _) ⬝
+        !ap_con⁻¹ } end end }
+end
+
+end pushout
+
+namespace pushout
+open sigma sigma.ops
+variables {X : Type} {A B C : X → Type} {f : Πx, A x → B x} {g : Πx, A x → C x}
+definition sigma_pushout_of_pushout_sigma [unfold 7]
+  (x : pushout (total f) (total g)) : Σx, pushout (f x) (g x) :=
+begin
+  induction x with b c a,
+  { exact total (λx, inl) b },
+  { exact total (λx, inr) c },
+  { exact sigma_eq_right (glue a.2) }
+end
+
+definition pushout_sigma_of_sigma_pushout [unfold 7]
+  (x : Σx, pushout (f x) (g x)) : pushout (total f) (total g) :=
+pushout.functor (dpair x.1) (dpair x.1) (dpair x.1) homotopy.rfl homotopy.rfl x.2
+
+variables (f g)
+definition pushout_sigma_equiv_sigma_pushout [constructor] :
+  pushout (total f) (total g) ≃ Σx, pushout (f x) (g x) :=
+equiv.MK sigma_pushout_of_pushout_sigma pushout_sigma_of_sigma_pushout
+  abstract begin
+    intro x, induction x with x y, induction y with b c a,
+    { reflexivity },
+    { reflexivity },
+    { apply eq_pathover, apply hdeg_square, esimp,
+      exact ap_compose sigma_pushout_of_pushout_sigma _ _ ⬝
+        ap02 _ (!elim_glue ⬝ !con_idp ⬝ !idp_con) ⬝ !elim_glue }
+  end end
+  abstract begin
+    intro x, induction x with b c a,
+    { induction b, reflexivity },
+    { induction c, reflexivity },
+    { apply eq_pathover_id_right,
+      refine ap_compose pushout_sigma_of_sigma_pushout _ _ ⬝ ap02 _ !elim_glue ⬝ph _,
+      induction a with a a',
+        apply hdeg_square, refine !ap_compose'⁻¹ ⬝ !elim_glue ⬝ !con_idp ⬝ !idp_con }
+  end end
+-- apply eq_pathover_id_right, refine ap_compose sigma_pushout_of_pushout_sigma _ _ ⬝ ap02 _ !elim_glue ⬝ph _
+-- apply eq_pathover_id_right, refine ap_compose pushout_sigma_of_sigma_pushout _ _ ⬝ ap02 _ !elim_glue ⬝ph _
+
 
   /- an induction principle for the cofiber of f : A → B if A is a pushout where the second map has a section.
      The Pgluer is modified to get the right coherence
@@ -518,5 +700,82 @@ namespace pushout
   --   {hf : A → D} {k : B → E} (e : E ≃ pushout f g) (p : k ~ e⁻¹ᵉ ∘ inl) (q : h ∘ f ~ hf) :
   --   pushout h k ≃ pushout hf g :=
 
+end pushout
+
+namespace pushout
+  /- define the quotient using pushout -/
+  section
+  open quotient sigma.ops
+  variables {A B : Type} (R : A → A → Type) {Q : B → B → Type}
+    (f : A → B) (k : Πa a' : A, R a a' → Q (f a) (f a'))
+
+  definition pushout_quotient {A : Type} (R : A → A → Type) : Type :=
+  @pushout ((Σa a', R a a') ⊎ (Σa a', R a a')) A (Σa a', R a a')
+     (sum.rec pr1 (λx, x.2.1)) (sum.rec id id)
+
+  variable {R}
+  definition pushout_quotient_of_quotient [unfold 3] (x : quotient R) : pushout_quotient R :=
+  begin
+    induction x with a a a' r,
+    { exact inl a },
+    { exact glue (sum.inl ⟨a, a', r⟩) ⬝ (glue (sum.inr ⟨a, a', r⟩))⁻¹ }
+  end
+
+  definition quotient_of_pushout_quotient [unfold 3] (x : pushout_quotient R) : quotient R :=
+  begin
+    induction x with a x x,
+    { exact class_of R a },
+    { exact class_of R x.2.1 },
+    { induction x with x x, exact eq_of_rel R x.2.2, reflexivity }
+  end
+
+  variable (R)
+  definition quotient_equiv_pushout [constructor] : quotient R ≃ pushout_quotient R :=
+  equiv.MK pushout_quotient_of_quotient quotient_of_pushout_quotient
+    abstract begin
+      intro x, induction x with a x x,
+      { reflexivity },
+      { exact glue (sum.inr x) },
+      { apply eq_pathover_id_right,
+        refine ap_compose pushout_quotient_of_quotient _ _ ⬝ ap02 _ !elim_glue ⬝ph _,
+        induction x with x x,
+        { refine !elim_eq_of_rel ⬝ph _, induction x with a x, induction x with a' r,
+          exact whisker_bl _ hrfl },
+        { exact square_of_eq idp }}
+    end end
+    abstract begin
+      intro x, induction x,
+      { reflexivity },
+      { apply eq_pathover_id_right, apply hdeg_square,
+        refine ap_compose quotient_of_pushout_quotient _ _ ⬝ ap02 _ !elim_eq_of_rel ⬝ _,
+        exact !ap_con ⬝ !elim_glue ◾ (!ap_inv ⬝ !elim_glue⁻²) }
+    end end
+
+  variable {R}
+  definition sigma_functor2 [unfold 7] : (Σ a a', R a a') → (Σ b b', Q b b') :=
+  sigma_functor f (λa, sigma_functor f (k a))
+
+  definition pushout_quotient_functor [unfold 7] : pushout_quotient R → pushout_quotient Q :=
+  let tf := sigma_functor2 f k in
+  pushout.functor (sum_functor tf tf) f tf
+    begin intro x, induction x: reflexivity end begin intro x, induction x: reflexivity end
+
+  definition quotient_equiv_pushout_natural :
+    hsquare (quotient.functor _ _ f k) (pushout_quotient_functor f k)
+      (quotient_equiv_pushout R) (quotient_equiv_pushout Q) :=
+  begin
+    intro x, induction x with a a a' r,
+    { reflexivity },
+    { apply eq_pathover, apply hdeg_square,
+      refine ap_compose pushout_quotient_of_quotient _ _ ⬝ _ ⬝
+        (ap_compose (pushout.functor _ _ _ _ _) _ _)⁻¹,
+      refine ap02 _ !elim_eq_of_rel ⬝ _ ⬝ (ap02 _ !elim_eq_of_rel)⁻¹,
+      refine !elim_eq_of_rel ⬝ _,
+      exact (!ap_con ⬝ (!pushout.elim_glue ⬝ !con_idp ⬝ !idp_con) ◾
+             (!ap_inv ⬝ (!pushout.elim_glue ⬝ !con_idp ⬝ !idp_con)⁻²))⁻¹ }
+  end
+
+
+  end
 
 end pushout
