@@ -5,7 +5,7 @@
 import .left_module .direct_sum .submodule --..heq
 
 open is_trunc algebra eq left_module pointed function equiv is_equiv prod group sigma sigma.ops nat
-  trunc_index
+  trunc_index property
 namespace left_module
 
 definition graded [reducible] (str : Type) (I : Type) : Type := I → str
@@ -421,20 +421,24 @@ LeftModule_of_AddAbGroup (dirsum' N) (λr n, dirsum_smul r n)
 
 /- graded variants of left-module constructions -/
 
-definition graded_submodule [constructor] (S : Πi, submodule_rel (M i)) : graded_module R I :=
+definition graded_submodule [constructor] (S : Πi, property (M i)) [Π i, is_submodule (M i) (S i)] :
+  graded_module R I :=
 λi, submodule (S i)
 
-definition graded_submodule_incl [constructor] (S : Πi, submodule_rel (M i)) :
+definition graded_submodule_incl [constructor] (S : Πi, property (M i)) [H : Π i, is_submodule (M i) (S i)] :
   graded_submodule S →gm M :=
+have Π i, is_submodule (M (to_fun erfl i)) (S i), from H,
 graded_hom.mk erfl (λi, submodule_incl (S i))
 
-definition graded_hom_lift [constructor] {S : Πi, submodule_rel (M₂ i)}
+definition graded_hom_lift [constructor] (S : Πi, property (M₂ i)) [Π i, is_submodule (M₂ i) (S i)]
   (φ : M₁ →gm M₂)
-  (h : Π(i : I) (m : M₁ i), S (deg φ i) (φ i m)) : M₁ →gm graded_submodule S :=
+  (h : Π(i : I) (m : M₁ i), φ i m ∈ S (deg φ i)) : M₁ →gm graded_submodule S :=
 graded_hom.mk (deg φ) (λi, hom_lift (φ i) (h i))
 
-definition graded_submodule_functor [constructor] {S : Πi, submodule_rel (M₁ i)}
-  {T : Πi, submodule_rel (M₂ i)} (φ : M₁ →gm M₂)
+definition graded_submodule_functor [constructor]
+  {S : Πi, property (M₁ i)} [Π i, is_submodule (M₁ i) (S i)]
+  {T : Πi, property (M₂ i)} [Π i, is_submodule (M₂ i) (T i)]
+  (φ : M₁ →gm M₂)
   (h : Π(i : I) (m : M₁ i), S i m → T (deg φ i) (φ i m)) :
   graded_submodule S →gm graded_submodule T :=
 graded_hom.mk (deg φ) (λi, submodule_functor (φ i) (h i))
@@ -588,24 +592,25 @@ end
 definition graded_kernel (f : M₁ →gm M₂) : graded_module R I :=
 λi, kernel_module (f i)
 
-definition graded_quotient (S : Πi, submodule_rel (M i)) : graded_module R I :=
+definition graded_quotient (S : Πi, property (M i)) [Π i, is_submodule (M i) (S i)] : graded_module R I :=
 λi, quotient_module (S i)
 
-definition graded_quotient_map [constructor] (S : Πi, submodule_rel (M i)) :
+definition graded_quotient_map [constructor] (S : Πi, property (M i)) [Π i, is_submodule (M i) (S i)] :
   M →gm graded_quotient S :=
 graded_hom.mk erfl (λi, quotient_map (S i))
 
-definition graded_quotient_elim [constructor] {S : Πi, submodule_rel (M i)} (φ : M →gm M₂)
+definition graded_quotient_elim [constructor]
+  (S : Πi, property (M i)) [Π i, is_submodule (M i) (S i)]
+  (φ : M →gm M₂)
   (H : Πi ⦃m⦄, S i m → φ i m = 0) : graded_quotient S →gm M₂ :=
 graded_hom.mk (deg φ) (λi, quotient_elim (φ i) (H i))
 
 definition graded_homology (g : M₂ →gm M₃) (f : M₁ →gm M₂) : graded_module R I :=
-graded_quotient (λi, submodule_rel_submodule (kernel_rel (g i)) (image_rel (f ← i)))
+graded_quotient (λ i, homology_quotient_property (g i) (f ← i))
 
 -- the two reasonable definitions of graded_homology are definitionally equal
 example (g : M₂ →gm M₃) (f : M₁ →gm M₂) :
-  (λi, homology (g i) (f ← i)) =
-  graded_quotient (λi, submodule_rel_submodule (kernel_rel (g i)) (image_rel (f ← i))) := idp
+  (λi, homology (g i) (f ← i)) = graded_homology g f := idp
 
 definition graded_homology.mk (g : M₂ →gm M₃) (f : M₁ →gm M₂) {i : I} (m : M₂ i) (h : g i m = 0) :
   graded_homology g f i :=
@@ -613,18 +618,18 @@ homology.mk _ m h
 
 definition graded_homology_intro [constructor] (g : M₂ →gm M₃) (f : M₁ →gm M₂) :
   graded_kernel g →gm graded_homology g f :=
-graded_quotient_map _
+@graded_quotient_map _ _ _ (λ i, homology_quotient_property (g i) (f ← i)) _
 
 definition graded_homology_elim {g : M₂ →gm M₃} {f : M₁ →gm M₂} (h : M₂ →gm M)
   (H : compose_constant h f) : graded_homology g f →gm M :=
 graded_hom.mk (deg h) (λi, homology_elim (h i) (H _ _))
 
-open trunc
 definition image_of_graded_homology_intro_eq_zero {g : M₂ →gm M₃} {f : M₁ →gm M₂}
   ⦃i j : I⦄ (p : deg f i = j) (m : graded_kernel g j) (H : graded_homology_intro g f j m = 0) :
   image (f ↘ p) m.1 :=
 begin
-  induction p, exact graded_hom_change_image _ _ (rel_of_quotient_map_eq_zero m H)
+  induction p, exact graded_hom_change_image _ _
+    (@rel_of_quotient_map_eq_zero _ _ _ _ m H)
 end
 
 definition is_exact_gmod (f : M₁ →gm M₂) (f' : M₂ →gm M₃) : Type :=

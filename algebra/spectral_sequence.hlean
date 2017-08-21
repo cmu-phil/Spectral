@@ -46,8 +46,7 @@ namespace left_module
   !is_contr_image_module
 
   definition i' : D' →gm D' :=
-  graded_image_lift i ∘gm graded_submodule_incl (λx, image_rel (i ← x))
-  -- degree i + 0
+  graded_image_lift i ∘gm  graded_submodule_incl (λx, image (i ← x))
 
   lemma is_surjective_i' {x y : I} (p : deg i' x = y)
     (H : Π⦃z⦄ (q : deg i z = x), is_surjective (i ↘ q)) : is_surjective (i' ↘ p) :=
@@ -69,7 +68,7 @@ namespace left_module
   end
 
   lemma j_lemma2 : Π⦃x : I⦄ ⦃m : D x⦄ (p : i x m = 0),
-    (graded_quotient_map _ ∘gm graded_hom_lift j j_lemma1) x m = 0 :> E' _ :=
+    (graded_homology_intro _ _ ∘gm graded_hom_lift _ j j_lemma1) x m = 0 :> E' _ :=
   begin
     have Π⦃x y : I⦄ (q : deg k x = y) (r : deg d x = deg j y)
       (s : ap (deg j) q = r) ⦃m : D y⦄ (p : i y m = 0), image (d ↘ r) (j y m),
@@ -90,11 +89,11 @@ namespace left_module
     end,
     intros,
     rewrite [graded_hom_compose_fn],
-    exact quotient_map_eq_zero _ (this p)
+    exact @quotient_map_eq_zero _ _ _ _ _ (this p)
   end
 
   definition j' : D' →gm E' :=
-  graded_image_elim (graded_homology_intro d d ∘gm graded_hom_lift j j_lemma1) j_lemma2
+  graded_image_elim (graded_homology_intro d d ∘gm graded_hom_lift _ j j_lemma1) j_lemma2
   -- degree deg j - deg i
 
   lemma k_lemma1 ⦃x : I⦄ (m : E x) (p : d x m = 0) : image (i ← (deg k x)) (k x m) :=
@@ -102,7 +101,7 @@ namespace left_module
 
   definition k₂ : graded_kernel d →gm D' := graded_submodule_functor k k_lemma1
 
-  lemma k_lemma2 ⦃x : I⦄ (m : E x) (h₁ : kernel_rel (d x) m) (h₂ : image (d ← x) m) :
+  lemma k_lemma2 ⦃x : I⦄ (m : E x) (h₁ : lm_kernel (d x) m) (h₂ : image (d ← x) m) :
     k₂ x ⟨m, h₁⟩ = 0 :=
   begin
     assert H₁ : Π⦃x' y z w : I⦄ (p : deg k x' = y) (q : deg j y = z) (r : deg k z = w) (n : E x'),
@@ -115,8 +114,8 @@ namespace left_module
   end
 
   definition k' : E' →gm D' :=
-  graded_quotient_elim (graded_submodule_functor k k_lemma1)
-                       (by intro x m h; exact k_lemma2 m.1 m.2 h)
+  @graded_quotient_elim _ _ _ _ _ _ (graded_submodule_functor k k_lemma1)
+                       (by intro x m h; cases m with [m1, m2]; exact k_lemma2 m1 m2 h)
 
   definition i'_eq ⦃x : I⦄ (m : D x) (h : image (i ← x) m) : (i' x ⟨m, h⟩).1 = i x m :=
   by reflexivity
@@ -125,7 +124,7 @@ namespace left_module
   by reflexivity
 
   lemma j'_eq {x : I} (m : D x) : j' ↘ (ap (deg j) (left_inv (deg i) x)) (graded_image_lift i x m) =
-    class_of (graded_hom_lift j proof j_lemma1 qed x m) :=
+    class_of (graded_hom_lift _ j proof j_lemma1 qed x m) :=
   begin
     refine graded_image_elim_destruct _ _ _ idp _ m,
     apply is_set.elim,
@@ -155,9 +154,9 @@ namespace left_module
     { revert x, refine equiv_rect (deg k) _ _, intro x,
       refine graded_image.rec _, intro m p,
       assert q : graded_homology_intro d d (deg j (deg k x))
-                   (graded_hom_lift j j_lemma1 (deg k x) m) = 0,
+                   (graded_hom_lift _ j j_lemma1 (deg k x) m) = 0,
       { exact !j'_eq⁻¹ ⬝ p },
-      note q2 := image_of_graded_homology_intro_eq_zero idp (graded_hom_lift j _ _ m) q,
+      note q2 := image_of_graded_homology_intro_eq_zero idp (graded_hom_lift _ j _ _ m) q,
       induction q2 with n r,
       assert s : j (deg k x) (m - k x n) = 0,
       { refine respect_sub (j (deg k x)) m (k x n) ⬝ _,

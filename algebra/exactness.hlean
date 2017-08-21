@@ -6,7 +6,7 @@ Authors: Jeremy Avigad
 Short exact sequences
 -/
 import homotopy.chain_complex eq2 .quotient_group
-open pointed is_trunc equiv is_equiv eq algebra group trunc function fiber sigma
+open pointed is_trunc equiv is_equiv eq algebra group trunc function fiber sigma property
 
 structure is_exact_t {A B : Type} {C : Type*} (f : A → B) (g : B → C) :=
   ( im_in_ker : Π(a:A), g (f a) = pt)
@@ -146,7 +146,7 @@ begin
 end
 
 definition is_exact_incl_of_subgroup {G H : Group} (f : G →g H) :
-  is_exact (incl_of_subgroup (kernel_subgroup f)) f :=
+  is_exact (incl_of_subgroup (kernel f)) f :=
 begin
   apply is_exact.mk,
   { intro x, cases x with x p, exact p },
@@ -155,7 +155,7 @@ end
 
 definition isomorphism_kernel_of_is_exact {G₄ G₃ G₂ G₁ : Group}
   {h : G₄ →g G₃} {g : G₃ →g G₂} {f : G₂ →g G₁} (H1 : is_exact h g) (H2 : is_exact g f)
-  (HG : is_contr G₄) : G₃ ≃g kernel f :=
+  (HG : is_contr G₄) : G₃ ≃g Kernel f :=
 isomorphism_left_of_is_exact_g H2 (is_exact_incl_of_subgroup f)
   (is_embedding_of_is_exact_g H1) (is_embedding_incl_of_subgroup _)
 
@@ -221,7 +221,7 @@ end
 
 /- TODO: move and remove other versions -/
 
-  definition is_surjective_qg_map {A : Group} (N : normal_subgroup_rel A) :
+  definition is_surjective_qg_map {A : Group} (N : property A) [is_normal_subgroup A N] :
     is_surjective (qg_map N) :=
   begin
     intro x, induction x,
@@ -230,11 +230,12 @@ end
     apply is_prop.elimo
   end
 
-  definition is_surjective_ab_qg_map {A : AbGroup} (N : subgroup_rel A) :
+  definition is_surjective_ab_qg_map {A : AbGroup} (N : property A) [is_normal_subgroup A N] :
     is_surjective (ab_qg_map N) :=
-  is_surjective_qg_map _
+  is_surjective_ab_qg_map _
 
-  definition qg_map_eq_one {A : Group} {K : normal_subgroup_rel A} (g : A) (H : K g) :
+  definition qg_map_eq_one {A : Group} {K : property A} [is_normal_subgroup A K] (g : A)
+      (H : g ∈ K) :
     qg_map K g = 1 :=
   begin
     apply set_quotient.eq_of_rel,
@@ -245,11 +246,12 @@ end
     exact transport (λx, K x) e⁻¹ H
   end
 
-  definition ab_qg_map_eq_one {A : AbGroup} {K : subgroup_rel A} (g : A) (H : K g) :
+  definition ab_qg_map_eq_one {A : AbGroup} {K : property A} [is_subgroup A K] (g : A)
+      (H : g ∈ K) :
     ab_qg_map K g = 1 :=
-  qg_map_eq_one g H
+  ab_qg_map_eq_one g H
 
-definition is_short_exact_normal_subgroup {G : Group} (S : normal_subgroup_rel G) :
+definition is_short_exact_normal_subgroup {G : Group} (S : property G) [is_normal_subgroup G S] :
   is_short_exact (incl_of_subgroup S) (qg_map S) :=
 begin
   fconstructor,

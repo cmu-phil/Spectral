@@ -105,6 +105,154 @@ theorem eq_univ_of_forall {s : property X} (H : ∀ x, x ∈ s) : s = univ :=
 ext (take x, iff.intro (assume H', trivial) (assume H', H x))
 -/
 
+/- union -/
+
+definition union (a b : property X) : property X := λx, x ∈ a ∨ x ∈ b
+notation a ∪ b := union a b
+
+theorem mem_union_left {x : X} {a : property X} (b : property X) : x ∈ a → x ∈ a ∪ b :=
+assume h, or.inl h
+
+theorem mem_union_right {x : X} {b : property X} (a : property X) : x ∈ b → x ∈ a ∪ b :=
+assume h, or.inr h
+
+theorem mem_unionl {x : X} {a b : property X} : x ∈ a → x ∈ a ∪ b :=
+assume h, or.inl h
+
+theorem mem_unionr {x : X} {a b : property X} : x ∈ b → x ∈ a ∪ b :=
+assume h, or.inr h
+
+theorem mem_or_mem_of_mem_union {x : X} {a b : property X} (H : x ∈ a ∪ b) : x ∈ a ∨ x ∈ b := H
+
+theorem mem_union.elim {x : X} {a b : property X} {P : Prop}
+    (H₁ : x ∈ a ∪ b) (H₂ : x ∈ a → P) (H₃ : x ∈ b → P) : P :=
+or.elim H₁ H₂ H₃
+
+theorem mem_union_iff (x : X) (a b : property X) : x ∈ a ∪ b ↔ x ∈ a ∨ x ∈ b := !iff.refl
+
+theorem mem_union_eq (x : X) (a b : property X) : x ∈ a ∪ b = (x ∈ a ∨ x ∈ b) := rfl
+
+--theorem union_self (a : property X) : a ∪ a = a :=
+--ext (take x, !or_self)
+
+--theorem union_empty (a : property X) : a ∪ ∅ = a :=
+--ext (take x, !or_false)
+
+--theorem empty_union (a : property X) : ∅ ∪ a = a :=
+--ext (take x, !false_or)
+
+--theorem union_comm (a b : property X) : a ∪ b = b ∪ a :=
+--ext (take x, or.comm)
+
+--theorem union_assoc (a b c : property X) : (a ∪ b) ∪ c = a ∪ (b ∪ c) :=
+--ext (take x, or.assoc)
+
+--theorem union_left_comm (s₁ s₂ s₃ : property X) : s₁ ∪ (s₂ ∪ s₃) = s₂ ∪ (s₁ ∪ s₃) :=
+--!left_comm union_comm union_assoc s₁ s₂ s₃
+
+--theorem union_right_comm (s₁ s₂ s₃ : property X) : (s₁ ∪ s₂) ∪ s₃ = (s₁ ∪ s₃) ∪ s₂ :=
+--!right_comm union_comm union_assoc s₁ s₂ s₃
+
+theorem subproperty_union_left (s t : property X) : s ⊆ s ∪ t := λ x H, or.inl H
+
+theorem subproperty_union_right (s t : property X) : t ⊆ s ∪ t := λ x H, or.inr H
+
+theorem union_subproperty {s t r : property X} (sr : s ⊆ r) (tr : t ⊆ r) : s ∪ t ⊆ r :=
+λ x xst, or.elim xst (λ xs, sr xs) (λ xt, tr xt)
+
+/- intersection -/
+
+definition inter (a b : property X) : property X := λx, x ∈ a ∧ x ∈ b
+notation a ∩ b := inter a b
+
+theorem mem_inter_iff (x : X) (a b : property X) : x ∈ a ∩ b ↔ x ∈ a ∧ x ∈ b := !iff.refl
+
+theorem mem_inter_eq (x : X) (a b : property X) : x ∈ a ∩ b = (x ∈ a ∧ x ∈ b) := rfl
+
+theorem mem_inter {x : X} {a b : property X} (Ha : x ∈ a) (Hb : x ∈ b) : x ∈ a ∩ b :=
+and.intro Ha Hb
+
+theorem mem_of_mem_inter_left {x : X} {a b : property X} (H : x ∈ a ∩ b) : x ∈ a :=
+and.left H
+
+theorem mem_of_mem_inter_right {x : X} {a b : property X} (H : x ∈ a ∩ b) : x ∈ b :=
+and.right H
+
+--theorem inter_self (a : property X) : a ∩ a = a :=
+--ext (take x, !and_self)
+
+--theorem inter_empty (a : property X) : a ∩ ∅ = ∅ :=
+--ext (take x, !and_false)
+
+--theorem empty_inter (a : property X) : ∅ ∩ a = ∅ :=
+--ext (take x, !false_and)
+
+--theorem nonempty_of_inter_nonempty_right {T : Type} {s t : property T} (H : s ∩ t ≠ ∅) : t ≠ ∅ :=
+--suppose t = ∅,
+--have s ∩ t = ∅, by rewrite this; apply inter_empty,
+--H this
+
+--theorem nonempty_of_inter_nonempty_left {T : Type} {s t : property T} (H : s ∩ t ≠ ∅) : s ≠ ∅ :=
+--suppose s = ∅,
+--have s ∩ t = ∅, by rewrite this; apply empty_inter,
+--H this
+
+--theorem inter_comm (a b : property X) : a ∩ b = b ∩ a :=
+--ext (take x, !and.comm)
+
+--theorem inter_assoc (a b c : property X) : (a ∩ b) ∩ c = a ∩ (b ∩ c) :=
+--ext (take x, !and.assoc)
+
+--theorem inter_left_comm (s₁ s₂ s₃ : property X) : s₁ ∩ (s₂ ∩ s₃) = s₂ ∩ (s₁ ∩ s₃) :=
+--!left_comm inter_comm inter_assoc s₁ s₂ s₃
+
+--theorem inter_right_comm (s₁ s₂ s₃ : property X) : (s₁ ∩ s₂) ∩ s₃ = (s₁ ∩ s₃) ∩ s₂ :=
+--!right_comm inter_comm inter_assoc s₁ s₂ s₃
+
+--theorem inter_univ (a : property X) : a ∩ univ = a :=
+--ext (take x, !and_true)
+
+--theorem univ_inter (a : property X) : univ ∩ a = a :=
+--ext (take x, !true_and)
+
+theorem inter_subproperty_left (s t : property X) : s ∩ t ⊆ s := λ x H, and.left H
+
+theorem inter_subproperty_right (s t : property X) : s ∩ t ⊆ t := λ x H, and.right H
+
+theorem inter_subproperty_inter_right {s t : property X} (u : property X) (H : s ⊆ t) : s ∩ u ⊆ t ∩ u :=
+take x, assume xsu, and.intro (H (and.left xsu)) (and.right xsu)
+
+theorem inter_subproperty_inter_left {s t : property X} (u : property X) (H : s ⊆ t) : u ∩ s ⊆ u ∩ t :=
+take x, assume xus, and.intro (and.left xus) (H (and.right xus))
+
+theorem subproperty_inter {s t r : property X} (rs : r ⊆ s) (rt : r ⊆ t) : r ⊆ s ∩ t :=
+λ x xr, and.intro (rs xr) (rt xr)
+
+--theorem not_mem_of_mem_of_not_mem_inter_left {s t : property X} {x : X} (Hxs : x ∈ s) (Hnm : x ∉ s ∩ t) : x ∉ t :=
+--  suppose x ∈ t,
+--  have x ∈ s ∩ t, from and.intro Hxs this,
+--  show false, from Hnm this
+
+--theorem not_mem_of_mem_of_not_mem_inter_right {s t : property X} {x : X} (Hxs : x ∈ t) (Hnm : x ∉ s ∩ t) : x ∉ s :=
+--  suppose x ∈ s,
+--  have x ∈ s ∩ t, from and.intro this Hxs,
+--  show false, from Hnm this
+
+/- distributivity laws -/
+
+--theorem inter_distrib_left (s t u : property X) : s ∩ (t ∪ u) = (s ∩ t) ∪ (s ∩ u) :=
+--ext (take x, !and.left_distrib)
+
+--theorem inter_distrib_right (s t u : property X) : (s ∪ t) ∩ u = (s ∩ u) ∪ (t ∩ u) :=
+--ext (take x, !and.right_distrib)
+
+--theorem union_distrib_left (s t u : property X) : s ∪ (t ∩ u) = (s ∪ t) ∩ (s ∪ u) :=
+--ext (take x, !or.left_distrib)
+
+--theorem union_distrib_right (s t u : property X) : (s ∩ t) ∪ u = (s ∪ u) ∩ (t ∪ u) :=
+--ext (take x, !or.right_distrib)
+
+
 /- property-builder notation -/
 
 -- {x : X | P}

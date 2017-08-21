@@ -6,13 +6,14 @@ Authors: Egbert Rijke, Steve Awodey
 Exact couple, derived couples, and so on
 -/
 
+/-
 import algebra.group_theory hit.set_quotient types.sigma types.list types.sum .quotient_group .subgroup .ses
 
 open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function group trunc
      equiv is_equiv
 
 -- This definition needs to be moved to exactness.hlean. However we had trouble doing so. Please help.
-definition iso_ker_im_of_exact {A B C : AbGroup} (f : A →g B) (g : B →g C) (E : is_exact f g) : ab_kernel g ≃g ab_image f :=
+definition iso_ker_im_of_exact {A B C : AbGroup} (f : A →g B) (g : B →g C) (E : is_exact f g) : ab_Kernel g ≃g ab_image f :=
   begin
   fapply ab_subgroup_iso,
   intro a,
@@ -283,3 +284,5 @@ definition derived_couple_exact_ij : is_exact_ag derived_couple_i derived_couple
   end
 
 end derived_couple
+
+-/

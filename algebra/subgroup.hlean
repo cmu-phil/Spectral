@@ -59,7 +59,7 @@ namespace group
       that the image of f is closed under the group operations is part
       of the definition of the image of f. --/
 
-  definition image_subgroup [instance] {G : Group} {H : Group} (f : G →g H) :
+  definition is_subgroup_image [instance] {G : Group} {H : Group} (f : G →g H) :
     is_subgroup H (image f) :=
     begin
       fapply is_subgroup.mk,
@@ -177,7 +177,7 @@ section
   end
 
   -- this is just (Σ(g : G), H g), but only defined if (H g) is a prop
-  definition sg {G : Group} (H : property G) : Type := {g : G | g ∈ H}
+  definition sg {G : Group} (H : property G) : Type := subtype (λ x, x ∈ H)
   local attribute sg [reducible]
 
   definition subgroup_one [constructor] : sg H := ⟨one, subgroup_one_mem H⟩
@@ -232,9 +232,7 @@ section
 
   definition Kernel {G H : Group} (f : G →g H) : Group := subgroup (kernel f)
 
-set_option trace.class_instances true
-
-  definition ab_kernel {G H : AbGroup} (f : G →g H) : AbGroup := ab_subgroup (kernel f)
+  definition ab_Kernel {G H : AbGroup} (f : G →g H) : AbGroup := ab_subgroup (kernel f)
 
   definition incl_of_subgroup [constructor] {G : Group} (H : property G) [is_subgroup G H] :
     subgroup H →g G :=
@@ -254,12 +252,12 @@ set_option trace.class_instances true
     fapply subtype_eq
   end
 
-  definition ab_kernel_incl {G H : AbGroup} (f : G →g H) : ab_kernel f →g G :=
+  definition ab_Kernel_incl {G H : AbGroup} (f : G →g H) : ab_Kernel f →g G :=
   begin
     fapply incl_of_subgroup,
   end
 
-  definition is_embedding_ab_kernel_incl {G H : AbGroup} (f : G →g H) : is_embedding (ab_kernel_incl f) :=
+  definition is_embedding_ab_kernel_incl {G H : AbGroup} (f : G →g H) : is_embedding (ab_Kernel_incl f) :=
   begin
     fapply is_embedding_incl_of_subgroup,
   end
@@ -283,7 +281,7 @@ set_option trace.class_instances true
   definition Image {G H : Group} (f : G →g H) : Group :=
     subgroup (image f)
 
-  definition ab_image {G : AbGroup} {H : Group} (f : G →g H) : AbGroup :=
+  definition ab_Image {G : AbGroup} {H : Group} (f : G →g H) : AbGroup :=
   AbGroup_of_Group (Image f)
   begin
     intro g h,
@@ -298,11 +296,11 @@ set_option trace.class_instances true
   definition image_incl {G H : Group} (f : G →g H) : Image f →g H :=
     incl_of_subgroup (image f)
 
-definition ab_image_incl {A B : AbGroup} (f : A →g B) : ab_image f →g B := incl_of_subgroup (image f)
+definition ab_Image_incl {A B : AbGroup} (f : A →g B) : ab_Image f →g B := incl_of_subgroup (image f)
 
-definition is_equiv_surjection_ab_image_incl {A B : AbGroup} (f : A →g B) (H : is_surjective f) : is_equiv (ab_image_incl f ) :=
+definition is_equiv_surjection_ab_image_incl {A B : AbGroup} (f : A →g B) (H : is_surjective f) : is_equiv (ab_Image_incl f ) :=
   begin
-    fapply is_equiv.adjointify (ab_image_incl f),
+    fapply is_equiv.adjointify (ab_Image_incl f),
     intro b,
     fapply sigma.mk,
     exact b,
@@ -314,10 +312,10 @@ definition is_equiv_surjection_ab_image_incl {A B : AbGroup} (f : A →g B) (H :
     reflexivity
   end
 
-definition iso_surjection_ab_image_incl [constructor] {A B : AbGroup} (f : A →g B) (H : is_surjective f) : ab_image f ≃g B :=
+definition iso_surjection_ab_image_incl [constructor] {A B : AbGroup} (f : A →g B) (H : is_surjective f) : ab_Image f ≃g B :=
   begin
     fapply isomorphism.mk,
-    exact (ab_image_incl f),
+    exact (ab_Image_incl f),
     exact is_equiv_surjection_ab_image_incl f H
   end
 
@@ -355,7 +353,7 @@ f = incl_of_subgroup K ∘g hom_lift f K Hyp :=
     reflexivity
   end
 
-definition ab_hom_lift_kernel [constructor] {A B C : AbGroup} (f : A →g B) (g : B →g C) (Hyp : Π (a : A), g (f a) = 1) : A →g ab_kernel g :=
+definition ab_hom_lift_kernel [constructor] {A B C : AbGroup} (f : A →g B) (g : B →g C) (Hyp : Π (a : A), g (f a) = 1) : A →g ab_Kernel g :=
   begin
     fapply ab_hom_lift,
     exact f,
@@ -364,7 +362,7 @@ definition ab_hom_lift_kernel [constructor] {A B C : AbGroup} (f : A →g B) (g 
   end
 
 definition ab_hom_lift_kernel_factors {A B C : AbGroup} (f : A →g B) (g : B →g C) (Hyp : Π (a : A), g (f a) = 1) :
-f = ab_kernel_incl g ∘g ab_hom_lift_kernel f g Hyp :=
+f = ab_Kernel_incl g ∘g ab_hom_lift_kernel f g Hyp :=
   begin
     fapply ab_hom_factors_through_lift,
   end
@@ -436,7 +434,7 @@ definition ab_image_lift [constructor] {G H : AbGroup} (f : G →g H) : G →g I
 end
 
   definition image_homomorphism {A B C : AbGroup} (f : A →g B) (g : B →g C) :
-    ab_image f →g ab_image (g ∘g f) :=
+    ab_Image f →g ab_Image (g ∘g f) :=
   begin
     fapply image_elim,
     exact image_lift (g ∘g f),
@@ -539,7 +537,7 @@ end
   end
 
   definition ab_subgroup_iso {A : AbGroup} {R S : property A} [is_subgroup A R] [is_subgroup A S]
-      (H : Π (a : A), R a -> S a) (K : Π (a : A), S a -> R a) :
+      (H : Π (a : A), a ∈ R → a ∈ S) (K : Π (a : A), a ∈ S → a ∈ R) :
     ab_subgroup R ≃g ab_subgroup S :=
   begin
     fapply isomorphism.mk,
@@ -551,7 +549,7 @@ end
   end
 
   definition ab_subgroup_iso_triangle {A : AbGroup} {R S : property A} [is_subgroup A R] [is_subgroup A S]
-      (H : Π (a : A), R a -> S a) (K : Π (a : A), S a -> R a) :
+      (H : Π (a : A), a ∈ R → a ∈ S) (K : Π (a : A), a ∈ S → a ∈ R) :
     incl_of_subgroup R  ~ incl_of_subgroup S ∘g ab_subgroup_iso H K :=
   begin
     intro r, induction r, reflexivity
@@ -560,4 +558,5 @@ end
 end group
 
 open group
-attribute image_subgroup [constructor]
+attribute is_subgroup_image [constructor]
+attribute is_subgroup_kernel [constructor]

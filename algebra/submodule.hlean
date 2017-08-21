@@ -1,40 +1,42 @@
 /- submodules and quotient modules -/
 
--- Authors: Floris van Doorn
-
-
+-- Authors: Floris van Doorn, Jeremy Avigad
 import .left_module .quotient_group
 
-open algebra eq group sigma sigma.ops is_trunc function trunc equiv is_equiv
+open algebra eq group sigma sigma.ops is_trunc function trunc equiv is_equiv property
+
+  definition group_homomorphism_of_add_group_homomorphism [constructor] {G₁ G₂ : AddGroup}
+    (φ : G₁ →a G₂) : G₁ →g G₂ :=
+  φ
 
 -- move to subgroup
-attribute normal_subgroup_rel._trans_of_to_subgroup_rel [unfold 2]
-attribute normal_subgroup_rel.to_subgroup_rel [constructor]
+-- attribute normal_subgroup_rel._trans_of_to_subgroup_rel [unfold 2]
+-- attribute normal_subgroup_rel.to_subgroup_rel [constructor]
 
-  definition is_equiv_incl_of_subgroup {G : Group} (H : subgroup_rel G) (h : Πg, H g) :
+  definition is_equiv_incl_of_subgroup {G : Group} (H : property G) [is_subgroup G H] (h : Πg, g ∈ H) :
     is_equiv (incl_of_subgroup H) :=
   have is_surjective (incl_of_subgroup H),
   begin intro g, exact image.mk ⟨g, h g⟩ idp end,
   have is_embedding (incl_of_subgroup H), from is_embedding_incl_of_subgroup H,
   function.is_equiv_of_is_surjective_of_is_embedding (incl_of_subgroup H)
 
-definition subgroup_isomorphism [constructor] {G : Group} (H : subgroup_rel G) (h : Πg, H g) :
+definition subgroup_isomorphism [constructor] {G : Group} (H : property G) [is_subgroup G H] (h : Πg, g ∈ H) :
   subgroup H ≃g G :=
 isomorphism.mk _ (is_equiv_incl_of_subgroup H h)
 
-definition is_equiv_qg_map {G : Group} (H : normal_subgroup_rel G) (H₂ : Π⦃g⦄, H g → g = 1) :
+definition is_equiv_qg_map {G : Group} (H : property G) [is_normal_subgroup G H] (H₂ : Π⦃g⦄, g ∈ H → g = 1) :
   is_equiv (qg_map H) :=
 set_quotient.is_equiv_class_of _ (λg h r, eq_of_mul_inv_eq_one (H₂ r))
 
-definition quotient_group_isomorphism [constructor] {G : Group} (H : normal_subgroup_rel G)
-  (h : Πg, H g → g = 1) : quotient_group H ≃g G :=
+definition quotient_group_isomorphism [constructor] {G : Group} (H : property G) [is_normal_subgroup G H]
+  (h : Πg, g ∈ H → g = 1) : quotient_group H ≃g G :=
 (isomorphism.mk _ (is_equiv_qg_map H h))⁻¹ᵍ
 
-definition is_equiv_ab_qg_map {G : AbGroup} (H : subgroup_rel G) (h : Π⦃g⦄, H g → g = 1) :
+definition is_equiv_ab_qg_map {G : AbGroup} (H : property G) [is_subgroup G H] (h : Π⦃g⦄, g ∈ H → g = 1) :
   is_equiv (ab_qg_map H) :=
-proof is_equiv_qg_map _ h qed
+proof @is_equiv_qg_map G H (is_normal_subgroup_ab _) h qed
 
-definition ab_quotient_group_isomorphism [constructor] {G : AbGroup} (H : subgroup_rel G)
+definition ab_quotient_group_isomorphism [constructor] {G : AbGroup} (H : property G) [is_subgroup G H]
   (h : Πg, H g → g = 1) : quotient_ab_group H ≃g G :=
 (isomorphism.mk _ (is_equiv_ab_qg_map H h))⁻¹ᵍ
 
@@ -42,41 +44,38 @@ namespace left_module
 /- submodules -/
 variables {R : Ring} {M M₁ M₂ M₃ : LeftModule R} {m m₁ m₂ : M}
 
-structure submodule_rel (M : LeftModule R) : Type :=
-  (S : M → Prop)
-  (Szero : S 0)
-  (Sadd : Π⦃g h⦄, S g → S h → S (g + h))
-  (Ssmul : Π⦃g⦄ (r : R), S g → S (r • g))
+structure is_submodule [class] (M : LeftModule R) (S : property M) : Type :=
+  (zero_mem : 0 ∈ S)
+  (add_mem : Π⦃g h⦄, g ∈ S → h ∈ S → g + h ∈ S)
+  (smul_mem : Π⦃g⦄ (r : R), g ∈ S → r • g ∈ S)
 
-definition contains_zero := @submodule_rel.Szero
-definition contains_add  := @submodule_rel.Sadd
-definition contains_smul := @submodule_rel.Ssmul
-attribute submodule_rel.S [coercion]
+definition zero_mem {R : Ring} {M : LeftModule R} (S : property M) [is_submodule M S] := is_submodule.zero_mem S
+definition add_mem {R : Ring} {M : LeftModule R} (S : property M) [is_submodule M S] := @is_submodule.add_mem R M S
+definition smul_mem {R : Ring} {M : LeftModule R} (S : property M) [is_submodule M S] := @is_submodule.smul_mem R M S
 
-theorem contains_neg (S : submodule_rel M) ⦃m⦄ (H : S m) : S (-m) :=
-transport (λx, S x) (neg_one_smul m) (contains_smul S (- 1) H)
+theorem neg_mem (S : property M) [is_submodule M S] ⦃m⦄ (H : m ∈ S) : -m ∈ S :=
+transport (λx, x ∈ S) (neg_one_smul m) (smul_mem S (- 1) H)
 
-theorem is_normal_submodule (S : submodule_rel M) ⦃m₁ m₂⦄ (H : S m₁) : S (m₂ + m₁ + (-m₂)) :=
+theorem is_normal_submodule (S : property M) [is_submodule M S] ⦃m₁ m₂⦄ (H : S m₁) : S (m₂ + m₁ + (-m₂)) :=
 transport (λx, S x) (by rewrite [add.comm, neg_add_cancel_left]) H
 
-open submodule_rel
+-- open is_submodule
 
-variables {S : submodule_rel M}
+variables {S : property M} [is_submodule M S]
 
-definition subgroup_rel_of_submodule_rel [constructor] (S : submodule_rel M) :
-  subgroup_rel (AddGroup_of_AddAbGroup M) :=
-subgroup_rel.mk S (contains_zero S) (contains_add S) (contains_neg S)
+definition is_subgroup_of_is_submodule [instance] (S : property M) [is_submodule M S] :
+  is_subgroup (AddGroup_of_AddAbGroup M) S :=
+is_subgroup.mk (zero_mem S) (add_mem S) (neg_mem S)
 
-definition submodule_rel_of_subgroup_rel [constructor] (S : subgroup_rel (AddGroup_of_AddAbGroup M))
-  (h : Π⦃g⦄ (r : R), S g → S (r • g)) : submodule_rel M :=
-submodule_rel.mk S (subgroup_has_one S) @(subgroup_respect_mul S) h
+definition is_subgroup_of_is_submodule' [instance] (S : property M) [is_submodule M S] : is_subgroup (Group_of_AbGroup (AddAbGroup_of_LeftModule M)) S :=
+is_subgroup.mk (zero_mem S) (add_mem S) (neg_mem S)
 
-definition submodule' (S : submodule_rel M) : AddAbGroup :=
-ab_subgroup (subgroup_rel_of_submodule_rel S)
+definition submodule' (S : property M) [is_submodule M S] : AddAbGroup :=
+ab_subgroup S -- (subgroup_rel_of_submodule_rel S)
 
-definition submodule_smul [constructor] (S : submodule_rel M) (r : R) :
+definition submodule_smul [constructor] (S : property M) [is_submodule M S] (r : R) :
   submodule' S →a submodule' S :=
-ab_subgroup_functor (smul_homomorphism M r) (λg, contains_smul S r)
+ab_subgroup_functor (smul_homomorphism M r) (λg, smul_mem S r)
 
 definition submodule_smul_right_distrib (r s : R) (n : submodule' S) :
   submodule_smul S (r + s) n = submodule_smul S r n + submodule_smul S s n :=
@@ -96,148 +95,158 @@ definition submodule_mul_smul (r s : R) (n : submodule' S) :
   submodule_smul S (r * s) n = submodule_smul S r (submodule_smul S s n) :=
 by rexact submodule_mul_smul' r s n
 
-definition submodule_one_smul (n : submodule' S) : submodule_smul S 1 n = n :=
+definition submodule_one_smul (n : submodule' S) : submodule_smul S (1 : R) n = n :=
 begin
   refine subgroup_functor_homotopy _ _ _ n ⬝ !subgroup_functor_gid,
   intro m, exact to_one_smul m
 end
 
-definition submodule (S : submodule_rel M) : LeftModule R :=
+definition submodule (S : property M) [is_submodule M S] : LeftModule R :=
 LeftModule_of_AddAbGroup (submodule' S) (submodule_smul S)
   (λr, homomorphism.addstruct (submodule_smul S r))
   submodule_smul_right_distrib
   submodule_mul_smul
   submodule_one_smul
 
-definition submodule_incl [constructor] (S : submodule_rel M) : submodule S →lm M :=
+definition submodule_incl [constructor] (S : property M) [is_submodule M S] : submodule S →lm M :=
 lm_homomorphism_of_group_homomorphism (incl_of_subgroup _)
   begin
     intro r m, induction m with m hm, reflexivity
   end
 
-definition hom_lift [constructor] {K : submodule_rel M₂} (φ : M₁ →lm M₂)
-  (h : Π (m : M₁), K (φ m)) : M₁ →lm submodule K :=
+definition hom_lift [constructor] {K : property M₂} [is_submodule M₂ K] (φ : M₁ →lm M₂)
+  (h : Π (m : M₁), φ m ∈ K) : M₁ →lm submodule K :=
 lm_homomorphism_of_group_homomorphism (hom_lift (group_homomorphism_of_lm_homomorphism φ) _ h)
   begin
     intro r g, exact subtype_eq (to_respect_smul φ r g)
   end
 
-definition submodule_functor [constructor] {S : submodule_rel M₁} {K : submodule_rel M₂}
-  (φ : M₁ →lm M₂) (h : Π (m : M₁), S m → K (φ m)) : submodule S →lm submodule K :=
+definition submodule_functor [constructor] {S : property M₁} [is_submodule M₁ S]
+  {K : property M₂} [is_submodule M₂ K]
+  (φ : M₁ →lm M₂) (h : Π (m : M₁), m ∈ S → φ m ∈ K) : submodule S →lm submodule K :=
 hom_lift (φ ∘lm submodule_incl S) (by intro m; exact h m.1 m.2)
 
-definition hom_lift_compose {K : submodule_rel M₃}
-  (φ : M₂ →lm M₃) (h : Π (m : M₂), K (φ m)) (ψ : M₁ →lm M₂) :
+definition hom_lift_compose {K : property M₃} [is_submodule M₃ K]
+  (φ : M₂ →lm M₃) (h : Π (m : M₂), φ m ∈ K) (ψ : M₁ →lm M₂) :
   hom_lift φ h ∘lm ψ ~ hom_lift (φ ∘lm ψ) proof (λm, h (ψ m)) qed :=
 by reflexivity
 
-definition hom_lift_homotopy {K : submodule_rel M₂} {φ : M₁ →lm M₂}
-  {h : Π (m : M₁), K (φ m)} {φ' : M₁ →lm M₂}
-  {h' : Π (m : M₁), K (φ' m)} (p : φ ~ φ') : hom_lift φ h ~ hom_lift φ' h' :=
+definition hom_lift_homotopy {K : property M₂} [is_submodule M₂ K] {φ : M₁ →lm M₂}
+  {h : Π (m : M₁), φ m ∈ K} {φ' : M₁ →lm M₂}
+  {h' : Π (m : M₁), φ' m ∈ K} (p : φ ~ φ') : hom_lift φ h ~ hom_lift φ' h' :=
 λg, subtype_eq (p g)
 
-definition incl_smul (S : submodule_rel M) (r : R) (m : M) (h : S m) :
-  r • ⟨m, h⟩ = ⟨_, contains_smul S r h⟩ :> submodule S :=
+definition incl_smul (S : property M) [is_submodule M S] (r : R) (m : M) (h : S m) :
+  r • ⟨m, h⟩ = ⟨_, smul_mem S r h⟩ :> submodule S :=
 by reflexivity
 
-definition submodule_rel_submodule [constructor] (S₂ S₁ : submodule_rel M) :
-  submodule_rel (submodule S₂) :=
-submodule_rel.mk (λm, S₁ (submodule_incl S₂ m))
-  (contains_zero S₁)
-  (λm n p q, contains_add S₁ p q)
+definition property_submodule (S₁ S₂ : property M) [is_submodule M S₁] [is_submodule M S₂] :
+  property (submodule S₁) := {m | submodule_incl S₁ m ∈ S₂}
+
+definition is_submodule_property_submodule [instance] (S₁ S₂ : property M) [is_submodule M S₁] [is_submodule M S₂] :
+  is_submodule (submodule S₁) (property_submodule S₁ S₂) :=
+is_submodule.mk
+  (mem_property_of (zero_mem S₂))
+  (λm n p q, mem_property_of (add_mem S₂ (of_mem_property_of p) (of_mem_property_of q)))
   begin
-    intro m r p, induction m with m hm, exact contains_smul S₁ r p
+    intro m r p, induction m with m hm, apply mem_property_of,
+    apply smul_mem S₂, exact (of_mem_property_of p)
   end
 
-definition submodule_rel_submodule_trivial [constructor] {S₂ S₁ : submodule_rel M}
-  (h : Π⦃m⦄, S₁ m → m = 0) ⦃m : submodule S₂⦄ (Sm : submodule_rel_submodule S₂ S₁ m) : m = 0 :=
+definition eq_zero_of_mem_property_submodule_trivial [constructor] {S₁ S₂ : property M} [is_submodule M S₁] [is_submodule M S₂]
+  (h : Π⦃m⦄, m ∈ S₂ → m = 0) ⦃m : submodule S₁⦄ (Sm : m ∈ property_submodule S₁ S₂) : m = 0 :=
 begin
   fapply subtype_eq,
-  apply h Sm
+  apply h (of_mem_property_of Sm)
 end
 
-definition is_prop_submodule (S : submodule_rel M) [H : is_prop M] : is_prop (submodule S) :=
+definition is_prop_submodule (S : property M) [is_submodule M S] [H : is_prop M] : is_prop (submodule S) :=
 begin apply @is_trunc_sigma, exact H end
 local attribute is_prop_submodule [instance]
-definition is_contr_submodule [instance] (S : submodule_rel M) [is_contr M] : is_contr (submodule S) :=
+definition is_contr_submodule [instance] (S : property M) [is_submodule M S] [is_contr M] : is_contr (submodule S) :=
 is_contr_of_inhabited_prop 0
 
-definition submodule_isomorphism [constructor] (S : submodule_rel M) (h : Πg, S g) :
+definition submodule_isomorphism [constructor] (S : property M) [is_submodule M S] (h : Πg, g ∈ S) :
   submodule S ≃lm M :=
-isomorphism.mk (submodule_incl S) (is_equiv_incl_of_subgroup (subgroup_rel_of_submodule_rel S) h)
+isomorphism.mk (submodule_incl S) (is_equiv_incl_of_subgroup S h)
 
 /- quotient modules -/
 
-definition quotient_module' (S : submodule_rel M) : AddAbGroup :=
-quotient_ab_group (subgroup_rel_of_submodule_rel S)
+definition quotient_module' (S : property M) [is_submodule M S] : AddAbGroup :=
+quotient_ab_group S -- (subgroup_rel_of_submodule_rel S)
 
-definition quotient_module_smul [constructor] (S : submodule_rel M) (r : R) :
+definition quotient_module_smul [constructor] (S : property M) [is_submodule M S] (r : R) :
   quotient_module' S →a quotient_module' S :=
-quotient_ab_group_functor (smul_homomorphism M r) (λg, contains_smul S r)
-
-
+quotient_ab_group_functor (smul_homomorphism M r) (λg, smul_mem S r)
 
 definition quotient_module_smul_right_distrib (r s : R) (n : quotient_module' S) :
   quotient_module_smul S (r + s) n = quotient_module_smul S r n + quotient_module_smul S s n :=
 begin
-  refine quotient_group_functor_homotopy _ _ _ n ⬝ !quotient_group_functor_mul⁻¹,
+  refine quotient_ab_group_functor_homotopy _ _ _ n ⬝ !quotient_ab_group_functor_mul⁻¹,
   intro m, exact to_smul_right_distrib r s m
 end
 
 definition quotient_module_mul_smul' (r s : R) (n : quotient_module' S) :
   quotient_module_smul S (r * s) n = (quotient_module_smul S r ∘g quotient_module_smul S s) n :=
 begin
-  refine quotient_group_functor_homotopy _ _ _ n ⬝ (quotient_group_functor_compose _ _ _ _ n)⁻¹ᵖ,
-  intro m, exact to_mul_smul r s m
+  apply eq.symm,
+  apply eq.trans (quotient_ab_group_functor_compose _ _ _ _ n),
+  apply quotient_ab_group_functor_homotopy,
+  intro m, exact eq.symm (to_mul_smul r s m)
 end
+-- previous proof:
+--  refine quotient_ab_group_functor_homotopy _ _ _ n ⬝
+--    (quotient_ab_group_functor_compose (quotient_module_smul S r) (quotient_module_smul S s) _ _ n)⁻¹ᵖ,
+--  intro m, to_mul_smul r s m
 
 definition quotient_module_mul_smul (r s : R) (n : quotient_module' S) :
   quotient_module_smul S (r * s) n = quotient_module_smul S r (quotient_module_smul S s n) :=
 by rexact quotient_module_mul_smul' r s n
 
-definition quotient_module_one_smul (n : quotient_module' S) : quotient_module_smul S 1 n = n :=
+definition quotient_module_one_smul (n : quotient_module' S) : quotient_module_smul S (1 : R) n = n :=
 begin
-  refine quotient_group_functor_homotopy _ _ _ n ⬝ !quotient_group_functor_gid,
+  refine quotient_ab_group_functor_homotopy _ _ _ n ⬝ !quotient_ab_group_functor_gid,
   intro m, exact to_one_smul m
 end
 
-definition quotient_module (S : submodule_rel M) : LeftModule R :=
+definition quotient_module (S : property M) [is_submodule M S] : LeftModule R :=
 LeftModule_of_AddAbGroup (quotient_module' S) (quotient_module_smul S)
   (λr, homomorphism.addstruct (quotient_module_smul S r))
   quotient_module_smul_right_distrib
   quotient_module_mul_smul
   quotient_module_one_smul
 
-definition quotient_map [constructor] (S : submodule_rel M) : M →lm quotient_module S :=
+definition quotient_map [constructor] (S : property M) [is_submodule M S] : M →lm quotient_module S :=
 lm_homomorphism_of_group_homomorphism (ab_qg_map _) (λr g, idp)
 
 definition quotient_map_eq_zero (m : M) (H : S m) : quotient_map S m = 0 :=
-qg_map_eq_one _ H
+@qg_map_eq_one _ _ (is_normal_subgroup_ab _) _ H
 
 definition rel_of_quotient_map_eq_zero (m : M) (H : quotient_map S m = 0) : S m :=
-rel_of_qg_map_eq_one m H
+@rel_of_qg_map_eq_one _ _ (is_normal_subgroup_ab _) m H
 
-definition quotient_elim [constructor] (φ : M →lm M₂) (H : Π⦃m⦄, S m → φ m = 0) :
+definition quotient_elim [constructor] (φ : M →lm M₂) (H : Π⦃m⦄, m ∈ S → φ m = 0) :
   quotient_module S →lm M₂ :=
 lm_homomorphism_of_group_homomorphism
-  (quotient_group_elim (group_homomorphism_of_lm_homomorphism φ) H)
+  (quotient_ab_group_elim (group_homomorphism_of_lm_homomorphism φ) H)
   begin
-    intro r m, esimp,
-    induction m using set_quotient.rec_prop with m,
+    intro r, esimp,
+    refine @set_quotient.rec_prop _ _ _ (λ x, !is_trunc_eq) _,
+    intro m,
     exact to_respect_smul φ r m
   end
 
-definition is_prop_quotient_module (S : submodule_rel M) [H : is_prop M] : is_prop (quotient_module S) :=
+definition is_prop_quotient_module (S : property M) [is_submodule M S] [H : is_prop M] : is_prop (quotient_module S) :=
 begin apply @set_quotient.is_trunc_set_quotient, exact H end
 local attribute is_prop_quotient_module [instance]
 
-definition is_contr_quotient_module [instance] (S : submodule_rel M) [is_contr M] :
+definition is_contr_quotient_module [instance] (S : property M) [is_submodule M S] [is_contr M] :
   is_contr (quotient_module S) :=
 is_contr_of_inhabited_prop 0
 
-definition quotient_module_isomorphism [constructor] (S : submodule_rel M) (h : Π⦃m⦄, S m → m = 0) :
+definition quotient_module_isomorphism [constructor] (S : property M) [is_submodule M S] (h : Π⦃m⦄, S m → m = 0) :
   quotient_module S ≃lm M :=
-(isomorphism.mk (quotient_map S) (is_equiv_ab_qg_map (subgroup_rel_of_submodule_rel S) h))⁻¹ˡᵐ
+(isomorphism.mk (quotient_map S) (is_equiv_ab_qg_map S h))⁻¹ˡᵐ
 
 /- specific submodules -/
 definition has_scalar_image (φ : M₁ →lm M₂) ⦃m : M₂⦄ (r : R)
@@ -248,12 +257,26 @@ begin
   refine to_respect_smul φ r m' ⬝ ap (λx, r • x) p,
 end
 
+definition is_submodule_image [instance] (φ : M₁ →lm M₂) : is_submodule M₂ (image φ) :=
+is_submodule.mk
+  (show 0 ∈ image (group_homomorphism_of_lm_homomorphism φ),
+    begin apply is_subgroup.one_mem, apply is_subgroup_image end)
+  (λ g₁ g₂ hg₁ hg₂,
+     show g₁ + g₂ ∈ image (group_homomorphism_of_lm_homomorphism φ),
+     begin
+       apply @is_subgroup.mul_mem,
+       apply is_subgroup_image, exact hg₁, exact hg₂
+     end)
+  (has_scalar_image φ)
+
+/-
 definition image_rel [constructor] (φ : M₁ →lm M₂) : submodule_rel M₂ :=
 submodule_rel_of_subgroup_rel
   (image_subgroup (group_homomorphism_of_lm_homomorphism φ))
   (has_scalar_image φ)
+-/
 
-definition image_rel_trivial (φ : M₁ →lm M₂) [H : is_contr M₁] ⦃m : M₂⦄ (h : image_rel φ m) : m = 0 :=
+definition image_trivial (φ : M₁ →lm M₂) [H : is_contr M₁] ⦃m : M₂⦄ (h : m ∈ image φ) : m = 0 :=
 begin
   refine image.rec _ h,
   intro x p,
@@ -261,7 +284,7 @@ begin
   apply @is_prop.elim, apply is_trunc_succ, exact H
 end
 
-definition image_module [constructor] (φ : M₁ →lm M₂) : LeftModule R := submodule (image_rel φ)
+definition image_module [constructor] (φ : M₁ →lm M₂) : LeftModule R := submodule (image φ)
 
 -- unfortunately this is note definitionally equal:
 -- definition foo (φ : M₁ →lm M₂) :
@@ -281,7 +304,9 @@ variables {ψ : M₂ →lm M₃} {φ : M₁ →lm M₂} {θ : M₁ →lm M₃}
 definition image_elim [constructor] (θ : M₁ →lm M₃) (h : Π⦃g⦄, φ g = 0 → θ g = 0) :
   image_module φ →lm M₃ :=
 begin
-  refine homomorphism.mk (image_elim (group_homomorphism_of_lm_homomorphism θ) h) _,
+  fapply homomorphism.mk,
+  change Image (group_homomorphism_of_lm_homomorphism φ) → M₃,
+  exact image_elim (group_homomorphism_of_lm_homomorphism θ) h,
   split,
   { exact homomorphism.struct (image_elim (group_homomorphism_of_lm_homomorphism θ) _) },
   { intro r, refine @total_image.rec _ _ _ _ (λx, !is_trunc_eq) _, intro g,
@@ -304,7 +329,7 @@ definition is_contr_image_module [instance] (φ : M₁ →lm M₂) [is_contr M�
   is_contr (image_module φ) :=
 !is_contr_submodule
 
-definition is_contr_image_module_of_is_contr_dom (φ : M₁ →lm M₂) [is_contr M₁] :
+definition is_contr_image_module_of_is_contr_dom (φ : M₁ →lm M₂) [is_contrM₁ : is_contr M₁] :
   is_contr (image_module φ) :=
 is_contr.mk 0
   begin
@@ -312,7 +337,8 @@ is_contr.mk 0
     apply @total_image.rec,
     exact this,
     intro m,
-    induction (is_prop.elim 0 m), apply subtype_eq,
+    have h : is_contr (LeftModule.carrier M₁), from is_contrM₁,
+    induction (eq_of_is_contr 0 m), apply subtype_eq,
     exact (to_respect_zero φ)⁻¹
   end
 
@@ -326,28 +352,41 @@ begin
   refine to_respect_smul φ r m ⬝ ap (λx, r • x) p ⬝ smul_zero r,
 end
 
-definition kernel_rel [constructor] (φ : M₁ →lm M₂) : submodule_rel M₁ :=
-submodule_rel_of_subgroup_rel
-  (kernel_subgroup (group_homomorphism_of_lm_homomorphism φ))
+definition lm_kernel [reducible] (φ : M₁ →lm M₂) : property M₁ := kernel (group_homomorphism_of_lm_homomorphism φ)
+
+definition is_submodule_kernel [instance] (φ : M₁ →lm M₂) : is_submodule M₁ (lm_kernel φ) :=
+is_submodule.mk
+  (show 0 ∈ kernel (group_homomorphism_of_lm_homomorphism φ),
+    begin apply is_subgroup.one_mem, apply is_subgroup_kernel end)
+  (λ g₁ g₂ hg₁ hg₂,
+     show g₁ + g₂ ∈ kernel (group_homomorphism_of_lm_homomorphism φ),
+       begin apply @is_subgroup.mul_mem, apply is_subgroup_kernel, exact hg₁, exact hg₂ end)
   (has_scalar_kernel φ)
 
-definition kernel_rel_full (φ : M₁ →lm M₂) [is_contr M₂] (m : M₁) : kernel_rel φ m :=
+definition kernel_full (φ : M₁ →lm M₂) [is_contr M₂] (m : M₁) : m ∈ lm_kernel φ :=
 !is_prop.elim
 
-definition kernel_module [constructor] (φ : M₁ →lm M₂) : LeftModule R := submodule (kernel_rel φ)
+definition kernel_module [reducible] (φ : M₁ →lm M₂) : LeftModule R := submodule (lm_kernel φ)
 
 definition is_contr_kernel_module [instance] (φ : M₁ →lm M₂) [is_contr M₁] :
   is_contr (kernel_module φ) :=
 !is_contr_submodule
 
 definition kernel_module_isomorphism [constructor] (φ : M₁ →lm M₂) [is_contr M₂] : kernel_module φ ≃lm M₁ :=
-submodule_isomorphism _ (kernel_rel_full φ)
+submodule_isomorphism _ (kernel_full φ)
+
+definition homology_quotient_property (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂) : property (kernel_module ψ) :=
+property_submodule (lm_kernel ψ) (image (homomorphism_fn φ))
+
+definition is_submodule_homology_property [instance] (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂) :
+  is_submodule (kernel_module ψ) (homology_quotient_property ψ φ) :=
+(is_submodule_property_submodule _ (image φ))
 
 definition homology (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂) : LeftModule R :=
-@quotient_module R (submodule (kernel_rel ψ)) (submodule_rel_submodule _ (image_rel φ))
+quotient_module (homology_quotient_property ψ φ)
 
 definition homology.mk (φ : M₁ →lm M₂) (m : M₂) (h : ψ m = 0) : homology ψ φ :=
-quotient_map _ ⟨m, h⟩
+quotient_map (homology_quotient_property ψ φ) ⟨m, h⟩
 
 definition homology_eq0 {m : M₂} {hm : ψ m = 0} (h : image φ m) :
   homology.mk φ m hm = 0 :=
@@ -368,8 +407,8 @@ quotient_elim (θ ∘lm submodule_incl _)
     intro m x,
     induction m with m h,
     esimp at *,
-    induction x with v, induction v with m' p,
-    exact ap θ p⁻¹ ⬝ H m'
+    induction x with v,
+    exact ap θ p⁻¹ ⬝ H v -- m'
   end
 
 definition is_contr_homology [instance] (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂) [is_contr M₂] :
@@ -378,8 +417,8 @@ begin apply @is_contr_quotient_module end
 
 definition homology_isomorphism [constructor] (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂)
   [is_contr M₁] [is_contr M₃] : homology ψ φ ≃lm M₂ :=
-quotient_module_isomorphism _ (submodule_rel_submodule_trivial (image_rel_trivial φ)) ⬝lm
-!kernel_module_isomorphism
+(quotient_module_isomorphism (homology_quotient_property ψ φ)
+  (eq_zero_of_mem_property_submodule_trivial (image_trivial _))) ⬝lm (kernel_module_isomorphism ψ)
 
 -- remove:
 

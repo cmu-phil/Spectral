@@ -626,7 +626,7 @@ namespace EM
   /- TODO: other cases -/
   definition LES_isomorphism_kernel_of_trivial.{u}
     {X Y : pType.{u}} (f : X →* Y) (n : ℕ) [H : is_succ n]
-    (H1 : is_contr (πg[n+1] Y)) : πg[n] (pfiber f) ≃g kernel (π→g[n] f) :=
+    (H1 : is_contr (πg[n+1] Y)) : πg[n] (pfiber f) ≃g Kernel (π→g[n] f) :=
   begin
     induction H with n,
     have H2 : is_exact (π→g[n+1] (ppoint f)) (π→g[n+1] f),
@@ -641,7 +641,7 @@ namespace EM
 
   open group algebra is_trunc
   definition homotopy_group_fiber_EM1_functor.{u} {G H : Group.{u}} (φ : G →g H) :
-    π₁ (pfiber (EM1_functor φ)) ≃g kernel φ :=
+    π₁ (pfiber (EM1_functor φ)) ≃g Kernel φ :=
   have H1 : is_trunc 1 (EM1 H), from sorry,
   have H2 : 1 <[ℕ] 1 + 1, from sorry,
   LES_isomorphism_kernel_of_trivial (EM1_functor φ) 1
@@ -649,12 +649,12 @@ namespace EM
   sorry
 
   definition homotopy_group_fiber_EMadd1_functor {G H : AbGroup} (φ : G →g H) (n : ℕ) :
-    πg[n+1] (pfiber (EMadd1_functor φ n)) ≃g kernel φ :=
+    πg[n+1] (pfiber (EMadd1_functor φ n)) ≃g Kernel φ :=
   sorry
 
   /- TODO: move-/
   definition cokernel {G H : AbGroup} (φ : G →g H) : AbGroup :=
-  quotient_ab_group (image_subgroup φ)
+  quotient_ab_group (image φ)
 
   definition trunc_fiber_EM1_functor {G H : Group} (φ : G →g H) :
     ptrunc 0 (pfiber (EM1_functor φ)) ≃* sorry :=

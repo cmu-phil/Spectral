@@ -11,7 +11,7 @@ At the moment, it only covers short exact sequences of abelian groups, but this 
 import algebra.group_theory hit.set_quotient types.sigma types.list types.sum .quotient_group .subgroup .exactness
 
 open eq algebra is_trunc set_quotient relation sigma sigma.ops prod prod.ops sum list trunc function group trunc
-     equiv is_equiv
+     equiv is_equiv property
 
 structure SES (A B C : AbGroup) :=
   ( f : A →g B)
@@ -20,23 +20,23 @@ structure SES (A B C : AbGroup) :=
   ( Hg : is_surjective g)
   ( ex : is_exact_ag f g)
 
-definition SES_of_inclusion {A B : AbGroup} (f : A →g B) (Hf : is_embedding f) : SES A B (quotient_ab_group (image_subgroup f)) :=
+definition SES_of_inclusion {A B : AbGroup} (f : A →g B) (Hf : is_embedding f) : SES A B (quotient_ab_group (image f)) :=
   begin
-    have Hg : is_surjective (ab_qg_map (image_subgroup f)),
-    from is_surjective_ab_qg_map (image_subgroup f),
+    have Hg : is_surjective (ab_qg_map (image f)),
+    from is_surjective_ab_qg_map (image f),
     fapply SES.mk,
     exact f,
-    exact ab_qg_map (image_subgroup f),
+    exact ab_qg_map (image f),
     exact Hf,
     exact Hg,
     fapply is_exact.mk,
     intro a,
-    fapply qg_map_eq_one, fapply tr, fapply fiber.mk, exact a, reflexivity,
+    fapply ab_qg_map_eq_one, fapply tr, fapply fiber.mk, exact a, reflexivity,
     intro b, intro p,
     exact rel_of_ab_qg_map_eq_one _ p
   end
 
-definition SES_of_subgroup {B : AbGroup} (S : subgroup_rel B) : SES (ab_subgroup S) B (quotient_ab_group S) :=
+definition SES_of_subgroup {B : AbGroup} (S : property B) [is_subgroup B S] : SES (ab_subgroup S) B (quotient_ab_group S) :=
   begin
     fapply SES.mk,
     exact incl_of_subgroup S,
@@ -48,10 +48,10 @@ definition SES_of_subgroup {B : AbGroup} (S : subgroup_rel B) : SES (ab_subgroup
     intro b p, fapply tr, fapply fiber.mk, fapply sigma.mk b, fapply rel_of_ab_qg_map_eq_one, exact p, reflexivity,
   end
 
-definition SES_of_surjective_map {B C : AbGroup} (g : B →g C) (Hg : is_surjective g) : SES (ab_kernel g) B C :=
+definition SES_of_surjective_map {B C : AbGroup} (g : B →g C) (Hg : is_surjective g) : SES (ab_Kernel g) B C :=
   begin
     fapply SES.mk,
-    exact ab_kernel_incl g,
+    exact ab_Kernel_incl g,
     exact g,
     exact is_embedding_ab_kernel_incl g,
     exact Hg,
@@ -60,10 +60,10 @@ definition SES_of_surjective_map {B C : AbGroup} (g : B →g C) (Hg : is_surject
     intro b p, fapply tr, fapply fiber.mk, fapply sigma.mk, exact b, exact p, reflexivity,
   end
 
-definition SES_of_homomorphism {A B : AbGroup} (f : A →g B) : SES (ab_kernel f) A (ab_image f) :=
+definition SES_of_homomorphism {A B : AbGroup} (f : A →g B) : SES (ab_Kernel f) A (ab_Image f) :=
   begin
     fapply SES.mk,
-    exact ab_kernel_incl f,
+    exact ab_Kernel_incl f,
     exact image_lift f,
     exact is_embedding_ab_kernel_incl f,
     exact is_surjective_image_lift f,
@@ -106,8 +106,8 @@ parameters {A B C : AbGroup} (ses : SES A B C)
   local abbreviation f := SES.f ses
   local notation `g` := SES.g ses
   local abbreviation ex := SES.ex ses
-  local abbreviation q := ab_qg_map (kernel_subgroup g)
-  local abbreviation B_mod_A := quotient_ab_group (kernel_subgroup g)
+  local abbreviation q := ab_qg_map (kernel g)
+  local abbreviation B_mod_A := quotient_ab_group (kernel g)
 
 definition SES_iso_stable {A' B' C' : AbGroup} (f' : A' →g B') (g' : B' →g C') (α : A' ≃g A) (β : B' ≃g B) (γ : C' ≃g C) (Hαβ : f ∘g α ~ β ∘g f') (Hβγ : g ∘g β ~ γ ∘g g') : SES A' B' C' :=
   begin
@@ -142,9 +142,9 @@ begin
   rewrite [(H a')⁻¹],
   fapply is_exact.im_in_ker (SES.ex ses),
   intro b p,
-  have  t : trunctype.carrier (subgroup_to_rel (image_subgroup f) b), from is_exact.ker_in_im (SES.ex ses) b p,
-  induction t, fapply tr, induction a with a q, fapply fiber.mk, exact α⁻¹ᵍ a, rewrite [(H (α⁻¹ᵍ a))⁻¹],
-  krewrite [right_inv (equiv_of_isomorphism α) a], assumption
+  have  t : image' f b, from is_exact.ker_in_im (SES.ex ses) b p,
+  unfold image' at t, induction t, fapply tr, induction a with a h, fapply fiber.mk, exact α⁻¹ᵍ a, rewrite [(H (α⁻¹ᵍ a))⁻¹],
+  krewrite [right_inv (equiv_of_isomorphism α) a], exact h
 end
 
 --definition quotient_SES {A B C : AbGroup} (ses : SES A B C) :
@@ -194,7 +194,7 @@ definition quotient_triangle_extend_SES {C': AbGroup} (k : B →g C') :
   local abbreviation f' := SES.f ses'
   local notation `g'` := SES.g ses'
   local abbreviation ex' := SES.ex ses'
-  local abbreviation q' := ab_qg_map (kernel_subgroup g')
+  local abbreviation q' := ab_qg_map (kernel g')
   local abbreviation α' := quotient_codomain_SES
 
   include htpy1
@@ -204,8 +204,8 @@ definition quotient_triangle_extend_SES {C': AbGroup} (k : B →g C') :
     fapply @(is_trunc_equiv_closed_rev _ (quotient_triangle_extend_SES (g' ∘g hB))),
     fapply ab_qg_universal_property,
     intro b, intro K,
-    have k : trunctype.carrier (image_subgroup f b), from is_exact.ker_in_im ex b K,
-    induction k, induction a with a p,
+    have k : image' f b, from is_exact.ker_in_im ex b K,
+    unfold image' at k, induction k, induction a with a p,
     induction p,
     refine (ap g' (htpy1 a)) ⬝ _,
     fapply is_exact.im_in_ker ex' (hA a)
