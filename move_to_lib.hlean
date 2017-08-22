@@ -137,10 +137,10 @@ namespace eq
   λx, !idp_con ⬝ ap_id (q x)
 
   definition rfl_hvconcat (q : hsquare f₃₀ f₃₂ f₂₁ f₄₁) : homotopy.rfl ⬝htyv q ~ q :=
-  λx, inv_inv (q x)
+  λx, !idp_con
 
   definition hvconcat_rfl (q : hsquare f₃₀ f₃₂ f₂₁ f₄₁) : q ⬝htyv homotopy.rfl ~ q :=
-  λx, (!idp_con ⬝ !ap_id)⁻² ⬝ inv_inv (q x)
+  λx, !ap_id
 
   end hsquare
   definition homotopy_group_succ_in_natural (n : ℕ) {A B : Type*} (f : A →* B) :

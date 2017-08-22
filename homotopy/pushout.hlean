@@ -277,7 +277,16 @@ namespace pushout
     pushout.functor (h₂ ∘ h₁) (i₂ ∘ i₁) (j₂ ∘ j₁) (p₁ ⬝htyv p₂) (q₁ ⬝htyv q₂) ~
     pushout.functor h₂ i₂ j₂ p₂ q₂ ∘ pushout.functor h₁ i₁ j₁ p₁ q₁ :=
   begin
-    exact sorry
+    intro x, induction x with b c a,
+    { reflexivity },
+    { reflexivity },
+    { apply eq_pathover, apply hdeg_square, esimp,
+      refine !elim_glue ⬝ whisker_right _ (!ap_con ⬝ !ap_compose'⁻¹ ◾ idp) ◾
+        (ap02 _ !con_inv ⬝ !ap_con ⬝ whisker_left _ (ap02 _ !ap_inv⁻¹ ⬝ !ap_compose'⁻¹)) ⬝ _ ⬝
+        (ap_compose (pushout.functor h₂ i₂ j₂ p₂ q₂) _ _ ⬝ ap02 _ !elim_glue)⁻¹,
+      refine _ ⬝ (!ap_con ⬝ (!ap_con ⬝ !ap_compose'⁻¹ ◾ !elim_glue) ◾ !ap_compose'⁻¹)⁻¹ᵖ,
+      refine !con.assoc⁻¹ ⬝ whisker_right _ _,
+      exact whisker_right _ !con.assoc ⬝ !con.assoc }
   end
 
   variables {p₁ q₁}
@@ -593,8 +602,32 @@ equiv.MK sigma_pushout_of_pushout_sigma pushout_sigma_of_sigma_pushout
       induction a with a a',
         apply hdeg_square, refine !ap_compose'⁻¹ ⬝ !elim_glue ⬝ !con_idp ⬝ !idp_con }
   end end
--- apply eq_pathover_id_right, refine ap_compose sigma_pushout_of_pushout_sigma _ _ ⬝ ap02 _ !elim_glue ⬝ph _
--- apply eq_pathover_id_right, refine ap_compose pushout_sigma_of_sigma_pushout _ _ ⬝ ap02 _ !elim_glue ⬝ph _
+
+variables {f g}
+variables {X' : Type} {A' B' C' : X' → Type} {f' : Πx, A' x → B' x} {g' : Πx, A' x → C' x}
+  {s : X → X'} {h₁ : Πx, A x → A' (s x)} {h₂ : Πx, B x → B' (s x)} {h₃ : Πx, C x → C' (s x)}
+  (p : Πx, h₂ x ∘ f x ~ f' (s x) ∘ h₁ x) (q : Πx, h₃ x ∘ g x ~ g' (s x) ∘ h₁ x)
+
+
+definition pushout_sigma_equiv_sigma_pushout_natural :
+  hsquare
+    (pushout.functor (sigma_functor s h₁) (sigma_functor s h₂) (sigma_functor s h₃)
+      (λa, sigma_eq_right (p a.1 a.2)) (λa, sigma_eq_right (q a.1 a.2)))
+    (sigma_functor s (λx, pushout.functor (h₁ x) (h₂ x) (h₃ x) (p x) (q x)))
+    (pushout_sigma_equiv_sigma_pushout f g) (pushout_sigma_equiv_sigma_pushout f' g') :=
+begin
+  intro x, induction x with b c a,
+  { reflexivity },
+  { reflexivity },
+  { exact abstract begin apply eq_pathover, apply hdeg_square,
+    refine !ap_compose ⬝ ap02 _ !elim_glue ⬝ !ap_con ⬝
+      (!ap_con ⬝ (!ap_compose'⁻¹ ⬝ !ap_compose'⁻¹) ◾ !elim_glue) ◾
+      (!ap_compose'⁻¹ ⬝ ap02 _ !ap_inv⁻¹ ⬝ !ap_compose'⁻¹) ⬝ _,
+    exact
+      (ap_compose (sigma_functor s (λ x, pushout.functor (h₁ x) (h₂ x) (h₃ x) (p x) (q x))) _ _ ⬝
+      ap02 _ !elim_glue ⬝ !ap_compose'⁻¹ ⬝ ap_compose (dpair _) _ _ ⬝ ap02 _ !elim_glue ⬝
+      !ap_con ⬝ (!ap_con ⬝ !ap_compose'⁻¹ ◾ idp) ◾ !ap_compose'⁻¹)⁻¹ end end }
+end
 
 
   /- an induction principle for the cofiber of f : A → B if A is a pushout where the second map has a section.
