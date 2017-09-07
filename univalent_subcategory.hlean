@@ -1,8 +1,36 @@
 import homotopy.sphere2 algebra.category.functor.attributes
 
-open eq pointed sigma is_equiv equiv fiber algebra group is_trunc function prod
+open eq pointed sigma is_equiv equiv fiber algebra group is_trunc function prod prod.ops iso functor
 
 namespace category
+
+section univ_functor
+  parameters {C : Precategory} {D : Category} (F : functor C D) (p : is_embedding  F) (q : fully_faithful F) 
+  variables  {a b : carrier C}
+  include p q
+
+  definition ab_eq_equiv_iso : a = b ≃ a ≅ b := 
+    equiv.mk !ap !p                          -- a = b ≃ F a = F b
+    ⬝e equiv.mk iso_of_eq !iso_of_path_equiv -- F a = F b ≃ F a ≅ F b
+    ⬝e equiv.symm !iso_equiv_F_iso_F         -- F a ≅ F b ≃ a ≅ b
+
+  definition ab_equiv_homot_iso_of_eq : @ab_eq_equiv_iso a b ~ iso_of_eq :=
+  begin
+    intro r, 
+    esimp [ab_eq_equiv_iso], 
+    refine _ ⬝ left_inv (iso_equiv_F_iso_F F _ _) _, 
+    apply ap (inv (to_fun !iso_equiv_F_iso_F)), 
+    apply symm, 
+    induction r, 
+    apply respect_refl
+  end
+
+  definition univ_domain : is_univalent C := 
+  begin
+    intros, 
+    apply homotopy_closed ab_eq_equiv_iso ab_equiv_homot_iso_of_eq
+  end
+end univ_functor
 
   definition precategory_Group.{u} [instance] [constructor] : precategory.{u+1 u} Group :=
   begin
@@ -16,7 +44,6 @@ namespace category
     { intros, apply homomorphism_eq, esimp }
   end
 
-
   definition precategory_AbGroup.{u} [instance] [constructor] : precategory.{u+1 u} AbGroup :=
   begin
     fapply precategory.mk,
@@ -28,7 +55,6 @@ namespace category
     { intros, apply homomorphism_eq, esimp },
     { intros, apply homomorphism_eq, esimp }
   end
-  open iso
 
   definition Group_is_iso_of_is_equiv {G H : Group} (φ : G →g H) (H : is_equiv (group_fun φ)) :
     is_iso φ :=
@@ -86,13 +112,14 @@ namespace category
       apply is_trunc_prod }
   end
 
-  open prod.ops
-
 definition AbGroup_sigma.{u} : AbGroup.{u} ≃ Σ A : Type.{u}, ab_group A :=
 begin repeat (assumption | induction a with a b | intro a | fconstructor) end
 
 definition Group_sigma.{u} : Group.{u} ≃ Σ A : Type.{u}, group A :=
-begin repeat (assumption | induction a with a b | intro a | fconstructor) end
+begin
+fconstructor, exact λ a, dpair (Group.carrier a) (Group.struct' a), 
+repeat (assumption | induction a with a b | intro a | fconstructor)
+end
 
   definition group.sigma_char.{u} (A : Type) : 
     group.{u} A ≃ Σ (v : (A → A → A) × (A → A) × A), Group_props v :=
@@ -109,12 +136,7 @@ begin repeat (assumption | induction a with a b | intro a | fconstructor) end
 
 definition Group.sigma_char2.{u} : 
            Group.{u} ≃ Σ(A : Type.{u}) (v : (A → A → A) × (A → A) × A), Group_props v :=
--- Group_sigma ⬝e sigma_equiv_sigma_right group.sigma_char
-begin
-fconstructor, intro, refine ⟨a,_⟩, apply to_fun (group.sigma_char a), exact Group.struct' a,
-apply is_equiv_compose (sigma_equiv_sigma_right group.sigma_char), apply homotopy_closed Group_sigma,
-intro, induction x, reflexivity
-end
+Group_sigma ⬝e sigma_equiv_sigma_right group.sigma_char
 
   definition ab_group.sigma_char.{u} (A : Type) : 
     ab_group.{u} A ≃ Σ (v : (A → A → A) × (A → A) × A), AbGroup_props v :=
@@ -155,8 +177,6 @@ apply equiv.symm, apply sigma_equiv_sigma !group.sigma_char, intros,
 induction a, reflexivity
 end
   
-  open is_trunc
-
   section
   local attribute group.to_has_mul group.to_has_inv [coercion]
 
@@ -186,7 +206,6 @@ end
   end
   end
 
-  open prod.ops
   definition group_of_Group_props.{u} {A : Type.{u}} {m : A → A → A} {i : A → A} {o : A}
     (H : Group_props (m, (i, o))) : group A :=
   ⦃group, mul := m, inv := i, one := o, is_set_carrier := H.1,
@@ -206,7 +225,7 @@ end
       { exact one_eq_of_mul_eq (group_of_Group_props H) (group_of_Group_props H') p }}
   end
 
-  open sigma.ops Group
+  open Group
 
   theorem Group_eq_equiv_lemma {G H : Group}
     (p : (sigma_char2 G).1 = (sigma_char2 H).1) :
@@ -215,11 +234,13 @@ end
   begin
     refine !sigma_pathover_equiv_of_is_prop ⬝e _,
     induction G with G g, induction H with H h,
-    esimp [Group.sigma_char2] at p, induction p,
+    esimp [sigma_char2] at p, 
+esimp [sigma_functor] at p, esimp [Group_sigma] at *,
+induction p,
     refine !pathover_idp ⬝e _,
     induction g with s m ma o om mo i mi, induction h with σ μ μa ε εμ με ι μι,
-    exact Group_eq_equiv_lemma2 (Group.sigma_char2 (Group.mk G (group.mk s m ma o om mo i mi))).2.2
-                                (Group.sigma_char2 (Group.mk G (group.mk σ μ μa ε εμ με ι μι))).2.2
+    exact Group_eq_equiv_lemma2 (sigma_char2 (Group.mk G (group.mk s m ma o om mo i mi))).2.2
+                                (sigma_char2 (Group.mk G (group.mk σ μ μa ε εμ με ι μι))).2.2
   end
 
   definition isomorphism.sigma_char (G H : Group) : (G ≃g H) ≃ Σ(e : G ≃ H), is_mul_hom e :=
@@ -233,10 +254,10 @@ end
 
   definition Group_eq_equiv (G H : Group) : G = H ≃ (G ≃g H) :=
   begin
-    refine (eq_equiv_fn_eq_of_equiv Group.sigma_char2 G H) ⬝e _,
+    refine (eq_equiv_fn_eq_of_equiv sigma_char2 G H) ⬝e _,
     refine !sigma_eq_equiv ⬝e _,
     refine sigma_equiv_sigma_right Group_eq_equiv_lemma ⬝e _,
-    transitivity (Σ(e : (Group.sigma_char2 G).1 ≃ (Group.sigma_char2 H).1),
+    transitivity (Σ(e : (sigma_char2 G).1 ≃ (sigma_char2 H).1),
       @is_mul_hom _ _ _ _ (to_fun e)), apply sigma_ua,
     exact !isomorphism.sigma_char⁻¹ᵉ
   end
@@ -266,50 +287,10 @@ end
     intro p, induction p, fapply iso_eq, apply homomorphism_eq, reflexivity
   end
 
-open functor
-
-section univ_functor
-
-parameters {C : Precategory}
-           {D : Category}
-           (F : functor C D) 
-           (p : is_embedding  F)  -- object part
-           (q : fully_faithful F) 
-variables  {a b : carrier C}
- 
-include p q
-
-definition ab_eq_equiv_iso : a = b ≃ a ≅ b := 
-  equiv.mk !ap !p                          -- a = b ≃ F a = F b
-  ⬝e equiv.mk iso_of_eq !iso_of_path_equiv -- F a = F b ≃ F a ≅ F b
-  ⬝e equiv.symm !iso_equiv_F_iso_F         -- F a ≅ F b ≃ a ≅ b
-
-definition ab_equiv_homot_iso_of_eq : @ab_eq_equiv_iso a b ~ iso_of_eq :=
-begin
-  intro r, 
-  esimp [ab_eq_equiv_iso], 
-  refine _ ⬝ left_inv (iso_equiv_F_iso_F F _ _) _, 
-  apply ap (inv (to_fun !iso_equiv_F_iso_F)), 
-  apply symm, 
-  induction r, 
-  apply respect_refl
-end
-
-definition univ_domain : is_univalent C := 
-begin
-  intros, 
-  apply homotopy_closed ab_eq_equiv_iso ab_equiv_homot_iso_of_eq
-end
-end univ_functor
-
 definition AbGroup_to_Group [constructor] : functor (Precategory.mk AbGroup _) 
-                                      (Category.mk Group category_Group) 
-:= functor.mk (λ x : AbGroup, (x : Group)) 
-              (λ a b x, x) 
-              (λ x, rfl)
-              begin intros, reflexivity end
+                                                    (Category.mk Group category_Group) 
+:= mk (λ x : AbGroup, (x : Group)) (λ a b x, x) (λ x, rfl) begin intros, reflexivity end
 
-open group
 
 definition is_set_group (X : Type) : is_set (group X) :=
 begin
@@ -354,12 +335,8 @@ apply is_prop_fiber_of_is_embedding,
 apply is_trunc_equiv_closed -1 (H⁻¹ᵉ),
 end
 
-definition h2 : AbGroup_to_Group ~ Group_sigma⁻¹ 
-                                 ∘ total ab_group_to_group 
-                                 ∘ AbGroup_sigma :=
-begin
-intro g, induction g, reflexivity
-end
+definition h2 : AbGroup_to_Group ~ Group_sigma⁻¹ ∘ total ab_group_to_group ∘ AbGroup_sigma :=
+begin intro g, induction g, reflexivity end
 
 definition is_embedding_AbGroup_to_Group : is_embedding AbGroup_to_Group :=
 begin
