@@ -1,11 +1,11 @@
 -- Authors: Floris van Doorn
 
 import homotopy.EM algebra.category.functor.equivalence types.pointed2 ..pointed_pi ..pointed
-       ..move_to_lib .susp ..algebra.exactness
+       ..move_to_lib .susp ..algebra.exactness ..univalent_subcategory
 
-open eq equiv is_equiv algebra group nat pointed EM.ops is_trunc trunc susp function is_conn
+open eq equiv is_equiv algebra group nat pointed EM.ops is_trunc trunc susp function is_conn nat
 
-/- TODO: try to fix the speed of this file -/
+/- TODO: try to fix the compilation time of this file -/
 
 namespace EM
 
@@ -461,13 +461,12 @@ namespace EM
     begin intro, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_pid end
     begin intros, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_compose end
 
-  definition ab_homotopy_group_cfunctor (n : ℕ) : cType*[n+2.-1] ⇒ AbGrp :=
+  definition ab_homotopy_group_cfunctor (n : ℕ) : cType*[n.+1] ⇒ AbGrp :=
   functor.mk
     (λX, πag[n+2] X)
     (λX Y f, π→g[n+2] f)
     begin intro, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_pid end
     begin intros, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_compose end
-
 
   definition is_equivalence_EM1_cfunctor.{u} : is_equivalence EM1_cfunctor.{u} :=
   begin
@@ -493,10 +492,10 @@ namespace EM
         { apply eq_of_phomotopy, apply pright_inv }}}
   end
 
-  definition is_equivalence_EM_cfunctor (n : ℕ) : is_equivalence (EM_cfunctor (n+2)) :=
+  definition is_equivalence_EM_cfunctor.{u} (n : ℕ) : is_equivalence (EM_cfunctor.{u} (n+2)) :=
   begin
     fapply is_equivalence.mk,
-    { exact ab_homotopy_group_cfunctor n },
+    { exact ab_homotopy_group_cfunctor.{u} n },
     { fapply natural_iso.mk,
       { fapply nat_trans.mk,
         { intro G, exact (ghomotopy_group_EMadd1' G (n+1))⁻¹ᵍ },
@@ -520,8 +519,8 @@ namespace EM
   definition Grp_equivalence_cptruncconntype'.{u} [constructor] : Grp.{u} ≃c cType*[0] :=
   equivalence.mk EM1_cfunctor.{u} is_equivalence_EM1_cfunctor.{u}
 
-  definition AbGrp_equivalence_cptruncconntype' [constructor] (n : ℕ) : AbGrp ≃c cType*[n+2.-1] :=
-  equivalence.mk (EM_cfunctor (n+2)) (is_equivalence_EM_cfunctor n)
+  definition AbGrp_equivalence_cptruncconntype'.{u} [constructor] (n : ℕ) : AbGrp.{u} ≃c cType*[n.+1] :=
+  equivalence.mk (EM_cfunctor.{u} (n+2)) (is_equivalence_EM_cfunctor.{u} n)
   end category
 
   definition pequiv_EMadd1_of_loopn_pequiv_EM1 {G : AbGroup} {X : Type*} (n : ℕ) (e : Ω[n] X ≃* EM1 G)
