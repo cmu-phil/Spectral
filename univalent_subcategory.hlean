@@ -5,29 +5,29 @@ open eq pointed sigma is_equiv equiv fiber algebra group is_trunc function prod 
 namespace category
 
 section univ_subcat
-  parameters {C : Precategory} {D : Category} (F : functor C D) (p : is_embedding  F) (q : fully_faithful F) 
+  parameters {C : Precategory} {D : Category} (F : functor C D) (p : is_embedding  F) (q : fully_faithful F)
   variables  {a b : carrier C}
   include p q
 
-  definition eq_equiv_iso_of_fully_faithful : a = b ≃ a ≅ b := 
+  definition eq_equiv_iso_of_fully_faithful : a = b ≃ a ≅ b :=
     equiv.mk !ap !p                          -- a = b ≃ F a = F b
     ⬝e equiv.mk iso_of_eq !iso_of_path_equiv -- F a = F b ≃ F a ≅ F b
     ⬝e equiv.symm !iso_equiv_F_iso_F         -- F a ≅ F b ≃ a ≅ b
 
   definition eq_equiv_iso_of_fully_faithful_homot : @eq_equiv_iso_of_fully_faithful a b ~ iso_of_eq :=
   begin
-    intro r, 
-    esimp [eq_equiv_iso_of_fully_faithful], 
-    refine _ ⬝ left_inv (iso_equiv_F_iso_F F _ _) _, 
-    apply ap (inv (to_fun !iso_equiv_F_iso_F)), 
-    apply symm, 
-    induction r, 
+    intro r,
+    esimp [eq_equiv_iso_of_fully_faithful],
+    refine _ ⬝ left_inv (iso_equiv_F_iso_F F _ _) _,
+    apply ap (inv (to_fun !iso_equiv_F_iso_F)),
+    apply symm,
+    induction r,
     apply respect_refl
   end
 
-  definition is_univalent_domain_of_fully_faithful_embedding : is_univalent C := 
+  definition is_univalent_domain_of_fully_faithful_embedding : is_univalent C :=
   begin
-    intros, 
+    intros,
     apply homotopy_closed eq_equiv_iso_of_fully_faithful eq_equiv_iso_of_fully_faithful_homot
   end
 end univ_subcat
@@ -117,47 +117,47 @@ begin repeat (assumption | induction a with a b | intro a | fconstructor) end
 
 definition Group_sigma.{u} : Group.{u} ≃ Σ A : Type.{u}, group A :=
 begin
-fconstructor, exact λ a, dpair (Group.carrier a) (Group.struct' a), 
+fconstructor, exact λ a, dpair (Group.carrier a) (Group.struct' a),
 repeat (assumption | induction a with a b | intro a | fconstructor)
 end
 
-  definition group.sigma_char.{u} (A : Type) : 
+  definition group.sigma_char.{u} (A : Type) :
     group.{u} A ≃ Σ (v : (A → A → A) × (A → A) × A), Group_props v :=
   begin
     fapply equiv.MK,
-    {intro g, induction g with m s ma o om mo i mi, 
+    {intro g, induction g with m s ma o om mo i mi,
       repeat (fconstructor; do 2 try assumption), },
-    {intro v, induction v with x v, repeat induction x with y x, 
+    {intro v, induction v with x v, repeat induction x with y x,
       repeat induction v with x v, constructor, repeat assumption },
-    { intro, repeat induction b with b x, induction x, 
+    { intro, repeat induction b with b x, induction x,
       repeat induction x_1 with v x_1, reflexivity },
     { intro v, repeat induction v with x v, reflexivity },
   end
 
-definition Group.sigma_char2.{u} : 
+definition Group.sigma_char2.{u} :
            Group.{u} ≃ Σ(A : Type.{u}) (v : (A → A → A) × (A → A) × A), Group_props v :=
 Group_sigma ⬝e sigma_equiv_sigma_right group.sigma_char
 
-  definition ab_group.sigma_char.{u} (A : Type) : 
+  definition ab_group.sigma_char.{u} (A : Type) :
     ab_group.{u} A ≃ Σ (v : (A → A → A) × (A → A) × A), AbGroup_props v :=
   begin
     fapply equiv.MK,
-    {intro g, induction g with m s ma o om mo i mi, 
+    {intro g, induction g with m s ma o om mo i mi,
       repeat (fconstructor; do 2 try assumption), },
-    {intro v, induction v with x v, repeat induction x with y x, 
+    {intro v, induction v with x v, repeat induction x with y x,
       repeat induction v with x v, constructor, repeat assumption },
-    { intro, repeat induction b with b x, induction x, 
+    { intro, repeat induction b with b x, induction x,
       repeat induction x_1 with v x_1, reflexivity },
     { intro v, repeat induction v with x v, reflexivity },
   end
 
-  definition AbGroup_Group_props {A : Type} (v : (A → A → A) × (A → A) × A) : 
+  definition AbGroup_Group_props {A : Type} (v : (A → A → A) × (A → A) × A) :
     AbGroup_props v ≃ Group_props v × ∀ a b, v.1 a b = v.1 b a :=
   begin
     fapply equiv.MK, induction v with m v, induction v with i e,
     intro,  fconstructor, repeat induction a with b a, repeat (fconstructor; assumption), assumption,
-    exact a.2.2.2.2.2, intro, induction a, repeat induction v with b v, repeat induction a with b a, 
-repeat (fconstructor; assumption), assumption, intro b, 
+    exact a.2.2.2.2.2, intro, induction a, repeat induction v with b v, repeat induction a with b a,
+repeat (fconstructor; assumption), assumption, intro b,
     assert H : is_prop (Group_props v × ∀ a b, v.1 a b = v.1 b a),
     apply is_trunc_prod, assert K : is_set A, induction b, induction v, induction a_1, induction a_2_1, assumption,
     exact _, apply is_prop.elim, intro, apply is_prop.elim,
@@ -170,13 +170,13 @@ sigma_equiv_sigma_right (λa, !sigma.equiv_prod⁻¹ᵉ) ⬝e !sigma_assoc_equiv
 
 definition ab_group_equiv_group_comm (A : Type) : ab_group A ≃ Σ (g : group A), ∀ a b : A, a * b = b * a :=
 begin
-refine !ab_group.sigma_char ⬝e _, 
-refine sigma_equiv_sigma_right AbGroup_Group_props ⬝e _, 
-refine sigma_prod_equiv_sigma_sigma ⬝e _, 
-apply equiv.symm, apply sigma_equiv_sigma !group.sigma_char, intros, 
+refine !ab_group.sigma_char ⬝e _,
+refine sigma_equiv_sigma_right AbGroup_Group_props ⬝e _,
+refine sigma_prod_equiv_sigma_sigma ⬝e _,
+apply equiv.symm, apply sigma_equiv_sigma !group.sigma_char, intros,
 induction a, reflexivity
 end
-  
+
   section
   local attribute group.to_has_mul group.to_has_inv [coercion]
 
@@ -234,7 +234,7 @@ end
   begin
     refine !sigma_pathover_equiv_of_is_prop ⬝e _,
     induction G with G g, induction H with H h,
-    esimp [sigma_char2] at p, 
+    esimp [sigma_char2] at p,
 esimp [sigma_functor] at p, esimp [Group_sigma] at *,
 induction p,
     refine !pathover_idp ⬝e _,
@@ -285,8 +285,8 @@ induction p,
     intro p, induction p, fapply iso_eq, apply homomorphism_eq, reflexivity
   end
 
-definition AbGroup_to_Group [constructor] : functor (Precategory.mk AbGroup _) 
-                                                    (Category.mk Group category_Group) 
+definition AbGroup_to_Group [constructor] : functor (Precategory.mk AbGroup _)
+                                                    (Category.mk Group category_Group)
 := mk (λ x : AbGroup, (x : Group)) (λ a b x, x) (λ x, rfl) begin intros, reflexivity end
 
 
@@ -304,7 +304,7 @@ definition group_comm_to_group (A : Type) : (Σ g : group A, ∀ (a b : A), a*b 
 definition is_embedding_group_comm_to_group (A : Type) : is_embedding (group_comm_to_group A) :=
 begin
 unfold group_comm_to_group,
-intros, induction a, 
+intros, induction a,
 assert H : is_set A, induction a, assumption,
 assert H :is_set (group A), apply is_set_group,
 induction a', fconstructor, intros, apply sigma_eq,
@@ -312,21 +312,21 @@ induction a', fconstructor, intros, apply sigma_eq,
  apply is_prop.elim, intros, apply is_prop.elim, intros, apply is_prop.elim
 end
 
-definition ab_group_to_group_homot (A : Type) : 
-  @ab_group_to_group A ~ group_comm_to_group A ∘ ab_group_equiv_group_comm A := 
+definition ab_group_to_group_homot (A : Type) :
+  @ab_group_to_group A ~ group_comm_to_group A ∘ ab_group_equiv_group_comm A :=
 begin intro, induction x, reflexivity end
 
 definition is_embedding_ab_group_to_group (A : Type) : is_embedding (@ab_group_to_group A) :=
 begin
-apply is_embedding_homotopy_closed_rev (ab_group_to_group_homot A), apply is_embedding_compose, 
+apply is_embedding_homotopy_closed_rev (ab_group_to_group_homot A), apply is_embedding_compose,
 exact is_embedding_group_comm_to_group A, apply is_embedding_of_is_equiv
  end
 
 definition is_embedding_total_of_is_embedding_fiber {A} {B C : A → Type} {f : Π a, B a → C a}
   : (∀ a, is_embedding (f a)) → is_embedding (total f) :=
 begin
-intro e, fapply is_embedding_of_is_prop_fiber, intro p, induction p with a c, 
-assert H : (fiber (total f) ⟨a, c⟩)≃ fiber (f a) c, 
+intro e, fapply is_embedding_of_is_prop_fiber, intro p, induction p with a c,
+assert H : (fiber (total f) ⟨a, c⟩)≃ fiber (f a) c,
 apply fiber_total_equiv,
 assert H2 : is_prop (fiber (f a) c),
 apply is_prop_fiber_of_is_embedding,
@@ -339,14 +339,14 @@ begin intro g, induction g, reflexivity end
 definition is_embedding_AbGroup_to_Group : is_embedding AbGroup_to_Group :=
 begin
 apply is_embedding_homotopy_closed_rev AbGroup_to_Group_homot,
-apply is_embedding_compose, 
-apply is_embedding_of_is_equiv, 
 apply is_embedding_compose,
-apply is_embedding_total_of_is_embedding_fiber is_embedding_ab_group_to_group, 
+apply is_embedding_of_is_equiv,
+apply is_embedding_compose,
+apply is_embedding_total_of_is_embedding_fiber is_embedding_ab_group_to_group,
 apply is_embedding_of_is_equiv
 end
 
-definition is_univalent_AbGroup : is_univalent precategory_AbGroup := 
+definition is_univalent_AbGroup : is_univalent precategory_AbGroup :=
 begin
 apply is_univalent_domain_of_fully_faithful_embedding AbGroup_to_Group is_embedding_AbGroup_to_Group, intros, apply is_equiv_id
 end
