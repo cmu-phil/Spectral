@@ -215,6 +215,43 @@ namespace pointed
   definition loop_punit : Ω punit ≃* punit :=
   loop_pequiv_punit_of_is_set punit
 
+  definition add_point_functor' [unfold 4] {A B : Type} (e : A → B) (a : A₊) : B₊ :=
+  begin induction a with a, exact none, exact some (e a) end
+
+  definition add_point_functor [constructor] {A B : Type} (e : A → B) : A₊ →* B₊ :=
+  pmap.mk (add_point_functor' e) idp
+
+  definition add_point_functor_compose {A B C : Type} (f : B → C) (e : A → B) :
+    add_point_functor (f ∘ e) ~* add_point_functor f ∘* add_point_functor e :=
+  begin
+    fapply phomotopy.mk,
+    { intro x, induction x: reflexivity },
+    reflexivity
+  end
+
+  definition add_point_functor_id (A : Type) :
+    add_point_functor id ~* pid A₊ :=
+  begin
+    fapply phomotopy.mk,
+    { intro x, induction x: reflexivity },
+    reflexivity
+  end
+
+  definition add_point_functor_phomotopy {A B : Type} {e e' : A → B} (p : e ~ e') :
+    add_point_functor e ~* add_point_functor e' :=
+  begin
+    fapply phomotopy.mk,
+    { intro x, induction x with a, reflexivity, exact ap some (p a) },
+    reflexivity
+  end
+
+  definition add_point_pequiv {A B : Type} (e : A ≃ B) : A₊ ≃* B₊ :=
+  pequiv.MK (add_point_functor e) (add_point_functor e⁻¹ᵉ)
+    abstract !add_point_functor_compose⁻¹* ⬝* add_point_functor_phomotopy (left_inv e) ⬝*
+      !add_point_functor_id end
+    abstract !add_point_functor_compose⁻¹* ⬝* add_point_functor_phomotopy (right_inv e) ⬝*
+      !add_point_functor_id end
+
   definition add_point_over [unfold 3] {A : Type} (B : A → Type*) : A₊ → Type*
   | (some a) := B a
   | none     := plift punit

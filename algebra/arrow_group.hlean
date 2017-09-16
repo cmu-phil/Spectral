@@ -67,8 +67,9 @@ namespace group
     : Group.mk (trunc 0 (Π*(a : A), Ω B)) !trunc_group
       ≃g Group.mk (trunc 0 (A →* Ω B)) !trunc_group :=
   begin
-    apply trunc_isomorphism_of_equiv (pppi_equiv_pmap A (Ω B)),
-    intro h k, induction h with h h_pt, induction k with k k_pt, reflexivity
+    reflexivity,
+    -- apply trunc_isomorphism_of_equiv (pppi_equiv_pmap A (Ω B)),
+    -- intro h k, induction h with h h_pt, induction k with k k_pt, reflexivity
   end
 
   section

@@ -9,13 +9,15 @@ Reduced cohomology of spectra and cohomology theories
 import ..spectrum.basic ..algebra.arrow_group ..homotopy.fwedge ..choice ..homotopy.pushout ..algebra.product_group
 
 open eq spectrum int trunc pointed EM group algebra circle sphere nat EM.ops equiv susp is_trunc
-     function fwedge cofiber bool lift sigma is_equiv choice pushout algebra unit pi
+     function fwedge cofiber bool lift sigma is_equiv choice pushout algebra unit pi is_conn
 
 namespace cohomology
 
 /- The cohomology of X with coefficients in Y is
    trunc 0 (A →* Ω[2] (Y (n+2)))
    In the file arrow_group (in algebra) we construct the group structure on this type.
+   Equivalently, it's
+   πₛ[n] (sp_cotensor X Y)
 -/
 definition cohomology (X : Type*) (Y : spectrum) (n : ℤ) : AbGroup :=
 AbGroup_trunc_pmap X (Y (n+2))
@@ -60,16 +62,7 @@ notation `opH^` n `[`:0 binders `, ` r:(scoped G, ordinary_parametrized_cohomolo
 notation `upH^` n `[`:0 binders `, ` r:(scoped Y, unreduced_parametrized_cohomology Y n) `]`:0 := r
 notation `uopH^` n `[`:0 binders `, ` r:(scoped G, unreduced_ordinary_parametrized_cohomology G n) `]`:0 := r
 
--- check H^3[S¹*,EM_spectrum agℤ]
--- check H^3[S¹*]
--- check pH^3[(x : S¹*), EM_spectrum agℤ]
-
 /- an alternate definition of cohomology -/
-definition cohomology_equiv_shomotopy_group_sp_cotensor (X : Type*) (Y : spectrum) (n : ℤ) :
-  H^n[X, Y] ≃ πₛ[-n] (sp_cotensor X Y) :=
-trunc_equiv_trunc 0 (!pfunext ⬝e loop_pequiv_loop !pfunext ⬝e loopn_pequiv_loopn 2
-  (pequiv_of_eq (ap (λn, ppmap X (Y n)) (add.comm n 2 ⬝ ap (add 2) !neg_neg⁻¹))))
-
 definition parametrized_cohomology_isomorphism_shomotopy_group_spi {X : Type*} (Y : X → spectrum)
   {n m : ℤ} (p : -m = n) : pH^n[(x : X), Y x] ≃g πₛ[m] (spi X Y) :=
 begin
@@ -145,6 +138,14 @@ cohomology_isomorphism_shomotopy_group_sp_cotensor X Y !neg_neg ⬝g
 shomotopy_group_isomorphism_of_pequiv (-n) (λk, pequiv_ppcompose_left (e k)) ⬝g
 (cohomology_isomorphism_shomotopy_group_sp_cotensor X Y' !neg_neg)⁻¹ᵍ
 
+definition unreduced_cohomology_isomorphism {X X' : Type} (f : X' ≃ X) (Y : spectrum) (n : ℤ) :
+  uH^n[X, Y] ≃g uH^n[X', Y] :=
+cohomology_isomorphism (add_point_pequiv f) Y n
+
+definition unreduced_cohomology_isomorphism_right (X : Type) {Y Y' : spectrum} (e : Πn, Y n ≃* Y' n)
+  (n : ℤ) : uH^n[X, Y] ≃g uH^n[X, Y'] :=
+cohomology_isomorphism_right X₊ e n
+
 definition parametrized_cohomology_isomorphism_right {X : Type*} {Y Y' : X → spectrum}
   (e : Πx n, Y x n ≃* Y' x n) (n : ℤ) : pH^n[(x : X), Y x] ≃g pH^n[(x : X), Y' x] :=
 parametrized_cohomology_isomorphism_shomotopy_group_spi Y !neg_neg ⬝g
@@ -177,6 +178,28 @@ parametrized_cohomology_isomorphism_right
     { reflexivity }
   end
   n
+
+definition pH_isomorphism_H {X : Type*} (Y : spectrum) (n : ℤ) : pH^n[(x : X), Y] ≃g H^n[X, Y] :=
+by reflexivity
+
+definition opH_isomorphism_oH {X : Type*} (G : AbGroup) (n : ℤ) : opH^n[(x : X), G] ≃g oH^n[X, G] :=
+by reflexivity
+
+definition upH_isomorphism_uH {X : Type} (Y : spectrum) (n : ℤ) : upH^n[(x : X), Y] ≃g uH^n[X, Y] :=
+unreduced_parametrized_cohomology_isomorphism_shomotopy_group_supi _ !neg_neg ⬝g
+(unreduced_cohomology_isomorphism_shomotopy_group_sp_ucotensor _ _ !neg_neg)⁻¹ᵍ
+
+definition uopH_isomorphism_uoH {X : Type} (G : AbGroup) (n : ℤ) :
+  uopH^n[(x : X), G] ≃g uoH^n[X, G] :=
+!upH_isomorphism_uH
+
+definition uopH_isomorphism_uoH_of_is_conn {X : Type*} (G : X → AbGroup) (n : ℤ) (H : is_conn 1 X) :
+  uopH^n[(x : X), G x] ≃g uoH^n[X, G pt] :=
+begin
+  refine _ ⬝g !uopH_isomorphism_uoH,
+  apply unreduced_ordinary_parametrized_cohomology_isomorphism_right,
+  refine is_conn.elim 0 _ _, reflexivity
+end
 
 /- suspension axiom -/
 

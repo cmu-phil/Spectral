@@ -442,6 +442,17 @@ namespace left_module
   lemma Dinfdiag_stable {s : ℕ} (h : B (deg (k X) x) ≤ s) : is_contr (Dinfdiag s) :=
   is_contr_D _ _ (Dub !deg_iterate_ik_commute h)
 
+  /- some useful immediate properties -/
+
+  definition short_exact_mod_infpage0 (bound_zero : B' (deg (k X) x) = 0) :
+    short_exact_mod (Einfdiag 0) (D X (deg (k X) x)) (Dinfdiag 1) :=
+  begin
+    refine short_exact_mod_isomorphism _ _ _ (short_exact_mod_infpage 0),
+    { reflexivity },
+    { exact (Dinfdiag0 bound_zero)⁻¹ˡᵐ },
+    { reflexivity }
+  end
+
   end
   end convergence_theorem
 

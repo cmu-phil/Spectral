@@ -208,7 +208,9 @@ converges_to_g_isomorphism
 end unreduced_atiyah_hirzebruch
 
 section serre
-  variables {X : Type} (F : X → Type) (Y : spectrum) (s₀ : ℤ) (H : is_strunc s₀ Y)
+  universe variable u
+  variables {X : Type} (x₀ : X) (F : X → Type) {X₁ X₂ : pType.{u}} (f : X₁ →* X₂)
+            (Y : spectrum) (s₀ : ℤ) (H : is_strunc s₀ Y)
 
   include H
   definition serre_convergence :
@@ -231,7 +233,25 @@ section serre
      apply shomotopy_group_isomorphism_of_pequiv, intro k,
      exact (sigma_pumap F (Y k))⁻¹ᵉ*
     end
- qed
+  qed
+
+  definition serre_convergence_of_is_conn (H2 : is_conn 1 X) :
+    (λn s, uoH^-(n-s)[X, uH^-s[F x₀, Y]]) ⟹ᵍ (λn, uH^-n[Σ(x : X), F x, Y]) :=
+  proof
+  converges_to_g_isomorphism
+    (serre_convergence F Y s₀ H)
+    begin intro n s, exact @uopH_isomorphism_uoH_of_is_conn (pointed.MK X x₀) _ _ H2 end
+    begin intro n, reflexivity end
+  qed
+
+  definition serre_convergence_of_pmap (H2 : is_conn 1 X₂) :
+    (λn s, uoH^-(n-s)[X₂, uH^-s[pfiber f, Y]]) ⟹ᵍ (λn, uH^-n[X₁, Y]) :=
+  proof
+  converges_to_g_isomorphism
+    (serre_convergence_of_is_conn pt (λx, fiber f x) Y s₀ H H2)
+    begin intro n s, reflexivity end
+    begin intro n, apply unreduced_cohomology_isomorphism, exact !sigma_fiber_equiv⁻¹ᵉ end
+  qed
 
 
 end serre
