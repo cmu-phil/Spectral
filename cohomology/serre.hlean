@@ -209,14 +209,12 @@ end unreduced_atiyah_hirzebruch
 
 section serre
   universe variable u
-  variables {X : Type} (x₀ : X) (F : X → Type)
-            {X₁ X₂ : pType.{u}} (f : X₁ →* X₂)
-            {Z₁ Z₂ : Type.{u}} (g : Z₁ → Z₂)
+  variables {X B : Type.{u}} (b₀ : B) (F : B → Type) (f : X → B)
             (Y : spectrum) (s₀ : ℤ) (H : is_strunc s₀ Y)
 
   include H
   definition serre_convergence :
-    (λn s, uopH^-(n-s)[(x : X), uH^-s[F x, Y]]) ⟹ᵍ (λn, uH^-n[Σ(x : X), F x, Y]) :=
+    (λn s, uopH^-(n-s)[(b : B), uH^-s[F b, Y]]) ⟹ᵍ (λn, uH^-n[Σ(b : B), F b, Y]) :=
   proof
   converges_to_g_isomorphism
     (unreduced_atiyah_hirzebruch_convergence
@@ -237,29 +235,29 @@ section serre
     end
   qed
 
-  definition serre_convergence_of_map :
-    (λn s, uopH^-(n-s)[(x : Z₂), uH^-s[fiber g x, Y]]) ⟹ᵍ (λn, uH^-n[Z₁, Y]) :=
+  definition serre_convergence_map :
+    (λn s, uopH^-(n-s)[(b : B), uH^-s[fiber f b, Y]]) ⟹ᵍ (λn, uH^-n[X, Y]) :=
   proof
   converges_to_g_isomorphism
-    (serre_convergence (fiber g) Y s₀ H)
+    (serre_convergence (fiber f) Y s₀ H)
     begin intro n s, reflexivity end
     begin intro n, apply unreduced_cohomology_isomorphism, exact !sigma_fiber_equiv⁻¹ᵉ end
   qed
 
-  definition serre_convergence_of_is_conn (H2 : is_conn 1 X) :
-    (λn s, uoH^-(n-s)[X, uH^-s[F x₀, Y]]) ⟹ᵍ (λn, uH^-n[Σ(x : X), F x, Y]) :=
+  definition serre_convergence_of_is_conn (H2 : is_conn 1 B) :
+    (λn s, uoH^-(n-s)[B, uH^-s[F b₀, Y]]) ⟹ᵍ (λn, uH^-n[Σ(b : B), F b, Y]) :=
   proof
   converges_to_g_isomorphism
     (serre_convergence F Y s₀ H)
-    begin intro n s, exact @uopH_isomorphism_uoH_of_is_conn (pointed.MK X x₀) _ _ H2 end
+    begin intro n s, exact @uopH_isomorphism_uoH_of_is_conn (pointed.MK B b₀) _ _ H2  end
     begin intro n, reflexivity end
   qed
 
-  definition serre_convergence_of_pmap (H2 : is_conn 1 X₂) :
-    (λn s, uoH^-(n-s)[X₂, uH^-s[pfiber f, Y]]) ⟹ᵍ (λn, uH^-n[X₁, Y]) :=
+  definition serre_convergence_map_of_is_conn (H2 : is_conn 1 B) :
+    (λn s, uoH^-(n-s)[B, uH^-s[fiber f b₀, Y]]) ⟹ᵍ (λn, uH^-n[X, Y]) :=
   proof
   converges_to_g_isomorphism
-    (serre_convergence_of_is_conn pt (fiber f) Y s₀ H H2)
+    (serre_convergence_of_is_conn b₀ (fiber f) Y s₀ H H2)
     begin intro n s, reflexivity end
     begin intro n, apply unreduced_cohomology_isomorphism, exact !sigma_fiber_equiv⁻¹ᵉ end
   qed
