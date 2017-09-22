@@ -63,6 +63,7 @@ notation `upH^` n `[`:0 binders `, ` r:(scoped Y, unreduced_parametrized_cohomol
 notation `uopH^` n `[`:0 binders `, ` r:(scoped G, unreduced_ordinary_parametrized_cohomology G n) `]`:0 := r
 
 /- an alternate definition of cohomology -/
+
 definition parametrized_cohomology_isomorphism_shomotopy_group_spi {X : Type*} (Y : X → spectrum)
   {n m : ℤ} (p : -m = n) : pH^n[(x : X), Y x] ≃g πₛ[m] (spi X Y) :=
 begin
@@ -146,6 +147,14 @@ definition unreduced_cohomology_isomorphism_right (X : Type) {Y Y' : spectrum} (
   (n : ℤ) : uH^n[X, Y] ≃g uH^n[X, Y'] :=
 cohomology_isomorphism_right X₊ e n
 
+definition unreduced_ordinary_cohomology_isomorphism {X X' : Type} (f : X' ≃ X) (G : AbGroup)
+  (n : ℤ) : uoH^n[X, G] ≃g uoH^n[X', G] :=
+unreduced_cohomology_isomorphism f (EM_spectrum G) n
+
+definition unreduced_ordinary_cohomology_isomorphism_right (X : Type) {G G' : AbGroup}
+  (e : G ≃g G') (n : ℤ) : uoH^n[X, G] ≃g uoH^n[X, G'] :=
+unreduced_cohomology_isomorphism_right X (EM_spectrum_pequiv e) n
+
 definition parametrized_cohomology_isomorphism_right {X : Type*} {Y Y' : X → spectrum}
   (e : Πx n, Y x n ≃* Y' x n) (n : ℤ) : pH^n[(x : X), Y x] ≃g pH^n[(x : X), Y' x] :=
 parametrized_cohomology_isomorphism_shomotopy_group_spi Y !neg_neg ⬝g
@@ -200,6 +209,14 @@ begin
   apply unreduced_ordinary_parametrized_cohomology_isomorphism_right,
   refine is_conn.elim 0 _ _, reflexivity
 end
+
+definition cohomology_change_int (X : Type*) (Y : spectrum) {n n' : ℤ} (p : n = n') :
+  H^n[X, Y] ≃g H^n'[X, Y] :=
+isomorphism_of_eq (ap (λn, H^n[X, Y]) p)
+
+definition parametrized_cohomology_change_int (X : Type*) (Y : X → spectrum) {n n' : ℤ}
+  (p : n = n') : pH^n[(x : X), Y x] ≃g pH^n'[(x : X), Y x] :=
+isomorphism_of_eq (ap (λn, pH^n[(x : X), Y x]) p)
 
 /- suspension axiom -/
 
@@ -271,7 +288,7 @@ is_equiv_of_equiv_of_homotopy (additive_equiv H X Y n) begin intro f, induction 
 /- dimension axiom for ordinary cohomology -/
 open is_conn trunc_index
 theorem EM_dimension' (G : AbGroup) (n : ℤ) (H : n ≠ 0) :
-  is_contr (ordinary_cohomology pbool G n) :=
+  is_contr (oH^n[pbool, G]) :=
 begin
   apply is_conn_equiv_closed 0 !pmap_pbool_equiv⁻¹ᵉ,
   apply is_conn_equiv_closed 0 !equiv_glue2⁻¹ᵉ,
@@ -290,9 +307,38 @@ theorem EM_dimension (G : AbGroup) (n : ℤ) (H : n ≠ 0) :
   (EM_dimension' G n H)
 
 open group algebra
-theorem ordinary_cohomology_pbool (G : AbGroup) : ordinary_cohomology pbool G 0 ≃g G :=
+theorem ordinary_cohomology_pbool (G : AbGroup) : oH^0[pbool, G] ≃g G :=
 sorry
 --isomorphism_of_equiv (trunc_equiv_trunc 0 (ppmap_pbool_pequiv _ ⬝e _)  ⬝e !trunc_equiv) sorry
+
+theorem is_contr_cohomology_of_is_contr_spectrum (n : ℤ) (X : Type*) (Y : spectrum) (H : is_contr (Y n)) :
+  is_contr (H^n[X, Y]) :=
+begin
+  apply is_trunc_trunc_of_is_trunc,
+  apply is_trunc_pmap,
+  apply is_trunc_equiv_closed_rev,
+  exact loop_pequiv_loop (loop_pequiv_loop (pequiv_ap Y (add.assoc n 1 1)⁻¹) ⬝e* (equiv_glue Y (n+1))⁻¹ᵉ*) ⬝e
+    (equiv_glue Y n)⁻¹ᵉ*
+end
+
+theorem is_contr_ordinary_cohomology (n : ℤ) (X : Type*) (G : AbGroup) (H : is_contr G) :
+  is_contr (oH^n[X, G]) :=
+begin
+  apply is_contr_cohomology_of_is_contr_spectrum,
+  exact is_contr_EM_spectrum _ _ H
+end
+
+theorem is_contr_unreduced_ordinary_cohomology (n : ℤ) (X : Type) (G : AbGroup) (H : is_contr G) :
+  is_contr (uoH^n[X, G]) :=
+is_contr_ordinary_cohomology _ _ _ H
+
+theorem is_contr_ordinary_cohomology_of_neg {n : ℤ} (X : Type*) (G : AbGroup) (H : n < 0) :
+  is_contr (oH^n[X, G]) :=
+begin
+  apply is_contr_cohomology_of_is_contr_spectrum,
+  cases n with n n, contradiction,
+  apply is_contr_EM_spectrum_neg
+end
 
 /- cohomology theory -/
 

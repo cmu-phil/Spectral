@@ -195,6 +195,11 @@ definition LeftModule_of_AddAbGroup {R : Ring} (G : AddAbGroup) (smul : R → G 
   (h1 h2 h3 h4) : LeftModule R :=
 LeftModule.mk G (left_module_of_ab_group smul h1 h2 h3 h4)
 
+open unit
+definition trivial_LeftModule [constructor] (R : Ring) : LeftModule R :=
+LeftModule_of_AddAbGroup trivial_ab_group (λr u, star)
+  (λr u₁ u₂, idp) (λr₁ r₂ u, idp) (λr₁ r₂ u, idp) unit.eta
+
 section
   variables {R : Ring} {M M₁ M₂ M₃ : LeftModule R}
 
@@ -389,6 +394,15 @@ end
     (φ : M₁ →a M₂) (h : Π(r : R) g, φ (r • g) = r • φ g) : M₁ →lm M₂ :=
   homomorphism.mk' φ (group.to_respect_add φ) h
 
+  definition group_isomorphism_of_lm_isomorphism [constructor] {M₁ M₂ : LeftModule R}
+    (φ : M₁ ≃lm M₂) : AddGroup_of_AddAbGroup M₁ ≃g AddGroup_of_AddAbGroup M₂ :=
+  group.isomorphism.mk (group_homomorphism_of_lm_homomorphism φ) (isomorphism.is_equiv_to_hom φ)
+
+  definition lm_isomorphism_of_group_isomorphism [constructor] {M₁ M₂ : LeftModule R}
+    (φ : AddGroup_of_AddAbGroup M₁ ≃g AddGroup_of_AddAbGroup M₂)
+    (h : Π(r : R) g, φ (r • g) = r • φ g) : M₁ ≃lm M₂ :=
+  isomorphism.mk (lm_homomorphism_of_group_homomorphism φ h) (group.isomorphism.is_equiv_to_hom φ)
+
   section
   local attribute pSet_of_LeftModule [coercion]
   definition is_exact_mod (f : M₁ →lm M₂) (f' : M₂ →lm M₃) : Type :=
@@ -425,6 +439,34 @@ end
     (HA : is_contr A) (HC : is_contr C) : is_contr B :=
   is_contr_middle_of_is_exact (is_exact_of_is_short_exact (short_exact_mod.h H))
 
+  definition is_contr_right_of_short_exact_mod {A B C : LeftModule R} (H : short_exact_mod A B C)
+    (HB : is_contr B) : is_contr C :=
+  is_contr_right_of_is_short_exact (short_exact_mod.h H) _ _
+
+  definition is_contr_left_of_short_exact_mod {A B C : LeftModule R} (H : short_exact_mod A B C)
+    (HB : is_contr B) : is_contr A :=
+  is_contr_left_of_is_short_exact (short_exact_mod.h H) _ pt
+
+  definition isomorphism_of_is_contr_left {A B C : LeftModule R} (H : short_exact_mod A B C)
+    (HA : is_contr A) : B ≃lm C :=
+  isomorphism.mk (short_exact_mod.g H)
+    begin
+      apply @is_equiv_right_of_is_short_exact _ _ _
+        (group_homomorphism_of_lm_homomorphism (short_exact_mod.f H))
+        (group_homomorphism_of_lm_homomorphism (short_exact_mod.g H)),
+      rexact short_exact_mod.h H, exact HA,
+    end
+
+  definition isomorphism_of_is_contr_right {A B C : LeftModule R} (H : short_exact_mod A B C)
+    (HC : is_contr C) : A ≃lm B :=
+  isomorphism.mk (short_exact_mod.f H)
+    begin
+      apply @is_equiv_left_of_is_short_exact _ _ _
+        (group_homomorphism_of_lm_homomorphism (short_exact_mod.f H))
+        (group_homomorphism_of_lm_homomorphism (short_exact_mod.g H)),
+      rexact short_exact_mod.h H, exact HC,
+    end
+
   end
 
   end
@@ -446,6 +488,11 @@ lm_homomorphism_of_group_homomorphism φ (to_respect_imul φ)
 definition lm_iso_int.mk [constructor] {A B : AbGroup} (φ : A ≃g B) :
   LeftModule_int_of_AbGroup A ≃lm LeftModule_int_of_AbGroup B :=
 isomorphism.mk (lm_hom_int.mk φ) (group.isomorphism.is_equiv_to_hom φ)
+
+definition group_isomorphism_of_lm_isomorphism_int [constructor] {A B : AbGroup}
+  (φ : LeftModule_int_of_AbGroup A ≃lm LeftModule_int_of_AbGroup B) : A ≃g B :=
+group_isomorphism_of_lm_isomorphism φ
+
 end int
 
 end left_module

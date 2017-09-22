@@ -908,6 +908,13 @@ namespace spectrum
     { apply is_contr_loop_of_is_contr, exact IH }
   end
 
+  definition is_contr_EM_spectrum (G : AbGroup) (n : ℤ) (H : is_contr G) : is_contr (EM_spectrum G n) :=
+  begin
+    cases n with n n,
+    { apply is_contr_EM n H },
+    { apply is_contr_EM_spectrum_neg G n }
+  end
+
   /- K(πₗ(Aₖ),l) ≃* K(πₙ(A),l) for l = n + k -/
   definition EM_type_pequiv_EM (A : spectrum) {n k : ℤ} {l : ℕ} (p : n + k = l) :
     EM_type (A k) l ≃* EM (πₛ[n] A) l :=

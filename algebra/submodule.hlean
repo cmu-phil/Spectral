@@ -209,6 +209,7 @@ begin
   intro m, exact to_one_smul m
 end
 
+variable (S)
 definition quotient_module (S : property M) [is_submodule M S] : LeftModule R :=
 LeftModule_of_AddAbGroup (quotient_module' S) (quotient_module_smul S)
   (λr, homomorphism.addstruct (quotient_module_smul S r))
@@ -216,7 +217,7 @@ LeftModule_of_AddAbGroup (quotient_module' S) (quotient_module_smul S)
   quotient_module_mul_smul
   quotient_module_one_smul
 
-definition quotient_map [constructor] (S : property M) [is_submodule M S] : M →lm quotient_module S :=
+definition quotient_map [constructor] : M →lm quotient_module S :=
 lm_homomorphism_of_group_homomorphism (ab_qg_map _) (λr g, idp)
 
 definition quotient_map_eq_zero (m : M) (H : S m) : quotient_map S m = 0 :=
@@ -225,6 +226,7 @@ definition quotient_map_eq_zero (m : M) (H : S m) : quotient_map S m = 0 :=
 definition rel_of_quotient_map_eq_zero (m : M) (H : quotient_map S m = 0) : S m :=
 @rel_of_qg_map_eq_one _ _ (is_normal_subgroup_ab _) m H
 
+variable {S}
 definition quotient_elim [constructor] (φ : M →lm M₂) (H : Π⦃m⦄, m ∈ S → φ m = 0) :
   quotient_module S →lm M₂ :=
 lm_homomorphism_of_group_homomorphism
@@ -243,6 +245,10 @@ local attribute is_prop_quotient_module [instance]
 definition is_contr_quotient_module [instance] (S : property M) [is_submodule M S] [is_contr M] :
   is_contr (quotient_module S) :=
 is_contr_of_inhabited_prop 0
+
+definition rel_of_is_contr_quotient_module (S : property M) [is_submodule M S]
+  (H : is_contr (quotient_module S)) (m : M) : S m :=
+rel_of_quotient_map_eq_zero S m (@eq_of_is_contr _ H _ _)
 
 definition quotient_module_isomorphism [constructor] (S : property M) [is_submodule M S] (h : Π⦃m⦄, S m → m = 0) :
   quotient_module S ≃lm M :=
@@ -419,6 +425,32 @@ definition homology_isomorphism [constructor] (ψ : M₂ →lm M₃) (φ : M₁ 
   [is_contr M₁] [is_contr M₃] : homology ψ φ ≃lm M₂ :=
 (quotient_module_isomorphism (homology_quotient_property ψ φ)
   (eq_zero_of_mem_property_submodule_trivial (image_trivial _))) ⬝lm (kernel_module_isomorphism ψ)
+
+definition ker_in_im_of_is_contr_homology (ψ : M₂ →lm M₃) {φ : M₁ →lm M₂}
+  (H₁ : is_contr (homology ψ φ)) {m : M₂} (p : ψ m = 0) : image φ m :=
+rel_of_is_contr_quotient_module _ H₁ ⟨m, p⟩
+
+definition is_embedding_of_is_contr_homology_of_constant {ψ : M₂ →lm M₃} (φ : M₁ →lm M₂)
+  (H₁ : is_contr (homology ψ φ)) (H₂ : Πm, φ m = 0) : is_embedding ψ :=
+begin
+  apply to_is_embedding_homomorphism (group_homomorphism_of_lm_homomorphism ψ),
+  intro m p, note H := rel_of_is_contr_quotient_module _ H₁ ⟨m, p⟩,
+  induction H with n q,
+  exact q⁻¹ ⬝ H₂ n
+end
+
+definition is_embedding_of_is_contr_homology_of_is_contr {ψ : M₂ →lm M₃} (φ : M₁ →lm M₂)
+  (H₁ : is_contr (homology ψ φ)) (H₂ : is_contr M₁) : is_embedding ψ :=
+is_embedding_of_is_contr_homology_of_constant φ H₁
+  (λm, ap φ (@eq_of_is_contr _ H₂ _ _) ⬝ respect_zero φ)
+
+definition is_surjective_of_is_contr_homology_of_constant (ψ : M₂ →lm M₃) {φ : M₁ →lm M₂}
+  (H₁ : is_contr (homology ψ φ)) (H₂ : Πm, ψ m = 0) : is_surjective φ :=
+λm, ker_in_im_of_is_contr_homology ψ H₁ (H₂ m)
+
+definition is_surjective_of_is_contr_homology_of_is_contr (ψ : M₂ →lm M₃) {φ : M₁ →lm M₂}
+  (H₁ : is_contr (homology ψ φ)) (H₂ : is_contr M₃) : is_surjective φ :=
+is_surjective_of_is_contr_homology_of_constant ψ H₁ (λm, @eq_of_is_contr _ H₂ _ _)
 
 -- remove:
 

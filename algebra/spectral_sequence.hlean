@@ -7,11 +7,69 @@
 
 import .graded ..spectrum.basic .product_group
 
-open algebra is_trunc left_module is_equiv equiv eq function nat sigma sigma.ops set_quotient
+open algebra is_trunc left_module is_equiv equiv eq function nat sigma set_quotient
 
 /- exact couples -/
 
 namespace left_module
+
+  section
+  /- move to left_module -/
+  structure is_built_from.{u v w} {R : Ring} (D : LeftModule.{u v} R)
+      (E : ℕ → LeftModule.{u w} R) : Type.{max u (v+1) w} :=
+    (part : ℕ → LeftModule.{u v} R)
+    (ses : Πn, short_exact_mod (E n) (part n) (part (n+1)))
+    (e0 : part 0 ≃lm D)
+    (n₀ : ℕ)
+    (HD' : Π(s : ℕ), n₀ ≤ s → is_contr (part s))
+
+  open is_built_from
+  universe variables u v w
+  variables {R : Ring.{u}} {D D' : LeftModule.{u v} R} {E E' : ℕ → LeftModule.{u w} R}
+
+  definition is_built_from_shift (H : is_built_from D E) :
+    is_built_from (part H 1) (λn, E (n+1)) :=
+  is_built_from.mk (λn, part H (n+1)) (λn, ses H (n+1)) isomorphism.rfl (pred (n₀ H))
+    (λs Hle, HD' H _ (le_succ_of_pred_le Hle))
+
+  definition isomorphism_of_is_contr_part (H : is_built_from D E) (n : ℕ) (HE : is_contr (E n)) :
+    part H n ≃lm part H (n+1) :=
+  isomorphism_of_is_contr_left (ses H n) HE
+
+  definition is_contr_submodules (H : is_built_from D E) (HD : is_contr D) (n : ℕ) :
+    is_contr (part H n) :=
+  begin
+    induction n with n IH,
+    { exact is_trunc_equiv_closed_rev -2 (equiv_of_isomorphism (e0 H)) },
+    { exact is_contr_right_of_short_exact_mod (ses H n) IH }
+  end
+
+  definition is_contr_quotients (H : is_built_from D E) (HD : is_contr D) (n : ℕ) :
+    is_contr (E n) :=
+  begin
+    apply is_contr_left_of_short_exact_mod (ses H n),
+    exact is_contr_submodules H HD n
+  end
+
+  definition is_contr_total (H : is_built_from D E) (HE : Πn, is_contr (E n)) : is_contr D :=
+  have is_contr (part H 0), from
+  nat.rec_down (λn, is_contr (part H n)) _ (HD' H _ !le.refl)
+    (λn H2, is_contr_middle_of_short_exact_mod (ses H n) (HE n) H2),
+  is_contr_equiv_closed (equiv_of_isomorphism (e0 H))
+
+  definition is_built_from_isomorphism (e : D ≃lm D') (f : Πn, E n ≃lm E' n)
+    (H : is_built_from D E) : is_built_from D' E' :=
+  ⦃is_built_from, H, e0 := e0 H ⬝lm e,
+    ses := λn, short_exact_mod_isomorphism (f n)⁻¹ˡᵐ isomorphism.rfl isomorphism.rfl (ses H n)⦄
+
+  definition is_built_from_isomorphism_left (e : D ≃lm D') (H : is_built_from D E) :
+    is_built_from D' E :=
+  ⦃is_built_from, H, e0 := e0 H ⬝lm e⦄
+
+  definition isomorphism_zero_of_is_built_from (H : is_built_from D E) (p : n₀ H = 1) : E 0 ≃lm D :=
+  isomorphism_of_is_contr_right (ses H 0) (HD' H 1 (le_of_eq p)) ⬝lm e0 H
+
+  end
 
   structure exact_couple (R : Ring) (I : Set) : Type :=
     (D E : graded_module R I)
@@ -21,6 +79,13 @@ namespace left_module
     (ki : is_exact_gmod k i)
 
   open exact_couple
+
+  definition exact_couple_reindex [constructor] {R : Ring} {I J : Set} (e : J ≃ I)
+    (X : exact_couple R I) : exact_couple R J :=
+  ⦃exact_couple, D := λy, D X (e y), E := λy, E X (e y),
+    i := graded_hom_reindex e (i X), j := graded_hom_reindex e (j X),
+    k := graded_hom_reindex e (k X), ij := is_exact_gmod_reindex e (ij X),
+    jk := is_exact_gmod_reindex e (jk X), ki := is_exact_gmod_reindex e (ki X)⦄
 
   namespace derived_couple
   section
@@ -44,6 +109,10 @@ namespace left_module
 
   definition is_contr_D' {x : I} (H : is_contr (D x)) : is_contr (D' x) :=
   !is_contr_image_module
+
+  definition E'_isomorphism {x : I} (H1 : is_contr (E ((deg d)⁻¹ᵉ x)))
+    (H2 : is_contr (E (deg d x))) : E' x ≃lm E x :=
+  @(homology_isomorphism _ _) H1 H2
 
   definition i' : D' →gm D' :=
   graded_image_lift i ∘gm  graded_submodule_incl (λx, image (i ← x))
@@ -114,9 +183,10 @@ namespace left_module
   end
 
   definition k' : E' →gm D' :=
-  @graded_quotient_elim _ _ _ _ _ _ (graded_submodule_functor k k_lemma1)
+  @graded_quotient_elim _ _ _ _ _ _ k₂
                        (by intro x m h; cases m with [m1, m2]; exact k_lemma2 m1 m2 h)
 
+  open sigma.ops
   definition i'_eq ⦃x : I⦄ (m : D x) (h : image (i ← x) m) : (i' x ⟨m, h⟩).1 = i x m :=
   by reflexivity
 
@@ -234,18 +304,34 @@ namespace left_module
   begin
     apply is_bounded.mk' (λx, max (B x) (B'' x)) B',
     { intro x y s p h, induction p, exact Dub (le.trans !le_max_left h) },
-    { intro x y z s p q h, induction p, induction q,
+    { exact abstract begin intro x y z s p q h, induction p, induction q,
       refine transport (λx, is_surjective (i X x)) _ (Dlb h),
-      rewrite [-iterate_succ], apply iterate_left_inv },
+      rewrite [-iterate_succ], apply iterate_left_inv end end },
     { intro x y s p h, induction p, exact Elb (le.trans !le_max_right h) },
     { assumption },
     { assumption }
   end
 
+  open is_bounded
+  definition is_bounded_reindex [constructor] {R : Ring} {I J : Set} (e : J ≃ I)
+    {X : exact_couple R I} (HH : is_bounded X) : is_bounded (exact_couple_reindex e X) :=
+  begin
+    apply is_bounded.mk' (B HH ∘ e) (B' HH ∘ e),
+    { intros x y s p h, refine Dub HH _ h,
+      refine (iterate_hsquare e _ s x)⁻¹ ⬝ ap e p, intro x, exact to_right_inv e _ },
+    { intros x y z s p q h, refine Dlb HH _ _ h,
+      refine (iterate_hsquare e _ s y)⁻¹ ⬝ ap e q, intro x, exact to_right_inv e _ },
+    { intro x y s p h, refine Elb HH _ h,
+      refine (iterate_hsquare e _ s x)⁻¹ ⬝ ap e p, intro x, exact to_right_inv e _ },
+    { intro y, exact ap e⁻¹ᵉ (ap (deg (i X)) (to_right_inv e _) ⬝
+        deg_ik_commute HH (e y) ⬝ ap (deg (k X)) (to_right_inv e _)⁻¹) },
+    { intro y, exact ap e⁻¹ᵉ (ap (deg (i X)) (to_right_inv e _) ⬝
+        deg_ij_commute HH (e y) ⬝ ap (deg (j X)) (to_right_inv e _)⁻¹) }
+  end
+
   namespace convergence_theorem
   section
 
-  open is_bounded
   parameters {R : Ring} {I : Set} (X : exact_couple R I) (HH : is_bounded X)
 
   local abbreviation B := B HH
@@ -256,25 +342,7 @@ namespace left_module
   local abbreviation deg_ik_commute := deg_ik_commute HH
   local abbreviation deg_ij_commute := deg_ij_commute HH
 
-  definition deg_iterate_ik_commute (n : ℕ) :
-    hsquare (deg (k X)) (deg (k X)) ((deg (i X))^[n]) ((deg (i X))^[n]) :=
-  iterate_commute n deg_ik_commute
-
-  definition deg_iterate_ij_commute (n : ℕ) :
-    hsquare (deg (j X)) (deg (j X)) ((deg (i X))⁻¹ᵉ^[n]) ((deg (i X))⁻¹ᵉ^[n]) :=
-  iterate_commute n (hvinverse deg_ij_commute)
-
-  definition B2 (x : I) : ℕ := max (B (deg (k X) x)) (B ((deg (j X))⁻¹ x))
-  definition Eub ⦃x y : I⦄ ⦃s : ℕ⦄ (p : (deg (i X))^[s] x = y) (h : B2 x ≤ s) :
-    is_contr (E X y) :=
-  begin
-    induction p,
-    refine @(is_contr_middle_of_is_exact (exact_couple.jk X (right_inv (deg (j X)) _) idp)) _ _ _,
-    exact Dub (iterate_commute s (hhinverse deg_ij_commute) x) (le.trans !le_max_right h),
-    exact Dub !deg_iterate_ik_commute (le.trans !le_max_left h)
-  end
-
-  -- we start counting pages at 0
+  /- We start counting pages at 0, which corresponds to what is usually called the second page -/
   definition page (r : ℕ) : exact_couple R I :=
   iterate derived_couple r X
 
@@ -324,6 +392,45 @@ namespace left_module
     (deg (d (page r)))⁻¹ ~ (deg (k X))⁻¹ ∘ iterate (deg (i X)) r ∘ (deg (j X))⁻¹ :=
   compose2 (to_inv_homotopy_inv (deg_k r)) (deg_j_inv r)
 
+  definition E_isomorphism' {x : I} {r₁ r₂ : ℕ} (H : r₁ ≤ r₂)
+    (H1 : Π⦃r⦄, r₁ ≤ r → r < r₂ → is_contr (E X ((deg (d (page r)))⁻¹ᵉ x)))
+    (H2 : Π⦃r⦄, r₁ ≤ r → r < r₂ → is_contr (E X (deg (d (page r)) x))) :
+    E (page r₂) x ≃lm E (page r₁) x :=
+  begin
+    assert H2 : Π⦃r⦄, r₁ ≤ r → r ≤ r₂ → E (page r) x ≃lm E (page r₁) x,
+    { intro r Hr₁ Hr₂,
+      induction Hr₁ with r Hr₁ IH, reflexivity,
+      let Hr₂' := le_of_succ_le Hr₂,
+      exact E'_isomorphism (page r) (is_contr_E r _ (H1 Hr₁ Hr₂)) (is_contr_E r _ (H2 Hr₁ Hr₂))
+        ⬝lm IH Hr₂' },
+    exact H2 H (le.refl _)
+  end
+
+  definition E_isomorphism0' {x : I} {r : ℕ}
+    (H1 : Πr, is_contr (E X ((deg (d (page r)))⁻¹ᵉ x)))
+    (H2 : Πr, is_contr (E X (deg (d (page r)) x))) : E (page r) x ≃lm E X x :=
+  E_isomorphism' (zero_le r) _ _
+
+  parameter {X}
+
+  definition deg_iterate_ik_commute (n : ℕ) :
+    hsquare (deg (k X)) (deg (k X)) ((deg (i X))^[n]) ((deg (i X))^[n]) :=
+  iterate_commute n deg_ik_commute
+
+  definition deg_iterate_ij_commute (n : ℕ) :
+    hsquare (deg (j X)) (deg (j X)) ((deg (i X))⁻¹ᵉ^[n]) ((deg (i X))⁻¹ᵉ^[n]) :=
+  iterate_commute n (hvinverse deg_ij_commute)
+
+  definition B2 (x : I) : ℕ := max (B (deg (k X) x)) (B ((deg (j X))⁻¹ x))
+  definition Eub ⦃x y : I⦄ ⦃s : ℕ⦄ (p : (deg (i X))^[s] x = y) (h : B2 x ≤ s) :
+    is_contr (E X y) :=
+  begin
+    induction p,
+    refine @(is_contr_middle_of_is_exact (exact_couple.jk X (right_inv (deg (j X)) _) idp)) _ _ _,
+    exact Dub (iterate_commute s (hhinverse deg_ij_commute) x) (le.trans !le_max_right h),
+    exact Dub !deg_iterate_ik_commute (le.trans !le_max_left h)
+  end
+
   definition B3 (x : I) : ℕ :=
   max (B (deg (j X) (deg (k X) x))) (B2 ((deg (k X))⁻¹ ((deg (j X))⁻¹ x)))
 
@@ -344,12 +451,6 @@ namespace left_module
   begin
     revert x y z s H p q, induction r with r IH: intro x y z s H p q,
     { exact Dlb p q H },
-/- the following is a start of the proof that i is surjective using that E is contractible (but this
-   makes the bound 1 higher than necessary -/
-      -- induction p, change is_surjective (i X x),
-      -- apply @(is_surjective_of_is_exact_of_is_contr (exact_couple.ij X idp idp)),
-      -- refine Elb _ H,
-      -- exact sorry
     { change is_surjective (i' (page r) ↘ p),
       apply is_surjective_i', intro z' q',
       refine IH _ _ _ _ (le.trans H (le_of_eq (succ_add s r)⁻¹)) _ _,
@@ -378,6 +479,22 @@ namespace left_module
 
   definition Dinfstable {x y : I} {r : ℕ} (Hr : B' y ≤ r) (p : x = y) : Dinf y ≃lm D (page r) x :=
   by symmetry; induction p; induction Hr with r Hr IH; reflexivity; exact Dstable Hr ⬝lm IH
+
+  definition Einf_isomorphism' {x : I} (r₁ : ℕ)
+    (H1 : Π⦃r⦄, r₁ ≤ r → is_contr (E X ((deg (d (page r)))⁻¹ᵉ x)))
+    (H2 : Π⦃r⦄, r₁ ≤ r → is_contr (E X (deg (d (page r)) x))) :
+    Einf x ≃lm E (page r₁) x :=
+  begin
+    cases le.total r₁ (B3 x) with Hr Hr,
+    exact E_isomorphism' Hr (λr Hr₁ Hr₂, H1 Hr₁) (λr Hr₁ Hr₂, H2 Hr₁),
+    exact Einfstable Hr idp
+  end
+
+  definition Einf_isomorphism0' {x : I}
+    (H1 : Π⦃r⦄, is_contr (E X ((deg (d (page r)))⁻¹ᵉ x)))
+    (H2 : Π⦃r⦄, is_contr (E X (deg (d (page r)) x))) :
+    Einf x ≃lm E X x :=
+  E_isomorphism0' _ _
 
   parameters (x : I)
 
@@ -426,7 +543,6 @@ namespace left_module
     { apply ij (page (r n)) }
   end
 
-  /- the convergence theorem is a combination of the following three results -/
   definition short_exact_mod_infpage (n : ℕ) :
     short_exact_mod (Einfdiag n) (Dinfdiag n) (Dinfdiag (n+1)) :=
   begin
@@ -453,26 +569,40 @@ namespace left_module
     { reflexivity }
   end
 
+  /- the convergence theorem is the following result -/
+  definition is_built_from_infpage (bound_zero : B' (deg (k X) x) = 0) :
+    is_built_from (D X (deg (k X) x)) Einfdiag :=
+  is_built_from.mk Dinfdiag short_exact_mod_infpage (Dinfdiag0 bound_zero) (B (deg (k X) x))
+    (λs, Dinfdiag_stable)
+
   end
   end convergence_theorem
-
-  -- open convergence_theorem
-  -- print axioms short_exact_mod_infpage
-  -- print axioms Dinfdiag0
-  -- print axioms Dinfdiag_stable
 
   open int group prod convergence_theorem prod.ops
 
   definition Z2 [constructor] : Set := gℤ ×g gℤ
 
+  /- TODO: redefine/generalize converges_to so that it supports the usual indexing on ℤ × ℤ -/
   structure converges_to.{u v w} {R : Ring} (E' : gℤ → gℤ → LeftModule.{u v} R)
                                  (Dinf : gℤ → LeftModule.{u w} R) : Type.{max u (v+1) (w+1)} :=
-    (X : exact_couple.{u 0 v w} R Z2)
+    (X : exact_couple.{u 0 w v} R Z2)
     (HH : is_bounded X)
     (s₀ : gℤ → gℤ)
-    (p : Π(n : gℤ), is_bounded.B' HH (deg (k X) (n, s₀ n)) = 0)
-    (e : Π(x : gℤ ×g gℤ), exact_couple.E X x ≃lm E' x.1 x.2)
+    (HB : Π(n : gℤ), is_bounded.B' HH (deg (k X) (n, s₀ n)) = 0)
+    (e : Π(x : Z2), exact_couple.E X x ≃lm E' x.1 x.2)
     (f : Π(n : gℤ), exact_couple.D X (deg (k X) (n, s₀ n)) ≃lm Dinf n)
+    (deg_d1 : ℕ → gℤ) (deg_d2 : ℕ → gℤ)
+    (deg_d_eq : Π(r : ℕ) (n s : gℤ), deg (d (page X r)) (n, s) = (n + deg_d1 r, s + deg_d2 r))
+
+  structure converging_spectral_sequence.{u v w} {R : Ring} (E' : gℤ → gℤ → LeftModule.{u v} R)
+                                 (Dinf : gℤ → LeftModule.{u w} R) : Type.{max u (v+1) (w+1)} :=
+    (E : ℕ → graded_module.{u 0 v} R Z2)
+    (d : Π(n : ℕ), E n →gm E n)
+    (α : Π(n : ℕ) (x : Z2), E (n+1) x ≃lm graded_homology (d n) (d n) x)
+    (e : Π(n : ℕ) (x : Z2), E 0 x ≃lm E' x.1 x.2)
+    (s₀ : Z2 → ℕ)
+    (f : Π{n : ℕ} {x : Z2} (h : s₀ x ≤ n), E (s₀ x) x ≃lm E n x)
+    (HDinf : Π(n : gℤ), is_built_from (Dinf n) (λ(k : ℕ), (λx, E (s₀ x) x) (k, n - k)))
 
   infix ` ⟹ `:25 := converges_to
 
@@ -488,15 +618,43 @@ namespace left_module
   local abbreviation i := i X
   local abbreviation HH := HH c
   local abbreviation s₀ := s₀ c
-  local abbreviation Dinfdiag (n : gℤ) (k : ℕ) := Dinfdiag X HH (n, s₀ n) k
-  local abbreviation Einfdiag (n : gℤ) (k : ℕ) := Einfdiag X HH (n, s₀ n) k
+  local abbreviation Dinfdiag (n : gℤ) (k : ℕ) := Dinfdiag HH (n, s₀ n) k
+  local abbreviation Einfdiag (n : gℤ) (k : ℕ) := Einfdiag HH (n, s₀ n) k
+
+  definition deg_d_inv_eq (r : ℕ) (n s : gℤ) :
+    (deg (d (page X r)))⁻¹ᵉ (n, s) = (n - deg_d1 c r, s - deg_d2 c r) :=
+  inv_eq_of_eq (!deg_d_eq ⬝ prod_eq !sub_add_cancel !sub_add_cancel)⁻¹
 
   definition converges_to_isomorphism {E'' : gℤ → gℤ → LeftModule R} {Dinf' : graded_module R gℤ}
     (e' : Πn s, E' n s ≃lm E'' n s) (f' : Πn, Dinf n ≃lm Dinf' n) : E'' ⟹ Dinf' :=
-  converges_to.mk X HH s₀ (p c)
+  converges_to.mk X HH s₀ (HB c)
     begin intro x, induction x with n s, exact e c (n, s) ⬝lm e' n s end
     (λn, f c n ⬝lm f' n)
+    (deg_d1 c) (deg_d2 c) (λr n s, deg_d_eq c r n s)
 
+/-  definition converges_to_reindex {E'' : gℤ → gℤ → LeftModule R} {Dinf' : graded_module R gℤ}
+    (i : gℤ ×g gℤ ≃ gℤ × gℤ) (e' : Πp q, E' p q ≃lm E'' (i (p, q)).1 (i (p, q)).2)
+    (i2 : gℤ ≃ gℤ) (f' : Πn, Dinf n ≃lm Dinf' (i2 n)) :
+    (λp q, E'' p q) ⟹ λn, Dinf' n :=
+  converges_to.mk (exact_couple_reindex i X) (is_bounded_reindex i HH) s₀
+    sorry --(λn, ap (B' HH) (to_right_inv i _ ⬝ begin end) ⬝ HB c n)
+    sorry --begin intro x, induction x with p q, exact e c (p, q) ⬝lm e' p q end
+    sorry-/
+
+/-  definition converges_to_reindex_neg {E'' : gℤ → gℤ → LeftModule R} {Dinf' : graded_module R gℤ}
+    (e' : Πp q, E' p q ≃lm E'' (-p) (-q))
+    (f' : Πn, Dinf n ≃lm Dinf' (-n)) :
+    (λp q, E'' p q) ⟹ λn, Dinf' n :=
+  converges_to.mk (exact_couple_reindex (equiv_neg ×≃ equiv_neg) X) (is_bounded_reindex _ HH)
+    (λn, -s₀ (-n))
+    (λn, ap (B' HH) (begin esimp, end) ⬝ HB c n)
+    sorry --begin intro x, induction x with p q, exact e c (p, q) ⬝lm e' p q end
+    sorry-/
+
+  definition is_built_from_of_converges_to (n : ℤ) : is_built_from (Dinf n) (Einfdiag n) :=
+  is_built_from_isomorphism_left (f c n) (is_built_from_infpage HH (n, s₀ n) (HB c n))
+
+  /- TODO: reprove this using is_built_of -/
   theorem is_contr_converges_to_precise (n : gℤ)
   (H : Π(n : gℤ) (l : ℕ), is_contr (E' ((deg i)^[l] (n, s₀ n)).1 ((deg i)^[l] (n, s₀ n)).2)) :
     is_contr (Dinf n) :=
@@ -509,14 +667,40 @@ namespace left_module
       { exact is_bounded.B HH (deg (k X) (n, s₀ n)) },
       { apply Dinfdiag_stable, reflexivity },
       { intro l H,
-        exact is_contr_middle_of_short_exact_mod (short_exact_mod_infpage X HH (n, s₀ n) l)
+        exact is_contr_middle_of_short_exact_mod (short_exact_mod_infpage HH (n, s₀ n) l)
                 (H2 l) H }},
     refine @is_trunc_equiv_closed _ _ _ _ H3,
-    exact equiv_of_isomorphism (Dinfdiag0 X HH (n, s₀ n) (p c n) ⬝lm f c n)
+    exact equiv_of_isomorphism (Dinfdiag0 HH (n, s₀ n) (HB c n) ⬝lm f c n)
   end
 
   theorem is_contr_converges_to (n : gℤ) (H : Π(n s : gℤ), is_contr (E' n s)) : is_contr (Dinf n) :=
   is_contr_converges_to_precise n (λn s, !H)
+
+  definition E_isomorphism {r₁ r₂ : ℕ} {n s : gℤ} (H : r₁ ≤ r₂)
+    (H1 : Π⦃r⦄, r₁ ≤ r → r < r₂ → is_contr (E X (n - deg_d1 c r, s - deg_d2 c r)))
+    (H2 : Π⦃r⦄, r₁ ≤ r → r < r₂ → is_contr (E X (n + deg_d1 c r, s + deg_d2 c r))) :
+    E (page X r₂) (n, s) ≃lm E (page X r₁) (n, s) :=
+  E_isomorphism' X H (λr Hr₁ Hr₂, transport (is_contr ∘ E X) (deg_d_inv_eq r n s)⁻¹ᵖ (H1 Hr₁ Hr₂))
+                    (λr Hr₁ Hr₂, transport (is_contr ∘ E X) (deg_d_eq c r n s)⁻¹ᵖ (H2 Hr₁ Hr₂))
+
+  definition E_isomorphism0 {r : ℕ} {n s : gℤ}
+    (H1 : Πr, is_contr (E X (n - deg_d1 c r, s - deg_d2 c r)))
+    (H2 : Πr, is_contr (E X (n + deg_d1 c r, s + deg_d2 c r))) :
+    E (page X r) (n, s) ≃lm E' n s :=
+  E_isomorphism (zero_le r) _ _ ⬝lm e c (n, s)
+
+  definition Einf_isomorphism (r₁ : ℕ) {n s : gℤ}
+    (H1 : Π⦃r⦄, r₁ ≤ r → is_contr (E X (n - deg_d1 c r, s - deg_d2 c r)))
+    (H2 : Π⦃r⦄, r₁ ≤ r → is_contr (E X (n + deg_d1 c r, s + deg_d2 c r))) :
+    Einf HH (n, s) ≃lm E (page X r₁) (n, s) :=
+  Einf_isomorphism' HH r₁ (λr Hr₁, transport (is_contr ∘ E X) (deg_d_inv_eq r n s)⁻¹ᵖ (H1 Hr₁))
+                         (λr Hr₁, transport (is_contr ∘ E X) (deg_d_eq c r n s)⁻¹ᵖ (H2 Hr₁))
+
+  definition Einf_isomorphism0 {n s : gℤ}
+    (H1 : Π⦃r⦄, is_contr (E X (n - deg_d1 c r, s - deg_d2 c r)))
+    (H2 : Π⦃r⦄, is_contr (E X (n + deg_d1 c r, s + deg_d2 c r))) :
+    Einf HH (n, s) ≃lm E' n s :=
+  E_isomorphism0 _ _
 
   end
 
@@ -734,7 +918,12 @@ namespace spectrum
     { intro n, exact ub },
     { intro n, change max0 (ub - ub) = 0, exact ap max0 (sub_self ub) },
     { intro ns, reflexivity },
-    { intro n, reflexivity }
+    { intro n, reflexivity },
+    { intro r, exact - 1 },
+    { intro r, exact r + 1 },
+    { intro r n s, refine !convergence_theorem.deg_d ⬝ _,
+      refine ap (deg j_sequence) !iterate_deg_i_inv ⬝ _,
+      exact prod_eq idp (!add.assoc ⬝ ap (λx, s + (r + x)) !neg_neg) },
   end
 
   end

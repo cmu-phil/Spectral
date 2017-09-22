@@ -187,6 +187,12 @@ section atiyah_hirzebruch
       exact ppi_pequiv_right (λx, ptrunc_pequiv (maxm2 (s₀ + k)) (Y x k)),
     end
 
+-- set_option pp.metavar_args true
+--   definition atiyah_reindexed : (λp q, opH^p[(x : X), πₛ[q] (Y x)]) ⟹ᵍ (λn, pH^n[(x : X), Y x])
+-- :=
+--   converges_to_reindex atiyah_hirzebruch_convergence (λp q, -(p - q)) (λp q, q) (λp q, by reflexivity)
+--     (λn, -n) (λn, by reflexivity)
+
 end atiyah_hirzebruch
 
 section unreduced_atiyah_hirzebruch

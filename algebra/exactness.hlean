@@ -219,6 +219,30 @@ begin
   { exact is_short_exact.ker_in_im H }
 end
 
+lemma is_equiv_left_of_is_short_exact {A B C : Group} {f : A →g B} {g : B →g C}
+  (H : is_short_exact f g) (HC : is_contr C) : is_equiv f :=
+begin
+  apply is_equiv_of_is_surjective_of_is_embedding,
+    exact is_short_exact.is_emb H,
+    apply is_surjective_of_is_exact_of_is_contr, exact is_exact_of_is_short_exact H
+end
+
+lemma is_equiv_right_of_is_short_exact {A B C : Group} {f : A →g B} {g : B →g C}
+  (H : is_short_exact f g) (HA : is_contr A) : is_equiv g :=
+begin
+  apply is_equiv_of_is_surjective_of_is_embedding,
+    apply is_embedding_of_is_exact_g, exact is_exact_of_is_short_exact H,
+    exact is_short_exact.is_surj H
+end
+
+definition is_contr_right_of_is_short_exact {A B : Type} {C : Type*} {f : A → B} {g : B → C}
+  (H : is_short_exact f g) (HB : is_contr B) (HC : is_set C) : is_contr C :=
+is_contr_of_is_surjective g (is_short_exact.is_surj H) HB HC
+
+definition is_contr_left_of_is_short_exact {A B : Type} {C : Type*} {f : A → B} {g : B → C}
+  (H : is_short_exact f g) (HB : is_contr B) (a₀ : A) : is_contr A :=
+is_contr_of_is_embedding f (is_short_exact.is_emb H) _ a₀
+
 /- TODO: move and remove other versions -/
 
   definition is_surjective_qg_map {A : Group} (N : property A) [is_normal_subgroup A N] :

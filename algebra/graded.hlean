@@ -196,6 +196,10 @@ graded_hom.mk erfl (λi, lmid)
 variable {M}
 abbreviation gmid [constructor] := graded_hom_id M
 
+definition graded_hom_reindex [constructor] {J : Set} (e : J ≃ I) (f : M₁ →gm M₂) :
+  (λy, M₁ (e y)) →gm (λy, M₂ (e y)) :=
+graded_hom.mk' (e ⬝e deg f ⬝e e⁻¹ᵉ) (λy₁ y₂ p, f ↘ (eq_of_inv_eq p))
+
 definition gm_constant [constructor] (M₁ M₂ : graded_module R I) (d : I ≃ I) : M₁ →gm M₂ :=
 graded_hom.mk' d (gmd_constant d M₁ M₂)
 
@@ -646,6 +650,10 @@ definition gmod_im_in_ker (h : is_exact_gmod f f') : compose_constant f' f :=
 definition gmod_ker_in_im (h : is_exact_gmod f f') ⦃i : I⦄ (m : M₂ i) (p : f' i m = 0) :
   image (f ← i) m :=
 is_exact.ker_in_im (h (right_inv (deg f) i) idp) m p
+
+definition is_exact_gmod_reindex [constructor] {J : Set} (e : J ≃ I) (h : is_exact_gmod f f') :
+  is_exact_gmod (graded_hom_reindex e f) (graded_hom_reindex e f') :=
+λi j k p q, h (eq_of_inv_eq p) (eq_of_inv_eq q)
 
 
 end left_module

@@ -2,9 +2,48 @@
 
 import homotopy.wedge
 
-open wedge pushout eq prod sum pointed equiv is_equiv unit lift
+open wedge pushout eq prod sum pointed equiv is_equiv unit lift bool option
 
 namespace wedge
+
+variable (A : Type*)
+variables {A}
+
+
+definition add_point_of_wedge_pbool [unfold 2]
+  (x : A ∨ pbool) : A₊ :=
+begin
+  induction x with a b,
+  { exact some a },
+  { induction b, exact some pt, exact none },
+  { reflexivity }
+end
+
+definition wedge_pbool_of_add_point [unfold 2]
+  (x : A₊) : A ∨ pbool :=
+begin
+  induction x with a,
+  { exact inr tt },
+  { exact inl a }
+end
+
+variables (A)
+definition wedge_pbool_equiv_add_point [constructor] :
+  A ∨ pbool ≃ A₊ :=
+equiv.MK add_point_of_wedge_pbool wedge_pbool_of_add_point
+  abstract begin
+    intro x, induction x,
+    { reflexivity },
+    { reflexivity }
+  end end
+  abstract begin
+    intro x, induction x with a b,
+    { reflexivity },
+    { induction b, exact wedge.glue, reflexivity },
+    { apply eq_pathover_id_right,
+      refine ap_compose wedge_pbool_of_add_point _ _ ⬝ ap02 _ !elim_glue ⬝ph _,
+      exact square_of_eq idp }
+  end end
 
   definition wedge_flip' [unfold 3] {A B : Type*} (x : A ∨ B) : B ∨ A :=
   begin
@@ -14,7 +53,6 @@ namespace wedge
     { exact (glue ⋆)⁻¹ }
   end
 
-  -- TODO: fix precedences
   definition wedge_flip [constructor] (A B : Type*) : A ∨ B →* B ∨ A :=
   pmap.mk wedge_flip' (glue ⋆)⁻¹
 

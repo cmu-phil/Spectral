@@ -11,6 +11,14 @@ attribute ap010 [unfold 7]
   -- TODO: homotopy_of_eq and apd10 should be the same
   -- TODO: there is also apd10_eq_of_homotopy in both pi and eq(?)
 
+namespace algebra
+
+variables {A : Type} [add_ab_inf_group A]
+definition add_sub_cancel_middle (a b : A) : a + (b - a) = b :=
+!add.comm ⬝ !sub_add_cancel
+
+end algebra
+
 namespace eq
 
   definition apd10_prepostcompose_nondep {A B C D : Type} (h : C → D) {g g' : B → C} (p : g = g')
@@ -173,7 +181,12 @@ end eq open eq
 namespace nat
 
   protected definition rec_down (P : ℕ → Type) (s : ℕ) (H0 : P s) (Hs : Πn, P (n+1) → P n) : P 0 :=
-  have Hp : Πn, P n → P (pred n),
+  begin
+    induction s with s IH,
+    { exact H0 },
+    { exact IH (Hs s H0) }
+  end
+/-  have Hp : Πn, P n → P (pred n),
   begin
     intro n p, cases n with n,
     { exact p },
@@ -185,7 +198,16 @@ namespace nat
     { exact H0 },
     { exact Hp (s - n) p }
   end,
-  transport P (nat.sub_self s) (H s)
+  transport P (nat.sub_self s) (H s)-/
+
+  /- this generalizes iterate_commute -/
+  definition iterate_hsquare {A B : Type} {f : A → A} {g : B → B}
+    (h : A → B) (p : hsquare f g h h) (n : ℕ) : hsquare (f^[n]) (g^[n]) h h :=
+  begin
+    induction n with n q,
+      exact homotopy.rfl,
+      exact q ⬝htyh p
+  end
 
 end nat
 
@@ -298,6 +320,9 @@ namespace int
 
   definition sub_nat_le (n : ℤ) (m : ℕ) : n - m ≤ n :=
   le.intro !sub_add_cancel
+
+  definition sub_nat_lt (n : ℤ) (m : ℕ) : n - m < n + 1 :=
+  add_le_add_right (sub_nat_le n m) 1
 
   definition sub_one_le (n : ℤ) : n - 1 ≤ n :=
   sub_nat_le n 1
@@ -573,6 +598,14 @@ namespace function
   variables {A B : Type} {f f' : A → B}
   open is_conn sigma.ops
 
+  definition is_contr_of_is_surjective (f : A → B) (H : is_surjective f) (HA : is_contr A)
+    (HB : is_set B) : is_contr B :=
+  is_contr.mk (f !center) begin intro b, induction H b, exact ap f !is_prop.elim ⬝ p end
+
+  definition is_contr_of_is_embedding (f : A → B) (H : is_embedding f) (HB : is_prop B)
+    (a₀ : A) : is_contr A :=
+  is_contr.mk a₀ (λa, is_injective_of_is_embedding (is_prop.elim (f a₀) (f a)))
+
   definition merely_constant {A B : Type} (f : A → B) : Type :=
   Σb, Πa, merely (f a = b)
 
@@ -780,6 +813,10 @@ end
 
 
 namespace pointed
+
+  definition pbool_pequiv_add_point_unit [constructor] : pbool ≃* unit₊ :=
+  pequiv_of_equiv (bool_equiv_option_unit) idp
+
   definition to_homotopy_pt_mk {A B : Type*} {f g : A →* B} (h : f ~ g)
     (p : h pt ⬝ respect_pt g = respect_pt f) : to_homotopy_pt (phomotopy.mk h p) = p :=
   to_right_inv !eq_con_inv_equiv_con_eq p
@@ -839,6 +876,7 @@ end sum
 namespace prod
 
   infix ` ×→ `:63 := prod_functor
+  infix ` ×≃ `:63 := prod_equiv_prod
 
 end prod
 
