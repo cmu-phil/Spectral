@@ -119,7 +119,7 @@ namespace temp
     refine @(is_trunc_equiv_closed _ _) (fEinf (- 1) 0 dec_star),
     apply equiv_of_isomorphism,
     refine Einf_isomorphism fserre 0 _ _,
-    intro r H, --apply is_contr_fD2, change (- 1) - (- 1) >[ℤ] (- 0) - (r + 1),
+    intro r H, exact sorry, exact sorry --apply is_contr_fD2, change (- 1) - (- 1) >[ℤ] (- 0) - (r + 1),
 --    apply is_contr_fD, change (-0) - (r + 1) >[ℤ] 0,
 --exact sub_nat_lt 0 r,
     -- intro r H, apply is_contr_fD, change 0 + (r + 1) >[ℤ] 0,

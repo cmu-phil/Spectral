@@ -8,8 +8,11 @@ open eq nat int susp pointed sigma is_equiv equiv fiber algebra trunc pi group
 attribute pType.sigma_char sigma_pi_equiv_pi_sigma sigma.coind_unc [constructor]
 attribute ap1_gen [unfold 8 9 10]
 attribute ap010 [unfold 7]
+attribute tro_invo_tro [unfold 9] -- TODO: move
   -- TODO: homotopy_of_eq and apd10 should be the same
   -- TODO: there is also apd10_eq_of_homotopy in both pi and eq(?)
+
+
 
 namespace algebra
 
@@ -20,6 +23,10 @@ definition add_sub_cancel_middle (a b : A) : a + (b - a) = b :=
 end algebra
 
 namespace eq
+
+definition homotopy.symm_symm {A : Type} {P : A → Type} {f g : Πx, P x} (H : f ~ g) :
+  H⁻¹ʰᵗʸ⁻¹ʰᵗʸ = H :=
+begin apply eq_of_homotopy, intro x, apply inv_inv end
 
   definition apd10_prepostcompose_nondep {A B C D : Type} (h : C → D) {g g' : B → C} (p : g = g')
     (f : A → B) (a : A) : apd10 (ap (λg a, h (g (f a))) p) a = ap h (apd10 p (f a)) :=
@@ -123,6 +130,162 @@ namespace eq
   homotopy_group_isomorphism_of_pequiv n f ⬝g
   ghomotopy_group_ptrunc_of_le H B
 
+definition equiv_pathover2 {A : Type} {a a' : A} (p : a = a')
+  {B : A → Type} {C : A → Type} (f : B a ≃ C a) (g : B a' ≃ C a')
+  (r : to_fun f =[p] to_fun g) : f =[p] g :=
+begin
+  fapply pathover_of_fn_pathover_fn,
+  { intro a, apply equiv.sigma_char },
+  { apply sigma_pathover _ _ _ r, apply is_prop.elimo }
+end
+
+definition equiv_pathover_inv {A : Type} {a a' : A} (p : a = a')
+  {B : A → Type} {C : A → Type} (f : B a ≃ C a) (g : B a' ≃ C a')
+  (r : to_inv f =[p] to_inv g) : f =[p] g :=
+begin
+  /- this proof is a bit weird, but it works -/
+  apply equiv_pathover2,
+  change f⁻¹ᶠ⁻¹ᶠ =[p] g⁻¹ᶠ⁻¹ᶠ,
+  apply apo (λ(a: A) (h : C a ≃ B a), h⁻¹ᶠ),
+  apply equiv_pathover2,
+  exact r
+end
+
+definition transport_lemma {A : Type} {C : A → Type} {g₁ : A → A}
+  {x y : A} (p : x = y) (f : Π⦃x⦄, C x → C (g₁ x)) (z : C x) :
+  transport C (ap g₁ p)⁻¹ (f (transport C p z)) = f z :=
+by induction p; reflexivity
+
+definition transport_lemma2 {A : Type} {C : A → Type} {g₁ : A → A}
+  {x y : A} (p : x = y) (f : Π⦃x⦄, C x → C (g₁ x)) (z : C x) :
+  transport C (ap g₁ p) (f z) = f (transport C p z) :=
+by induction p; reflexivity
+
+definition eq_of_pathover_apo {A C : Type} {B : A → Type} {a a' : A} {b : B a} {b' : B a'}
+  {p : a = a'} (g : Πa, B a → C) (q : b =[p] b') :
+  eq_of_pathover (apo g q) = apd011 g p q :=
+by induction q; reflexivity
+
+  definition apd02 [unfold 8] {A : Type} {B : A → Type} (f : Πa, B a) {a a' : A} {p q : a = a'}
+    (r : p = q) : change_path r (apd f p) = apd f q :=
+  by induction r; reflexivity
+
+  definition pathover_ap_cono {A A' : Type} {a₁ a₂ a₃ : A}
+    {p₁ : a₁ = a₂} {p₂ : a₂ = a₃} (B' : A' → Type) (f : A → A')
+    {b₁ : B' (f a₁)} {b₂ : B' (f a₂)} {b₃ : B' (f a₃)}
+    (q₁ : b₁ =[p₁] b₂) (q₂ : b₂ =[p₂] b₃) :
+    pathover_ap B' f (q₁ ⬝o q₂) =
+    change_path !ap_con⁻¹ (pathover_ap B' f q₁ ⬝o pathover_ap B' f q₂) :=
+  by induction q₁; induction q₂; reflexivity
+
+  definition concato_eq_eq {A : Type} {B : A → Type} {a₁ a₂ : A} {p₁ : a₁ = a₂}
+    {b₁ : B a₁} {b₂ b₂' : B a₂} (r : b₁ =[p₁] b₂) (q : b₂ = b₂') :
+    r ⬝op q = r ⬝o pathover_idp_of_eq q :=
+  by induction q; reflexivity
+
+definition ap_apd0111 {A₁ A₂ A₃ : Type} {B : A₁ → Type} {C : Π⦃a⦄, B a → Type} {a a₂ : A₁}
+  {b : B a} {b₂ : B a₂} {c : C b} {c₂ : C b₂}
+  (g : A₂ → A₃) (f : Πa b, C b → A₂) (Ha : a = a₂) (Hb : b =[Ha] b₂)
+    (Hc : c =[apd011 C Ha Hb] c₂) :
+  ap g (apd0111 f Ha Hb Hc) = apd0111 (λa b c, (g (f a b c))) Ha Hb Hc :=
+by induction Hb; induction Hc using idp_rec_on; reflexivity
+
+section squareover
+
+  variables {A A' : Type} {B : A → Type}
+            {a a' a'' a₀₀ a₂₀ a₄₀ a₀₂ a₂₂ a₂₄ a₀₄ a₄₂ a₄₄ : A}
+            /-a₀₀-/ {p₁₀ : a₀₀ = a₂₀} /-a₂₀-/ {p₃₀ : a₂₀ = a₄₀} /-a₄₀-/
+       {p₀₁ : a₀₀ = a₀₂} /-s₁₁-/ {p₂₁ : a₂₀ = a₂₂} /-s₃₁-/ {p₄₁ : a₄₀ = a₄₂}
+            /-a₀₂-/ {p₁₂ : a₀₂ = a₂₂} /-a₂₂-/ {p₃₂ : a₂₂ = a₄₂} /-a₄₂-/
+       {p₀₃ : a₀₂ = a₀₄} /-s₁₃-/ {p₂₃ : a₂₂ = a₂₄} /-s₃₃-/ {p₄₃ : a₄₂ = a₄₄}
+            /-a₀₄-/ {p₁₄ : a₀₄ = a₂₄} /-a₂₄-/ {p₃₄ : a₂₄ = a₄₄} /-a₄₄-/
+            {s₁₁ : square p₁₀ p₁₂ p₀₁ p₂₁} {s₃₁ : square p₃₀ p₃₂ p₂₁ p₄₁}
+            {s₁₃ : square p₁₂ p₁₄ p₀₃ p₂₃} {s₃₃ : square p₃₂ p₃₄ p₂₃ p₄₃}
+
+            {b : B a}
+            {b₀₀ : B a₀₀} {b₂₀ : B a₂₀} {b₄₀ : B a₄₀}
+            {b₀₂ : B a₀₂} {b₂₂ : B a₂₂} {b₄₂ : B a₄₂}
+            {b₀₄ : B a₀₄} {b₂₄ : B a₂₄} {b₄₄ : B a₄₄}
+            /-b₀₀-/ {q₁₀ : b₀₀ =[p₁₀] b₂₀} /-b₂₀-/ {q₃₀ : b₂₀ =[p₃₀] b₄₀} /-b₄₀-/
+            /-b₀₂-/ {q₁₂ : b₀₂ =[p₁₂] b₂₂} /-b₂₂-/ {q₃₂ : b₂₂ =[p₃₂] b₄₂} /-b₄₂-/
+            /-b₀₄-/ {q₁₄ : b₀₄ =[p₁₄] b₂₄} /-b₂₄-/ {q₃₄ : b₂₄ =[p₃₄] b₄₄} /-b₄₄-/
+   {q₀₁ : b₀₀ =[p₀₁] b₀₂} /-t₁₁-/ {q₂₁ : b₂₀ =[p₂₁] b₂₂} /-t₃₁-/ {q₄₁ : b₄₀ =[p₄₁] b₄₂}
+   {q₀₃ : b₀₂ =[p₀₃] b₀₄} /-t₁₃-/ {q₂₃ : b₂₂ =[p₂₃] b₂₄} /-t₃₃-/ {q₄₃ : b₄₂ =[p₄₃] b₄₄}
+
+  definition move_right_of_top_over {p : a₀₀ = a} {p' : a = a₂₀}
+    {s : square p p₁₂ p₀₁ (p' ⬝ p₂₁)} {q : b₀₀ =[p] b} {q' : b =[p'] b₂₀}
+    (t : squareover B (move_top_of_right s) (q ⬝o q') q₁₂ q₀₁ q₂₁) :
+    squareover B s q q₁₂ q₀₁ (q' ⬝o q₂₁) :=
+  begin induction q', induction q, induction q₂₁, exact t end
+
+  /- TODO: replace the version in the library by this -/
+  definition hconcato_pathover' {p : a₂₀ = a₂₂} {sp : p = p₂₁} {s : square p₁₀ p₁₂ p₀₁ p}
+    {q : b₂₀ =[p] b₂₂} (t₁₁ : squareover B (s ⬝hp sp) q₁₀ q₁₂ q₀₁ q₂₁)
+    (r : change_path sp q = q₂₁) : squareover B s q₁₀ q₁₂ q₀₁ q :=
+  by induction sp; induction r; exact t₁₁
+
+  variables (s₁₁ q₀₁ q₁₀ q₂₁ q₁₂)
+  definition squareover_fill_t : Σ (q : b₀₀ =[p₁₀] b₂₀), squareover B s₁₁ q q₁₂ q₀₁ q₂₁ :=
+  begin
+    induction s₁₁, induction q₀₁ using idp_rec_on, induction q₂₁ using idp_rec_on,
+    induction q₁₂ using idp_rec_on, exact ⟨idpo, idso⟩
+  end
+
+  definition squareover_fill_b : Σ (q : b₀₂ =[p₁₂] b₂₂), squareover B s₁₁ q₁₀ q q₀₁ q₂₁ :=
+  begin
+    induction s₁₁, induction q₀₁ using idp_rec_on, induction q₂₁ using idp_rec_on,
+    induction q₁₀ using idp_rec_on, exact ⟨idpo, idso⟩
+  end
+
+  definition squareover_fill_l : Σ (q : b₀₀ =[p₀₁] b₀₂), squareover B s₁₁ q₁₀ q₁₂ q q₂₁ :=
+  begin
+    induction s₁₁, induction q₁₀ using idp_rec_on, induction q₂₁ using idp_rec_on,
+    induction q₁₂ using idp_rec_on, exact ⟨idpo, idso⟩
+  end
+
+  definition squareover_fill_r : Σ (q : b₂₀ =[p₂₁] b₂₂) , squareover B s₁₁ q₁₀ q₁₂ q₀₁ q :=
+  begin
+    induction s₁₁, induction q₀₁ using idp_rec_on, induction q₁₀ using idp_rec_on,
+    induction q₁₂ using idp_rec_on, exact ⟨idpo, idso⟩
+  end
+
+
+end squareover
+
+/- move this to types.eq, and replace the proof there -/
+  section
+    parameters {A : Type} (a₀ : A) (code : A → Type) (H : is_contr (Σa, code a))
+      (c₀ : code a₀)
+    include H c₀
+    protected definition encode2 {a : A} (q : a₀ = a) : code a :=
+    transport code q c₀
+
+    protected definition decode2' {a : A} (c : code a) : a₀ = a :=
+    have ⟨a₀, c₀⟩ = ⟨a, c⟩ :> Σa, code a, from !is_prop.elim,
+    this..1
+
+    protected definition decode2 {a : A} (c : code a) : a₀ = a :=
+    (decode2' c₀)⁻¹ ⬝ decode2' c
+
+    open sigma.ops
+    definition total_space_method2 (a : A) : (a₀ = a) ≃ code a :=
+    begin
+      fapply equiv.MK,
+      { exact encode2 },
+      { exact decode2 },
+      { intro c, unfold [encode2, decode2, decode2'],
+        rewrite [is_prop_elim_self, ▸*, idp_con],
+        apply tr_eq_of_pathover, apply eq_pr2 },
+      { intro q, induction q, esimp, apply con.left_inv, },
+    end
+  end
+
+definition total_space_method2_refl {A : Type} (a₀ : A) (code : A → Type) (H : is_contr (Σa, code a))
+  (c₀ : code a₀) : total_space_method2 a₀ code H c₀ a₀ idp = c₀ :=
+begin
+  reflexivity
+end
+
   section hsquare
   variables {A₀₀ A₂₀ A₄₀ A₀₂ A₂₂ A₄₂ A₀₄ A₂₄ A₄₄ : Type}
             {f₁₀ : A₀₀ → A₂₀} {f₃₀ : A₂₀ → A₄₀}
@@ -208,6 +371,21 @@ namespace nat
       exact homotopy.rfl,
       exact q ⬝htyh p
   end
+
+definition iterate_equiv2 {A : Type} {C : A → Type} (f : A → A) (h : Πa, C a ≃ C (f a))
+  (k : ℕ) (a : A) : C a ≃ C (f^[k] a) :=
+begin induction k with k IH, reflexivity, exact IH ⬝e h (f^[k] a) end
+
+
+
+  /- replace proof of le_of_succ_le by this -/
+  definition le_step_left {n m : ℕ} (H : succ n ≤ m) : n ≤ m :=
+  by induction H with H m H'; exact le_succ n; exact le.step H'
+
+  /- TODO: make proof of le_succ_of_le simpler -/
+
+  definition nat.add_le_add_left2 {n m : ℕ} (H : n ≤ m) (k : ℕ) : k + n ≤ k + m :=
+  by induction H with m H H₂; reflexivity; exact le.step H₂
 
 end nat
 
@@ -511,6 +689,29 @@ namespace sigma
     change_path (ap_sigma_pr1 f g p)⁻¹ (pathover_ap C f (apd g p)) :=
   by induction p; reflexivity
 
+definition ap_sigma_functor_sigma_eq {A A' : Type} {B : A → Type} {B' : A' → Type}
+  {a a' : A} {b : B a} {b' : B a'} (f : A → A') (g : Πa, B a → B' (f a)) (p : a = a') (q : b =[p] b') :
+  ap (sigma_functor f g) (sigma_eq p q) = sigma_eq (ap f p) (pathover_ap B' f (apo g q)) :=
+by induction q; reflexivity
+
+definition ap_sigma_functor_id_sigma_eq {A : Type} {B B' : A → Type}
+  {a a' : A} {b : B a} {b' : B a'} (g : Πa, B a → B' a) (p : a = a') (q : b =[p] b') :
+  ap (sigma_functor id g) (sigma_eq p q) = sigma_eq p (apo g q) :=
+by induction q; reflexivity
+
+definition sigma_eq_pr2_constant {A B : Type} {a a' : A} {b b' : B} (p : a = a')
+  (q : b =[p] b') : ap pr2 (sigma_eq p q) = (eq_of_pathover q) :=
+by induction q; reflexivity
+
+definition sigma_eq_pr2_constant2 {A B : Type} {a a' : A} {b b' : B} (p : a = a')
+  (q : b = b') : ap pr2 (sigma_eq p (pathover_of_eq p q)) = q :=
+by induction p; induction q; reflexivity
+
+definition sigma_eq_concato_eq {A : Type} {B : A → Type} {a a' : A} {b : B a} {b₁ b₂ : B a'}
+  (p : a = a') (q : b =[p] b₁) (q' : b₁ = b₂) : sigma_eq p (q ⬝op q') = sigma_eq p q ⬝ ap (dpair a') q' :=
+by induction q'; reflexivity
+
+
   -- open sigma.ops
   -- definition eq.rec_sigma {A : Type} {B : A → Type} {a₀ : A} {b₀ : B a₀}
   --   {P : Π(a : A) (b : B a), ⟨a₀, b₀⟩ = ⟨a, b⟩ → Type} (H : P a₀ b₀ idp) {a : A} {b : B a}
@@ -592,7 +793,47 @@ namespace fiber
   definition is_contr_pfiber_pid (A : Type*) : is_contr (pfiber (pid A)) :=
   is_contr.mk pt begin intro x, induction x with a p, esimp at p, cases p, reflexivity end
 
+definition fiber_functor [constructor] {A A' B B' : Type} {f : A → B} {f' : A' → B'} {b : B} {b' : B'}
+  (g : A → A') (h : B → B') (H : hsquare g h f f') (p : h b = b') (x : fiber f b) : fiber f' b' :=
+fiber.mk (g (point x)) (H (point x) ⬝ ap h (point_eq x) ⬝ p)
+
+definition pfiber_functor [constructor] {A A' B B' : Type*} {f : A →* B} {f' : A' →* B'}
+  (g : A →* A') (h : B →* B') (H : psquare g h f f') : pfiber f →* pfiber f' :=
+pmap.mk (fiber_functor g h H (respect_pt h))
+  begin
+    fapply fiber_eq,
+      exact respect_pt g,
+      exact !con.assoc ⬝ to_homotopy_pt H
+  end
+
+-- TODO: use this in pfiber_pequiv_of_phomotopy
+definition fiber_equiv_of_homotopy {A B : Type} {f g : A → B} (h : f ~ g) (b : B)
+  : fiber f b ≃ fiber g b :=
+begin
+  refine (fiber.sigma_char f b ⬝e _ ⬝e (fiber.sigma_char g b)⁻¹ᵉ),
+  apply sigma_equiv_sigma_right, intros a,
+  apply equiv_eq_closed_left, apply h
+end
+
+definition fiber_equiv_of_square {A B C D : Type} {b : B} {d : D} {f : A → B} {g : C → D} (h : A ≃ C)
+  (k : B ≃ D) (s : k ∘ f ~ g ∘ h) (p : k b = d) : fiber f b ≃ fiber g d :=
+  calc fiber f b ≃ fiber (k ∘ f) (k b) : fiber.equiv_postcompose
+            ... ≃ fiber (k ∘ f) d : transport_fiber_equiv (k ∘ f) p
+            ... ≃ fiber (g ∘ h) d : fiber_equiv_of_homotopy s d
+            ... ≃ fiber g d : fiber.equiv_precompose
+
+definition fiber_equiv_of_triangle {A B C : Type} {b : B} {f : A → B} {g : C → B} (h : A ≃ C)
+  (s : f ~ g ∘ h) : fiber f b ≃ fiber g b :=
+fiber_equiv_of_square h erfl s idp
+
 end fiber
+
+namespace fin
+
+definition lift_succ2 [constructor] ⦃n : ℕ⦄ (x : fin n) : fin (nat.succ n) :=
+fin.mk x (le.step (is_lt x))
+
+end fin
 
 namespace function
   variables {A B : Type} {f f' : A → B}
