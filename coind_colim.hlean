@@ -1,8 +1,8 @@
 -- author: Floris van Doorn
 
-import .colim
+import .colimit.seq_colim
 
-open nat seq_colim seq_colim.ops eq equiv is_equiv is_trunc function
+open nat seq_colim eq equiv is_equiv is_trunc function
 
 namespace seq_colim
 

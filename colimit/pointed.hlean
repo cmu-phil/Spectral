@@ -221,7 +221,7 @@ namespace seq_colim
     pseq_diagram (λk, pfiber (g k)) :=
   λk, pfiber_functor (f k) (f' k) (p k)
 
-/- Two issues when going to the pointed version:
+/- Two issues when going to the pointed version of the fiber commuting with colimit:
   - seq_diagram_fiber τ p a for a : A n at position k lives over (A (n + k)), so for a : A 0 you get A (0 + k), but we need A k
   - in seq_diagram_fiber the fibers are taken in rep f ..., but in the pointed version over the basepoint of A n
 -/
