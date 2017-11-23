@@ -187,7 +187,7 @@ namespace seq_colim
     lift_succ2
 
     definition id0_seq [unfold_full] (a₁ a₂ : A 0) : ℕ → Type :=
-    λ k, rep0 f k a₁ = lrep f (zero_le k) a₂
+    λ k, rep0 f k a₁ = rep0 f k a₂
 
     definition id0_seq_diagram [unfold_full] (a₁ a₂ : A 0) : seq_diagram (id0_seq f a₁ a₂) :=
     λ (k : ℕ) (p : rep0 f k a₁ = rep0 f k a₂), ap (@f k) p
@@ -215,7 +215,7 @@ namespace seq_colim
   λn a a', f' a'
 
   definition id0_seq_diagram_over [unfold_full] (a₀ : A 0) :
-    seq_diagram_over f (λn a, lrep f (zero_le n) a₀ = a) :=
+    seq_diagram_over f (λn a, rep0 f n a₀ = a) :=
   λn a p, ap (@f n) p
 
   variable (g : seq_diagram_over f P)

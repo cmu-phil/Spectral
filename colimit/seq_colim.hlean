@@ -37,17 +37,15 @@ begin
   rexact ap (lrep_back f (zero_le k)) (left_inv (@f k) a),
 end
 
-set_option pp.binder_types true
-
 section
+variable {f}
 local attribute is_equiv_lrep [instance] --[priority 500]
-definition is_equiv_ι (H : is_equiseq f) : is_equiv (ι' f 0) :=
+definition is_equiv_inclusion0 (H : is_equiseq f) : is_equiv (ι' f 0) :=
 begin
   fapply adjointify,
   { exact colim_back f},
   { intro x, induction x with k a k a,
-    { esimp,
-      refine (lrep_glue f (zero_le k) (lrep_back f (zero_le k) a))⁻¹ ⬝ _,
+    { refine (lrep_glue f (zero_le k) (lrep_back f (zero_le k) a))⁻¹ ⬝ _,
       exact ap (ι f) (right_inv (lrep f (zero_le k)) a)},
     apply eq_pathover_id_right,
     refine (ap_compose (ι f) (colim_back f) _) ⬝ph _,
@@ -55,19 +53,23 @@ begin
     { rexact elim_glue f _ _ a},
     refine _ ⬝pv ((natural_square (lrep_glue f (zero_le k))
                                   (ap (lrep_back f (zero_le k)) (left_inv (@f k) a)))⁻¹ʰ ⬝h _),
-    { exact (glue f (lrep f (zero_le k) (lrep_back f (zero_le (succ k)) (f a))))⁻¹ ⬝
-            ap (ι f) (right_inv (lrep f (zero_le (succ k))) (f a))},
-    { rewrite [-con.assoc, -con_inv]},
+    { exact (glue f _)⁻¹ ⬝ ap (ι f) (right_inv (lrep f (zero_le (succ k))) (f a)) },
+    { rewrite [-con.assoc, -con_inv] },
     refine !ap_compose⁻¹ ⬝ ap_compose (ι f) _ _ ⬝ph _,
     refine dconcat (aps (ι' f k) (natural_square (right_inv (lrep f (zero_le k)))
                                                  (left_inv (@f _) a))) _,
     apply move_top_of_left, apply move_left_of_bot,
     refine ap02 _ (whisker_left _ (adj (@f _) a)) ⬝pv _,
     rewrite [-+ap_con, -ap_compose', ap_id],
-    apply natural_square_tr},
+    apply natural_square_tr },
   intro a,
   reflexivity,
 end
+
+definition equiv_of_is_equiseq [constructor] (H : is_equiseq f) : seq_colim f ≃ A 0 :=
+(equiv.mk _ (is_equiv_inclusion0 H))⁻¹ᵉ
+
+variable (f)
 end
 
 section
@@ -95,7 +97,7 @@ begin
 end
 omit p
 
-theorem seq_colim_functor_glue {n : ℕ} (a : A n)
+theorem seq_colim_functor_glue {n : ℕ} (a :   A n)
   : ap (seq_colim_functor τ p) (glue f a) = ap (ι f') (p a) ⬝ glue f' (τ a) :=
 !elim_glue
 
@@ -113,8 +115,7 @@ end
 
 variable (f)
 definition seq_colim_functor_id [constructor] (x : seq_colim f) :
-  seq_colim_functor (λn, id) (λn, homotopy.rfl) x =
-  x :=
+  seq_colim_functor (λn, id) (λn, homotopy.rfl) x = x :=
 begin
   induction x, reflexivity,
   apply eq_pathover, apply hdeg_square,
@@ -125,7 +126,7 @@ variables {f τ τ₂ p p₂}
 definition seq_colim_functor_homotopy [constructor] (q : τ ~2 τ₂)
   (r : Π⦃n⦄ (a : A n), square (q (n+1) (f a)) (ap (@f' n) (q n a)) (p a) (p₂ a))
   (x : seq_colim f) :
-  seq_colim_functor τ p x = seq_colim_functor τ₂ p₂ x  :=
+  seq_colim_functor τ p x = seq_colim_functor τ₂ p₂ x :=
 begin
   induction x,
     exact ap (ι f') (q n a),
@@ -314,9 +315,6 @@ definition kshift_equiv [constructor] (k : ℕ) : seq_colim f ≃ seq_colim (ksh
 -- end
 
 variable {f}
-definition equiv_of_is_equiseq [constructor] (H : is_equiseq f) : seq_colim f ≃ A 0 :=
-(equiv.mk _ (is_equiv_ι _ H))⁻¹ᵉ
-
 definition seq_colim_constant_seq [constructor] (X : Type) : seq_colim (constant_seq X) ≃ X :=
 equiv_of_is_equiseq (λn, !is_equiv_id)
 
@@ -325,8 +323,12 @@ definition is_contr_seq_colim {A : ℕ → Type} (f : seq_diagram A)
   [Πk, is_contr (A k)] : is_contr (seq_colim f) :=
 begin
   apply @is_trunc_is_equiv_closed (A 0),
-  apply is_equiv_ι, intro n, apply is_equiv_of_is_contr
+  apply is_equiv_inclusion0, intro n, apply is_equiv_of_is_contr
 end
+
+definition seq_colim_equiv_of_is_equiv [constructor] {n : ℕ} (H : Πk, k ≥ n → is_equiv (@f k)) :
+  seq_colim f ≃ A n :=
+kshift_equiv f n ⬝e equiv_of_is_equiseq (λk, H (n+k) !le_add_right)
 
 /- colimits of dependent sequences, sigma's commute with colimits -/
 
@@ -697,8 +699,8 @@ equiv.MK (colim_sigma_of_sigma_colim g)
 
 end over
 
-definition seq_colim_id_equiv_seq_colim_id0 (x y : A 0) :
-  seq_colim (id_seq_diagram f 0 x y) ≃ seq_colim (id0_seq_diagram f x y) :=
+definition seq_colim_id_equiv_seq_colim_id0 (a₀ a₁ : A 0) :
+  seq_colim (id_seq_diagram f 0 a₀ a₁) ≃ seq_colim (id0_seq_diagram f a₀ a₁) :=
 seq_colim_equiv
   (λn, !lrep_eq_lrep_irrel (nat.zero_add n))
   (λn p, !lrep_eq_lrep_irrel_natural)
@@ -719,11 +721,13 @@ definition incl_kshift_diag0 {n : ℕ} (x : A n) :
   ι' (kshift_diag f n) 0 x = kshift_equiv f n (ι f x) :=
 incl_kshift_diag f x
 
-definition seq_colim_eq_equiv0' (a₀ a₁ : A 0) : ι f a₀ = ι f a₁ ≃ seq_colim (id_seq_diagram f 0 a₀ a₁) :=
+definition seq_colim_eq_equiv0' (a₀ a₁ : A 0) :
+  ι f a₀ = ι f a₁ ≃ seq_colim (id_seq_diagram f 0 a₀ a₁) :=
 begin
-  refine total_space_method2 (ι f a₀) (seq_colim_over (id0_seq_diagram_over f a₀)) _ _ (ι f a₁) ⬝e _,
-  { apply @(is_trunc_equiv_closed_rev _
-      (sigma_seq_colim_over_equiv _ _)), apply is_contr_seq_colim },
+  refine total_space_method2 (ι f a₀) (seq_colim_over (id0_seq_diagram_over f a₀))
+    _ _ (ι f a₁) ⬝e _,
+  { apply @(is_trunc_equiv_closed_rev _ (sigma_seq_colim_over_equiv _ _)),
+    apply is_contr_seq_colim },
   { exact ιo _ idp },
   /-
     In the next equivalence we have to show that
@@ -740,14 +744,14 @@ begin
     intro n p, refine whisker_right _ (!lrep_irrel2⁻² ⬝ !ap_inv⁻¹) ⬝ !ap_con⁻¹ }
 end
 
-definition seq_colim_eq_equiv0 (x y : A 0) : ι f x = ι f y ≃ seq_colim (id0_seq_diagram f x y) :=
-seq_colim_eq_equiv0' f x y ⬝e seq_colim_id_equiv_seq_colim_id0 f x y
+definition seq_colim_eq_equiv0 (a₀ a₁ : A 0) : ι f a₀ = ι f a₁ ≃ seq_colim (id0_seq_diagram f a₀ a₁) :=
+seq_colim_eq_equiv0' f a₀ a₁ ⬝e seq_colim_id_equiv_seq_colim_id0 f a₀ a₁
 
-definition seq_colim_eq_equiv {n : ℕ} (x y : A n) :
-  ι f x = ι f y ≃ seq_colim (id_seq_diagram f n x y) :=
-eq_equiv_fn_eq_of_equiv (kshift_equiv f n) (ι f x) (ι f y) ⬝e
-eq_equiv_eq_closed (incl_kshift_diag0 f x)⁻¹ (incl_kshift_diag0 f y)⁻¹ ⬝e
-seq_colim_eq_equiv0' (kshift_diag f n) x y ⬝e
+definition seq_colim_eq_equiv {n : ℕ} (a₀ a₁ : A n) :
+  ι f a₀ = ι f a₁ ≃ seq_colim (id_seq_diagram f n a₀ a₁) :=
+eq_equiv_fn_eq_of_equiv (kshift_equiv f n) (ι f a₀) (ι f a₁) ⬝e
+eq_equiv_eq_closed (incl_kshift_diag0 f a₀)⁻¹ (incl_kshift_diag0 f a₁)⁻¹ ⬝e
+seq_colim_eq_equiv0' (kshift_diag f n) a₀ a₁ ⬝e
 @seq_colim_equiv _ _ _ (λk, ap (@f _))
   (λm, eq_equiv_eq_closed !lrep_kshift_diag !lrep_kshift_diag)
   (λm p, whisker_right _ (whisker_right _ !ap_inv⁻¹ ⬝ !ap_con⁻¹) ⬝ !ap_con⁻¹) ⬝e
