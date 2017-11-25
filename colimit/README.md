@@ -1,0 +1,1 @@
+This folder contains various properties about colimits, from a paper to appear by Egbert Rijke, Floris van Doorn and Kristina Sojakova.
