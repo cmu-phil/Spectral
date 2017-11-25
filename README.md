@@ -110,4 +110,4 @@ These projects are done
 - Installation instructions for Lean 2 can be found [here](https://github.com/leanprover/lean2).
 - Some notes on the Emacs mode can be found [here](https://github.com/leanprover/lean2/blob/master/src/emacs/README.md) (for example if some unicode characters don't show up, or increase the spacing between lines by a lot).
 - If you contribute, please use rebase instead of merge (e.g. `git pull -r`).
-- We try to separate the repository into the folders `algebra`, `homotopy`, `homology` and `cohomology`. Homotopy theotic properties of types which do not explicitly mention homotopy, homology or cohomology groups (such as `A ∧ B ≃* B ∧ A`) are part of `homotopy`.
+- We try to separate the repository into the folders `algebra`, `homotopy`, `homology`, `cohomology` and `colimit`. Homotopy theotic properties of types which do not explicitly mention homotopy, homology or cohomology groups (such as `A ∧ B ≃* B ∧ A`) are part of `homotopy`.

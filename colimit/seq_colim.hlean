@@ -14,7 +14,12 @@ namespace seq_colim
 abbreviation ι  [constructor] := @inclusion
 abbreviation ι' [constructor] [parsing_only] {A} (f n) := @inclusion A f n
 
+universe variable v
 variables {A A' A'' : ℕ → Type} (f : seq_diagram A) (f' : seq_diagram A') (f'' : seq_diagram A'')
+          (τ τ₂ : Π⦃n⦄, A n → A' n) (p : Π⦃n⦄ (a : A n), τ (f a) = f' (τ a))
+          (p₂ : Π⦃n⦄ (a : A n), τ₂ (f a) = f' (τ₂ a))
+          (τ' : Π⦃n⦄, A' n → A'' n) (p' : Π⦃n⦄ (a' : A' n), τ' (f' a') = f'' (τ' a'))
+          {P : Π⦃n⦄, A n → Type.{v}} (g : seq_diagram_over f P) {n : ℕ} {a : A n}
 
 definition lrep_glue {n m : ℕ} (H : n ≤ m) (a : A n) : ι f (lrep f H a) = ι f a :=
 begin
@@ -50,7 +55,7 @@ begin
     apply eq_pathover_id_right,
     refine (ap_compose (ι f) (colim_back f) _) ⬝ph _,
     refine ap02 _ _ ⬝ph _, rotate 1,
-    { rexact elim_glue f _ _ a},
+    { rexact elim_glue f _ _ a },
     refine _ ⬝pv ((natural_square (lrep_glue f (zero_le k))
                                   (ap (lrep_back f (zero_le k)) (left_inv (@f k) a)))⁻¹ʰ ⬝h _),
     { exact (glue f _)⁻¹ ⬝ ap (ι f) (right_inv (lrep f (zero_le (succ k))) (f a)) },
@@ -62,8 +67,7 @@ begin
     refine ap02 _ (whisker_left _ (adj (@f _) a)) ⬝pv _,
     rewrite [-+ap_con, -ap_compose', ap_id],
     apply natural_square_tr },
-  intro a,
-  reflexivity,
+  { intro a, reflexivity }
 end
 
 definition equiv_of_is_equiseq [constructor] (H : is_equiseq f) : seq_colim f ≃ A 0 :=
@@ -73,7 +77,6 @@ variable (f)
 end
 
 section
-variables {n : ℕ} (a : A n)
 
 definition rep_glue (k : ℕ) (a : A n) : ι f (rep f k a) = ι f a :=
 begin
@@ -85,9 +88,6 @@ end
 /- functorial action and equivalences -/
 section functor
 variables {f f' f''}
-variables (τ τ₂ : Π⦃n⦄, A n → A' n) (p : Π⦃n⦄ (a : A n), τ (f a) = f' (τ a))
-          (p₂ : Π⦃n⦄ (a : A n), τ₂ (f a) = f' (τ₂ a))
-          (τ' : Π⦃n⦄, A' n → A'' n) (p' : Π⦃n⦄ (a' : A' n), τ' (f' a') = f'' (τ' a'))
 include p
 definition seq_colim_functor [unfold 7] : seq_colim f → seq_colim f' :=
 begin
@@ -334,8 +334,6 @@ kshift_equiv f n ⬝e equiv_of_is_equiseq (λk, H (n+k) !le_add_right)
 
 section over
 
-universe variable v
-variables {P : Π⦃n⦄, A n → Type.{v}} (g : seq_diagram_over f P) {n : ℕ} {a : A n}
 variable {f}
 
 definition rep_f_equiv_natural {k : ℕ} (p : P (rep f k (f a))) :
@@ -809,6 +807,10 @@ equiv.MK (seq_colim_trunc_of_trunc_seq_colim f k) (trunc_seq_colim_of_seq_colim_
       refine !ap_compose'⁻¹ ⬝ !elim_glue }
   end end
 
+theorem is_conn_seq_colim [instance] (k : ℕ₋₂) [H : Πn, is_conn k (A n)] :
+  is_conn k (seq_colim f) :=
+is_trunc_equiv_closed_rev -2 (trunc_seq_colim_equiv f k)
+
 /- the colimit of a sequence of fibers is the fiber of the functorial action of the colimit -/
 definition domain_seq_colim_functor {A A' : ℕ → Type} {f : seq_diagram A}
   {f' : seq_diagram A'} (τ : Πn, A' n → A n)
@@ -828,7 +830,8 @@ begin
   refine _ ⬝e fiber_pr1 (seq_colim_over (seq_diagram_over_fiber τ p)) (ι f a),
   apply fiber_equiv_of_triangle (domain_seq_colim_functor τ p)⁻¹ᵉ,
   refine _ ⬝hty λx, (colim_sigma_triangle _ _)⁻¹,
-  apply homotopy_inv_of_homotopy_pre (seq_colim_equiv _ _) (seq_colim_functor _ _) (seq_colim_functor _ _),
+  apply homotopy_inv_of_homotopy_pre (seq_colim_equiv _ _)
+          (seq_colim_functor _ _) (seq_colim_functor _ _),
   refine (λx, !seq_colim_functor_compose⁻¹) ⬝hty _,
   refine seq_colim_functor_homotopy _ _,
   intro n x, exact point_eq x.2,
@@ -840,8 +843,50 @@ definition fiber_seq_colim_functor0 {A A' : ℕ → Type} {f : seq_diagram A}
   {f' : seq_diagram A'} (τ : Πn, A' n → A n)
   (p : Π⦃n⦄, τ (n+1) ∘ @f' n ~ @f n ∘ @τ n) (a : A 0) :
     fiber (seq_colim_functor τ p) (ι f a) ≃ seq_colim (seq_diagram_fiber0 τ p a) :=
-sorry
+fiber_seq_colim_functor τ p a ⬝e
+seq_colim_equiv
+  (λn, equiv_apd011 (λx y, fiber (τ x) y) (rep_pathover_rep0 f a))
+  (λn x, sorry)
+-- maybe use fn_tro_eq_tro_fn2
 
+variables {f f'}
+definition fiber_inclusion (x : seq_colim f) :
+  fiber (ι' f 0) x ≃ fiber (seq_colim_functor (rep0 f) (λn a, idp)) x :=
+fiber_equiv_of_triangle (seq_colim_constant_seq (A 0))⁻¹ᵉ homotopy.rfl
+
+theorem is_trunc_fun_seq_colim_functor (k : ℕ₋₂) (H : Πn, is_trunc_fun k (@τ n)) :
+  is_trunc_fun k (seq_colim_functor τ p) :=
+begin
+  intro x, induction x using seq_colim.rec_prop,
+  exact is_trunc_equiv_closed_rev k (fiber_seq_colim_functor τ p a),
+end
+
+open is_conn
+theorem is_conn_fun_seq_colim_functor (k : ℕ₋₂) (H : Πn, is_conn_fun k (@τ n)) :
+  is_conn_fun k (seq_colim_functor τ p) :=
+begin
+  intro x, induction x using seq_colim.rec_prop,
+  exact is_conn_equiv_closed_rev k (fiber_seq_colim_functor τ p a) _
+end
+
+variables (f f')
+theorem is_trunc_fun_inclusion (k : ℕ₋₂) (H : Πn, is_trunc_fun k (@f n)) :
+  is_trunc_fun k (ι' f 0) :=
+begin
+  intro x,
+  apply @(is_trunc_equiv_closed_rev k (fiber_inclusion x)),
+  apply is_trunc_fun_seq_colim_functor,
+  intro n, apply is_trunc_fun_lrep, exact H
+end
+
+theorem is_conn_fun_inclusion (k : ℕ₋₂) (H : Πn, is_conn_fun k (@f n)) :
+  is_conn_fun k (ι' f 0) :=
+begin
+  intro x,
+  apply is_conn_equiv_closed_rev k (fiber_inclusion x),
+  apply is_conn_fun_seq_colim_functor,
+  intro n, apply is_conn_fun_lrep, exact H
+end
 
 /- the sequential colimit of standard finite types is ℕ -/
 open fin

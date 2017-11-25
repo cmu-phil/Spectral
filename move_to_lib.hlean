@@ -826,6 +826,32 @@ definition fiber_equiv_of_triangle {A B C : Type} {b : B} {f : A → B} {g : C �
   (s : f ~ g ∘ h) : fiber f b ≃ fiber g b :=
 fiber_equiv_of_square h erfl s idp
 
+definition is_trunc_fun_id (k : ℕ₋₂) (A : Type) : is_trunc_fun k (@id A) :=
+λa, is_trunc_of_is_contr _ _
+
+definition is_conn_fun_id (k : ℕ₋₂) (A : Type) : is_conn_fun k (@id A) :=
+λa, _
+
+open sigma.ops is_conn
+definition fiber_compose {A B C : Type} (g : B → C) (f : A → B) (c : C) :
+  fiber (g ∘ f) c ≃ Σ(x : fiber g c), fiber f (point x) :=
+begin
+  fapply equiv.MK,
+  { intro x, exact ⟨fiber.mk (f (point x)) (point_eq x), fiber.mk (point x) idp⟩ },
+  { intro x, exact fiber.mk (point x.2) (ap g (point_eq x.2) ⬝ point_eq x.1) },
+  { intro x, induction x with x₁ x₂, induction x₁ with b p, induction x₂ with a q,
+    induction p, esimp at q, induction q, reflexivity },
+  { intro x, induction x with a p, induction p, reflexivity }
+end
+
+definition is_trunc_fun_compose (k : ℕ₋₂) {A B C : Type} {g : B → C} {f : A → B}
+  (Hg : is_trunc_fun k g) (Hf : is_trunc_fun k f) : is_trunc_fun k (g ∘ f) :=
+λc, is_trunc_equiv_closed_rev k (fiber_compose g f c)
+
+definition is_conn_fun_compose (k : ℕ₋₂) {A B C : Type} {g : B → C} {f : A → B}
+  (Hg : is_conn_fun k g) (Hf : is_conn_fun k f) : is_conn_fun k (g ∘ f) :=
+λc, is_conn_equiv_closed_rev k (fiber_compose g f c) _
+
 end fiber
 
 namespace fin

@@ -6,7 +6,7 @@ Authors: Floris van Doorn, Egbert Rijke
 
 import ..move_to_lib types.fin types.trunc
 
-open nat eq equiv sigma sigma.ops is_equiv is_trunc trunc prod fiber
+open nat eq equiv sigma sigma.ops is_equiv is_trunc trunc prod fiber function
 
 namespace seq_colim
 
@@ -28,14 +28,14 @@ namespace seq_colim
   attribute Seq_diagram.carrier [coercion]
   attribute Seq_diagram.struct [coercion]
 
-  variables {A A' : ℕ → Type} (f : seq_diagram A) (f' : seq_diagram A')
+  variables {A A' : ℕ → Type} (f : seq_diagram A) (f' : seq_diagram A') {n m k : ℕ}
   include f
 
-  definition lrep {n m : ℕ} (H : n ≤ m) (a : A n) : A m :=
+  definition lrep {n m : ℕ} (H : n ≤ m) : A n → A m :=
   begin
-    induction H with m H y,
-    { exact a },
-    { exact f y }
+    induction H with m H fs,
+    { exact id },
+    { exact @f m ∘ fs }
   end
 
   definition lrep_irrel_pathover {n m m' : ℕ} (H₁ : n ≤ m) (H₂ : n ≤ m') (p : m = m') (a : A n) :
@@ -85,7 +85,6 @@ namespace seq_colim
   (lrep f H)⁻¹ᶠ
 
   section generalized_lrep
-  variable {n : ℕ}
 
   -- definition lrep_pathover_lrep0 [reducible] (k : ℕ) (a : A 0) : lrep f k a =[nat.zero_add k] lrep0 f k a :=
   -- begin induction k with k p, constructor, exact pathover_ap A succ (apo f p) end
@@ -128,6 +127,9 @@ namespace seq_colim
   definition rep0 (m : ℕ) (a : A 0) : A m :=
   lrep f (zero_le m) a
 
+  definition rep_pathover_rep0 {n : ℕ} (a : A 0) : rep f n a =[nat.zero_add n] rep0 f n a :=
+  !lrep_irrel_pathover
+
   -- definition old_rep (m : ℕ) (a : A n) : A (n + m) :=
   -- by induction m with m y; exact a; exact f y
 
@@ -149,6 +151,17 @@ namespace seq_colim
     { constructor},
     { apply pathover_ap, exact apo f IH}
   end
+
+  variable {f}
+  definition is_trunc_fun_lrep (k : ℕ₋₂) (H : n ≤ m) (H2 : Πn, is_trunc_fun k (@f n)) :
+    is_trunc_fun k (lrep f H) :=
+  begin induction H with m H IH, apply is_trunc_fun_id, exact is_trunc_fun_compose k (H2 m) IH end
+
+  definition is_conn_fun_lrep (k : ℕ₋₂) (H : n ≤ m) (H2 : Πn, is_conn_fun k (@f n)) :
+    is_conn_fun k (lrep f H) :=
+  begin induction H with m H IH, apply is_conn_fun_id, exact is_conn_fun_compose k (H2 m) IH end
+
+  variable (f)
 
   end generalized_lrep
 
@@ -228,7 +241,7 @@ namespace seq_colim
   definition seq_diagram_sigma [unfold 6] : seq_diagram (λn, Σ(x : A n), P x) :=
   λn v, ⟨f v.1, g v.2⟩
 
-  variables {n : ℕ} (f P)
+  variables (f P)
 
   theorem rep_f_equiv [constructor] (a : A n) (k : ℕ) :
     P (lrep f (le_add_right (succ n) k) (f a)) ≃ P (lrep f (le_add_right n (succ k)) a) :=
@@ -247,17 +260,17 @@ namespace seq_colim
   λn f x, g (f x)
 
   variables {f f'}
-  definition seq_diagram_over_fiber (g : Π⦃n⦄, A n → A' n)
-    (p : Π⦃n⦄ (a : A n), g (f a) = f' (g a)) : seq_diagram_over f' (λn, fiber (@g n)) :=
-  λk a, fiber_functor (@f k) (@f' k) (@p k) idp
+  definition seq_diagram_over_fiber (g : Π⦃n⦄, A' n → A n)
+    (p : Π⦃n⦄ (a : A' n), g (f' a) = f (g a)) : seq_diagram_over f (λn, fiber (@g n)) :=
+  λk a, fiber_functor (@f' k) (@f k) (@p k) idp
 
-  definition seq_diagram_fiber (g : Π⦃n⦄, A n → A' n) (p : Π⦃n⦄ (a : A n), g (f a) = f' (g a))
-    {n : ℕ} (a : A' n) : seq_diagram (λk, fiber (@g (n + k)) (rep f' k a)) :=
+  definition seq_diagram_fiber (g : Π⦃n⦄, A' n → A n) (p : Π⦃n⦄ (a : A' n), g (f' a) = f (g a))
+    {n : ℕ} (a : A n) : seq_diagram (λk, fiber (@g (n + k)) (rep f k a)) :=
   seq_diagram_of_over (seq_diagram_over_fiber g p) a
 
-  definition seq_diagram_fiber0 (g : Π⦃n⦄, A n → A' n) (p : Π⦃n⦄ (a : A n), g (f a) = f' (g a))
-    (a : A' 0) : seq_diagram (λk, fiber (@g k) (rep0 f' k a)) :=
-  λk, fiber_functor (@f k) (@f' k) (@p k) idp
+  definition seq_diagram_fiber0 (g : Π⦃n⦄, A' n → A n) (p : Π⦃n⦄ (a : A' n), g (f' a) = f (g a))
+    (a : A 0) : seq_diagram (λk, fiber (@g k) (rep0 f k a)) :=
+  λk, fiber_functor (@f' k) (@f k) (@p k) idp
 
 
 end seq_colim
