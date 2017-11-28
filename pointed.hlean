@@ -33,6 +33,12 @@ namespace pointed
   --     apply equiv_eq_closed_right, exact !idp_con⁻¹ }
   -- end
 
+  definition ppcompose_left_pid [constructor] (A B : Type*) : ppcompose_left (pid B) ~* pid (ppmap A B) :=
+  phomotopy_mk_ppmap (λf, pid_pcompose f) (!trans_refl ⬝ !phomotopy_of_eq_of_phomotopy⁻¹)
+
+  definition ppcompose_right_pid [constructor] (A B : Type*) : ppcompose_right (pid A) ~* pid (ppmap A B) :=
+  phomotopy_mk_ppmap (λf, pcompose_pid f) (!trans_refl ⬝ !phomotopy_of_eq_of_phomotopy⁻¹)
+
   /- remove some duplicates: loop_ppmap_commute, loop_ppmap_pequiv, loop_ppmap_pequiv', pfunext -/
   definition pfunext (X Y : Type*) : ppmap X (Ω Y) ≃* Ω (ppmap X Y) :=
   (loop_ppmap_commute X Y)⁻¹ᵉ*

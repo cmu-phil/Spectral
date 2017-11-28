@@ -9,10 +9,8 @@ open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops w
 
   /- To prove: Σ(X ∧ Y) ≃ X ★ Y (?) (notation means suspension, smash, join) -/
 
-  /- To prove: A ∧ S¹ ≃ ΣA -/
-
-  /- associativity is proven in smash_adjoint -/
-variables {A A' B B' C C' D E F : Type*}
+  /- associativity and A ∧ S¹ ≃ ΣA is proven in smash_adjoint -/
+variables {A A' A'' B B' B'' C C' D E F : Type*}
 
 namespace smash
 
@@ -233,6 +231,8 @@ namespace smash
     reflexivity
   end
 
+  infixr ` ∧~ `:78 := smash_functor_phomotopy
+
   /- a more explicit proof, if we ever need it -/
   -- definition smash_functor_homotopy [unfold 11] {f f' : A →* C} {g g' : B →* D}
   --   (h₁ : f ~* f') (h₂ : g ~* g') : f ∧→ g ~ f' ∧→ g' :=
@@ -317,6 +317,17 @@ namespace smash
     exact !smash_functor_phomotopy_refl⁻¹
   end
 
+  definition smash_functor_eq_of_phomotopy_left (g : B →* D) {f f' : A →* C}
+    (p : f ~* f') : ap (λf, smash_functor f g) (eq_of_phomotopy p) =
+    eq_of_phomotopy (smash_functor_phomotopy p phomotopy.rfl) :=
+  begin
+    induction p using phomotopy_rec_idp,
+    refine ap02 _ !eq_of_phomotopy_refl ⬝ _,
+    refine !eq_of_phomotopy_refl⁻¹ ⬝ _,
+    apply ap eq_of_phomotopy,
+    exact !smash_functor_phomotopy_refl⁻¹
+  end
+
   /- the functorial action preserves compositions, the interchange law -/
   definition smash_functor_pcompose_homotopy [unfold 11] {C D E F : Type}
     (f' : C → E) (f : A → C) (g' : D → F) (g : B → D) :
@@ -348,7 +359,11 @@ namespace smash
   end
 
   definition smash_functor_split (f : A →* C) (g : B →* D) :
-    f ∧→ g ~* (pid C) ∧→ g ∘* f ∧→ (pid B)  :=
+    f ∧→ g ~* f ∧→ pid D ∘* pid A ∧→ g :=
+  smash_functor_phomotopy !pcompose_pid⁻¹* !pid_pcompose⁻¹* ⬝* !smash_functor_pcompose
+
+  definition smash_functor_split_rev (f : A →* C) (g : B →* D) :
+    f ∧→ g ~* pid C ∧→ g ∘* f ∧→ pid B :=
   smash_functor_phomotopy !pid_pcompose⁻¹* !pcompose_pid⁻¹* ⬝* !smash_functor_pcompose
 
   /- An alternative proof which doesn't start by applying inductions, so which is more explicit -/
@@ -429,6 +444,337 @@ namespace smash
   !smash_functor_pcompose⁻¹* ⬝* smash_functor_phomotopy p q ⬝* !smash_functor_pcompose
   end
 
+
+  /- f ∧ g is a pointed equivalence if f and g are -/
+  definition smash_functor_using_pushout [unfold 7] (f : A →* C) (g : B →* D) : A ∧ B → C ∧ D :=
+  begin
+    fapply pushout.functor (sum_functor f g) (prod_functor f g) id,
+    { intro v, induction v with a b,
+      exact prod_eq idp (respect_pt g),
+      exact prod_eq (respect_pt f) idp },
+    { intro v, induction v with a b: reflexivity }
+  end
+
+  definition smash_functor_homotopy_pushout_functor (f : A →* C) (g : B →* D) :
+    f ∧→ g ~ smash_functor_using_pushout f g :=
+  begin
+    intro x, induction x,
+    { reflexivity },
+    { reflexivity },
+    { reflexivity },
+    { apply eq_pathover, refine !elim_gluel ⬝ph _ ⬝hp !pushout.elim_glue⁻¹,
+      apply hdeg_square, esimp, apply whisker_right, exact !ap_ap011⁻¹ },
+    { apply eq_pathover, refine !elim_gluer ⬝ph _ ⬝hp !pushout.elim_glue⁻¹,
+      apply hdeg_square, esimp, apply whisker_right, exact !ap_ap011⁻¹ }
+  end
+
+  local attribute is_equiv_sum_functor [instance]
+  definition smash_pequiv [constructor] (f : A ≃* C) (g : B ≃* D) : A ∧ B ≃* C ∧ D :=
+  begin
+    fapply pequiv_of_pmap (f ∧→ g),
+    refine @homotopy_closed _ _ _ _ _ (smash_functor_homotopy_pushout_functor f g)⁻¹ʰᵗʸ,
+    apply pushout.is_equiv_functor
+  end
+
+  infixr ` ∧≃ `:80 := smash_pequiv
+
+
+  definition smash_pequiv_left [constructor] (B : Type*) (f : A ≃* C) : A ∧ B ≃* C ∧ B :=
+  f ∧≃ pequiv.rfl
+
+  definition smash_pequiv_right [constructor] (A : Type*) (g : B ≃* D) : A ∧ B ≃* A ∧ D :=
+  pequiv.rfl ∧≃ g
+
+  /- f ∧ g is constant if f is constant -/
+  definition smash_functor_pconst_left_homotopy [unfold 6] {B' : Type} (f : B → B') (x : A ∧ B) :
+    (pconst A A' ∧→ pmap_of_map f pt) x = pt :=
+  begin
+    induction x with a b a b,
+    { exact gluer' (f b) pt },
+    { exact (gluel pt)⁻¹ },
+    { exact (gluer pt)⁻¹ᵖ },
+    { apply eq_pathover, note x := functor_gluel2 (λx : A, Point A') f a,
+      refine x ⬝ph _, refine _ ⬝hp !ap_constant⁻¹, apply square_of_eq,
+      rexact con.right_inv (gluer (f pt)) ⬝ (con.right_inv (gluel pt))⁻¹ },
+    { apply eq_pathover, note x := functor_gluer2 (λx : A, Point A') f b,
+      refine x ⬝ph _, refine _ ⬝hp !ap_constant⁻¹, apply square_of_eq, reflexivity }
+  end
+
+  definition smash_functor_pconst_left (f : B →* B') : pconst A A' ∧→ f ~* pconst (A ∧ B) (A' ∧ B') :=
+  begin
+    induction B' with B', induction f with f f₀, esimp at *, induction f₀,
+    fapply phomotopy.mk,
+    { exact smash_functor_pconst_left_homotopy f },
+    { rexact con.right_inv (gluer (f pt)) }
+  end
+
+  definition smash_functor_pconst_left_phomotopy {f f' : B →* B'} (p : f ~* f') :
+    phomotopy.refl (pconst A A') ∧~ p ⬝* smash_functor_pconst_left f' = smash_functor_pconst_left f :=
+  begin
+    induction p using phomotopy_rec_idp,
+    exact !smash_functor_phomotopy_refl ◾** idp ⬝ !refl_trans
+  end
+
+  /- This makes smash_functor into a pointed map (B →* B') →* (A ∧ B →* A ∧ B') -/
+
+  definition smash_functor_left [constructor] (A A' B : Type*) :
+    ppmap A A' →* ppmap (A ∧ B) (A' ∧ B) :=
+  pmap.mk (λf, f ∧→ pid B) (eq_of_phomotopy (smash_functor_pconst_left (pid B)))
+
+  /- We want to show that smash_functor_left is natural in A, B and C.
+
+     For this we need two coherence rules. Given the function h := (f' ∘ f) ∧→ (g' ∘ g) and suppose
+     that either f' or f is constant. There are two ways to show that h is constant: either by using
+     exchange, or directly. We need to show that these two proofs result in the same pointed
+     homotopy. First we do the case where f is constant -/
+
+  private definition my_squarel {A : Type} {a₁ a₂ a₃ : A} (p₁ : a₁ = a₃) (p₂ : a₂ = a₃) :
+    square (p₁ ⬝ p₂⁻¹) p₂⁻¹ p₁ idp :=
+  proof square_of_eq idp qed
+
+  private definition my_squarer {A : Type} {a₁ a₂ a₃ : A} (p₁ : a₁ = a₃) (p₂ : a₁ = a₂) :
+    square (p₁ ⬝ p₁⁻¹) p₂⁻¹ p₂ idp :=
+  proof square_of_eq (con.right_inv p₁ ⬝ (con.right_inv p₂)⁻¹) qed
+
+  private definition my_cube_fillerl {A B C : Type} {g : B → C} {f : A → B} {a₁ a₂ : A} {b₀ : B}
+    {p : f ~ λa, b₀} {q : Πa, g (f a) = g b₀} (r : (λa, ap g (p a)) ~ q) :
+    cube (hrfl ⬝hp (r a₁)⁻¹) hrfl
+         (my_squarel (q a₁) (q a₂)) (aps g (my_squarel (p a₁) (p a₂)))
+         (hrfl ⬝hp (!ap_con ⬝ whisker_left _ !ap_inv ⬝ (r a₁) ◾ (r a₂)⁻²)⁻¹)
+           (hrfl ⬝hp (r a₂)⁻²⁻¹ ⬝hp !ap_inv⁻¹) :=
+  begin
+    induction r using homotopy.rec_on_idp, induction p using homotopy.rec_on_idp_left, exact idc
+  end
+
+  private definition my_cube_fillerr {B C : Type} {g : B → C} {b₀ bl br : B}
+    {pl : b₀ = bl} {pr : b₀ = br} {ql : g b₀ = g bl} {qr : g b₀ = g br}
+    (sl : ap g pl = ql) (sr : ap g pr = qr) :
+    cube (hrfl ⬝hp sr⁻¹) hrfl
+         (my_squarer ql qr) (aps g (my_squarer pl pr))
+         (hrfl ⬝hp (!ap_con ⬝ whisker_left _ !ap_inv ⬝ sl ◾ sl⁻²)⁻¹)
+         (hrfl ⬝hp sr⁻²⁻¹ ⬝hp !ap_inv⁻¹) :=
+  begin
+    induction sr, induction sl, induction pr, induction pl, exact idc
+  end
+
+  definition smash_functor_pcompose_pconst2_homotopy {A A' A'' B B' B'' : Type}
+    (a₀ : A) (b₀ : B) (a₀' : A') (f' : A' → A'') (g' : B' → B'') (g : B → B')
+    (x : pointed.MK A a₀ ∧ pointed.MK B b₀) :
+    square (smash_functor_pcompose_homotopy f' (λ a, a₀') g' g x)
+    idp
+    (smash_functor_pconst_left_homotopy (λ a, g' (g a)) x)
+    (ap (smash_functor' (pmap.mk f' (refl (f' a₀'))) (pmap.mk g' (refl (g' (g b₀)))))
+      (smash_functor_pconst_left_homotopy g x)) :=
+  begin
+    induction x with a b a b,
+    { refine _ ⬝hp (functor_gluer'2 f' g' (g b) (g b₀))⁻¹, exact hrfl },
+    { refine _ ⬝hp !ap_inv⁻¹, refine _ ⬝hp !functor_gluel2⁻²⁻¹, exact hrfl },
+    { refine _ ⬝hp !ap_inv⁻¹, refine _ ⬝hp !functor_gluer2⁻²⁻¹, exact hrfl },
+    { exact abstract begin apply square_pathover,
+      refine !rec_eq_gluel ⬝p1 _ ⬝1p !natural_square_refl⁻¹,
+      refine !rec_eq_gluel ⬝p2 _ ⬝2p !natural_square_ap_fn⁻¹,
+      apply whisker001, apply whisker021,
+      apply move201, refine _ ⬝1p !eq_hconcat_hdeg_square⁻¹,
+      apply move221, refine _ ⬝1p !hdeg_square_hconcat_eq⁻¹,
+      refine ap (hconcat_eq _) !ap_inv ⬝p1 _ ⬝2p (ap (aps _) !rec_eq_gluel ⬝ !aps_eq_hconcat)⁻¹,
+      apply whisker021, refine _ ⬝2p !aps_hconcat_eq⁻¹, apply move221,
+      refine _ ⬝1p !hdeg_square_hconcat_eq⁻¹,
+      refine _ ⬝1p ap hdeg_square (eq_bot_of_square (transpose !ap02_ap_constant)),
+      apply my_cube_fillerr end end },
+    { exact abstract begin apply square_pathover,
+      refine !rec_eq_gluer ⬝p1 _ ⬝1p !natural_square_refl⁻¹,
+      refine !rec_eq_gluer ⬝p2 _ ⬝2p !natural_square_ap_fn⁻¹,
+      apply whisker001, apply whisker021,
+      apply move201, refine _ ⬝1p !eq_hconcat_hdeg_square⁻¹,
+      apply move221, refine _ ⬝1p !hdeg_square_hconcat_eq⁻¹,
+      refine ap (hconcat_eq _) !ap_inv ⬝p1 _ ⬝2p (ap (aps _) !rec_eq_gluer ⬝ !aps_eq_hconcat)⁻¹,
+      apply whisker021, refine _ ⬝2p !aps_hconcat_eq⁻¹, apply move221,
+      refine _ ⬝1p !hdeg_square_hconcat_eq⁻¹,
+      refine _ ⬝1p ap hdeg_square (eq_bot_of_square (transpose !ap02_ap_constant)),
+      apply my_cube_fillerl end end }
+  end
+
+  definition smash_functor_pcompose_pconst2 (f' : A' →* A'') (g' : B' →* B'') (g : B →* B') :
+    phsquare (smash_functor_pcompose f' (pconst A A') g' g)
+             (smash_functor_pconst_left (g' ∘* g))
+             (smash_functor_phomotopy (pcompose_pconst f') phomotopy.rfl)
+             (pwhisker_left (f' ∧→ g') (smash_functor_pconst_left g) ⬝*
+               pcompose_pconst (f' ∧→ g')) :=
+  begin
+    induction A with A a₀, induction B with B b₀,
+    induction A' with A' a₀', induction B' with B' b₀',
+    induction A'' with A'' a₀'', induction B'' with B'' b₀'',
+    induction f' with f' f'₀, induction g' with g' g₀', induction g with g g₀,
+    esimp at *, induction f'₀, induction g₀', induction g₀,
+    refine !smash_functor_phomotopy_refl ⬝ph** _, refine _ ⬝ !refl_trans⁻¹,
+    fapply phomotopy_eq,
+    { intro x, refine eq_of_square _ ⬝ !con_idp,
+      exact smash_functor_pcompose_pconst2_homotopy a₀ b₀ a₀' f' g' g x },
+    { refine _ ⬝ !idp_con⁻¹,
+      refine whisker_right _ (!whisker_right_idp ⬝ !eq_of_square_hrfl_hconcat_eq) ⬝ _,
+      refine !con.assoc ⬝ _, apply con_eq_of_eq_inv_con,
+      refine whisker_right _ _ ⬝ _, rotate 1, rexact functor_gluer'2_same f' g' (g b₀),
+      refine !inv_con_cancel_right ⬝ _,
+      exact sorry, -- TODO: FIX, the proof below should work (with some small changes)
+      -- refine _ ⬝ whisker_left _ _,
+      -- rotate 2, refine ap (whisker_left _) _, symmetry, exact !idp_con ⬝ !idp_con ⬝ !whisker_right_idp ⬝ !idp_con,
+      -- symmetry, apply whisker_left_idp
+      }
+  end
+
+  /- a version where the left maps are identities -/
+  definition smash_functor_pcompose_pconst2_pid (f' : A' →* A'') :
+    phsquare (smash_functor_pcompose_pid B f' (pconst A A'))
+             (smash_functor_pconst_left (pid B))
+             (pcompose_pconst f' ∧~ phomotopy.rfl)
+             (pwhisker_left (f' ∧→ pid B) (smash_functor_pconst_left (pid B)) ⬝*
+               pcompose_pconst (f' ∧→ pid B)) :=
+  (!smash_functor_phomotopy_refl ◾** idp ⬝ !refl_trans) ⬝pv**
+  smash_functor_pcompose_pconst2 f' (pid B) (pid B)
+
+  /- a small rewrite of the previous -/
+  -- definition smash_functor_pcompose_pid_pconst' (f' : A' →* A'') :
+  --   pwhisker_left (f' ∧→ pid B) (smash_functor_pconst_left (pid B)) ⬝*
+  --   pcompose_pconst (f' ∧→ pid B) =
+  --   (smash_functor_pcompose_pid B f' (pconst A A'))⁻¹* ⬝*
+  --   (pcompose_pconst f' ∧~ phomotopy.rfl ⬝*
+  --   smash_functor_pconst_left (pid B)) :=
+  -- begin
+  --   apply eq_symm_trans_of_trans_eq,
+  --   exact smash_functor_pcompose_pid_pconst f'
+  -- end
+
+  /- if f' is constant -/
+  definition smash_functor_pcompose_pconst1_homotopy [unfold 13] {A A' A'' B B' B'' : Type}
+    (a₀ : A) (b₀ : B) (a₀'' : A'') (f : A → A') (g' : B' → B'') (g : B → B')
+    (x : pointed.MK A a₀ ∧ pointed.MK B b₀) :
+    square (smash_functor_pcompose_homotopy (λa', a₀'') f g' g x)
+    idp
+    (smash_functor_pconst_left_homotopy (λ a, g' (g a)) x)
+    (smash_functor_pconst_left_homotopy g'
+      ((pmap_of_map f a₀ ∧→ pmap_of_map g b₀) x)) :=
+  begin
+    induction x with a b a b,
+    { exact hrfl },
+    { exact hrfl },
+    { exact hrfl },
+    { exact abstract begin apply square_pathover,
+      refine !rec_eq_gluel ⬝p1 _ ⬝1p !natural_square_refl⁻¹,
+      refine !rec_eq_gluel ⬝p2 _ ⬝2p
+        (natural_square_compose (smash_functor_pconst_left_homotopy g') _ _)⁻¹ᵖ,
+      apply whisker001, apply whisker021,
+      apply move201, refine _ ⬝1p !eq_hconcat_hdeg_square⁻¹,
+      apply move221, refine _ ⬝1p !hdeg_square_hconcat_eq⁻¹,
+      refine ap (hconcat_eq _) !ap_inv ⬝p1 _ ⬝2p (natural_square_eq2 _ !functor_gluel2)⁻¹ᵖ,
+      apply whisker021,
+      refine _ ⬝1p ap hdeg_square (eq_of_square (!ap_constant_compose⁻¹ʰ) ⬝ !idp_con)⁻¹,
+      apply move221, refine _ ⬝1p !hdeg_square_hconcat_eq⁻¹,
+      refine _ ⬝2p !rec_eq_gluel⁻¹, apply whisker021,
+      apply move221, refine _ ⬝1p !hdeg_square_hconcat_eq⁻¹,
+      refine _ ⬝1p ap hdeg_square (eq_bot_of_square (transpose !ap02_constant)),
+      exact rfl2 end end },
+    { exact abstract begin apply square_pathover,
+      refine !rec_eq_gluer ⬝p1 _ ⬝1p !natural_square_refl⁻¹,
+      refine !rec_eq_gluer ⬝p2 _ ⬝2p
+        (natural_square_compose (smash_functor_pconst_left_homotopy g') _ _)⁻¹ᵖ,
+      apply whisker001, apply whisker021,
+      apply move201, refine _ ⬝1p !eq_hconcat_hdeg_square⁻¹,
+      apply move221, refine _ ⬝1p !hdeg_square_hconcat_eq⁻¹,
+      refine ap (hconcat_eq _) !ap_inv ⬝p1 _ ⬝2p (natural_square_eq2 _ !functor_gluer2)⁻¹ᵖ,
+      apply whisker021,
+      refine _ ⬝1p ap hdeg_square (eq_of_square (!ap_constant_compose⁻¹ʰ) ⬝ !idp_con)⁻¹,
+      apply move221, refine _ ⬝1p !hdeg_square_hconcat_eq⁻¹,
+      refine _ ⬝2p !rec_eq_gluer⁻¹, apply whisker021,
+      apply move221, refine _ ⬝1p !hdeg_square_hconcat_eq⁻¹,
+      refine _ ⬝1p ap hdeg_square (eq_bot_of_square (transpose !ap02_constant)),
+      exact rfl2 end end },
+  end
+
+  definition smash_functor_pcompose_pconst1 (f : A →* A') (g' : B' →* B'') (g : B →* B') :
+    phsquare (smash_functor_pcompose (pconst A' A'') f g' g)
+             (smash_functor_pconst_left (g' ∘* g))
+             (pconst_pcompose f ∧~ phomotopy.rfl)
+             (pwhisker_right (f ∧→ g) (smash_functor_pconst_left g') ⬝*
+               pconst_pcompose (f ∧→ g)) :=
+  begin
+    induction A with A a₀, induction B with B b₀,
+    induction A' with A' a₀', induction B' with B' b₀',
+    induction A'' with A'' a₀'', induction B'' with B'' b₀'',
+    induction f with f f₀, induction g' with g' g₀', induction g with g g₀,
+    esimp at *, induction f₀, induction g₀', induction g₀,
+    refine !smash_functor_phomotopy_refl ⬝ph** _, refine _ ⬝ !refl_trans⁻¹,
+    fapply phomotopy_eq,
+    { intro x, refine eq_of_square (smash_functor_pcompose_pconst1_homotopy a₀ b₀ a₀'' f g' g x) },
+    { refine whisker_right _ (!whisker_right_idp ⬝ !eq_of_square_hrfl) ⬝ _,
+      have H : Π{A : Type} {a a' : A} (p : a = a'),
+               idp_con (p ⬝ p⁻¹) ⬝ con.right_inv p = idp ⬝
+               whisker_left idp (idp ⬝ (idp ⬝ proof whisker_right idp (idp_con (p ⬝ p⁻¹ᵖ))⁻¹ᵖ qed ⬝
+                 whisker_left idp (con.right_inv p))), by intros; induction p; reflexivity,
+      rexact H (gluer (g' (g b₀))) }
+  end
+
+  /- a version where the left maps are identities -/
+  definition smash_functor_pcompose_pconst1_pid (f : A →* A') :
+    phsquare (smash_functor_pcompose_pid B (pconst A' A'') f)
+             (smash_functor_pconst_left (pid B))
+             (pconst_pcompose f ∧~ phomotopy.rfl)
+             (pwhisker_right (f ∧→ pid B) (smash_functor_pconst_left (pid B)) ⬝*
+               pconst_pcompose (f ∧→ pid B)) :=
+  (!smash_functor_phomotopy_refl ◾** idp ⬝ !refl_trans) ⬝pv**
+  smash_functor_pcompose_pconst1 f (pid B) (pid B)
+
+  /- Using these lemmas we show that smash_functor_left is natural in all arguments -/
+
+  definition smash_functor_left_natural_left (f : A' →* A) :
+    psquare (smash_functor_left A B C) (smash_functor_left A' B C)
+            (ppcompose_right f) (ppcompose_right (f ∧→ pid C)) :=
+  begin
+    refine _⁻¹*,
+    fapply phomotopy_mk_ppmap,
+    { intro g, exact smash_functor_pcompose_pid C g f },
+    { refine idp ◾** (!phomotopy_of_eq_con ⬝ (ap phomotopy_of_eq !pcompose_right_eq_of_phomotopy ⬝
+        !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy) ⬝ _ ,
+      refine _ ⬝ (!phomotopy_of_eq_con ⬝ (ap phomotopy_of_eq !smash_functor_eq_of_phomotopy_left ⬝
+        !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy)⁻¹,
+      apply smash_functor_pcompose_pconst1_pid }
+  end
+
+  definition smash_functor_left_natural_middle (f : B →* B') :
+    psquare (smash_functor_left A B C) (smash_functor_left A B' C)
+            (ppcompose_left f) (ppcompose_left (f ∧→ pid C)) :=
+  begin
+    refine _⁻¹*,
+    fapply phomotopy_mk_ppmap,
+    { exact smash_functor_pcompose_pid C f },
+    { refine idp ◾** (!phomotopy_of_eq_con ⬝ (ap phomotopy_of_eq !pcompose_left_eq_of_phomotopy ⬝
+        !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy) ⬝ _ ,
+      refine _ ⬝ (!phomotopy_of_eq_con ⬝ (ap phomotopy_of_eq !smash_functor_eq_of_phomotopy_left ⬝
+        !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy)⁻¹,
+      apply smash_functor_pcompose_pconst2_pid }
+  end
+
+  definition smash_functor_left_natural_right (f : C →* C') :
+    psquare (smash_functor_left A B C) (ppcompose_right (pid A ∧→ f))
+            (smash_functor_left A B C') (ppcompose_left (pid B ∧→ f)) :=
+  begin
+    refine _⁻¹*,
+    fapply phomotopy_mk_ppmap,
+    { intro g, exact smash_functor_psquare proof phomotopy.rfl qed proof phomotopy.rfl qed },
+    { esimp,
+      refine idp ◾** (!phomotopy_of_eq_con ⬝ (ap phomotopy_of_eq !pcompose_left_eq_of_phomotopy ⬝
+        !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy) ⬝ _ ,
+      refine _ ⬝ (!phomotopy_of_eq_con ⬝ (ap phomotopy_of_eq !pcompose_right_eq_of_phomotopy ⬝
+        !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy)⁻¹,
+      apply eq_of_phsquare,
+      refine (phmove_bot_of_left _ !smash_functor_pcompose_pconst1⁻¹ʰ**) ⬝h**
+        (!smash_functor_phomotopy_refl ⬝pv** !phhrfl) ⬝h** !smash_functor_pcompose_pconst2 ⬝vp** _,
+      refine !trans_assoc ⬝ !trans_assoc ⬝ idp ◾** _ ⬝ !trans_refl,
+      refine idp ◾** !refl_trans ⬝ !trans_left_inv }
+  end
+
+
+  /- the following is not really used, but a symmetric version of the natural equivalence
+     smash_functor_left -/
   /- f ∧ g is constant if g is constant -/
   definition smash_functor_pconst_right_homotopy [unfold 6] {C : Type} (f : A → C) (x : A ∧ B) :
     (pmap_of_map f pt ∧→ pconst B D) x = pt :=
@@ -474,36 +820,7 @@ namespace smash
      exchange, or directly. We need to show that these two proofs result in the same pointed
      homotopy. First we do the case where g is constant -/
 
-  private definition my_squarel {A : Type} {a₁ a₂ a₃ : A} (p₁ : a₁ = a₃) (p₂ : a₂ = a₃) :
-    square (p₁ ⬝ p₂⁻¹) p₂⁻¹ p₁ idp :=
-  proof square_of_eq idp qed
-
-  private definition my_squarer {A : Type} {a₁ a₂ a₃ : A} (p₁ : a₁ = a₃) (p₂ : a₁ = a₂) :
-    square (p₁ ⬝ p₁⁻¹) p₂⁻¹ p₂ idp :=
-  proof square_of_eq (con.right_inv p₁ ⬝ (con.right_inv p₂)⁻¹) qed
-
-  private definition my_cube_fillerl {A B C : Type} {g : B → C} {f : A → B} {a₁ a₂ : A} {b₀ : B}
-    {p : f ~ λa, b₀} {q : Πa, g (f a) = g b₀} (r : (λa, ap g (p a)) ~ q) :
-    cube (hrfl ⬝hp (r a₁)⁻¹) hrfl
-         (my_squarel (q a₁) (q a₂)) (aps g (my_squarel (p a₁) (p a₂)))
-         (hrfl ⬝hp (!ap_con ⬝ whisker_left _ !ap_inv ⬝ (r a₁) ◾ (r a₂)⁻²)⁻¹)
-           (hrfl ⬝hp (r a₂)⁻²⁻¹ ⬝hp !ap_inv⁻¹) :=
-  begin
-    induction r using homotopy.rec_on_idp, induction p using homotopy.rec_on_idp_left, exact idc
-  end
-
-  private definition my_cube_fillerr {B C : Type} {g : B → C} {b₀ bl br : B}
-    {pl : b₀ = bl} {pr : b₀ = br} {ql : g b₀ = g bl} {qr : g b₀ = g br}
-    (sl : ap g pl = ql) (sr : ap g pr = qr) :
-    cube (hrfl ⬝hp sr⁻¹) hrfl
-         (my_squarer ql qr) (aps g (my_squarer pl pr))
-         (hrfl ⬝hp (!ap_con ⬝ whisker_left _ !ap_inv ⬝ sl ◾ sl⁻²)⁻¹)
-         (hrfl ⬝hp sr⁻²⁻¹ ⬝hp !ap_inv⁻¹) :=
-  begin
-    induction sr, induction sl, induction pr, induction pl, exact idc
-  end
-
-  definition smash_functor_pcompose_pconst_homotopy {A B C D E F : Type}
+  definition smash_functor_pcompose_pconst4_homotopy {A B C D E F : Type}
     (a₀ : A) (b₀ : B) (d₀ : D) (f' : C → E) (f : A → C) (g : D → F)
     (x : pointed.MK A a₀ ∧ pointed.MK B b₀) :
     square (smash_functor_pcompose_homotopy f' f g (λ a, d₀) x)
@@ -540,7 +857,7 @@ namespace smash
       apply my_cube_fillerr end end }
   end
 
-  definition smash_functor_pcompose_pconst (f' : C →* E) (f : A →* C) (g : D →* F) :
+  definition smash_functor_pcompose_pconst4 (f' : C →* E) (f : A →* C) (g : D →* F) :
     phsquare (smash_functor_pcompose f' f g (pconst B D))
              (smash_functor_pconst_right (f' ∘* f))
              (smash_functor_phomotopy phomotopy.rfl (pcompose_pconst g))
@@ -554,7 +871,7 @@ namespace smash
     refine !smash_functor_phomotopy_refl ⬝ph** _, refine _ ⬝ !refl_trans⁻¹,
     fapply phomotopy_eq,
     { intro x, refine eq_of_square _ ⬝ !con_idp,
-      exact smash_functor_pcompose_pconst_homotopy a₀ b₀ d₀ f' f g x, },
+      exact smash_functor_pcompose_pconst4_homotopy a₀ b₀ d₀ f' f g x, },
     { refine _ ⬝ !idp_con⁻¹,
       refine whisker_right _ (!whisker_right_idp ⬝ !eq_of_square_hrfl_hconcat_eq) ⬝ _,
       refine !con.assoc ⬝ _, apply con_eq_of_eq_inv_con,
@@ -568,29 +885,29 @@ namespace smash
   end
 
   /- a version where the left maps are identities -/
-  definition smash_functor_pid_pcompose_pconst (g : D →* F) :
+  definition smash_functor_pcompose_pconst4_pid (g : D →* F) :
     phsquare (smash_functor_pid_pcompose A g (pconst B D))
              (smash_functor_pconst_right (pid A))
              (smash_functor_phomotopy phomotopy.rfl (pcompose_pconst g))
              (pwhisker_left (pid A ∧→ g) (smash_functor_pconst_right (pid A)) ⬝*
                pcompose_pconst (pid A ∧→ g)) :=
   (!smash_functor_phomotopy_refl ◾** idp ⬝ !refl_trans) ⬝pv**
-  smash_functor_pcompose_pconst (pid A) (pid A) g
+  smash_functor_pcompose_pconst4 (pid A) (pid A) g
 
   /- a small rewrite of the previous -/
-  definition smash_functor_pid_pcompose_pconst' (g : D →* F) :
-    pwhisker_left (pid A ∧→ g) (smash_functor_pconst_right (pid A)) ⬝*
-    pcompose_pconst (pid A ∧→ g) =
-    (smash_functor_pid_pcompose A g (pconst B D))⁻¹* ⬝*
-    (smash_functor_phomotopy phomotopy.rfl (pcompose_pconst g) ⬝*
-    smash_functor_pconst_right (pid A)) :=
-  begin
-    apply eq_symm_trans_of_trans_eq,
-    exact smash_functor_pid_pcompose_pconst g
-  end
+  -- definition smash_functor_pid_pcompose_pconst' (g : D →* F) :
+  --   pwhisker_left (pid A ∧→ g) (smash_functor_pconst_right (pid A)) ⬝*
+  --   pcompose_pconst (pid A ∧→ g) =
+  --   (smash_functor_pid_pcompose A g (pconst B D))⁻¹* ⬝*
+  --   (smash_functor_phomotopy phomotopy.rfl (pcompose_pconst g) ⬝*
+  --   smash_functor_pconst_right (pid A)) :=
+  -- begin
+  --   apply eq_symm_trans_of_trans_eq,
+  --   exact smash_functor_pid_pcompose_pconst g
+  -- end
 
   /- if g' is constant -/
-  definition smash_functor_pconst_pcompose_homotopy [unfold 13] {A B C D E F : Type}
+  definition smash_functor_pcompose_pconst3_homotopy [unfold 13] {A B C D E F : Type}
     (a₀ : A) (b₀ : B) (x₀ : F) (f' : C → E) (f : A → C) (g : B → D)
     (x : pointed.MK A a₀ ∧ pointed.MK B b₀) :
     square (smash_functor_pcompose_homotopy f' f (λ a, x₀) g x)
@@ -635,7 +952,7 @@ namespace smash
       exact rfl2 end end },
   end
 
-  definition smash_functor_pconst_pcompose (f' : C →* E) (f : A →* C) (g : B →* D) :
+  definition smash_functor_pcompose_pconst3 (f' : C →* E) (f : A →* C) (g : B →* D) :
     phsquare (smash_functor_pcompose f' f (pconst D F) g)
              (smash_functor_pconst_right (f' ∘* f))
              (smash_functor_phomotopy phomotopy.rfl (pconst_pcompose g))
@@ -648,7 +965,7 @@ namespace smash
     esimp at *, induction f'₀, induction f₀, induction g₀,
     refine !smash_functor_phomotopy_refl ⬝ph** _, refine _ ⬝ !refl_trans⁻¹,
     fapply phomotopy_eq,
-    { intro x, refine eq_of_square (smash_functor_pconst_pcompose_homotopy a₀ b₀ x₀ f' f g x) },
+    { intro x, refine eq_of_square (smash_functor_pcompose_pconst3_homotopy a₀ b₀ x₀ f' f g x) },
     { refine whisker_right _ (!whisker_right_idp ⬝ !eq_of_square_hrfl) ⬝ _,
       have H : Π{A : Type} {a a' : A} (p : a = a'),
                idp_con (p ⬝ p⁻¹) ⬝ con.right_inv p = idp ⬝
@@ -658,14 +975,14 @@ namespace smash
   end
 
   /- a version where the left maps are identities -/
-  definition smash_functor_pid_pconst_pcompose (g : B →* D) :
+  definition smash_functor_pcompose_pconst3_pid (g : B →* D) :
     phsquare (smash_functor_pid_pcompose A (pconst D F) g)
              (smash_functor_pconst_right (pid A))
              (smash_functor_phomotopy phomotopy.rfl (pconst_pcompose g))
              (pwhisker_right (pid A ∧→ g) (smash_functor_pconst_right (pid A)) ⬝*
                pconst_pcompose (pid A ∧→ g)) :=
   (!smash_functor_phomotopy_refl ◾** idp ⬝ !refl_trans) ⬝pv**
-  smash_functor_pconst_pcompose (pid A) (pid A) g
+  smash_functor_pcompose_pconst3 (pid A) (pid A) g
 
   /- Using these lemmas we show that smash_functor_right is natural in all arguments -/
   definition smash_functor_right_natural_right (f : C →* C') :
@@ -679,7 +996,7 @@ namespace smash
         !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy) ⬝ _ ,
       refine _ ⬝ (!phomotopy_of_eq_con ⬝ (ap phomotopy_of_eq !smash_functor_eq_of_phomotopy ⬝
         !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy)⁻¹,
-      apply smash_functor_pid_pcompose_pconst }
+      apply smash_functor_pcompose_pconst4_pid }
   end
 
   definition smash_functor_right_natural_middle (f : B' →* B) :
@@ -693,7 +1010,7 @@ namespace smash
         !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy) ⬝ _ ,
       refine _ ⬝ (!phomotopy_of_eq_con ⬝ (ap phomotopy_of_eq !smash_functor_eq_of_phomotopy ⬝
         !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy)⁻¹,
-      apply smash_functor_pid_pconst_pcompose }
+      apply smash_functor_pcompose_pconst3_pid }
   end
 
   definition smash_functor_right_natural_left (f : A →* A') :
@@ -709,129 +1026,16 @@ namespace smash
       refine _ ⬝ (!phomotopy_of_eq_con ⬝ (ap phomotopy_of_eq !pcompose_right_eq_of_phomotopy ⬝
         !phomotopy_of_eq_of_phomotopy) ◾** !phomotopy_of_eq_of_phomotopy)⁻¹,
       apply eq_of_phsquare,
-      refine (phmove_bot_of_left _ !smash_functor_pconst_pcompose⁻¹ʰ**) ⬝h**
-        (!smash_functor_phomotopy_refl ⬝pv** !phhrfl) ⬝h** !smash_functor_pcompose_pconst ⬝vp** _,
+      refine (phmove_bot_of_left _ !smash_functor_pcompose_pconst3⁻¹ʰ**) ⬝h**
+        (!smash_functor_phomotopy_refl ⬝pv** !phhrfl) ⬝h** !smash_functor_pcompose_pconst4 ⬝vp** _,
       refine !trans_assoc ⬝ !trans_assoc ⬝ idp ◾** _ ⬝ !trans_refl,
       refine idp ◾** !refl_trans ⬝ !trans_left_inv }
   end
 
-  /- f ∧ g is a pointed equivalence if f and g are -/
-  definition smash_functor_using_pushout [unfold 7] (f : A →* C) (g : B →* D) : A ∧ B → C ∧ D :=
-  begin
-    fapply pushout.functor (sum_functor f g) (prod_functor f g) id,
-    { intro v, induction v with a b,
-      exact prod_eq idp (respect_pt g),
-      exact prod_eq (respect_pt f) idp },
-    { intro v, induction v with a b: reflexivity }
-  end
-
-  definition smash_functor_homotopy_pushout_functor (f : A →* C) (g : B →* D) :
-    f ∧→ g ~ smash_functor_using_pushout f g :=
-  begin
-    intro x, induction x,
-    { reflexivity },
-    { reflexivity },
-    { reflexivity },
-    { apply eq_pathover, refine !elim_gluel ⬝ph _ ⬝hp !pushout.elim_glue⁻¹,
-      apply hdeg_square, esimp, apply whisker_right, exact !ap_ap011⁻¹ },
-    { apply eq_pathover, refine !elim_gluer ⬝ph _ ⬝hp !pushout.elim_glue⁻¹,
-      apply hdeg_square, esimp, apply whisker_right, exact !ap_ap011⁻¹ }
-  end
-
-  local attribute is_equiv_sum_functor [instance]
-  definition smash_pequiv [constructor] (f : A ≃* C) (g : B ≃* D) : A ∧ B ≃* C ∧ D :=
-  begin
-    fapply pequiv_of_pmap (f ∧→ g),
-    refine @homotopy_closed _ _ _ _ _ (smash_functor_homotopy_pushout_functor f g)⁻¹ʰᵗʸ,
-    apply pushout.is_equiv_functor
-  end
-
-  definition smash_pequiv_left [constructor] (B : Type*) (f : A ≃* C) : A ∧ B ≃* C ∧ B :=
-  smash_pequiv f pequiv.rfl
-
-  definition smash_pequiv_right [constructor] (A : Type*) (g : B ≃* D) : A ∧ B ≃* A ∧ D :=
-  smash_pequiv pequiv.rfl g
-
   /- A ∧ B ≃* pcofiber (pprod_of_wedge A B) -/
 
-  definition prod_of_wedge [unfold 3] (v : wedge A B) : A × B :=
-  begin
-    induction v with a b ,
-    { exact (a, pt) },
-    { exact (pt, b) },
-    { reflexivity }
-  end
-
-  definition wedge_of_sum [unfold 3] (v : A + B) : wedge A B :=
-  begin
-    induction v with a b,
-    { exact pushout.inl a },
-    { exact pushout.inr b }
-  end
-
-  definition prod_of_wedge_of_sum [unfold 3] (v : A + B) : prod_of_wedge (wedge_of_sum v) = prod_of_sum v :=
-  begin
-    induction v with a b,
-    { reflexivity },
-    { reflexivity }
-  end
-
-end smash open smash
-
-namespace pushout
-
-  definition eq_inl_pushout_wedge_of_sum [unfold 3] (v : wedge A B) :
-    inl pt = inl v :> pushout wedge_of_sum bool_of_sum :=
-  begin
-    induction v with a b,
-    { exact glue (sum.inl pt) ⬝ (glue (sum.inl a))⁻¹, },
-    { exact ap inl (glue ⋆) ⬝ glue (sum.inr pt) ⬝ (glue (sum.inr b))⁻¹, },
-    { apply eq_pathover_constant_left,
-      refine !con.right_inv ⬝pv _ ⬝vp !con_inv_cancel_right⁻¹, exact square_of_eq idp }
-  end
-
   variables (A B)
-  definition eq_inr_pushout_wedge_of_sum [unfold 3] (b : bool) :
-    inl pt = inr b :> pushout (@wedge_of_sum A B) bool_of_sum :=
-  begin
-    induction b,
-    { exact glue (sum.inl pt) },
-    { exact ap inl (glue ⋆) ⬝ glue (sum.inr pt) }
-  end
-
-  definition is_contr_pushout_wedge_of_sum : is_contr (pushout (@wedge_of_sum A B) bool_of_sum) :=
-  begin
-    apply is_contr.mk (pushout.inl pt),
-    intro x, induction x with v b w,
-    { apply eq_inl_pushout_wedge_of_sum },
-    { apply eq_inr_pushout_wedge_of_sum },
-    { apply eq_pathover_constant_left_id_right,
-      induction w with a b,
-      { apply whisker_rt, exact vrfl },
-      { apply whisker_rt, exact vrfl }}
-  end
-
-  definition bool_of_sum_of_bool {A B : Type*} (b : bool) : bool_of_sum (sum_of_bool A B b) = b :=
-  by induction b: reflexivity
-
-  /- a different proof, using pushout lemmas, and the fact that the wedge is the pushout of
-     A + B <-- 2 --> 1 -/
-  definition pushout_wedge_of_sum_equiv_unit : pushout (@wedge_of_sum A B) bool_of_sum ≃ unit :=
-  begin
-    refine pushout_hcompose_equiv (sum_of_bool A B) (wedge_equiv_pushout_sum A B ⬝e !pushout.symm)
-             _ _ ⬝e _,
-      exact erfl,
-      intro x, induction x,
-      reflexivity, reflexivity,
-      exact bool_of_sum_of_bool,
-    apply pushout_of_equiv_right
-  end
-
-end pushout open pushout
-
-namespace smash
-
-  variables (A B)
+  open pushout
 
   definition smash_equiv_cofiber : smash A B ≃ cofiber (@prod_of_wedge A B) :=
   begin

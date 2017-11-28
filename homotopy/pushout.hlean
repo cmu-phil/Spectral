@@ -1,5 +1,5 @@
 
-import ..algebra.exactness homotopy.cofiber homotopy.wedge
+import ..algebra.exactness homotopy.cofiber homotopy.wedge homotopy.smash
 
 open eq function is_trunc sigma prod lift is_equiv equiv pointed sum unit bool cofiber
 
@@ -810,5 +810,79 @@ namespace pushout
 
 
   end
+
+  variables {A B : Type*}
+  open smash
+
+  definition prod_of_wedge [unfold 3] (v : wedge A B) : A × B :=
+  begin
+    induction v with a b ,
+    { exact (a, pt) },
+    { exact (pt, b) },
+    { reflexivity }
+  end
+
+  definition wedge_of_sum [unfold 3] (v : A + B) : wedge A B :=
+  begin
+    induction v with a b,
+    { exact pushout.inl a },
+    { exact pushout.inr b }
+  end
+
+  definition prod_of_wedge_of_sum [unfold 3] (v : A + B) :
+    prod_of_wedge (wedge_of_sum v) = prod_of_sum v :=
+  begin
+    induction v with a b,
+    { reflexivity },
+    { reflexivity }
+  end
+
+  definition eq_inl_pushout_wedge_of_sum [unfold 3] (v : wedge A B) :
+    inl pt = inl v :> pushout wedge_of_sum bool_of_sum :=
+  begin
+    induction v with a b,
+    { exact glue (sum.inl pt) ⬝ (glue (sum.inl a))⁻¹, },
+    { exact ap inl (glue ⋆) ⬝ glue (sum.inr pt) ⬝ (glue (sum.inr b))⁻¹, },
+    { apply eq_pathover_constant_left,
+      refine !con.right_inv ⬝pv _ ⬝vp !con_inv_cancel_right⁻¹, exact square_of_eq idp }
+  end
+
+  variables (A B)
+  definition eq_inr_pushout_wedge_of_sum [unfold 3] (b : bool) :
+    inl pt = inr b :> pushout (@wedge_of_sum A B) bool_of_sum :=
+  begin
+    induction b,
+    { exact glue (sum.inl pt) },
+    { exact ap inl (glue ⋆) ⬝ glue (sum.inr pt) }
+  end
+
+  definition is_contr_pushout_wedge_of_sum : is_contr (pushout (@wedge_of_sum A B) bool_of_sum) :=
+  begin
+    apply is_contr.mk (pushout.inl pt),
+    intro x, induction x with v b w,
+    { apply eq_inl_pushout_wedge_of_sum },
+    { apply eq_inr_pushout_wedge_of_sum },
+    { apply eq_pathover_constant_left_id_right,
+      induction w with a b,
+      { apply whisker_rt, exact vrfl },
+      { apply whisker_rt, exact vrfl }}
+  end
+
+  definition bool_of_sum_of_bool {A B : Type*} (b : bool) : bool_of_sum (sum_of_bool A B b) = b :=
+  by induction b: reflexivity
+
+  /- a different proof, using pushout lemmas, and the fact that the wedge is the pushout of
+     A + B <-- 2 --> 1 -/
+  definition pushout_wedge_of_sum_equiv_unit : pushout (@wedge_of_sum A B) bool_of_sum ≃ unit :=
+  begin
+    refine pushout_hcompose_equiv (sum_of_bool A B) (wedge_equiv_pushout_sum A B ⬝e !pushout.symm)
+             _ _ ⬝e _,
+      exact erfl,
+      intro x, induction x,
+      reflexivity, reflexivity,
+      exact bool_of_sum_of_bool,
+    apply pushout_of_equiv_right
+  end
+
 
 end pushout
