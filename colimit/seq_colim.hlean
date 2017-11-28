@@ -602,6 +602,7 @@ begin
       exact (g_star_path_right_step g e w k x @(g_star_path_right g e w k)).2 }}
 end
 
+
 /- We now define the map back, and show using this induction principle that the composites are the identity -/
 variable {P}
 
@@ -741,6 +742,13 @@ begin
   { refine seq_colim_equiv (λn, eq_equiv_eq_closed !lrep_irrel idp) _,
     intro n p, refine whisker_right _ (!lrep_irrel2⁻² ⬝ !ap_inv⁻¹) ⬝ !ap_con⁻¹ }
 end
+
+-- definition seq_colim_eq_equiv0'_natural {a₀ a₁ : A 0} {a₀' a₁' : A' 0} (p₀ : τ a₀ = a₀')
+--   (p₁ : τ a₁ = a₁') :
+--   hsquare (seq_colim_eq_equiv0' f a₀ a₁) (seq_colim_eq_equiv0' f' a₀' a₁')
+--     (pointed.ap1_gen (seq_colim_functor τ p) (ap (ι' f' 0) p₀) (ap (ι' f' 0) p₁))
+--     (seq_colim_functor (λn, pointed.ap1_gen (@τ _)) _) :=
+-- _
 
 definition seq_colim_eq_equiv0 (a₀ a₁ : A 0) : ι f a₀ = ι f a₁ ≃ seq_colim (id0_seq_diagram f a₀ a₁) :=
 seq_colim_eq_equiv0' f a₀ a₁ ⬝e seq_colim_id_equiv_seq_colim_id0 f a₀ a₁

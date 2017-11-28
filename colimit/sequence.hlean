@@ -152,7 +152,7 @@ namespace seq_colim
     { apply pathover_ap, exact apo f IH}
   end
 
-  variable {f}
+  variables {f f'}
   definition is_trunc_fun_lrep (k : ℕ₋₂) (H : n ≤ m) (H2 : Πn, is_trunc_fun k (@f n)) :
     is_trunc_fun k (lrep f H) :=
   begin induction H with m H IH, apply is_trunc_fun_id, exact is_trunc_fun_compose k (H2 m) IH end
@@ -161,7 +161,21 @@ namespace seq_colim
     is_conn_fun k (lrep f H) :=
   begin induction H with m H IH, apply is_conn_fun_id, exact is_conn_fun_compose k (H2 m) IH end
 
-  variable (f)
+  definition lrep_natural (τ : Π⦃n⦄, A n → A' n) (p : Π⦃n⦄ (a : A n), τ (f a) = f' (τ a))
+    {n m : ℕ} (H : n ≤ m) (a : A n) : τ (lrep f H a) = lrep f' H (τ a) :=
+  begin
+    induction H with m H IH, reflexivity, exact p (lrep f H a) ⬝ ap (@f' m) IH
+  end
+
+  definition rep_natural (τ : Π⦃n⦄, A n → A' n) (p : Π⦃n⦄ (a : A n), τ (f a) = f' (τ a))
+    {n : ℕ} (k : ℕ) (a : A n) : τ (rep f k a) = rep f' k (τ a) :=
+  lrep_natural τ p _ a
+
+  definition rep0_natural (τ : Π⦃n⦄, A n → A' n) (p : Π⦃n⦄ (a : A n), τ (f a) = f' (τ a))
+    (k : ℕ) (a : A 0) : τ (rep0 f k a) = rep0 f' k (τ a) :=
+  lrep_natural τ p _ a
+
+  variables (f f')
 
   end generalized_lrep
 

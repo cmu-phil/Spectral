@@ -732,6 +732,33 @@ by induction q'; reflexivity
   -- end
 --rexact @(ap pathover_pr1) _ idpo _,
 
+  definition sigma_functor_compose {A A' A'' : Type} {B : A → Type} {B' : A' → Type}
+    {B'' : A'' → Type} {f' : A' → A''} {f : A → A'} (g' : Πa, B' a → B'' (f' a))
+    (g : Πa, B a → B' (f a)) (x : Σa, B a) :
+    sigma_functor f' g' (sigma_functor f g x) = sigma_functor (f' ∘ f) (λa, g' (f a) ∘ g a) x :=
+  begin
+    reflexivity
+  end
+
+  definition sigma_functor_homotopy {A A' : Type} {B : A → Type} {B' : A' → Type}
+    {f f' : A → A'} {g : Πa, B a → B' (f a)} {g' : Πa, B a → B' (f' a)} (h : f ~ f')
+    (k : Πa b, g a b =[h a] g' a b) (x : Σa, B a) : sigma_functor f g x = sigma_functor f' g' x :=
+  sigma_eq (h x.1) (k x.1 x.2)
+
+  variables {A₀₀ A₂₀ A₀₂ A₂₂ : Type}
+            {B₀₀ : A₀₀ → Type} {B₂₀ : A₂₀ → Type} {B₀₂ : A₀₂ → Type} {B₂₂ : A₂₂ → Type}
+            {f₁₀ : A₀₀ → A₂₀} {f₁₂ : A₀₂ → A₂₂} {f₀₁ : A₀₀ → A₀₂} {f₂₁ : A₂₀ → A₂₂}
+            {g₁₀ : Πa, B₀₀ a → B₂₀ (f₁₀ a)} {g₁₂ : Πa, B₀₂ a → B₂₂ (f₁₂ a)}
+            {g₀₁ : Πa, B₀₀ a → B₀₂ (f₀₁ a)} {g₂₁ : Πa, B₂₀ a → B₂₂ (f₂₁ a)}
+
+  definition sigma_functor_hsquare (h : hsquare f₁₀ f₁₂ f₀₁ f₂₁)
+    (k : Πa (b : B₀₀ a), g₂₁ _ (g₁₀ _ b) =[h a] g₁₂ _ (g₀₁ _ b)) :
+    hsquare (sigma_functor f₁₀ g₁₀) (sigma_functor f₁₂ g₁₂)
+            (sigma_functor f₀₁ g₀₁) (sigma_functor f₂₁ g₂₁) :=
+  λx, sigma_functor_compose g₂₁ g₁₀ x ⬝
+      sigma_functor_homotopy h k x ⬝
+      (sigma_functor_compose g₁₂ g₀₁ x)⁻¹
+
 end sigma open sigma
 
 namespace group

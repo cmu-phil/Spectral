@@ -11,6 +11,9 @@ namespace seq_colim
   definition pseq_colim [constructor] {X : ℕ → Type*} (f : pseq_diagram X) : Type* :=
   pointed.MK (seq_colim f) (@sι _ _ 0 pt)
 
+  variables {A A' : ℕ → Type*} {f : pseq_diagram A} {f' : pseq_diagram A'}
+    {τ : Πn, A n →* A' n} {H : Πn, τ (n+1) ∘* f n ~* f' n ∘* τ n}
+
   definition inclusion_pt {X : ℕ → Type*} (f : pseq_diagram X) (n : ℕ)
     : inclusion f (Point (X n)) = Point (pseq_colim f) :=
   begin
@@ -162,47 +165,45 @@ namespace seq_colim
   theorem prep0_succ_lemma {A : ℕ → Type*} (f : pseq_diagram A) (n : ℕ)
     (p : rep0 (λn x, f n x) n pt = rep0 (λn x, f n x) n pt)
     (q : prep0 f n (Point (A 0)) = Point (A n))
-
     : loop_equiv_eq_closed (ap (@f n) q ⬝ respect_pt (@f n))
     (ap (@f n) p) = Ω→(@f n) (loop_equiv_eq_closed q p) :=
   by rewrite [▸*, con_inv, ↑ap1_gen, +ap_con, ap_inv, +con.assoc]
 
-  variables {A : ℕ → Type} (f : seq_diagram A)
-  definition succ_add_tr_rep {n : ℕ} (k : ℕ) (x : A n)
-    : transport A (succ_add n k) (rep f k (f x)) = rep f (succ k) x :=
-  begin
-    induction k with k p,
-      reflexivity,
-      exact tr_ap A succ (succ_add n k) _ ⬝ (fn_tr_eq_tr_fn (succ_add n k) f _)⁻¹ ⬝ ap (@f _) p,
-  end
+  -- definition succ_add_tr_rep {A : ℕ → Type} (f : seq_diagram A) {n : ℕ} (k : ℕ) (x : A n)
+  --   : transport A (succ_add n k) (rep f k (f x)) = rep f (succ k) x :=
+  -- begin
+  --   induction k with k p,
+  --     reflexivity,
+  --     exact tr_ap A succ (succ_add n k) _ ⬝ (fn_tr_eq_tr_fn (succ_add n k) f _)⁻¹ ⬝ ap (@f _) p,
+  -- end
 
-  definition succ_add_tr_rep_succ {n : ℕ} (k : ℕ) (x : A n)
-    : succ_add_tr_rep f (succ k) x = tr_ap A succ (succ_add n k) _ ⬝
-        (fn_tr_eq_tr_fn (succ_add n k) f _)⁻¹ ⬝ ap (@f _) (succ_add_tr_rep f k x) :=
-  by reflexivity
+  -- definition succ_add_tr_rep_succ {A : ℕ → Type} (f : seq_diagram A) {n : ℕ} (k : ℕ) (x : A n)
+  --   : succ_add_tr_rep f (succ k) x = tr_ap A succ (succ_add n k) _ ⬝
+  --       (fn_tr_eq_tr_fn (succ_add n k) f _)⁻¹ ⬝ ap (@f _) (succ_add_tr_rep f k x) :=
+  -- by reflexivity
 
-  definition code_glue_equiv [constructor] {n : ℕ} (k : ℕ) (x y : A n)
-    : rep f k (f x) = rep f k (f y) ≃ rep f (succ k) x = rep f (succ k) y :=
-  begin
-    refine eq_equiv_fn_eq_of_equiv (equiv_ap A (succ_add n k)) _ _ ⬝e _,
-    apply eq_equiv_eq_closed,
-      exact succ_add_tr_rep f k x,
-      exact succ_add_tr_rep f k y
-  end
+  -- definition code_glue_equiv [constructor] {A : ℕ → Type} (f : seq_diagram A) {n : ℕ} (k : ℕ) (x y : A n)
+  --   : rep f k (f x) = rep f k (f y) ≃ rep f (succ k) x = rep f (succ k) y :=
+  -- begin
+  --   refine eq_equiv_fn_eq_of_equiv (equiv_ap A (succ_add n k)) _ _ ⬝e _,
+  --   apply eq_equiv_eq_closed,
+  --     exact succ_add_tr_rep f k x,
+  --     exact succ_add_tr_rep f k y
+  -- end
 
-  theorem code_glue_equiv_ap {n : ℕ} {k : ℕ} {x y : A n} (p : rep f k (f x) = rep f k (f y))
-    : code_glue_equiv f (succ k) x y (ap (@f _) p) = ap (@f _) (code_glue_equiv f k x y p) :=
-  begin
-    rewrite [▸*, +ap_con, ap_inv, +succ_add_tr_rep_succ, con_inv, inv_con_inv_right, +con.assoc],
-    apply whisker_left,
-    rewrite [- +con.assoc], apply whisker_right, rewrite [- +ap_compose'],
-    note s := (eq_top_of_square (natural_square_tr
-      (λx, fn_tr_eq_tr_fn (succ_add n k) f x ⬝ (tr_ap A succ (succ_add n k) (f x))⁻¹) p))⁻¹ᵖ,
-    rewrite [inv_con_inv_right at s, -con.assoc at s], exact s
-  end
+  -- theorem code_glue_equiv_ap {n : ℕ} {k : ℕ} {x y : A n} (p : rep f k (f x) = rep f k (f y))
+  --   : code_glue_equiv f (succ k) x y (ap (@f _) p) = ap (@f _) (code_glue_equiv f k x y p) :=
+  -- begin
+  --   rewrite [▸*, +ap_con, ap_inv, +succ_add_tr_rep_succ, con_inv, inv_con_inv_right, +con.assoc],
+  --   apply whisker_left,
+  --   rewrite [- +con.assoc], apply whisker_right, rewrite [- +ap_compose'],
+  --   note s := (eq_top_of_square (natural_square_tr
+  --     (λx, fn_tr_eq_tr_fn (succ_add n k) f x ⬝ (tr_ap A succ (succ_add n k) (f x))⁻¹) p))⁻¹ᵖ,
+  --   rewrite [inv_con_inv_right at s, -con.assoc at s], exact s
+  -- end
 
   definition pseq_colim_loop {X : ℕ → Type*} (f : Πn, X n →* X (n+1)) :
-    Ω (pseq_colim f) ≃* pseq_colim (λn, Ω→(f n)) :=
+    Ω (pseq_colim f) ≃* pseq_colim (λn, Ω→ (f n)) :=
   begin
     fapply pequiv_of_equiv,
     { refine !seq_colim_eq_equiv0 ⬝e _,
@@ -214,6 +215,10 @@ namespace seq_colim
 
   definition pseq_colim_loop_pinclusion {X : ℕ → Type*} (f : Πn, X n →* X (n+1)) (n : ℕ) :
     pseq_colim_loop f ∘* Ω→ (pinclusion f n) ~* pinclusion (λn, Ω→(f n)) n :=
+  sorry
+
+  definition pseq_colim_loop_natural (n : ℕ) : psquare (pseq_colim_loop f) (pseq_colim_loop f')
+    (Ω→ (pseq_colim_functor τ H)) (pseq_colim_functor (λn, Ω→ (τ n)) (λn, ap1_psquare (H n))) :=
   sorry
 
   definition pseq_diagram_pfiber {A A' : ℕ → Type*} {f : pseq_diagram A} {f' : pseq_diagram A'}
