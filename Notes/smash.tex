@@ -77,6 +77,36 @@
 
 \end{lem}
 
+\begin{defn}[Naturality]\label{def:naturality}
+	Let $F$, $G$ be functors of pointed types, i.e. pointed maps with a functorial action (e.g. if $f : A \to B$, then we can define $F(f) : F(A) \to F(B)$, respecting identity and composition). 
+	Let $\theta : F \Rightarrow G$ be a natural transformation from $F$ to $G$, i.e. a pointed map $F(X) \to G(X)$ for all pointed types $X$. For every $f : A \to B$, there is a diagram:
+	\begin{center}
+	\begin{tikzcd}
+		F(A)
+			\arrow[r, "F(f)"]
+			\arrow[d, swap, "\theta_A"]
+		& F(B)
+			\arrow[d, "\theta_B"]
+		\\
+		G(A)
+			\arrow[r, swap, "F(g)"]
+		& G(B)
+	\end{tikzcd}
+	\end{center}
+	We define the following notions of naturality for $\theta$:
+	\begin{itemize}
+		\item \textbf{(strong) naturality} will refer to a pointed homotopy
+		\[p(f) : \theta_B \o F(f) \sim G(f) \o \theta_A\]
+		for every $f : A \to B$ and \textbf{weak naturality} to the underlying (non-pointed) homotopy;
+		\item \textbf{pointed (strong) naturality} will refer to the same pointed homotopy, with the additional condition that $p(0) = p_0$, where
+		\[p_0 : \theta_B \o F(0) \sim \theta_B \o 0 \sim 0 \sim 0 \o \theta_A \sim G(0) \o \theta_A\]
+		is the canonical proof of the pointed homotopy $\theta_B \o F(0) \sim G(0) \o \theta_A$, whereas \textbf{pointed weak naturality} will refer to the corresponding non-pointed condition.
+	\end{itemize}
+\end{defn}
+
+\begin{rmk}
+	The relation between the four notions of naturality is as expected: strong implies weak, and pointed implies simple. Weak naturality is generally ill-behaved: for example, weak naturality of $\theta$ does not imply weak naturality of $\theta \to X$ or $X \to \theta$, whereas the implication holds for strong naturality.
+\end{rmk}
 
 \section{Smash Product}
 
@@ -419,18 +449,13 @@ naturality of $\epsilon$ in the first argument.
 
 \end{proof}
 \begin{rmk}
-\item Instead of showing that $e$ is natural, we could instead show that $e^{-1}$ is natural. In
+  Instead of showing that $e$ is natural, we could instead show that $e^{-1}$ is natural. In
   that case we need to show that the map $A\to({-}):(B\to C)\to(A\to B)\to(A\to C)$ is natural in
   $A$, $B$ and $C$. This might actually be easier, since we don't need to work with any higher
   inductive type to prove that.
 \end{rmk}
 
-\section{Notes on the formalization}
-
-The order of arguments are different in the formalization here and there.
-Also, some smashes are commuted. This is because some unfortunate choices have been made in the formalization. Reversing these choices is possible, but probably more work than it's worth (the final result is exactly the same).
-
-\section{Bergen December 2017}
+\section{Symmetric monoidality}
 We aim to prove that the smash product is a (1-coherent) symmetric monoidal product [REF: Brunerie] for pointed types, i.e., that
 \[(\pType,\, \two,\, \smash,\, \alpha,\, \lambda,\, \rho,\, \gamma)\]
 is a symmetric monoidal category, with the type of booleans $\two$ (pointed in $0_\two$) as unit, and for suitable instances of $\alpha$, $\lambda$, $\rho$ and $\gamma$ witnessing associativity, left- and right unitality and the braiding for $\smash$ and satisfying appropriate coherence relations (associativity pentagon; unitors triangle; braiding-unitors triangle; associativity-braiding hexagon; double braiding).
@@ -815,10 +840,18 @@ By \autoref{lem:yoneda} we can prove associativity, left- and right unitality an
 	Follows by the theorems in this section.
 \end{proof}
 
+
+\section{Notes on the formalization}
+
+The order of arguments are different in the formalization here and there.
+Also, some smashes are commuted. This is because some unfortunate choices have been made in the formalization. Reversing these choices is possible, but probably more work than it's worth (the final result is exactly the same).
+
 \end{document}
 
 
-%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{thm}[Associativity]\label{thm:smash-associativity}
   The smash product is associative: there is an equivalence $\alpha : (A \smash B) \smash C \simeq A \smash (B \smash C)$ which is natural in $A$, $B$ and $C$.
 \end{thm}
