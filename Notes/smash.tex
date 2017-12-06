@@ -25,6 +25,8 @@
 \newcommand{\pType}{\mathsf{Type}_\ast}
 \newcommand{\zeroh}{\mathsf{z}}
 \newcommand{\oneh}{\mathsf{u}}
+\newcommand{\two}{\mathsf{t}}
+\newcommand{\twist}{\mathsf{c}}
 
 \begin{document}
 
@@ -64,7 +66,10 @@
   with $\zeroh_{\idfunc} = \oneh_0$ and $\zeroh'_{\idfunc} = \oneh'_0$
 \item A pointed equivalence is a pointed map $f : A \to B$ whose underlying map is an
   equivalence. In this case, we can find a pointed map $f\sy:B\to A$ with pointed homotopies
-  $f\o f\sy\sim0$ and $f\sy\o f\sim0$.
+  $f\o f\sy\sim0$ and $f\sy\o f\sim0$. We have the pointed equivalences:
+  \[\two : (\bool \to X) \simeq X\] with underlying map defined with $\two(f) \defeq f(1_\bool)$, and
+  \[\twist : (A \to B \to X) \simeq (B \to A \to X)\]
+  with underlying map defined with $\twist(f) \defeq \lam{b}\lam{a}f(a)(b)$.
 \end{rmk}
 
 \begin{lem}
@@ -112,6 +117,10 @@
 
 \begin{rmk}
 	The relation between the four notions of naturality is as expected: strong implies weak, and pointed implies simple. Weak naturality is generally ill-behaved: for example, weak naturality of $\theta$ does not imply weak naturality of $\theta \to X$ or $X \to \theta$, whereas the implication holds for strong naturality.
+\end{rmk}
+
+\begin{rmk}
+	The equivalences $\two$ and $\twist$ as defined in \autoref{rmk:pointed-types} are natural in all their arguments and pointed natural in the last argument.
 \end{rmk}
 
 \begin{lem}[Yoneda]\label{lem:yoneda}
@@ -255,13 +264,12 @@ f'\smsh 0\arrow[dl,equals] \\
   proof that $f_2\o 0\sim0$ is (definitionally) equal to reflexivity. This means that the homotopy
   $(f_2 \o 0)\smsh (g_2 \o g_1)\sim0\smsh (g_2 \o g_1)$ is also equal to reflexivity, and also the
   path that $f_2 \smsh g_2$ respects the basepoint is reflexivity, hence the homotopy
-  $(f_2 \smsh g_2)\o 0\sim0$ is also reflexivity. This means we need to fill the following square,
-  where $q$ is the proof that $0\smsh f\sim 0$.
+  $(f_2 \smsh g_2)\o 0\sim0$ is also reflexivity. This means we need to fill the following square:
 \begin{center}
 \begin{tikzcd}
 (f_2 \o 0)\smsh (g_2 \o g_1) \arrow[r, equals,"i"]\arrow[d,equals,"1"] &
-(f_2 \smsh g_2)\o (0 \smsh g_1)\arrow[d,equals,"(f_2\smsh g_2)\o q"] \\
-0\smsh (g_2 \o g_1) \arrow[r,equals,"q"] &
+(f_2 \smsh g_2)\o (0 \smsh g_1)\arrow[d,equals,"(f_2\smsh g_2)\o \zeroh"] \\
+0\smsh (g_2 \o g_1) \arrow[r,equals,"\zeroh"] &
 0
 \end{tikzcd}
 \end{center}
@@ -543,23 +551,20 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 			\end{align*}
 		\item $\lambdabar_X : (B \to X) \simeq (\bool \smsh B \to X)$, where $\bool$ is the type of booleans, as the composition of the equivalences:
 			\begin{align*}
-				B \to X &\simeq \bool \to B \to X && (t\sy)\\
+				B \to X &\simeq \bool \to B \to X && (\two\sy)\\
 				&\simeq \bool \smsh B \to X && (e)
 			\end{align*}
-			with $t : (\bool \to X) \simeq X$ the pointed equivalence, pointed natural in $X$, sending $f : \bool \to X$ to $f(1_\bool) : X$;
 		\item $\rhobar_X : (A \to X) \simeq (A \smsh \bool \to X)$ as the composition of the equivalences:
 			\begin{align*}
-				A \to X &\simeq A \to \bool \to X && (A \to t\sy)\\
+				A \to X &\simeq A \to \bool \to X && (A \to \two\sy)\\
 				&\simeq A \smsh \bool \to X && (e)
 			\end{align*}
-			with $t$ as above;
 		\item $\gammabar_X : (B \smsh A \to X) \simeq (A \smsh B \to X)$ as the composition of the equivalences:
 			\begin{align*}
 				B \smsh A \to X &\simeq B \to A \to X && (e\sy)\\
-				&\simeq A \to B \to X && (c)\\
+				&\simeq A \to B \to X && (\twist)\\
 				&\simeq A \smsh B \to X && (e)
 			\end{align*}
-			where $c : (A \to B \to X) \simeq (B \to A \to X)$ is the obvious pointed equivalence, natural in all its arguments and pointed natural in $X$.
 	\end{itemize}
 \end{defn}
 
@@ -759,8 +764,8 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 		&\sim \alphabar(e(\lambdabar \o e\sy(\idfunc)) &&\text{(naturality of $\alphabar$)}\\
 		&\judgeq e(e(e\sy \o e\sy (e(\lambdabar \o e\sy(\idfunc)))))\\
 		&\sim e(e(e\sy \o \lambdabar \o e\sy(\idfunc))) &&\text{(cancelling)}\\
-		&\judgeq e(e(e\sy \o e \o t\sy \o e\sy(\idfunc)))\\
-		&\sim e(e(t\sy \o e\sy(\idfunc))) &&\text{(cancelling)}\\
+		&\judgeq e(e(e\sy \o e \o \two\sy \o e\sy(\idfunc)))\\
+		&\sim e(e(\two\sy \o e\sy(\idfunc))) &&\text{(cancelling)}\\
 		&\judgeq (e \o \rhobar \o e\sy)(\idfunc)\\
 		&\sim \rho \smsh B &&\text{(simplification)}
 	\end{align*}
@@ -789,12 +794,12 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 		\lambda \o \gamma
 		&\judgeq \lambdabar(\idfunc) \o \gammabar(\idfunc)\\
 		&\sim (\gammabar \o \lambdabar)(\idfunc) &&\text{(naturality of $\gammabar$)}\\
-		&\judgeq (e \o c \o e\sy \o e \o t\sy)(\idfunc)\\
-		&\sim (e \o c \o t\sy)(\idfunc) &&\text{(cancelling)}\\
-		&\sim (e \o (A \to t\sy))(\idfunc)\\
+		&\judgeq (e \o \twist \o e\sy \o e \o \two\sy)(\idfunc)\\
+		&\sim (e \o \twist \o \two\sy)(\idfunc) &&\text{(cancelling)}\\
+		&\sim (e \o (A \to \two\sy))(\idfunc)\\
 		&\judgeq \rhobar(\idfunc) \judgeq \rho
 	\end{align*}		
-	where the last homotopy is given by $(A \to c) \o t \sim c : (\bool \to A \to X) \to (A \to X)$.
+	where the last homotopy is given by $(A \to c) \o \two \sim \twist : (\bool \to A \to X) \to (A \to X)$.
 \end{proof}
 
 \begin{lem}\label{lem:pentagon-c}
@@ -803,12 +808,12 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 	\begin{tikzcd}[column sep=7em]
 		(B \smsh C \to A \to X)
 			\arrow[r, "e\sy"]
-			\arrow[dd, swap, "c"]
+			\arrow[dd, swap, "\twist"]
 		& (B \to C \to A \to X)
-			\arrow[d, "B \to c"]
+			\arrow[d, "B \to \twist"]
 		\\
 		& (B \to A \to C \to X)
-			\arrow[d, "c"]
+			\arrow[d, "\twist"]
 		\\
 		(A \to B \smsh C \to X)
 			\arrow[r, swap, "A \to e\sy"]
@@ -823,18 +828,18 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 		(B \smsh C \to A \to X)
 			\arrow[rr, bend left=10, "e\sy"]
 			\arrow[r, swap, "C\to -"]
-			\arrow[dd, swap, "c"]
+			\arrow[dd, swap, "\twist"]
 		& ((C \to B \smsh C) \to C \to A \to X)
 			\arrow[r, swap, "\eta \to C \to A \to X"]
-			\arrow[d, swap, "(C \to B \smsh C) \to c"]
+			\arrow[d, swap, "(C \to B \smsh C) \to \twist"]
 		& (B \to C \to A \to X)
-			\arrow[d, "B \to c"]
+			\arrow[d, "B \to \twist"]
 		\\
 		& ((C \to B \smsh C) \to A \to C \to X)
 			\arrow[r, swap, "\eta \to A \to C \to X"]
-			\arrow[d, swap, "c"]
+			\arrow[d, swap, "\twist"]
 		& (B \to A \to C \to X)
-			\arrow[d, "c"]
+			\arrow[d, "\twist"]
 		\\
 		(A \to B \smsh C \to X)
 			\arrow[rr, swap, bend right=10, "A \to e\sy"]
@@ -844,7 +849,7 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 		& (A \to B \to C \to X)
 	\end{tikzcd}
 	\end{center}
-	where the squares on the right are instances of naturality of $c$, while the commutativity of the pentagon on the left follows easily from the definition of $c$.
+	where the squares on the right are instances of naturality of $\twist$, while the commutativity of the pentagon on the left follows easily from the definition of $\twist$.
 \end{proof}
 
 
@@ -881,10 +886,10 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 		\alpha \o \gamma \o \alpha
 		&\judgeq \alphabar(\idfunc) \o \gammabar(\idfunc) \o \alphabar(\idfunc)\\
 		&\sim (\alphabar \o \gammabar \o \alphabar)(\idfunc) &&\text{(naturality of $\gammabar$ and $\alphabar$)}\\
-		&\judgeq (e \o e \o (A \to e\sy) \o e\sy \o e \o c \o e\sy \o e \o e \o (B \to e\sy) \o e\sy)(\idfunc)\\
-		&\sim (e \o e \o (A \to e\sy) \o c \o e \o (B \to e\sy) \o e\sy)(\idfunc) &&\text{(cancelling)}\\
-		&\sim (e \o e \o c \o (B \to c) \o e\sy \o e \o (B \to e\sy) \o e\sy)(\idfunc) &&\text{(\autoref{lem:pentagon-c})}\\
-		&\sim (e \o e \o c \o (B \to c) \o (B \to e\sy) \o e\sy)(\idfunc) &&\text{(cancelling)}
+		&\judgeq (e \o e \o (A \to e\sy) \o e\sy \o e \o \twist \o e\sy \o e \o e \o (B \to e\sy) \o e\sy)(\idfunc)\\
+		&\sim (e \o e \o (A \to e\sy) \o \twist \o e \o (B \to e\sy) \o e\sy)(\idfunc) &&\text{(cancelling)}\\
+		&\sim (e \o e \o \twist \o (B \to \twist) \o e\sy \o e \o (B \to e\sy) \o e\sy)(\idfunc) &&\text{(\autoref{lem:pentagon-c})}\\
+		&\sim (e \o e \o \twist \o (B \to \twist) \o (B \to e\sy) \o e\sy)(\idfunc) &&\text{(cancelling)}
 	\end{align*}
 	and
 	\begin{align*}
@@ -894,8 +899,8 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 		&\judgeq (e \o \gammabar \o e\sy \o e \o e \o (B \to e\sy) \o e\sy \o e \o (B \to \gammabar) \o e\sy)(\idfunc)\\
 		&\sim (e \o \gammabar \o e \o (B \to e\sy) \o (B \to \gammabar) \o e\sy)(\idfunc) &&\text{(cancelling)}\\
 		&\sim (e \o \gammabar \o e \o (B \to (e\sy \o \gammabar)) \o e\sy)(\idfunc) &&\text{(funct. of $B \to -$)}\\
-		&\judgeq (e \o e \o c \o e\sy \o e \o (B \to (e\sy \o e \o c \o e\sy)) \o e\sy)(\idfunc)\\
-		&\sim (e \o e \o c \o (B \to c) \o (B \to e\sy) \o e\sy)(\idfunc) &&\text{(cancelling)}
+		&\judgeq (e \o e \o \twist \o e\sy \o e \o (B \to (e\sy \o e \o \twist \o e\sy)) \o e\sy)(\idfunc)\\
+		&\sim (e \o e \o \twist \o (B \to \twist) \o (B \to e\sy) \o e\sy)(\idfunc) &&\text{(cancelling)}
 	\end{align*}
 	proving the commutativity of the diagram.
 \end{proof}
@@ -917,12 +922,12 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 	\end{center}
 \end{thm}
 \begin{proof}
-	Using that $c \o c \sim \idfunc$, we get:
+	Using that $\twist \o \twist \sim \idfunc$, we get:
 	\begin{align*}
 		\gamma \o \gamma
 		&\judgeq \gammabar(\idfunc) \o \gammabar(\idfunc)\\
 		&\sim (\gammabar \o \gammabar)(\idfunc) &&\text{(naturality of $\gammabar$)}\\
-		&\judgeq (e \o c \o e\sy \o e \o c \o e\sy)(\idfunc)\\
+		&\judgeq (e \o \twist \o e\sy \o e \o \twist \o e\sy)(\idfunc)\\
 		&\sim \idfunc &&\text{(cancelling)}
 	\end{align*}
 	as desired.
