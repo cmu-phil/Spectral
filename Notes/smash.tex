@@ -7,7 +7,7 @@
 \usepackage{fullpage}
 \newcommand{\pmap}{\to}
 \newcommand{\lpmap}{\xrightarrow}
-\renewcommand{\smash}{\wedge}
+\newcommand{\smsh}{\wedge}
 \renewcommand{\phi}{\varphi}
 \renewcommand{\epsilon}{\varepsilon}
 \newcommand{\tr}{\cdot}
@@ -23,8 +23,8 @@
 \newcommand{\lambdabar}{\overline{\lambda}}
 \newcommand{\gammabar}{\overline{\gamma}}
 \newcommand{\pType}{\mathsf{Type}_\ast}
-\newcommand{\two}{\mathbf{2}}
-\newcommand{\yoneda}{\psi}
+\newcommand{\zeroh}{\mathsf{z}}
+\newcommand{\oneh}{\mathsf{u}}
 
 \begin{document}
 
@@ -51,17 +51,17 @@
 \item Pointed homotopies are equivalent to equalities of pointed types: $(f\sim g)\equiv (f=g)$. So
   we could have chosen to define our 2-cells as equalities between 1-cells. We choose not to, since
   the aforementioned equivalence requires function extensionality. In a type theory where function
-  extensionality doesn't compute (like Lean) it is better to define the type of pointed homotopies
+  extensionality does not compute (like Lean) it is better to define the type of pointed homotopies
   manually so that the underlying homotopy of a 2-cell is definitionally equal to the homotopy we
   started with. In diagrams, we will denote pointed homotopies by equalities, but we always mean
   pointed homotopies.
 \item The type $A\to B$ of pointed maps from $A$ to $B$ is itself pointed, with as basepoint the
   constant map $0\equiv0_{A,B}:A\to B$ which has as underlying function $\lam{a:A}b_0$. We have the homotopies:
   \begin{align*}
-  s : 0 \o g &\sim 0 & s' : f \o 0 &\sim 0\\
-  q : f \o 1 &\sim f & q' : 1 \o g &\sim g
+  \zeroh_g &: 0 \o g \sim 0 & \zeroh'_f &: f \o 0 \sim 0\\
+  \oneh_f &: f \o \idfunc \sim f & \oneh'_g &: \idfunc \o g \sim g
   \end{align*}
-  with $s(1) = q(0)$ and $s'(1) = q'(0)$.
+  with $\zeroh_{\idfunc} = \oneh_0$ and $\zeroh'_{\idfunc} = \oneh'_0$
 \item A pointed equivalence is a pointed map $f : A \to B$ whose underlying map is an
   equivalence. In this case, we can find a pointed map $f\sy:B\to A$ with pointed homotopies
   $f\o f\sy\sim0$ and $f\sy\o f\sim0$.
@@ -83,7 +83,7 @@
 
 \section{Naturality and a version of the Yoneda lemma}
 
-\begin{defn}[Naturality]\label{def:naturality}
+\begin{defn}\label{def:naturality}
 	Let $F$, $G$ be functors of pointed types, i.e. pointed maps with a functorial action (e.g. if $f : A \to B$, then we can define $F(f) : F(A) \to F(B)$, respecting identity and composition). 
 	Let $\theta : F \Rightarrow G$ be a natural transformation from $F$ to $G$, i.e. a pointed map $F(X) \to G(X)$ for all pointed types $X$. For every $f : A \to B$, there is a diagram:
 	\begin{center}
@@ -102,10 +102,10 @@
 	We define the following notions of naturality for $\theta$:
 	\begin{itemize}
 		\item \textbf{(strong) naturality} will refer to a pointed homotopy
-		\[p(f) : G(f) \o \theta_A \sim \theta_B \o F(f)\]
+		\[p_\theta(f) : G(f) \o \theta_A \sim \theta_B \o F(f)\]
 		for every $f : A \to B$ and \textbf{weak naturality} to the underlying (non-pointed) homotopy;
-		\item \textbf{pointed (strong) naturality} will refer to the same pointed homotopy, with the additional condition that $p(0) = p_0$, where
-		\[p_0 : G(0) \o \theta_A \sim 0 \o \theta_A \sim 0 \sim \theta_B \o 0 \sim \theta_B \o F(0)\]
+		\item \textbf{pointed (strong) naturality} will refer to the same pointed homotopy, with the additional condition that $p_\theta(0) = (p_\theta)_0$, where
+		\[(p_\theta)_0 : G(0) \o \theta_A \sim 0 \o \theta_A \sim 0 \sim \theta_B \o 0 \sim \theta_B \o F(0)\]
 		is the canonical proof of the pointed homotopy $G(0) \o \theta_A \sim \theta_B \o F(0)$, whereas \textbf{pointed weak naturality} will refer to the corresponding non-pointed condition.
 	\end{itemize}
 \end{defn}
@@ -145,14 +145,14 @@
 	\begin{align*}
 		(\psi_\phi \to X)(f) &\judgeq f \o \psi_\phi\\
 		&\sim \phi_X (f \o \idfunc) &&\text{(by $p_\phi(f)(\idfunc)$)}\\
-		&\sim \phi_X (f) &&\text{(by $\mapfunc{\phi_X}(q_f)$)}
+		&\sim \phi_X (f) &&\text{(by $\mapfunc{\phi_X}(\oneh_f)$)}
 	\end{align*}
 	To show that this is a pointed homotopy, we need to prove that the following diagram commutes:
 	\begin{center}
 	\begin{tikzcd}[column sep=4em]
 		(\psi_\phi \to X)(0)
-			\arrow[rr, equals, "p_\phi(0)(\idfunc)\tr\mapfunc{\phi_X}(q_0)"]
-			\arrow[dr, equals, swap, "s_{\psi_\phi}"]
+			\arrow[rr, equals, "p_\phi(0)(\idfunc)\tr\mapfunc{\phi_X}(\oneh_0)"]
+			\arrow[dr, equals, swap, "\zeroh_{\psi_\phi}"]
 		&&\phi_X(0)
 			\arrow[dl, equals, "(\phi_X)_0"]
 		\\
@@ -163,59 +163,60 @@
 	$p_{\phi_X}(0)(\idfunc) = (p_{\phi_X})_0(\idfunc)$, which, in this case, is:
 	\begin{align*}
 	0\o \phi_X(\idfunc)
-	&= 0 &&\text{(by $s_{q_X(\idfunc)}$)}\\
+	&= 0 &&\text{(by $\zeroh_{q_X(\idfunc)}$)}\\
 	&= \phi_X(0) &&\text{(by $(\phi_X)_0\sy$)}\\
-	&= \phi_X(0\o 1) &&\text{(by $(\mapfunc{\phi_X}(s_1))\sy$)}
+	&= \phi_X(0\o 1) &&\text{(by $(\mapfunc{\phi_X}(\zeroh_{\idfunc}))\sy$)}
 	\end{align*}
-	The diagram then commutes by cancellation of inverses and using that $s_1 = q_0$.
+	The diagram then commutes by cancellation of inverses and using that $\zeroh_{\idfunc} = \oneh_0$.
 \end{proof}
 
 \section{Smash Product}
 
 \begin{defn}
   The smash of $A$ and $B$ is the HIT generated by the point constructor $(a,b)$ for $a:A$ and $b:B$
-  and two auxilliary points $\auxl,\auxr:A\smash B$ and path constructors $\gluel_a:(a,b_0)=\auxl$
-  and $\gluer_b:(a_0,b)=\auxr$ (for $a:A$ and $b:B$). $A\smash B$ is pointed with point $(a_0,b_0)$.
+  and two auxilliary points $\auxl,\auxr:A\smsh B$ and path constructors $\gluel_a:(a,b_0)=\auxl$
+  and $\gluer_b:(a_0,b)=\auxr$ (for $a:A$ and $b:B$). $A\smsh B$ is pointed with point $(a_0,b_0)$.
 \end{defn}
 \begin{rmk}
-\item This definition of $A\smash B$ is basically the pushout of
-  $\bool\leftarrow A+B\to A \times B$.  A more traditional definition of $A\smash B$ is the pushout
-  $\unit\leftarrow A\vee B\to A \times B$. Here $\vee$ denotes the wedge product, which can be
+  This definition of $A\smsh B$ is basically the pushout of
+  $\bool\leftarrow A+B\to A \times B$.  A more traditional definition of $A\smsh B$ is the pushout
+  $\unit\leftarrow A\vee B\to A \times B$; here $\vee$ denotes the wedge product, which can be
   equivalently described as either the pushout $A\leftarrow \unit\to B$ or
-  $\unit\leftarrow \bool\to A + B$. These two definitions of $A\smash B$ are equivalent, because in
+  $\unit\leftarrow \bool\to A + B$. These two definitions of $A\smsh B$ are equivalent, because in
   the following diagram the top-left square and the top rectangle are pushout squares, hence the
   top-right square is a pushout square by applying the pushout lemma. Another application of the
-  pushout lemma now states that the two definitions of $A\smash B$ are equivalent.
+  pushout lemma then states that the two definitions of $A\smsh B$ are equivalent.
 \begin{center}
 \begin{tikzcd}
 \bool \arrow[r]\arrow[d] & A+B     \arrow[r]\arrow[d] & \bool \arrow[d] \\
 \unit \arrow[r]          & A\vee B \arrow[r]\arrow[d] & \unit \arrow[d] \\
-                     & A\times B        \arrow[r] & A\smash B
+                     & A\times B        \arrow[r] & A\smsh B
 \end{tikzcd}
 \end{center}
 
 \end{rmk}
 \begin{lem}\mbox{}\label{lem:smash-general}
+	The smash product satisfies the following properties.
   \begin{itemize}
-  \item The smash is functorial: if $f:A\pmap A'$ and $g:B\pmap B'$ then
-    $f\smash g:A\smash B\pmap A'\smash B'$. We write $A\smash g$ or $f\smash B$ if one of the
+  \item The smash product is functorial: if $f:A\pmap A'$ and $g:B\pmap B'$ then
+    $f\smsh g:A\smsh B\pmap A'\smsh B'$. We write $A\smsh g$ or $f\smsh B$ if one of the
     functions is the identity function.
-  \item Smash preserves composition, which gives rise to the interchange law:
-    $i:(f' \o f)\smash (g' \o g) \sim f' \smash g' \o f \smash g$
-  \item If $p:f\sim f'$ and $q:g\sim g'$ then $p\smash q:f\smash g\sim f'\smash g'$. This operation
+  \item The smash product preserves composition, which gives rise to the interchange law:
+    \[i:(f' \o f)\smsh (g' \o g) \sim f' \smsh g' \o f \smsh g\]
+  \item If $p:f\sim f'$ and $q:g\sim g'$ then $p\smsh q:f\smsh g\sim f'\smsh g'$. This operation
     preserves reflexivities, symmetries and transitivies.
-  \item There are homotopies $f\smash0\sim0$ and $0\smash g\sim 0$ such that the following diagrams
+  \item There are homotopies $f\smsh0\sim0$ and $0\smsh g\sim 0$ such that the following diagrams
     commute for given homotopies $p : f\sim f'$ and $q : g\sim g'$.
     \begin{center}
 \begin{tikzcd}
-f\smash 0 \arrow[rr, equals,"p\smash1"]\arrow[dr,equals] & &
-f'\smash 0\arrow[dl,equals] \\
+f\smsh 0 \arrow[rr, equals,"p\smsh1"]\arrow[dr,equals] & &
+f'\smsh 0\arrow[dl,equals] \\
 & 0 &
 \end{tikzcd}
 \qquad
 \begin{tikzcd}
-0\smash g\arrow[rr, equals,"1\smash q"]\arrow[dr,equals] & &
-0\smash g'\arrow[dl,equals] \\
+0\smsh g\arrow[rr, equals,"1\smsh q"]\arrow[dr,equals] & &
+0\smsh g'\arrow[dl,equals] \\
 & 0 &
 \end{tikzcd}
 \end{center}
@@ -226,22 +227,22 @@ f'\smash 0\arrow[dl,equals] \\
 \begin{lem}\label{lem:smash-coh}
   Suppose that we have maps $A_1\lpmap{f_1}A_2\lpmap{f_2}A_3$ and $B_1\lpmap{g_1}B_2\lpmap{g_2}B_3$
   and suppose that either $f_1$ or $f_2$ is constant. Then there are two homotopies
-  $(f_2 \o f_1)\smash (g_2 \o g_1)\sim 0$, one which uses interchange and one which doesn't. These two
+  $(f_2 \o f_1)\smsh (g_2 \o g_1)\sim 0$, one which uses interchange and one which doesn't. These two
   homotopies are equal. Specifically, the following two diagrams commute:
 \begin{center}
 \begin{tikzcd}
-(f_2 \o 0)\smash (g_2 \o g_1) \arrow[r, equals]\arrow[dd,equals] &
-(f_2 \smash g_2)\o (0 \smash g_1)\arrow[d,equals] \\
-& (f_2 \smash g_2)\o 0\arrow[d,equals] \\
-0\smash (g_2 \o g_1) \arrow[r,equals] &
+(f_2 \o 0)\smsh (g_2 \o g_1) \arrow[r, equals]\arrow[dd,equals] &
+(f_2 \smsh g_2)\o (0 \smsh g_1)\arrow[d,equals] \\
+& (f_2 \smsh g_2)\o 0\arrow[d,equals] \\
+0\smsh (g_2 \o g_1) \arrow[r,equals] &
 0
 \end{tikzcd}
 \qquad
 \begin{tikzcd}
-(0 \o f_1)\smash (g_2 \o g_1) \arrow[r, equals]\arrow[dd,equals] &
-(0 \smash g_2)\o (f_1 \smash g_1)\arrow[d,equals] \\
-& 0\o (f_1 \smash g_1)\arrow[d,equals] \\
-0\smash (g_2 \o g_1) \arrow[r,equals] &
+(0 \o f_1)\smsh (g_2 \o g_1) \arrow[r, equals]\arrow[dd,equals] &
+(0 \smsh g_2)\o (f_1 \smsh g_1)\arrow[d,equals] \\
+& 0\o (f_1 \smsh g_1)\arrow[d,equals] \\
+0\smsh (g_2 \o g_1) \arrow[r,equals] &
 0
 \end{tikzcd}
 \end{center}
@@ -252,30 +253,30 @@ f'\smash 0\arrow[dl,equals] \\
   similar (and slightly easier). First apply induction on the paths that $f_2$, $g_1$ and $g_2$
   respect the basepoint. In this case $f_2\o0$ is definitionally equal to $0$, and the canonical
   proof that $f_2\o 0\sim0$ is (definitionally) equal to reflexivity. This means that the homotopy
-  $(f_2 \o 0)\smash (g_2 \o g_1)\sim0\smash (g_2 \o g_1)$ is also equal to reflexivity, and also the
-  path that $f_2 \smash g_2$ respects the basepoint is reflexivity, hence the homotopy
-  $(f_2 \smash g_2)\o 0\sim0$ is also reflexivity. This means we need to fill the following square,
-  where $q$ is the proof that $0\smash f\sim 0$.
+  $(f_2 \o 0)\smsh (g_2 \o g_1)\sim0\smsh (g_2 \o g_1)$ is also equal to reflexivity, and also the
+  path that $f_2 \smsh g_2$ respects the basepoint is reflexivity, hence the homotopy
+  $(f_2 \smsh g_2)\o 0\sim0$ is also reflexivity. This means we need to fill the following square,
+  where $q$ is the proof that $0\smsh f\sim 0$.
 \begin{center}
 \begin{tikzcd}
-(f_2 \o 0)\smash (g_2 \o g_1) \arrow[r, equals,"i"]\arrow[d,equals,"1"] &
-(f_2 \smash g_2)\o (0 \smash g_1)\arrow[d,equals,"(f_2\smash g_2)\o q"] \\
-0\smash (g_2 \o g_1) \arrow[r,equals,"q"] &
+(f_2 \o 0)\smsh (g_2 \o g_1) \arrow[r, equals,"i"]\arrow[d,equals,"1"] &
+(f_2 \smsh g_2)\o (0 \smsh g_1)\arrow[d,equals,"(f_2\smsh g_2)\o q"] \\
+0\smsh (g_2 \o g_1) \arrow[r,equals,"q"] &
 0
 \end{tikzcd}
 \end{center}
 
-  For the underlying homotopy, take $x : A_1\smash B_1$ and apply induction on $x$. Suppose
+  For the underlying homotopy, take $x : A_1\smsh B_1$ and apply induction on $x$. Suppose
   $x\equiv(a,b)$ for $a:A_1$ and $b:B_1$. Then we have to fill the square (denote the basepoints of
   $A_i$ and $B_i$ by $a_i$ and $b_i$ and we suppress the arguments of $\gluer$). Now
-  $\mapfunc{h\smash k}(\gluer_z)=\gluer_{k(z)}$, so by general groupoid laws we see that the path on
+  $\mapfunc{h\smsh k}(\gluer_z)=\gluer_{k(z)}$, so by general groupoid laws we see that the path on
   the bottom is equal to the path on the right, which means we can fill the square.
   \begin{center}
     \begin{tikzcd}
       (f_2(a_2),g_2(g_1(b)))\arrow[r, equals,"1"]
       \arrow[d,equals,"1"] &
       % \arrow[d,equals,"\gluer_{g_2(g_1(b))}\tr\gluer_{g_2(g_1(b_1))}\sy"] &
-      (f_2(a_2),g_2(g_1(b)))\arrow[d,equals,"\mapfunc{f_2\smash g_2}(\gluer\tr\gluer\sy)"] \\
+      (f_2(a_2),g_2(g_1(b)))\arrow[d,equals,"\mapfunc{f_2\smsh g_2}(\gluer\tr\gluer\sy)"] \\
       (a_3,g_2(g_1(b))) \arrow[r,equals,"\gluer\tr\gluer\sy"] &
       (a_3,b_3)
     \end{tikzcd}
@@ -285,7 +286,7 @@ f'\smash 0\arrow[dl,equals] \\
     \begin{tikzcd}
       \auxr \arrow[r, equals,"1"]
       \arrow[d,equals,"1"] &
-      \auxr \arrow[d,equals,"\mapfunc{f_2\smash g_2}(\gluer_{b_2}\sy)"] \\
+      \auxr \arrow[d,equals,"\mapfunc{f_2\smsh g_2}(\gluer_{b_2}\sy)"] \\
       \auxr \arrow[r,equals,"\gluer_{g_2(b_2)}\sy"] &
       (a_3,b_3)
     \end{tikzcd}
@@ -294,21 +295,21 @@ f'\smash 0\arrow[dl,equals] \\
   If $x$ varies over $\gluer_b$, we need to fill the cube below. The front and the back are the
   squares we just filled, the left square is a degenerate square, and the other three squares are
   the squares in the definition of $q$ and $i$ to show that they respect $\gluer_b$ (and on the
-  right we apply $f_2\smash g_2$ to that square).
+  right we apply $f_2\smsh g_2$ to that square).
   \begin{center}
     \begin{tikzcd}
       & \auxr \arrow[rr, equals,"1"] \arrow[dd,equals,near start,"1"] & &
-      \auxr \arrow[dd,equals,"\mapfunc{f_2\smash g_2}(\gluer_{b_2}\sy)"] \\
+      \auxr \arrow[dd,equals,"\mapfunc{f_2\smsh g_2}(\gluer_{b_2}\sy)"] \\
       (f_2(a_2),g_2(g_1(b)))\arrow[rr, equals, near start, crossing over, "1"]
       \arrow[dd,equals,"1"] \arrow[ur,equals] & &
       (f_2(a_2),g_2(g_1(b))) \arrow[ur,equals] & \\
       & \auxr \arrow[rr,equals,near start, "\gluer_{g_2(b_2)}\sy"] & & (a_3,b_3) \\
       (a_3,g_2(g_1(b))) \arrow[rr,equals,"\gluer\tr\gluer\sy"] \arrow[ur,equals] & &
-      (a_3,b_3) \arrow[from=uu, equals, crossing over, very near start, "\mapfunc{f_2\smash g_2}(\gluer\tr\gluer\sy)"]       \arrow[ur,equals] &
+      (a_3,b_3) \arrow[from=uu, equals, crossing over, very near start, "\mapfunc{f_2\smsh g_2}(\gluer\tr\gluer\sy)"]       \arrow[ur,equals] &
     \end{tikzcd}
   \end{center}
   After canceling applications of
-  $\mapfunc{h\smash k}(\gluer_z)=\gluer_{k(z)}$ on various sides of the squares (TODO).
+  $\mapfunc{h\smsh k}(\gluer_z)=\gluer_{k(z)}$ on various sides of the squares (TODO).
 
 
   If $x$ varies over $\gluel_a$ the proof is very similar. Only in the end we need to fill the
@@ -320,73 +321,73 @@ f'\smash 0\arrow[dl,equals] \\
 
 \begin{thm}\label{thm:smash-functor-right}
 Given pointed types $A$, $B$ and $C$, the functorial action of the smash product induces a map
-$$({-})\smash C:(A\pmap B)\pmap(A\smash C\pmap B\smash C)$$
+$$({-})\smsh C:(A\pmap B)\pmap(A\smsh C\pmap B\smsh C)$$
 which is natural in $A$, $B$ and dinatural in $C$.
 \end{thm}
 The naturality and dinaturality means that the following squares commute for $f : A' \to A$ $g:B\to B'$ and $h:C\to C'$.
 \begin{center}
 \begin{tikzcd}
-(A\pmap B) \arrow[r,"({-})\smash C"]\arrow[d,"f\pmap B"] &
-(A\smash C\pmap B\smash C)\arrow[d,"f\smash C\pmap B\smash C"] \\
-(A'\pmap B) \arrow[r,"({-})\smash C"] &
-(A'\smash C\pmap B\smash C)
+(A\pmap B) \arrow[r,"({-})\smsh C"]\arrow[d,"f\pmap B"] &
+(A\smsh C\pmap B\smsh C)\arrow[d,"f\smsh C\pmap B\smsh C"] \\
+(A'\pmap B) \arrow[r,"({-})\smsh C"] &
+(A'\smsh C\pmap B\smsh C)
 \end{tikzcd}
 \begin{tikzcd}
-(A\pmap B) \arrow[r,"({-})\smash C"]\arrow[d,"A\pmap g"] &
-(A\smash C\pmap B\smash C)\arrow[d,"A\smash C\pmap g\smash C"] \\
-(A\pmap B') \arrow[r,"({-})\smash C"] &
-(A\smash C\pmap B'\smash C)
+(A\pmap B) \arrow[r,"({-})\smsh C"]\arrow[d,"A\pmap g"] &
+(A\smsh C\pmap B\smsh C)\arrow[d,"A\smsh C\pmap g\smsh C"] \\
+(A\pmap B') \arrow[r,"({-})\smsh C"] &
+(A\smsh C\pmap B'\smsh C)
 \end{tikzcd}
 \begin{tikzcd}[column sep=large]
-(A\pmap B) \arrow[r,"({-})\smash C"]\arrow[d,"({-})\smash C'"] &
-(A\smash C\pmap B\smash C)\arrow[d,"A\smash C\pmap B\smash h"] \\
-(A\smash C'\pmap B\smash C') \arrow[r,"A\smash h\pmap B\smash C'"] &
-(A\smash C\pmap B\smash C')
+(A\pmap B) \arrow[r,"({-})\smsh C"]\arrow[d,"({-})\smsh C'"] &
+(A\smsh C\pmap B\smsh C)\arrow[d,"A\smsh C\pmap B\smsh h"] \\
+(A\smsh C'\pmap B\smsh C') \arrow[r,"A\smsh h\pmap B\smsh C'"] &
+(A\smsh C\pmap B\smsh C')
 \end{tikzcd}
 \end{center}
 \begin{proof}
-First note that $\lam{f}f\smash C$ preserves the basepoint so that the map is indeed pointed.
+First note that $\lam{f}f\smsh C$ preserves the basepoint so that the map is indeed pointed.
 
 Let $k:A\pmap B$. Then as homotopy the naturality in $A$ becomes
-$(k\o f)\smash C=k\smash C\o f\smash C$. To prove an equality between pointed maps, we need to give
+$(k\o f)\smsh C=k\smsh C\o f\smsh C$. To prove an equality between pointed maps, we need to give
 a pointed homotopy, which is given by interchange. To show that this homotopy is pointed, we need to
 fill the following square (after reducing out the applications of function extensinality), which follows from \autoref{lem:smash-coh}.
 \begin{center}
 \begin{tikzcd}
-(0 \o f)\smash C \arrow[r, equals]\arrow[dd,equals] &
-(0 \smash C)\o (f \smash C)\arrow[d,equals] \\
-& 0 \o (f \smash C)\arrow[d,equals] \\
-0\smash C \arrow[r,equals] &
+(0 \o f)\smsh C \arrow[r, equals]\arrow[dd,equals] &
+(0 \smsh C)\o (f \smsh C)\arrow[d,equals] \\
+& 0 \o (f \smsh C)\arrow[d,equals] \\
+0\smsh C \arrow[r,equals] &
 0
 \end{tikzcd}
 \end{center}
 The naturality in $B$ is almost the same: for the underlying homotopy we need to show
-$(g \o k)\smash C = g\smash C \o k\smash C$. For the pointedness we need to fill the following
+$(g \o k)\smsh C = g\smsh C \o k\smsh C$. For the pointedness we need to fill the following
 square, which follows from \autoref{lem:smash-coh}.
 \begin{center}
 \begin{tikzcd}
-(g \o 0)\smash C \arrow[r, equals]\arrow[dd,equals] &
-(g \smash C)\o (0 \smash C)\arrow[d,equals] \\
-& (g\smash C) \o 0\arrow[d,equals] \\
-0\smash C \arrow[r,equals] &
+(g \o 0)\smsh C \arrow[r, equals]\arrow[dd,equals] &
+(g \smsh C)\o (0 \smsh C)\arrow[d,equals] \\
+& (g\smsh C) \o 0\arrow[d,equals] \\
+0\smsh C \arrow[r,equals] &
 0
 \end{tikzcd}
 \end{center}
 The dinaturality in $C$ is a bit harder. For the underlying homotopy we need to show
-$B\smash h\o k\smash C=k\smash C'\o A\smash h$. This follows by applying interchange twice:
-$$B\smash h\o k\smash C\sim(\idfunc[B]\o k)\smash(h\o\idfunc[C])\sim(k\o\idfunc[A])\smash(\idfunc[C']\o h)\sim k\smash C'\o A\smash h.$$
+$B\smsh h\o k\smsh C=k\smsh C'\o A\smsh h$. This follows by applying interchange twice:
+$$B\smsh h\o k\smsh C\sim(\idfunc[B]\o k)\smsh(h\o\idfunc[C])\sim(k\o\idfunc[A])\smsh(\idfunc[C']\o h)\sim k\smsh C'\o A\smsh h.$$
 To show that this homotopy is pointed, we need to fill the following square:
 \begin{center}
   \begin{tikzcd}
-    B\smash h\o 0\smash C \arrow[r, equals]\arrow[d,equals] &
-    (\idfunc[B]\o 0)\smash(h\o\idfunc[C]) \arrow[r, equals]\arrow[d,equals] &
-    (0\o\idfunc[A])\smash(\idfunc[C']\o h)\arrow[r, equals]\arrow[d,equals] &
-    0\smash C'\o A\smash h\arrow[d,equals] \\
-    B\smash h\o 0 \arrow[d,equals] &
-    0\smash(h\o\idfunc[C]) \arrow[r, equals]\arrow[d,equals] &
-    0\smash(\idfunc[C']\o h) \arrow[d,equals] &
-    0\o A\smash h\arrow[d,equals] \\
-    B\smash h\o 0 \arrow[r, equals] &
+    B\smsh h\o 0\smsh C \arrow[r, equals]\arrow[d,equals] &
+    (\idfunc[B]\o 0)\smsh(h\o\idfunc[C]) \arrow[r, equals]\arrow[d,equals] &
+    (0\o\idfunc[A])\smsh(\idfunc[C']\o h)\arrow[r, equals]\arrow[d,equals] &
+    0\smsh C'\o A\smsh h\arrow[d,equals] \\
+    B\smsh h\o 0 \arrow[d,equals] &
+    0\smsh(h\o\idfunc[C]) \arrow[r, equals]\arrow[d,equals] &
+    0\smsh(\idfunc[C']\o h) \arrow[d,equals] &
+    0\o A\smsh h\arrow[d,equals] \\
+    B\smsh h\o 0 \arrow[r, equals] &
     0 \arrow[r, equals] &
     0 \arrow[r, equals] &
     0
@@ -398,31 +399,31 @@ are filled by (corollaries of) \autoref{lem:smash-general}.
 
 \section{Adjunction}
 
-\begin{lem}
-  There is a unit $\eta_{A,B}\equiv\eta:A\pmap B\pmap A\smash B$ natural in $A$ and counit
-  $\epsilon_{B,C}\equiv\epsilon : (B\pmap C)\smash B \pmap C$ dinatural in $B$ and natural in $C$.
+\begin{lem}\label{lem:unit-counit}
+  There is a unit $\eta_{A,B}\equiv\eta:A\pmap B\pmap A\smsh B$ natural in $A$ and counit
+  $\epsilon_{B,C}\equiv\epsilon : (B\pmap C)\smsh B \pmap C$ dinatural in $B$ and natural in $C$.
   These maps satisfy the unit-counit laws:
   $$(A\to\epsilon_{A,B})\o \eta_{A\to B,A}\sim \idfunc[A\to B]\qquad
-  \epsilon_{B,B\smash C}\o \eta_{A,B}\smash B\sim\idfunc[A\smash B].$$
+  \epsilon_{B,B\smsh C}\o \eta_{A,B}\smsh B\sim\idfunc[A\smsh B].$$
 \end{lem}
 Note: $\eta$ is also dinatural in $B$, but we don't need this.
 \begin{proof}
-  We define $\eta ab=(a,b)$. Then $\eta a$ respects the basepoint because
+  We define $\eta (a)(b)=(a,b)$. Then $\eta (a)$ respects the basepoint because
   $(a,b_0)=(a_0,b_0)$. Also, $\eta$ itself respects the basepoint. To show this, we need to show
-  that $\eta a_0\sim0$. The underlying maps are homotopic, since $(a_0,b)=(a_0,b_0)$. To show that
+  that $\eta (a_0)\sim 0$. The underlying maps are homotopic, since $(a_0,b)=(a_0,b_0)$. To show that
   this homotopy is pointed, we need to show that the two given proofs of $(a_0,b_0)=(a_0,b_0)$ are
   equal, but they are both equal to reflexivity:
   $$\gluel_{a_0}\tr\gluel_{a_0}\sy=1=\gluer_{b_0}\tr\gluer_{b_0}\sy.$$
-  This defines the unit. To define the counit, given $x:(B\pmap C)\smash B$. We construct
-  $\epsilon x:C$ by induction on $x$. If $x\jdeq(f,b)$ we set $\epsilon(f,b)\defeq f(b)$. If $x$
-  is either $\auxl$ or $\auxr$ then we set $\epsilon x\defeq c_0:C$. If $x$ varies over $\gluel_f$
+  This defines the unit. To define the counit, given $x:(B\pmap C)\smsh B$, we construct
+  $\epsilon (x):C$ by induction on $x$. If $x\jdeq(f,b)$ we set $\epsilon(f,b)\defeq f(b)$. If $x$
+  is either $\auxl$ or $\auxr$ then we set $\epsilon (x)\defeq c_0:C$. If $x$ varies over $\gluel_f$
   then we need to show that $f(b_0)=c_0$, which is true by $f_0$. If $x$ varies over $\gluer_b$ we
-  need to show that $0(b)=c_0$ which is true by reflexivity. $\epsilon$ is trivially a pointed map,
+  need to show that $0(b)=c_0$ which is true by reflexivity. The map $\epsilon$ defined as such is trivially a pointed map,
   which defines the counit.
 
   Now we need to show that the unit and counit are (di)natural. (TODO).
 
-  Finally we need to show the unit-counit laws. For the underlying homotopy of the first one, let
+  Finally, we need to show the unit-counit laws. For the underlying homotopy of the first one, let
   $f:A\to B$. We need to show that $p:\epsilon\o\eta f\sim f$. For the underlying homotopy of $p$,
   let $a:A$, and we need to show that $\epsilon(f,a)=f(a)$, which is true by reflexivity. To show
   that $p$ is a pointed homotopy, we need to show that
@@ -431,7 +432,7 @@ Note: $\eta$ is also dinatural in $B$, but we don't need this.
   $0_0$ denotes the proof that $0(a_0)=b_0$, which is reflexivity)
   $$\mapfunc{\epsilon}(\gluel_f\tr\gluel_0\sy)=\mapfunc{\epsilon}(\gluel_f)\tr(\mapfunc{\epsilon}(\gluel_0))\sy=f_0\tr 0_0\sy=f_0.$$
   Now we need to show that $p$ itself respects the basepoint of $A\to B$, i.e. that the composite
-  $\epsilon\o\eta0\sim\epsilon\o0\sim0$ is equal to $p$ for $f\equiv 0_{A,B}$. The underlying
+  $\epsilon\o\eta(0)\sim\epsilon\o0\sim0$ is equal to $p$ for $f\equiv 0_{A,B}$. The underlying
   homotopies are the same for $a : A$; on the one side we have
   $\mapfunc{\epsilon}(\gluer_{a}\tr\gluer_{a_0}\sy)$ and on the other side we have reflexivity
   (note: this typechecks, since $0_{A,B}a\equiv0_{A,B}a_0$). These paths are equal, since
@@ -439,75 +440,73 @@ Note: $\eta$ is also dinatural in $B$, but we don't need this.
   Both pointed homotopies are pointed in the same way, which requires some path-algebra, and we skip
   the proof here.
 
-  For the underlying homotopy of the second one, we need to show for $x:A\smash B$ that
-  $\epsilon(\eta\smash B(x))=x$, which we prove by induction to $x$. (TODO).
-
+  For the underlying homotopy of the second one, we need to show for $x:A\smsh B$ that
+  $\epsilon(\eta\smsh B(x))=x$, which we prove by induction to $x$. (TODO).
 \end{proof}
 
 \begin{defn}
-The function $e\jdeq e_{A,B,C}:(A\pmap B\pmap C)\pmap(A\smash B\pmap C)$ is defined as the composite
-$$(A\pmap B\pmap C)\lpmap{({-})\smash B}(A\smash B\pmap (B\pmap C)\smash B)\lpmap{A\smash B \pmap\epsilon}(A\smash B\pmap C).$$
+The function $e\jdeq e_{A,B,C}:(A\pmap B\pmap C)\pmap(A\smsh B\pmap C)$ is defined as the composite
+$$(A\pmap B\pmap C)\lpmap{({-})\smsh B}(A\smsh B\pmap (B\pmap C)\smsh B)\lpmap{A\smsh B \pmap\epsilon}(A\smsh B\pmap C).$$
 \end{defn}
 
 \begin{lem}
-  $e$ is invertible, hence gives a pointed equivalence $$(A\pmap B\pmap C)\simeq(A\smash B\pmap C).$$
+  The function $e$ is invertible, hence gives a pointed equivalence $$(A\pmap B\pmap C)\simeq(A\smsh B\pmap C).$$
 \end{lem}
 \begin{proof}
   Define
-  $$\inv{e}_{A,B,C}:(A\smash B\pmap C)\lpmap{B\pmap({-})}((B\pmap A\smash B)\pmap (B\pmap
+  $$\inv{e}_{A,B,C}:(A\smsh B\pmap C)\lpmap{B\pmap({-})}((B\pmap A\smsh B)\pmap (B\pmap
   C))\lpmap{\eta\pmap(B\pmap C)}(A\pmap B\pmap C).$$ It is easy to show that $e$ and $\inv{e}$ are
-  inverses as unpointed maps from the unit-counit laws and naturality of $\eta$ and $\epsilon$.
-
+  inverses as unpointed maps from the unit-counit laws (\autoref{lem:unit-counit}) and naturality of $\eta$ and $\epsilon$.
 %   For $f : A\pmap B\pmap C$ we have
 %   \begin{align*}
-%     \inv{e}(e(f))&\equiv(\eta\pmap(B\pmap C))\o (B\pmap((A\smash B\pmap\epsilon)\of\smash B))\\
-%                  &= (\eta\pmap(B\pmap C))\o (B\pmap(A\smash B\pmap\epsilon))\o(B\pmapf\smash B)\\
-% %                 &= (\eta\pmap(B\pmap C))\o (B\pmap(A\smash B\pmap\epsilon))\o(B\pmapf\smash B)\\
+%     \inv{e}(e(f))&\equiv(\eta\pmap(B\pmap C))\o (B\pmap((A\smsh B\pmap\epsilon)\of\smsh B))\\
+%                  &= (\eta\pmap(B\pmap C))\o (B\pmap(A\smsh B\pmap\epsilon))\o(B\pmapf\smsh B)\\
+% %                 &= (\eta\pmap(B\pmap C))\o (B\pmap(A\smsh B\pmap\epsilon))\o(B\pmapf\smsh B)\\
 %   \end{align*}
 \end{proof}
-\begin{lem}\label{e-natural}
-$e$ is natural in $A$, $B$ and $C$.
+\begin{lem}\label{lem:e-natural}
+	The function $e$ is natural in $A$, $B$ and $C$.
 \end{lem}
 \begin{proof}
-\textbf{$e$ is natural in $A$}. Suppose that $f:A'\pmap A$. Then the following diagram commutes. The left square commutes by naturality of $({-})\smash B$ in the first argument and the right square commutes because composition on the left commutes with composition on the right.
-\begin{center}
-\begin{tikzcd}
-(A\pmap B\pmap C) \arrow[r,"({-})\smash B"]\arrow[d,"f\pmap B\pmap C"] &
-(A\smash B\pmap (B\pmap C)\smash B) \arrow[r,"A\smash B\pmap\epsilon"]\arrow[d,"f\smash B\pmap\cdots"]  &
-(A\smash B\pmap C)\arrow[d,"f\smash B\pmap C"] \\
-(A'\pmap B\pmap C) \arrow[r,"({-})\smash B"] &
-(A'\smash B\pmap (B\pmap C)\smash B) \arrow[r,"A\smash B\pmap\epsilon"] &
-(A'\smash B\pmap C)
-\end{tikzcd}
-\end{center}
+	\textbf{Naturality of $e$ in $A$}. Suppose that $f:A'\pmap A$. Then the following diagram commutes. The left square commutes by naturality of $({-})\smsh B$ in the first argument and the right square commutes because composition on the left commutes with composition on the right.
+	\begin{center}
+	\begin{tikzcd}
+		(A\pmap B\pmap C) \arrow[r,"({-})\smsh B"]\arrow[d,"f\pmap B\pmap C"] &
+		(A\smsh B\pmap (B\pmap C)\smsh B) \arrow[r,"A\smsh B\pmap\epsilon"]\arrow[d,"f\smsh B\pmap\cdots"]  &
+		(A\smsh B\pmap C)\arrow[d,"f\smsh B\pmap C"] \\
+		(A'\pmap B\pmap C) \arrow[r,"({-})\smsh B"] &
+		(A'\smsh B\pmap (B\pmap C)\smsh B) \arrow[r,"A\smsh B\pmap\epsilon"] &
+		(A'\smsh B\pmap C)
+	\end{tikzcd}
+	\end{center}
 
-\textbf{$e$ is natural in $C$}. Suppose that $f:C\pmap C'$. Then in the following diagram the left square commutes by naturality of $({-})\smash B$ in the second argument (applied to $B\pmap f$) and the right square commutes by applying the functor $A\smash B \pmap({-})$ to the naturality of $\epsilon$ in the second argument.
-\begin{center}
-\begin{tikzcd}
-(A\pmap B\pmap C) \arrow[r]\arrow[d] &
-(A\smash B\pmap (B\pmap C)\smash B) \arrow[r]\arrow[d] &
-(A\smash B\pmap C)\arrow[d] \\
-(A\pmap B\pmap C') \arrow[r] &
-(A\smash B\pmap (B\pmap C')\smash B) \arrow[r] &
-(A\smash B\pmap C')
-\end{tikzcd}
-\end{center}
+	\textbf{Naturality of $e$ in $C$}. Suppose that $f:C\pmap C'$. Then in the following diagram the left square commutes by naturality of $({-})\smsh B$ in the second argument (applied to $B\pmap f$) and the right square commutes by applying the functor $A\smsh B \pmap({-})$ to the naturality of $\epsilon$ in the second argument.
+	\begin{center}
+	\begin{tikzcd}
+		(A\pmap B\pmap C) \arrow[r]\arrow[d] &
+		(A\smsh B\pmap (B\pmap C)\smsh B) \arrow[r]\arrow[d] &
+		(A\smsh B\pmap C)\arrow[d] \\
+		(A\pmap B\pmap C') \arrow[r] &
+		(A\smsh B\pmap (B\pmap C')\smsh B) \arrow[r] &
+		(A\smsh B\pmap C')
+	\end{tikzcd}
+	\end{center}
 
-\textbf{$e$ is natural in $B$}. Suppose that $f:B'\pmap B$. Here the diagram is a bit more
-complicated, since $({-})\smash B$ is dinatural (instead of natural) in $B$. Then we get the
-following diagram. The front square commutes by naturality of $({-})\smash B$ in the second argument
-(applied to $f\pmap C$). The top square commutes by naturality of $({-})\smash B$ in the third
+	\textbf{Naturality of $e$ in $B$}. Suppose that $f:B'\pmap B$. Here the diagram is a bit more
+complicated, since $({-})\smsh B$ is dinatural (instead of natural) in $B$. Then we get the
+following diagram. The front square commutes by naturality of $({-})\smsh B$ in the second argument
+	(applied to $f\pmap C$). The top square commutes by naturality of $({-})\smsh B$ in the third
 argument, the back square commutes because composition on the left commutes with composition on the
-right, and finally the right square commutes by applying the functor $A\smash B' \pmap({-})$ to the
-naturality of $\epsilon$ in the first argument.
-\begin{center}
-\begin{tikzcd}[row sep=scriptsize, column sep=-4em]
-& (A\smash B\pmap (B\pmap C)\smash B) \arrow[rr] \arrow[dd] & & (A\smash B'\pmap (B\pmap C)\smash B)\arrow[dd] \\
-(A\pmap B\pmap C) \arrow[ur] \arrow[rr, crossing over] \arrow[dd] & & (A\smash B'\pmap (B\pmap C)\smash B') \arrow[ur] \\
-& (A\smash B\pmap C)\arrow[rr] &  & (A\smash B'\pmap C) \\
-(A\pmap B'\pmap C) \arrow[rr] & & (A\smash B'\pmap (B'\pmap C)\smash B') \arrow[ur] \arrow[from=uu, crossing over]
-\end{tikzcd}
-\end{center}
+	right, and finally the right square commutes by applying the functor $A\smsh B' \pmap({-})$ to the
+	naturality of $\epsilon$ in the first argument.
+	\begin{center}
+	\begin{tikzcd}[row sep=scriptsize, column sep=-4em]
+		& (A\smsh B\pmap (B\pmap C)\smsh B) \arrow[rr] \arrow[dd] & & (A\smsh B'\pmap (B\pmap C)\smsh B)\arrow[dd] \\
+		(A\pmap B\pmap C) \arrow[ur] \arrow[rr, crossing over] \arrow[dd] & & (A\smsh B'\pmap (B\pmap C)\smsh B') \arrow[ur] \\
+		& (A\smsh B\pmap C)\arrow[rr] &  & (A\smsh B'\pmap C) \\
+		(A\pmap B'\pmap C) \arrow[rr] & & (A\smsh B'\pmap (B'\pmap C)\smsh B') \arrow[ur] \arrow[from=uu, crossing over]
+	\end{tikzcd}
+	\end{center}
 
 \end{proof}
 \begin{rmk}
@@ -517,47 +516,55 @@ naturality of $\epsilon$ in the first argument.
   inductive type to prove that.
 \end{rmk}
 
+\begin{lem}\label{lem:e-pointed-natural}
+	The function $e$ is pointed natural in $C$.
+\end{lem}
+
+\begin{proof}
+	(TODO)
+\end{proof}
+
 \section{Symmetric monoidality}
 We aim to prove that the smash product is a (1-coherent) symmetric monoidal product [REF: Brunerie] for pointed types, i.e., that
-\[(\pType,\, \two,\, \smash,\, \alpha,\, \lambda,\, \rho,\, \gamma)\]
-is a symmetric monoidal category, with the type of booleans $\two$ (pointed in $0_\two$) as unit, and for suitable instances of $\alpha$, $\lambda$, $\rho$ and $\gamma$ witnessing associativity, left- and right unitality and the braiding for $\smash$ and satisfying appropriate coherence relations (associativity pentagon; unitors triangle; braiding-unitors triangle; associativity-braiding hexagon; double braiding).
+\[(\pType,\, \bool,\, \smsh,\, \alpha,\, \lambda,\, \rho,\, \gamma)\]
+is a symmetric monoidal category, with the type of booleans $\bool$ (pointed in $0_\bool$) as unit, and for suitable instances of $\alpha$, $\lambda$, $\rho$ and $\gamma$ witnessing associativity, left- and right unitality and the braiding for $\smsh$ and satisfying appropriate coherence relations (associativity pentagon; unitors triangle; braiding-unitors triangle; associativity-braiding hexagon; double braiding).
 
-Using \autoref{lem:yoneda} we can prove associativity, left- and right unitality and braiding equivalences for the smash product, in the following way.
+Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right unitality and braiding equivalences for the smash product, in the following way.
 
 \begin{defn}\label{def:equiv-precursors}
 	The following pointed equivalences are defined for $A$, $B$, $C$ and $X$ pointed types:
 	\begin{itemize}
-		\item $\alphabar_X : (A \smash (B \smash C) \to X) \simeq ((A \smash B) \smash C \to X)$ as the composition of the equivalences:
+		\item $\alphabar_X : (A \smsh (B \smsh C) \to X) \simeq ((A \smsh B) \smsh C \to X)$ as the composition of the equivalences:
 			\begin{align*}
-			    A \smash (B \smash C)\to X&\simeq A \to B\smash C\to X && (e\sy)\\
+			    A \smsh (B \smsh C)\to X&\simeq A \to B\smsh C\to X && (e\sy)\\
 			    &\simeq A \to B\to C\to X && (A \to e\sy)\\
-			    &\simeq A \smash B\to C\to X && (e)\\
-		    	&\simeq (A \smash B)\smash C\to X. && (e)
+			    &\simeq A \smsh B\to C\to X && (e)\\
+		    	&\simeq (A \smsh B)\smsh C\to X. && (e)
 			\end{align*}
-		\item $\lambdabar_X : (B \to X) \simeq (\two \smash B \to X)$, where $\two$ is the type of booleans, as the composition of the equivalences:
+		\item $\lambdabar_X : (B \to X) \simeq (\bool \smsh B \to X)$, where $\bool$ is the type of booleans, as the composition of the equivalences:
 			\begin{align*}
-				B \to X &\simeq \two \to B \to X && (t\sy)\\
-				&\simeq \two \smash B \to X && (e)
+				B \to X &\simeq \bool \to B \to X && (t\sy)\\
+				&\simeq \bool \smsh B \to X && (e)
 			\end{align*}
-			with $t : (\two \to X) \simeq X$ the pointed equivalence, pointed natural in $X$, sending $f : \two \to X$ to $f(1_\two) : X$;
-		\item $\rhobar_X : (A \to X) \simeq (A \smash \two \to X)$ as the composition of the equivalences:
+			with $t : (\bool \to X) \simeq X$ the pointed equivalence, pointed natural in $X$, sending $f : \bool \to X$ to $f(1_\bool) : X$;
+		\item $\rhobar_X : (A \to X) \simeq (A \smsh \bool \to X)$ as the composition of the equivalences:
 			\begin{align*}
-				A \to X &\simeq A \to \two \to X && (A \to t\sy)\\
-				&\simeq A \smash \two \to X && (e)
+				A \to X &\simeq A \to \bool \to X && (A \to t\sy)\\
+				&\simeq A \smsh \bool \to X && (e)
 			\end{align*}
 			with $t$ as above;
-		\item $\gammabar_X : (B \smash A \to X) \simeq (A \smash B \to X)$ as the composition of the equivalences:
+		\item $\gammabar_X : (B \smsh A \to X) \simeq (A \smsh B \to X)$ as the composition of the equivalences:
 			\begin{align*}
-				B \smash A \to X &\simeq B \to A \to X && (e\sy)\\
+				B \smsh A \to X &\simeq B \to A \to X && (e\sy)\\
 				&\simeq A \to B \to X && (c)\\
-				&\simeq A \smash B \to X && (e)
+				&\simeq A \smsh B \to X && (e)
 			\end{align*}
 			where $c : (A \to B \to X) \simeq (B \to A \to X)$ is the obvious pointed equivalence, natural in all its arguments and pointed natural in $X$.
 	\end{itemize}
 \end{defn}
 
 \begin{rmk}\label{rmk:alrg-pointed-natural}
-	The equivalences in \autoref{def:equiv-precursors} are natural in all their arguments and pointed natural in $X$, by (pointed) naturality of $e$ (\autoref{e-natural} and \autoref{e-pointed-natural}), $c$ and $t$. In particular, we will use:
+	The equivalences in \autoref{def:equiv-precursors} are natural in all their arguments and pointed natural in $X$, by (pointed) naturality of $e$ (\autoref{lem:e-natural} and \autoref{lem:e-pointed-natural}), $c$ and $t$. In particular, we will use:
 	\begin{align*}
 	f \o \alphabar(g) &\sim \alphabar(f \o g) & f \o \lambdabar(g) &\sim \lambdabar(f \o g)\\
 	f \o \rhobar(g) &\sim \rhobar(f \o g) & f \o \gammabar(g) &\sim \gammabar(f \o g)
@@ -567,14 +574,14 @@ Using \autoref{lem:yoneda} we can prove associativity, left- and right unitality
 \begin{defn}\label{def:smash-alrg}
 	We define the following equivalences, natural in all their arguments, with inverses provided as in \autoref{lem:yoneda}:
 	\begin{itemize}
-		\item $\alpha\defeq\alphabar_{A \smash (B \smash C)}(\idfunc) : (A \smash B) \smash C \simeq A \smash (B \smash C)$ (associativity of the smash product), with inverse $\alpha\sy\defeq\alphabar\sy_{(A \smash B) \smash C}(\idfunc)$;
-		\item $\lambda \defeq \lambdabar_B(\idfunc) : \two \smash B \simeq B$ and $\rho \defeq \rhobar_A(\idfunc) : A \smash \two \simeq A$ (left- and right unitors for the smash product), with inverses $\lambda\sy\defeq \lambdabar_{\two\smash B}\sy(\idfunc)$ and $\rho\sy\defeq \rhobar_{A\smash \two}\sy(\idfunc)$, respectively;
-		\item $\gamma \defeq \gammabar_{B\smash A} (\idfunc) : A \smash B \simeq B \smash A$ (braiding for the smash product), with inverse $\gamma\sy \defeq \gammabar_{A \smash B}\sy (\idfunc)$.
+		\item $\alpha\defeq\alphabar_{A \smsh (B \smsh C)}(\idfunc) : (A \smsh B) \smsh C \simeq A \smsh (B \smsh C)$ (associativity of the smash product), with inverse $\alpha\sy\defeq\alphabar\sy_{(A \smsh B) \smsh C}(\idfunc)$;
+		\item $\lambda \defeq \lambdabar_B(\idfunc) : \bool \smsh B \simeq B$ and $\rho \defeq \rhobar_A(\idfunc) : A \smsh \bool \simeq A$ (left- and right unitors for the smash product), with inverses $\lambda\sy\defeq \lambdabar_{\bool\smsh B}\sy(\idfunc)$ and $\rho\sy\defeq \rhobar_{A\smsh \bool}\sy(\idfunc)$, respectively;
+		\item $\gamma \defeq \gammabar_{B\smsh A} (\idfunc) : A \smsh B \simeq B \smsh A$ (braiding for the smash product), with inverse $\gamma\sy \defeq \gammabar_{A \smsh B}\sy (\idfunc)$.
 	\end{itemize}
 	$\alpha$, $\lambda$, $\rho$ and $\gamma$ are natural in all their arguments, as $\alphabar$, $\lambdabar$, $\rhobar$ and $\gammabar$ are.
 \end{defn}
 
-\begin{cor}\label{lem:bar-homotopy}
+\begin{lem}\label{lem:bar-homotopy}
 	There are pointed homotopies
 	\begin{align*}
 	\alphabar_X &\sim \alpha \to X
@@ -583,7 +590,7 @@ Using \autoref{lem:yoneda} we can prove associativity, left- and right unitality
 	\rhobar_X &\sim \rho \to X
 		& \gammabar_X &\sim \gamma \to X
 	\end{align*}
-\end{cor}
+\end{lem}
 
 \begin{proof}
 	This follows directly from \autoref{lem:yoneda-pointed} and \autoref{rmk:alrg-pointed-natural}.
@@ -591,95 +598,95 @@ Using \autoref{lem:yoneda} we can prove associativity, left- and right unitality
 
 \begin{thm}[Associativity pentagon]\label{thm:smash-associativity-pentagon}
 	For $A$, $B$, $C$ and $D$ pointed types, there is a homotopy
-	\[\alpha \o \alpha \sim (A \smash \alpha) \o \alpha \o (\alpha \smash D)\]
-	making the following diagram commute:
+	\[\alpha \o \alpha \sim (A \smsh \alpha) \o \alpha \o (\alpha \smsh D)\]
+	corresponding to the commutativity of the following diagram:
 	\begin{center}
 	\begin{tikzcd}
-		&((A \smash B) \smash (C \smash D))
+		&((A \smsh B) \smsh (C \smsh D))
 			\arrow[dr, "\alpha"]
 		\\
-		(((A \smash B) \smash C) \smash D)
+		(((A \smsh B) \smsh C) \smsh D)
 			\arrow[ru, "\alpha"]
-			\arrow[d, swap, "\alpha \smash D"]
-		&& (A \smash (B \smash (C \smash D)))
+			\arrow[d, swap, "\alpha \smsh D"]
+		&& (A \smsh (B \smsh (C \smsh D)))
 		\\
-		((A \smash (B \smash C)) \smash D)
+		((A \smsh (B \smsh C)) \smsh D)
 			\arrow[rr, swap, "\alpha"]
-		&& (A \smash ((B \smash C) \smash D))
-			\arrow[u, swap, "A \smash \alpha"]
+		&& (A \smsh ((B \smsh C) \smsh D))
+			\arrow[u, swap, "A \smsh \alpha"]
 	\end{tikzcd}
 %	\begin{tikzcd}
-%		(((A \smash B) \smash C) \smash D)
+%		(((A \smsh B) \smsh C) \smsh D)
 %			\arrow[rr, "\alpha"]
-%			\arrow[d, swap, "\alpha \smash D"]
-%		&& ((A \smash B) \smash (C \smash D))
+%			\arrow[d, swap, "\alpha \smsh D"]
+%		&& ((A \smsh B) \smsh (C \smsh D))
 %			\arrow[d, "\alpha"]
 %		\\
-%		((A \smash (B \smash C)) \smash D)
+%		((A \smsh (B \smsh C)) \smsh D)
 %			\arrow[r, swap, "\alpha"]
-%		& (A \smash ((B \smash C) \smash D))
-%			\arrow[r, swap, "A \smash \alpha"]
-%		& (A \smash (B \smash (C \smash D)))
+%		& (A \smsh ((B \smsh C) \smsh D))
+%			\arrow[r, swap, "A \smsh \alpha"]
+%		& (A \smsh (B \smsh (C \smsh D)))
 %	\end{tikzcd}
 	\end{center}
 \end{thm}
 \begin{proof}
 	We articulate the proof in several steps. A map homotopic to both sides of the sought homotopy will be constructed via the equivalence
 	\begin{align*}	
-		\alphabar^4 : (A \smash (B \smash (C \smash D)) \to X) &\simeq (((A \smash B) \smash C) \smash D \to X)
+		\alphabar^4 : (A \smsh (B \smsh (C \smsh D)) \to X) &\simeq (((A \smsh B) \smsh C) \smsh D \to X)
 		\intertext{(natural in all its arguments), defined as the composite:}
-		A \smash (B \smash (C \smash D)) \to X
-		&\simeq A \to B \smash (C \smash D) \to X && \text{($e\sy$)}\\
-		&\simeq A \to B \to C \smash D \to X &&\text{($A \to e\sy$)}\\
+		A \smsh (B \smsh (C \smsh D)) \to X
+		&\simeq A \to B \smsh (C \smsh D) \to X && \text{($e\sy$)}\\
+		&\simeq A \to B \to C \smsh D \to X &&\text{($A \to e\sy$)}\\
 		&\simeq A \to B \to C \to D \to X &&\text{($A \to B \to e\sy$)}\\
-		&\simeq A \smash B \to C \to D \to X &&\text{($e$)}\\
-		&\simeq (A \smash B) \smash C \to D \to X &&\text{($e$)}\\
-		&\simeq ((A \smash B) \smash C) \smash D \to X && \text{($e$)}
-		\intertext{giving $\alphabar^4(\idfunc) : ((A \smash B) \smash C) \smash D) \simeq A \smash (B \smash (C \smash D))$. Moreover, in order to simplify the expressions of $\alpha \smash D$ and $A \smash \alpha$, we also define:}
-		\alphabar^R : ((A \smash (B \smash C)) \smash D \to X) &\simeq (((A \smash B) \smash C) \smash D \to X)
+		&\simeq A \smsh B \to C \to D \to X &&\text{($e$)}\\
+		&\simeq (A \smsh B) \smsh C \to D \to X &&\text{($e$)}\\
+		&\simeq ((A \smsh B) \smsh C) \smsh D \to X && \text{($e$)}
+		\intertext{giving $\alphabar^4(\idfunc) : ((A \smsh B) \smsh C) \smsh D) \simeq A \smsh (B \smsh (C \smsh D))$. Moreover, in order to simplify the expressions of $\alpha \smsh D$ and $A \smsh \alpha$, we also define:}
+		\alphabar^R : ((A \smsh (B \smsh C)) \smsh D \to X) &\simeq (((A \smsh B) \smsh C) \smsh D \to X)
 		\intertext{as the composite:}
-		(A \smash (B \smash C)) \smash D \to X
-		&\simeq A \smash (B \smash C) \to D \to X &&\text{($e\sy$)}\\
-		&\simeq (A \smash B) \smash C \to D \to X &&\text{($\alphabar$)}\\
-		&\simeq ((A \smash B) \smash C) \smash D \to X &&\text{($e$)}
+		(A \smsh (B \smsh C)) \smsh D \to X
+		&\simeq A \smsh (B \smsh C) \to D \to X &&\text{($e\sy$)}\\
+		&\simeq (A \smsh B) \smsh C \to D \to X &&\text{($\alphabar$)}\\
+		&\simeq ((A \smsh B) \smsh C) \smsh D \to X &&\text{($e$)}
 		\intertext{and}
-		\alphabar^L : (A \smash (B \smash (C \smash D)) \to X) &\simeq (A \smash ((B \smash C) \smash D) \to X)
+		\alphabar^L : (A \smsh (B \smsh (C \smsh D)) \to X) &\simeq (A \smsh ((B \smsh C) \smsh D) \to X)
 		\intertext{as the composite:}
-		A \smash (B \smash (C \smash D)) \to X
-		&\simeq A \to B \smash (C \smash D) \to X &&\text{($e\sy$)}\\
-		&\simeq A \to (B \smash C) \smash D \to X &&\text{($A \to \alphabar$)}\\
-		&\simeq A \smash ((B \smash C) \smash D) \to X &&\text{($e$)}
+		A \smsh (B \smsh (C \smsh D)) \to X
+		&\simeq A \to B \smsh (C \smsh D) \to X &&\text{($e\sy$)}\\
+		&\simeq A \to (B \smsh C) \smsh D \to X &&\text{($A \to \alphabar$)}\\
+		&\simeq A \smsh ((B \smsh C) \smsh D) \to X &&\text{($e$)}
 	\end{align*}
 	also natural in their arguments. Evaluating these equivalences to the identity function, we get new arrows that fit in the original diagram:
 	\begin{center}
 	\begin{tikzcd}
-		&((A \smash B) \smash (C \smash D))
+		&((A \smsh B) \smsh (C \smsh D))
 			\arrow[dr, "\alpha"]
 		\\
-		(((A \smash B) \smash C) \smash D)
+		(((A \smsh B) \smsh C) \smsh D)
 			\arrow[ru, "\alpha"]
-			\arrow[d, swap, "\alpha \smash D"]
+			\arrow[d, swap, "\alpha \smsh D"]
 			\arrow[d, bend left=40, "\alphabar^R(\idfunc)"]
 			\arrow[rr, "\alphabar^4(\idfunc)"]
-		&& (A \smash (B \smash (C \smash D)))
+		&& (A \smsh (B \smsh (C \smsh D)))
 		\\
-		((A \smash (B \smash C)) \smash D)
+		((A \smsh (B \smsh C)) \smsh D)
 			\arrow[rr, swap, "\alpha"]
-		&& (A \smash ((B \smash C) \smash D))
-			\arrow[u, swap, "A \smash \alpha"]
+		&& (A \smsh ((B \smsh C) \smsh D))
+			\arrow[u, swap, "A \smsh \alpha"]
 			\arrow[u, bend left=40, "\alphabar^L(\idfunc)"]
 	\end{tikzcd}
 	\end{center}
+	
 	The theorem is then proved once we show the chain of homotopies:
-	\[
+	\begin{equation}\label{eq:alphafour}
 	\alpha \o \alpha
 	\sim \alphabar^4(\idfunc)
 	\sim \alphabar^L(\idfunc) \o \alpha \o \alphabar^R(\idfunc)
-	\sim (A \smash \alpha) \o \alpha \o (\alpha \smash D)
-	\]
-	[CAN'T INSERT NUMBERING HERE]	
+	\sim (A \smsh \alpha) \o \alpha \o (\alpha \smsh D)
+	\end{equation}
 	
-	To verify the first homotopy in [NUMBER]:
+	To verify the first homotopy in (\ref{eq:alphafour}), we see that:
 	\begin{align*}
 		\alpha \o \alpha
 		&\judgeq \alphabar(\idfunc) \o \alphabar(\idfunc)\\
@@ -690,7 +697,7 @@ Using \autoref{lem:yoneda} we can prove associativity, left- and right unitality
 		&\judgeq \alphabar^4(\idfunc)
 	\end{align*}		
 
-	The second homotopy in [NUMBER] is verified by (right-to-left):
+	The second homotopy in (\ref{eq:alphafour}) is verified by (right-to-left):
 	\begin{align*}
 		\alphabar^L(\idfunc) \o \alpha \o \alphabar^R(\idfunc)
 		&\judgeq \alphabar^L(\idfunc) \o \alphabar(\idfunc) \o \alphabar^R(\idfunc)\\
@@ -705,49 +712,49 @@ Using \autoref{lem:yoneda} we can prove associativity, left- and right unitality
 		&\judgeq \alphabar^4(\idfunc)
 	\end{align*}
 	
-	In order to prove the last homotopy in [NUMBER], it is sufficient to show that $\alphabar^R(\idfunc) \sim \alpha \smash D$ and that $\alphabar^L(\idfunc) \sim A \smash \alpha$. We have:
+	In order to prove the last homotopy in (\ref{eq:alphafour}), it is sufficient to show that $\alphabar^R(\idfunc) \sim \alpha \smsh D$ and that $\alphabar^L(\idfunc) \sim A \smsh \alpha$. We have:
 	\begin{align*}
 		\alphabar^R(\idfunc)
 		&\judgeq e(\alphabar (e\sy(\idfunc)))\\
-		&\sim e (\alphabar (\eta)) &&\text{(unit-counit)}\\
+		&\sim e (\alphabar (\eta))\\
 		&\sim e (\eta \o \alphabar(\idfunc)) &&\text{(naturality of $\alphabar$)}\\
-		&\judgeq \epsilon \o (\eta \o \alpha) \smash D\\
-		&\sim \epsilon \o (\eta \smash D) \o (\alpha \smash D) &&\text{(distrib. of $\smash$)}\\
-		&\sim \alpha \smash D &&\text{(unit-counit)}
+		&\judgeq \epsilon \o (\eta \o \alpha) \smsh D\\
+		&\sim \epsilon \o (\eta \smsh D) \o (\alpha \smsh D) &&\text{(distrib. of $\smsh$)}\\
+		&\sim \alpha \smsh D &&\text{(\autoref{lem:unit-counit})}
 	\end{align*}
 	and, lastly,
 	\begin{align*}
 		\alphabar^L(\idfunc)
 		&\judgeq e(\alphabar \o e\sy(\idfunc))\\
-		&\sim e(\alphabar \o \eta) &&\text{(unit-counit)}\\
-		&\sim e((\alpha \to A \smash (B \smash (C \smash D))) \o \eta) &&\text{(\autoref{cor:bar-homotopy})}\\
-		&\sim e((B \smash (C \smash D) \to A \smash \alpha) \o \eta) &&\text{(dinaturality of $\eta$)}\\
-		&\sim (A \smash \alpha) \o e(\eta) &&\text{(naturality of $e$)}\\
-		&\sim A \smash \alpha &&\text{(unit-counit)}
+		&\sim e(\alphabar \o \eta)\\
+		&\sim e((\alpha \to A \smsh (B \smsh (C \smsh D))) \o \eta) &&\text{(\autoref{lem:bar-homotopy})}\\
+		&\sim e((B \smsh (C \smsh D) \to A \smsh \alpha) \o \eta) &&\text{(dinaturality of $\eta$)}\\
+		&\sim (A \smsh \alpha) \o e(\eta) &&\text{(naturality of $e$)}\\
+		&\sim A \smsh \alpha &&\text{(\autoref{lem:unit-counit})}
 	\end{align*}
 	thus proving the desired homotopy.
 \end{proof}
 
 \begin{thm}[Unitors triangle]\label{thm:smash-unitors-triangle}
 	For $A$ and $B$ pointed types, there is a homotopy
-	\[(A \smash \lambda) \o \alpha \sim (\rho \smash B)\]
-	making the following diagram commute:
+	\[(A \smsh \lambda) \o \alpha \sim (\rho \smsh B)\]
+	corresponding to the commutativity of the following diagram:
 	\begin{center}
 	\begin{tikzcd}
-	((A \smash \two) \smash B)
+	((A \smsh \bool) \smsh B)
 		\arrow[rr, "\alpha"]
-		\arrow[dr, swap, "\rho \smash B"]
-	&& (A \smash (\two \smash B))
-		\arrow[dl, "A \smash \lambda"]
+		\arrow[dr, swap, "\rho \smsh B"]
+	&& (A \smsh (\bool \smsh B))
+		\arrow[dl, "A \smsh \lambda"]
 	\\
-	& (A \smash B)
+	& (A \smsh B)
 	\end{tikzcd}
 	\end{center}
 \end{thm}
 \begin{proof}
-	By an argument similar to the one for $\alphabar^L$ and $\alphabar^R$ in \autoref{thm:smash-associativity-pentagon}, one can verify the homotopies $A \smash \lambda \sim (e \o (A \to \lambdabar) \o e\sy)(\idfunc)$ and $\rho \smash B \sim (e \o \rhobar \o e)(\idfunc)$, simplifying the expressions in the sought homotopy. Then:
+	By an argument similar to the one for $\alphabar^L$ and $\alphabar^R$ in \autoref{thm:smash-associativity-pentagon}, one can verify the homotopies $A \smsh \lambda \sim (e \o (A \to \lambdabar) \o e\sy)(\idfunc)$ and $\rho \smsh B \sim (e \o \rhobar \o e)(\idfunc)$, simplifying the expressions in the sought homotopy. Then:
 	\begin{align*}
-		(A \smash \lambda) \o \alpha
+		(A \smsh \lambda) \o \alpha
 		&\sim e(\lambdabar \o e\sy(\idfunc)) \o \alphabar(\idfunc) &&\text{(simplification)}\\
 		&\sim \alphabar(e(\lambdabar \o e\sy(\idfunc)) &&\text{(naturality of $\alphabar$)}\\
 		&\judgeq e(e(e\sy \o e\sy (e(\lambdabar \o e\sy(\idfunc)))))\\
@@ -755,7 +762,7 @@ Using \autoref{lem:yoneda} we can prove associativity, left- and right unitality
 		&\judgeq e(e(e\sy \o e \o t\sy \o e\sy(\idfunc)))\\
 		&\sim e(e(t\sy \o e\sy(\idfunc))) &&\text{(cancelling)}\\
 		&\judgeq (e \o \rhobar \o e\sy)(\idfunc)\\
-		&\sim \rho \smash B &&\text{(simplification)}
+		&\sim \rho \smsh B &&\text{(simplification)}
 	\end{align*}
 	gives the desired homotopy.
 \end{proof}
@@ -763,13 +770,13 @@ Using \autoref{lem:yoneda} we can prove associativity, left- and right unitality
 \begin{thm}[Braiding-unitors triangle]\label{thm:smash-braiding-unitors}
 	For a pointed type $A$, there is a homotopy
 	\[\lambda \o \gamma \sim \rho\]
-	making the following diagram commute:
+	corresponding to the commutativity of the following diagram:
 	\begin{center}
 	\begin{tikzcd}
-	(A \smash \two)
+	(A \smsh \bool)
 		\arrow[rr, "\gamma"]
 		\arrow[dr, swap, "\rho"]
-	&& (\two \smash A)
+	&& (\bool \smsh A)
 		\arrow[dl, "\lambda"]
 	\\
 	& A
@@ -787,14 +794,14 @@ Using \autoref{lem:yoneda} we can prove associativity, left- and right unitality
 		&\sim (e \o (A \to t\sy))(\idfunc)\\
 		&\judgeq \rhobar(\idfunc) \judgeq \rho
 	\end{align*}		
-	where the last homotopy is given by $(A \to c) \o t \sim c : (\two \to A \to X) \to (A \to X)$.
+	where the last homotopy is given by $(A \to c) \o t \sim c : (\bool \to A \to X) \to (A \to X)$.
 \end{proof}
 
 \begin{lem}\label{lem:pentagon-c}
 	The following diagram commutes, for $A$, $B$, $C$ and $X$ pointed types:
 	\begin{center}
 	\begin{tikzcd}[column sep=7em]
-		(B \smash C \to A \to X)
+		(B \smsh C \to A \to X)
 			\arrow[r, "e\sy"]
 			\arrow[dd, swap, "c"]
 		& (B \to C \to A \to X)
@@ -803,7 +810,7 @@ Using \autoref{lem:yoneda} we can prove associativity, left- and right unitality
 		& (B \to A \to C \to X)
 			\arrow[d, "c"]
 		\\
-		(A \to B \smash C \to X)
+		(A \to B \smsh C \to X)
 			\arrow[r, swap, "A \to e\sy"]
 		& (A \to B \to C \to X)
 	\end{tikzcd}
@@ -813,26 +820,26 @@ Using \autoref{lem:yoneda} we can prove associativity, left- and right unitality
 	Unfolding the definition of $e\sy$, we get the diagram:
 	\begin{center}
 	\begin{tikzcd}[column sep=6em]
-		(B \smash C \to A \to X)
+		(B \smsh C \to A \to X)
 			\arrow[rr, bend left=10, "e\sy"]
 			\arrow[r, swap, "C\to -"]
 			\arrow[dd, swap, "c"]
-		& ((C \to B \smash C) \to C \to A \to X)
+		& ((C \to B \smsh C) \to C \to A \to X)
 			\arrow[r, swap, "\eta \to C \to A \to X"]
-			\arrow[d, swap, "(C \to B \smash C) \to c"]
+			\arrow[d, swap, "(C \to B \smsh C) \to c"]
 		& (B \to C \to A \to X)
 			\arrow[d, "B \to c"]
 		\\
-		& ((C \to B \smash C) \to A \to C \to X)
+		& ((C \to B \smsh C) \to A \to C \to X)
 			\arrow[r, swap, "\eta \to A \to C \to X"]
 			\arrow[d, swap, "c"]
 		& (B \to A \to C \to X)
 			\arrow[d, "c"]
 		\\
-		(A \to B \smash C \to X)
+		(A \to B \smsh C \to X)
 			\arrow[rr, swap, bend right=10, "A \to e\sy"]
 			\arrow[r, "A \to (C \to -)"]
-		& (A \to (C \to B \smash C) \to C \to X)
+		& (A \to (C \to B \smsh C) \to C \to X)
 			\arrow[r, "A \to (\eta \to C \to X)"]
 		& (A \to B \to C \to X)
 	\end{tikzcd}
@@ -843,31 +850,31 @@ Using \autoref{lem:yoneda} we can prove associativity, left- and right unitality
 
 \begin{thm}[Associativity-braiding hexagon]\label{thm:smash-associativity-braiding}
 	For pointed types $A$, $B$ and $C$, there is a homotopy
-	\[\alpha \o \gamma \o \alpha \sim (B \smash \gamma) \o \alpha \o (\gamma \smash C)\]
-	making the following diagram commute:
+	\[\alpha \o \gamma \o \alpha \sim (B \smsh \gamma) \o \alpha \o (\gamma \smsh C)\]
+	corresponding to the commutativity of the following diagram:
 	\begin{center}
 	\begin{tikzcd}
-		((A \smash B) \smash C)
+		((A \smsh B) \smsh C)
 			\arrow[r, "\alpha"]
-			\arrow[d, swap, "\gamma \smash C"]
-		&(A \smash (B \smash C))
+			\arrow[d, swap, "\gamma \smsh C"]
+		&(A \smsh (B \smsh C))
 			\arrow[r, "\gamma"]
-		& ((B \smash C) \smash A)
+		& ((B \smsh C) \smsh A)
 			\arrow[d, "\alpha"]
 		\\
-		((B \smash A) \smash C))
+		((B \smsh A) \smsh C))
 			\arrow[r, swap, "\alpha"]
-		& (B \smash (A \smash C))
-			\arrow[r, swap, "B \smash \gamma"]
-		& (B \smash (C \smash A))
+		& (B \smsh (A \smsh C))
+			\arrow[r, swap, "B \smsh \gamma"]
+		& (B \smsh (C \smsh A))
 	\end{tikzcd}
 	\end{center}
 \end{thm}
 \begin{proof}
 	The proof is structured similarly to the one for \autoref{thm:smash-associativity-pentagon}: the homotopies
 	\begin{align*}
-	B \smash \gamma &\sim \gammabar^L(\idfunc) &\text{with\ \ } \gammabar^L &\defeq e \o (B \to \gammabar) \o e\sy\\
-	\gamma \smash C &\sim \gammabar^R(\idfunc) &\text{with\ \ } \gammabar^R &\defeq e \o \gammabar \o e\sy
+	B \smsh \gamma &\sim \gammabar^L(\idfunc) &\text{with\ \ } \gammabar^L &\defeq e \o (B \to \gammabar) \o e\sy\\
+	\gamma \smsh C &\sim \gammabar^R(\idfunc) &\text{with\ \ } \gammabar^R &\defeq e \o \gammabar \o e\sy
 	\end{align*}		
 	can be proven in exactly the same way and, using these simplifications, we will show that both sides of the sought homotopy are homotopic to the same equivalence. Indeed we have:
 	\begin{align*}
@@ -881,7 +888,7 @@ Using \autoref{lem:yoneda} we can prove associativity, left- and right unitality
 	\end{align*}
 	and
 	\begin{align*}
-		(B \smash \gamma) \o \alpha \o (\gamma \smash C)
+		(B \smsh \gamma) \o \alpha \o (\gamma \smsh C)
 		&\sim \gammabar^L(\idfunc) \o \alphabar \o \gammabar^R(\idfunc) &&\text{(simplification)}\\
 		&\sim (\gammabar^R \o \alphabar \o \gammabar^L)(\idfunc) &&\text{(naturality of $\alphabar$ and $\gammabar^R$)}\\
 		&\judgeq (e \o \gammabar \o e\sy \o e \o e \o (B \to e\sy) \o e\sy \o e \o (B \to \gammabar) \o e\sy)(\idfunc)\\
@@ -890,22 +897,22 @@ Using \autoref{lem:yoneda} we can prove associativity, left- and right unitality
 		&\judgeq (e \o e \o c \o e\sy \o e \o (B \to (e\sy \o e \o c \o e\sy)) \o e\sy)(\idfunc)\\
 		&\sim (e \o e \o c \o (B \to c) \o (B \to e\sy) \o e\sy)(\idfunc) &&\text{(cancelling)}
 	\end{align*}
-	proving commutativity of the diagram.
+	proving the commutativity of the diagram.
 \end{proof}
 
 \begin{thm}[Double braiding]\label{thm:smash-double-braiding}
 	For $A$ and $B$ pointed types, there is a homotopy
 	\[\gamma \o \gamma \sim \idfunc\]
-	making the following diagram commute:
+	corresponding to the commutativity of the following diagram:
 	\begin{center}
 	\begin{tikzcd}
-	(A \smash B)
+	(A \smsh B)
 		\arrow[r, "\gamma"]
 		\arrow[dr, equals]
-	& (B \smash A)
+	& (B \smsh A)
 		\arrow[d, "\gamma"]
 	\\
-	& (A \smash B)
+	& (A \smsh B)
 	\end{tikzcd}
 	\end{center}
 \end{thm}
@@ -922,7 +929,7 @@ Using \autoref{lem:yoneda} we can prove associativity, left- and right unitality
 \end{proof}
 
 \begin{cor}
-	$(\pType,\, \two,\, \smash,\, \alpha,\, \lambda,\, \rho,\, \gamma)$ has a structure of a symmetric monoidal category, for $\alpha$, $\lambda$, $\rho$ and $\gamma$ as in \autoref{def:smash-alrg}.
+	$(\pType,\, \bool,\, \smsh,\, \alpha,\, \lambda,\, \rho,\, \gamma)$ has a structure of a symmetric monoidal category, for $\alpha$, $\lambda$, $\rho$ and $\gamma$ as in \autoref{def:smash-alrg}.
 \end{cor}
 \begin{proof}
 	Follows by the theorems in this section.
@@ -931,8 +938,7 @@ Using \autoref{lem:yoneda} we can prove associativity, left- and right unitality
 
 \section{Notes on the formalization}
 
-The order of arguments are different in the formalization here and there.
-Also, some smashes are commuted. This is because some unfortunate choices have been made in the formalization. Reversing these choices is possible, but probably more work than it's worth (the final result is exactly the same).
+%The order of arguments are different in the formalization here and there. Also, some smashes are commuted. This is because some unfortunate choices have been made in the formalization. Reversing these choices is possible, but probably more work than it's worth (the final result is exactly the same).
 
 \end{document}
 
@@ -941,49 +947,49 @@ Also, some smashes are commuted. This is because some unfortunate choices have b
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{thm}[Associativity]\label{thm:smash-associativity}
-  The smash product is associative: there is an equivalence $\alpha : (A \smash B) \smash C \simeq A \smash (B \smash C)$ which is natural in $A$, $B$ and $C$.
+  The smash product is associative: there is an equivalence $\alpha : (A \smsh B) \smsh C \simeq A \smsh (B \smsh C)$ which is natural in $A$, $B$ and $C$.
 \end{thm}
 \begin{proof}
   For a pointed type $X$, let $\alphabar_X$ be the composite of the following equivalences:
   \begin{align*}
-    A \smash (B \smash C)\to X&\simeq A \to B\smash C\to X && (e\sy)\\
+    A \smsh (B \smsh C)\to X&\simeq A \to B\smsh C\to X && (e\sy)\\
     &\simeq A \to B\to C\to X && (A \to e\sy)\\
-    &\simeq A \smash B\to C\to X && (e)\\
-    &\simeq (A \smash B)\smash C\to X. && (e)
+    &\simeq A \smsh B\to C\to X && (e)\\
+    &\simeq (A \smsh B)\smsh C\to X. && (e)
   \end{align*}
-  $\alphabar_X$ is natural in $A,B,C,X$ by repeatedly applying \autoref{e-natural}. Let
-  $\alpha\defeq\alphabar_{A \smash (B \smash C)}(\idfunc)$ and
-  $\alpha\sy\defeq\alphabar\sy_{(A \smash B) \smash C}(\idfunc)$. These maps are inverses by \autoref{lem:yoneda}; lastly, $\alpha$ is natural in $A$, $B$
+  $\alphabar_X$ is natural in $A,B,C,X$ by repeatedly applying \autoref{lem:e-natural}. Let
+  $\alpha\defeq\alphabar_{A \smsh (B \smsh C)}(\idfunc)$ and
+  $\alpha\sy\defeq\alphabar\sy_{(A \smsh B) \smsh C}(\idfunc)$. These maps are inverses by \autoref{lem:yoneda}; lastly, $\alpha$ is natural in $A$, $B$
   and $C$, since $\alphabar_X$ is.
 \end{proof}
 
 \begin{thm}[Unitors]\label{thm:smash-unitors}
-	The type of booleans $\two$ is a left- and right unit for the smash product: there are equivalences
-	$\lambda : (\two \smash B) \simeq B$ and $\rho : (A \smash \two) \simeq A$, respectively natural in $B$ and in $A$.
+	The type of booleans $\bool$ is a left- and right unit for the smash product: there are equivalences
+	$\lambda : (\bool \smsh B) \simeq B$ and $\rho : (A \smsh \bool) \simeq A$, respectively natural in $B$ and in $A$.
 \end{thm}
 \begin{proof}
 	We define $\lambdabar_X$ as the following composition of equivalences:
 	\begin{align*}
-		B \to X &\simeq \two \to B \to X && (t\sy)\\
-			&\simeq \two \smash B \to X && (e)
+		B \to X &\simeq \bool \to B \to X && (t\sy)\\
+			&\simeq \bool \smsh B \to X && (e)
 		\end{align*}
 	and, similarly, $\rhobar_X$ as the composition:
 	\begin{align*}
-		A \to X &\simeq A \to \two \to X && (A \to t\sy)\\
-			&\simeq A \smash \two \to X && (e)
+		A \to X &\simeq A \to \bool \to X && (A \to t\sy)\\
+			&\simeq A \smsh \bool \to X && (e)
 	\end{align*}
-	for any pointed type $X$, where $t : (\two \to X) \simeq X$ is the pointed equivalence with underlying function sending $f : \two \to X$ to $f(1_\two) : X$. Both $\lambdabar_X$ and $\rhobar_X$ are natural in their arguments by multiple applications of \autoref{e-natural}. By an argument similar to \autoref{thm:smash-associativity}, we can define $\lambda \defeq \lambdabar_B(\idfunc)$ and $\rho \defeq \rhobar_A(\idfunc)$ together with the corresponding inverses, yielding the sought natural equivalences.
+	for any pointed type $X$, where $t : (\bool \to X) \simeq X$ is the pointed equivalence with underlying function sending $f : \bool \to X$ to $f(1_\bool) : X$. Both $\lambdabar_X$ and $\rhobar_X$ are natural in their arguments by multiple applications of \autoref{lem:e-natural}. By an argument similar to \autoref{thm:smash-associativity}, we can define $\lambda \defeq \lambdabar_B(\idfunc)$ and $\rho \defeq \rhobar_A(\idfunc)$ together with the corresponding inverses, yielding the sought natural equivalences.
 \end{proof}
 
 \begin{thm}[Braiding]\label{thm:smash-braiding}
-	The smash product is symmetric, i.e. there are equivalences $\gamma : A \smash B \simeq B \smash A$, natural in $A$ and $B$.
+	The smash product is symmetric, i.e. there are equivalences $\gamma : A \smsh B \simeq B \smsh A$, natural in $A$ and $B$.
 \end{thm}
 \begin{proof}
 	We define $\gammabar_X$, for $X$ a pointed type, as the composition of the following equivalences:
 	\begin{align*}
-		B \smash A \to X &\simeq B \to A \to X && (e\sy)\\
+		B \smsh A \to X &\simeq B \to A \to X && (e\sy)\\
 			&\simeq A \to B \to X && (c)\\
-			&\simeq A \smash B \to X && (e)
+			&\simeq A \smsh B \to X && (e)
 	\end{align*}
-	where $c : (A \to B \to X) \simeq (B \to A \to X)$ is the obvious pointed equivalence, natural in $A$, $B$ and $X$. $\gamma_X$ is then also natural in all its arguments, by myltiple applications of \autoref{e-natural}; then, as in \autoref{thm:smash-associativity}, we can define $\gamma \defeq \gammabar_{B\smash A} (\idfunc)$ and $\gamma\sy \defeq \gammabar_{A \smash B}\sy (\idfunc)$
+	where $c : (A \to B \to X) \simeq (B \to A \to X)$ is the obvious pointed equivalence, natural in $A$, $B$ and $X$. $\gamma_X$ is then also natural in all its arguments, by myltiple applications of \autoref{lem:e-natural}; then, as in \autoref{thm:smash-associativity}, we can define $\gamma \defeq \gammabar_{B\smsh A} (\idfunc)$ and $\gamma\sy \defeq \gammabar_{A \smsh B}\sy (\idfunc)$
 \end{proof}
