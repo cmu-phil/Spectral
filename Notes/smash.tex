@@ -23,11 +23,10 @@
 \newcommand{\rhobar}{\overline{\rho}}
 \newcommand{\lambdabar}{\overline{\lambda}}
 \newcommand{\gammabar}{\overline{\gamma}}
-\newcommand{\pType}{\mathsf{Type}_\ast}
 \newcommand{\zeroh}{\mathsf{z}}
 \newcommand{\oneh}{\mathsf{u}}
-\newcommand{\two}{\mathsf{t}}
-\newcommand{\twist}{\mathsf{c}}
+\newcommand{\two}{\mathsf{b}}
+\newcommand{\twist}{\mathsf{tw}}
 \newcommand{\mc}{\mathcal}
 
 \begin{document}
@@ -65,14 +64,22 @@
   \zeroh_g &: 0 \o g \sim 0 & \zeroh'_f &: f \o 0 \sim 0\\
   \oneh_f &: f \o \idfunc \sim f & \oneh'_g &: \idfunc \o g \sim g
   \end{align*}
-  with $\zeroh_{\idfunc} = \oneh_0$ and $\zeroh'_{\idfunc} = \oneh'_0$
+  satisfying
+  \begin{align*}
+  \zeroh_{\idfunc} &= \oneh_0 & \zeroh'_{\idfunc} &= \oneh'_0 \\
+  \zeroh_0 &= \zeroh'_0 & \oneh_{\idfunc} &= \oneh'_{\idfunc}
+  \end{align*}
 \item A pointed equivalence is a pointed map $f : A \to B$ whose underlying map is an
   equivalence. In this case, we can find a pointed map $f\sy:B\to A$ with pointed homotopies
-  $f\o f\sy\sim0$ and $f\sy\o f\sim0$. We have the pointed equivalences:
-  \[\two : (\bool \to X) \simeq X\] with underlying map defined with $\two(f) \defeq f(1_\bool)$, and
+  $f\o f\sy\sim0$ and $f\sy\o f\sim0$.
+\end{rmk}  
+
+\begin{defn}\label{def:b-and-tw}
+We define the pointed equivalences:
+  \[\two : (\bool \to X) \simeq X\] where $\bool$ is the type of booleans (pointed in $0_\bool$) with underlying map defined with $\two(f) \defeq f(1_\bool)$, and
   \[\twist : (A \to B \to X) \simeq (B \to A \to X)\]
   with underlying map defined with $\twist(f) \defeq \lam{b}\lam{a}f(a)(b)$.
-\end{rmk}
+\end{defn}
 
 \begin{lem}
   Given maps $f:A'\pmap A$ and $g:B\pmap B'$. Then there are maps
@@ -122,7 +129,7 @@
 \end{rmk}
 
 \begin{rmk}
-	The equivalences $\two$ and $\twist$ as defined in \autoref{rmk:pointed-types} are natural in all their arguments and pointed natural in the last argument.
+	The equivalences $\two$ and $\twist$ as defined in \autoref{def:b-and-tw} are natural in all their arguments and pointed natural in the last argument.
 \end{rmk}
 
 \begin{lem}[Yoneda]\label{lem:yoneda}
@@ -206,125 +213,359 @@
 \end{center}
 
 \end{rmk}
-\begin{lem}\mbox{}\label{lem:smash-general}
-	The smash product satisfies the following properties.
-  \begin{itemize}
-  \item The smash product is functorial: if $f:A\pmap A'$ and $g:B\pmap B'$ then
+\begin{lem}\label{lem:smash-general}
+	The smash product is functorial: if $f:A\pmap A'$ and $g:B\pmap B'$ then
     $f\smsh g:A\smsh B\pmap A'\smsh B'$. We write $A\smsh g$ or $f\smsh B$ if one of the
-    functions is the identity function.
-  \item The smash product preserves composition, which gives rise to the interchange law:
-    \[i:(f' \o f)\smsh (g' \o g) \sim f' \smsh g' \o f \smsh g\]
-  \item If $p:f\sim f'$ and $q:g\sim g'$ then $p\smsh q:f\smsh g\sim f'\smsh g'$. This operation
-    preserves reflexivities, symmetries and transitivies.
-  \item There are homotopies $f\smsh0\sim0$ and $0\smsh g\sim 0$ such that the following diagrams
-    commute for given homotopies $p : f\sim f'$ and $q : g\sim g'$.
-    \begin{center}
-\begin{tikzcd}
-f\smsh 0 \arrow[rr, equals,"p\smsh1"]\arrow[dr,equals] & &
-f'\smsh 0\arrow[dl,equals] \\
-& 0 &
-\end{tikzcd}
-\qquad
-\begin{tikzcd}
-0\smsh g\arrow[rr, equals,"1\smsh q"]\arrow[dr,equals] & &
-0\smsh g'\arrow[dl,equals] \\
-& 0 &
-\end{tikzcd}
-\end{center}
-
-  \end{itemize}
+    functions is the identity function. Moreover, if $p:f\sim f'$ and $q:g\sim g'$ then $p\smsh q:f\smsh g\sim f'\smsh g'$; this operation preserves reflexivities, symmetries and transitivies. We will write $p \smsh g$ or $f \smsh q$ if one of the homotopies is reflexivity.
+%	The smash product satisfies the following properties.
+%  \begin{itemize}
+%  \item The smash product is functorial: if $f:A\pmap A'$ and $g:B\pmap B'$ then
+%    $f\smsh g:A\smsh B\pmap A'\smsh B'$. We write $A\smsh g$ or $f\smsh B$ if one of the
+%    functions is the identity function.
+%  \item The smash product preserves composition, which gives rise to the interchange law:
+%    \[i:(f' \o f)\smsh (g' \o g) \sim f' \smsh g' \o f \smsh g\]
+%  \item If $p:f\sim f'$ and $q:g\sim g'$ then $p\smsh q:f\smsh g\sim f'\smsh g'$. This operation
+%    preserves reflexivities, symmetries and transitivies.
+%  \item There are homotopies $f\smsh0\sim0$ and $0\smsh g\sim 0$ such that the following diagrams
+%    commute for given homotopies $p : f\sim f'$ and $q : g\sim g'$.
+%    \begin{center}
+%\begin{tikzcd}
+%f\smsh 0 \arrow[rr, equals,"p\smsh1"]\arrow[dr,equals] & &
+%f'\smsh 0\arrow[dl,equals] \\
+%& 0 &
+%\end{tikzcd}
+%\qquad
+%\begin{tikzcd}
+%0\smsh g\arrow[rr, equals,"1\smsh q"]\arrow[dr,equals] & &
+%0\smsh g'\arrow[dl,equals] \\
+%& 0 &
+%\end{tikzcd}
+%\end{center}
+%\end{itemize}
 \end{lem}
 
+\begin{lem}\label{lem:interchange}
+	The smash product preserves composition, which gives rise to the interchange law:
+    \[i:(f_2 \o f_1)\smsh (g_2 \o g_1) \sim f_2 \smsh g_2 \o f_1 \smsh g_1\]
+    for maps $A_1\lpmap{f_1}A_2\lpmap{f_2}A_3$ and $B_1\lpmap{g_1}B_2\lpmap{g_2}B_3$.
+\end{lem}
+\begin{proof}
+	Let us denote the basepoints of $A_i$ and $B_i$ with $a_i$ and $b_i$ respectively. We first apply induction on the paths that all the maps in the statement respect the basepoint. We verify the underlying homotopy of $i$ by induction on terms $x$ of the domain $A_1 \smsh B_1$ of the two maps; this can be defined on point constructors $(a,b)$, $\auxl$ and $\auxr$ to be the identity path. If $x$ varies over $\gluel_a$, we need to fill the following square:
+	\begin{equation}\label{eq:i-gluel}
+	\begin{tikzcd}
+		(f_2(f_1(a)), b_3)
+			\arrow[r,equals,"1"]
+			\arrow[d,swap,equals,"\mapfunc{(f_2 \o f_1)\smsh (g_2 \o g_1)}(\gluel_a)"]
+		& (f_2(f_1(a)), b_3)
+			\arrow[d,equals,"\mapfunc{f_2 \smsh g_2 \o f_1 \smsh g_1}(\gluel_a)"]
+		\\
+		\auxl
+			\arrow[r,swap,equals,"1"]
+		&\auxl
+	\end{tikzcd}
+	\end{equation}
+	This reduces to proving that
+	\[\mapfunc{(f_2(f_1(a)),-)}(g_2\o g_1)_0 \tr \gluel_{f_2(f_1(a))} = \mapfunc{(f_2(f_1(a)),-)}(\mapfunc{g_2}{(g_1)}_0 \tr {(g_2)}_0) \tr \gluel_{f_2(f_1(a))}\]
+	Since we assumed that ${(g_1)}_0$ and ${(g_2)}_0$ are the identity path, the claim is easily verified. The case for $x$ varying over $\gluer_b$ is entirely analogous, giving the square:
+	\begin{equation}\label{eq:i-gluer}
+	\begin{tikzcd}
+		(a_3, g_2(g_1(b))
+			\arrow[r,equals,"1"]
+			\arrow[d,swap,equals,"\mapfunc{(f_2 \o f_1)\smsh (g_2 \o g_1)}(\gluer_b)"]
+		& (a_3, g_2(g_1(b))
+			\arrow[d,equals,"\mapfunc{f_2 \smsh g_2 \o f_1 \smsh g_1}(\gluer_b)"]
+		\\
+		\auxr
+			\arrow[r,swap,equals,"1"]
+		&\auxr
+	\end{tikzcd}
+	\end{equation}
+	The resulting homotopy is pointed, as $i(a_1,b_1) \judgeq 1$ and the proofs that the two maps respect the basepoint are assumed to be the identity path.
+\end{proof}
+
+\begin{lem}\label{lem:smash-zero}
+	There are homotopies 
+	\begin{align*}
+	t_g : 0\smsh g\sim 0 && t'_f : f\smsh0\sim0
+	\end{align*}
+	such that the following diagrams
+    commute for given homotopies $p : g\sim g'$ and $q : f\sim f'$.
+    \begin{equation}\label{eq:t-triangles}
+	\begin{tikzcd}
+	0\smsh g
+		\arrow[rr, equals,"1\smsh p"]
+		\arrow[dr,equals,swap,"t_g"]
+	&& 0\smsh g'\arrow[dl,equals,"t_{g'}"]
+	&f\smsh 0
+		\arrow[rr, equals,"q\smsh 1"]
+		\arrow[dr,equals,swap, "t'_f"]
+	&& f'\smsh 0\arrow[dl,equals,"t'_{f'}"]
+	\\
+	& 0
+	&&& 0
+	\end{tikzcd}
+%	\qquad\qquad
+%	\begin{tikzcd}
+%	f\smsh 0
+%		\arrow[rr, equals,"q\smsh 1"]
+%		\arrow[dr,equals,swap, "t'_f"]
+%	&& f'\smsh 0\arrow[dl,equals,"t'_{f'}"]
+%	\\
+%	& 0
+%	\end{tikzcd}
+	\end{equation}
+\end{lem}
+\begin{proof}
+	We will define the homotopy $t_g : 0 \smsh g$, with $0 : A_1 \to A_2$ and $g : B_1 \to B_2$ (with the notational convention for the basepoints as in \autoref{lem:interchange}); the definition for $t'_f$ is analogous. First, we apply induction on the path that $g$ respects the basepoint. The underlying homotopy of $t_g$ is given by induction on terms $x : A_1 \smsh B_1$. On point constructors, we define:
+	\begin{align*}
+	t_g (a,b) &\defeq \gluer_{g(b)} \tr \gluer_{b_2}\sy && : (a_2, g(b)) = (a_2, b_2)\\
+	t_g (\auxl) &\defeq \gluel_{a_2}\sy && : \auxl = (a_2, b_2)\\
+	t_g (\auxr) &\defeq \gluer_{b_2}\sy && : \auxr = (a_2, b_2)
+	\end{align*}
+	If $x$ varies over $\gluel_a$, after some reductions, we need to fill the following square:
+	\begin{equation}\label{eq:t-gluel}
+	\begin{tikzcd}[column sep=7em]
+		(a_2, g(b_1))
+			\arrow[r,equals,"\gluer_{b_2} \tr \gluer_{b_2}\sy"]
+			\arrow[d,swap,equals, "\gluel_{a_2}"]
+		& (a_2, b_2)
+			\arrow[d,equals,"1"]
+		\\
+		\auxl
+			\arrow[r,swap,equals, "\gluel_{a_2}\sy"]
+		& (a_2, b_2)
+	\end{tikzcd}
+	\end{equation}
+	Similarly, if $x$ varies over $\gluer_b$, we need to fill the following square:
+	\begin{equation}\label{eq:t-gluer}
+	\begin{tikzcd}[column sep=7em]
+		(a_2, g(b))
+			\arrow[r,equals,"\gluer_{g(b)} \tr \gluer_{b_2}\sy"]
+			\arrow[d,swap,equals, "\gluer_{g(b)}"]
+		& (a_2, b_2)
+			\arrow[d,equals,"1"]
+		\\
+		\auxr
+			\arrow[r,swap,equals, "\gluer_{b_2}\sy"]
+		& (a_2, b_2)
+	\end{tikzcd}
+	\end{equation}
+	The squares in (\ref{eq:t-gluel}) and (\ref{eq:t-gluer}) can both be filled by simple path algebra. The resulting homotopy is pointed, as $t_g(a_1,b_1)$ is equal to the identity path and the proof that $g$ respects the basepoint is also assumed to be the identity path. Finally, for $p : g \sim g'$, the diagram on the left in (\ref{eq:t-triangles}) commutes by induction on $p$.
+\end{proof}
+
 \begin{lem}\label{lem:smash-coh}
-  Suppose that we have maps $A_1\lpmap{f_1}A_2\lpmap{f_2}A_3$ and $B_1\lpmap{g_1}B_2\lpmap{g_2}B_3$
-  and suppose that either $f_1$ or $f_2$ is constant. Then there are two homotopies
-  $(f_2 \o f_1)\smsh (g_2 \o g_1)\sim 0$, one which uses interchange and one which doesn't. These two
-  homotopies are equal. Specifically, the following two diagrams commute:
-\begin{center}
-\begin{tikzcd}
-(f_2 \o 0)\smsh (g_2 \o g_1) \arrow[r, equals]\arrow[dd,equals] &
-(f_2 \smsh g_2)\o (0 \smsh g_1)\arrow[d,equals] \\
-& (f_2 \smsh g_2)\o 0\arrow[d,equals] \\
-0\smsh (g_2 \o g_1) \arrow[r,equals] &
-0
-\end{tikzcd}
-\qquad
-\begin{tikzcd}
-(0 \o f_1)\smsh (g_2 \o g_1) \arrow[r, equals]\arrow[dd,equals] &
-(0 \smsh g_2)\o (f_1 \smsh g_1)\arrow[d,equals] \\
-& 0\o (f_1 \smsh g_1)\arrow[d,equals] \\
-0\smsh (g_2 \o g_1) \arrow[r,equals] &
-0
-\end{tikzcd}
-\end{center}
+ 	Suppose that we have maps $A_1\lpmap{f_1}A_2\lpmap{f_2}A_3$ and $B_1\lpmap{g_1}B_2\lpmap{g_2}B_3$
+ 	and suppose that either $f_1$ or $f_2$ is constant. Then there are two homotopies
+  $(f_2 \o f_1)\smsh (g_2 \o g_1)\sim 0$, one which uses the interchange law and one which does not. These two homotopies are equal. Specifically, the following two diagrams commute:
+	\begin{center}
+	\begin{tikzcd}
+		(f_2 \o 0)\smsh (g_2 \o g_1)
+			\arrow[r, equals, "i"]
+			\arrow[dd, swap, equals, "\zeroh' \smsh (g_2 \o g_1)"]
+		&(f_2 \smsh g_2)\o (0 \smsh g_1)
+			\arrow[d, equals, "(f_2 \smsh g_2) \o t_{g_1}"]
+		\\
+		& (f_2 \smsh g_2)\o 0
+			\arrow[d,equals, "\zeroh'"]
+		\\
+		0\smsh (g_2 \o g_1)
+			\arrow[r,equals, swap, "t_{g_2 \o g_1}"]
+		& 0
+	\end{tikzcd}
+	\qquad
+	\begin{tikzcd}
+		(0 \o f_1)\smsh (g_2 \o g_1)
+			\arrow[r, equals, "i"]
+			\arrow[dd, swap, equals, "\zeroh \smsh (g_2 \o g_1)"]
+		& (0 \smsh g_2)\o (f_1 \smsh g_1)
+			\arrow[d,equals, "t_{g_2} \o (f_1 \smsh g_1)"]
+		\\
+		& 0\o (f_1 \smsh g_1)
+			\arrow[d,equals, "\zeroh"]
+		\\
+		0\smsh (g_2 \o g_1)
+			\arrow[r,swap, equals, "t_{g_2 \o g_1}"]
+		& 0
+	\end{tikzcd}
+	\end{center}
 
 \end{lem}
 \begin{proof}
-  We will only do the case where $f_1\jdeq 0$, i.e. fill the diagram on the left. The other case is
-  similar (and slightly easier). First apply induction on the paths that $f_2$, $g_1$ and $g_2$
+%  We will only do the case where $f_1\jdeq 0$, i.e. fill the diagram on the left. The other case is similar (and slightly easier).
+	
+	\textbf{Case $f_1\judgeq 0$ (diagram on the left)}. First apply induction on the paths that $f_2$, $g_1$ and $g_2$
   respect the basepoint. In this case $f_2\o0$ is definitionally equal to $0$, and the canonical
   proof that $f_2\o 0\sim0$ is (definitionally) equal to reflexivity. This means that the homotopy
   $(f_2 \o 0)\smsh (g_2 \o g_1)\sim0\smsh (g_2 \o g_1)$ is also equal to reflexivity, and also the
   path that $f_2 \smsh g_2$ respects the basepoint is reflexivity, hence the homotopy
   $(f_2 \smsh g_2)\o 0\sim0$ is also reflexivity. This means we need to fill the following square:
-\begin{center}
-\begin{tikzcd}
-(f_2 \o 0)\smsh (g_2 \o g_1) \arrow[r, equals,"i"]\arrow[d,equals,"1"] &
-(f_2 \smsh g_2)\o (0 \smsh g_1)\arrow[d,equals,"(f_2\smsh g_2)\o \zeroh"] \\
-0\smsh (g_2 \o g_1) \arrow[r,equals,"\zeroh"] &
-0
-\end{tikzcd}
-\end{center}
-
+	\begin{center}
+	\begin{tikzcd}
+		(f_2 \o 0)\smsh (g_2 \o g_1)
+			\arrow[r, equals,"i"]
+			\arrow[d, swap, equals,"1"]
+		& (f_2 \smsh g_2)\o (0 \smsh g_1)
+			\arrow[d,equals,"(f_2\smsh g_2)\o t_{g_1}"]
+		\\
+		0 \smsh (g_2 \o g_1)
+			\arrow[r, swap, equals,"t_{g_1 \o g_2}"]
+		& 0
+	\end{tikzcd}
+	\end{center}
   For the underlying homotopy, take $x : A_1\smsh B_1$ and apply induction on $x$. Suppose
-  $x\equiv(a,b)$ for $a:A_1$ and $b:B_1$. Then we have to fill the square (denote the basepoints of
-  $A_i$ and $B_i$ by $a_i$ and $b_i$ and we suppress the arguments of $\gluer$). Now
-  $\mapfunc{h\smsh k}(\gluer_z)=\gluer_{k(z)}$, so by general groupoid laws we see that the path on
-  the bottom is equal to the path on the right, which means we can fill the square.
-  \begin{center}
-    \begin{tikzcd}
-      (f_2(a_2),g_2(g_1(b)))\arrow[r, equals,"1"]
-      \arrow[d,equals,"1"] &
-      % \arrow[d,equals,"\gluer_{g_2(g_1(b))}\tr\gluer_{g_2(g_1(b_1))}\sy"] &
-      (f_2(a_2),g_2(g_1(b)))\arrow[d,equals,"\mapfunc{f_2\smsh g_2}(\gluer\tr\gluer\sy)"] \\
-      (a_3,g_2(g_1(b))) \arrow[r,equals,"\gluer\tr\gluer\sy"] &
+  $x\equiv(a,b)$ for $a:A_1$ and $b:B_1$. With the notational convention for basepoints as in \autoref{lem:interchange}, we have to fill the square (we use that the paths that the maps respect the basepoints are reflexivity):
+  \begin{equation}\label{eq:pent-left-ab}
+    \begin{tikzcd}[column sep=5em]
+	(a_3,g_2(g_1(b)))
+      	\arrow[r, equals,"1"]
+      	\arrow[d,swap,equals,"1"]
+		%\arrow[d,equals,"\gluer_{g_2(g_1(b))}\tr\gluer_{g_2(g_1(b_1))}\sy"]
+	& (a_3,g_2(g_1(b)))
+		\arrow[d,equals,"\mapfunc{f_2\smsh g_2}(\gluer_{g_1(b)}\tr\gluer_{b_2}\sy)"]
+	\\
+	(a_3,g_2(g_1(b)))
+		\arrow[r,swap,equals,"\gluer_{g_2(g_1(b))}\tr\gluer_{b_3}\sy"]
+	& (a_3,b_3)
+    \end{tikzcd}
+    \end{equation}  
+   Now $\mapfunc{h\smsh k}(\gluer_z)=\gluer_{k(z)}$, so by general groupoid laws we see that the path on the bottom is equal to the path on the right, which means we can fill the square. For the other point constructors, the squares to fill are similar: if $x \judgeq \auxl$, we have:
+      \begin{equation}\label{eq:pent-left-auxl}
+    \begin{tikzcd}[column sep=5em]
+      \auxl \arrow[r, equals,"1"]
+      \arrow[d,swap,equals,"1"] &
+      \auxl \arrow[d,equals,"\mapfunc{f_2\smsh g_2}(\gluel_{a_2}\sy)"] \\
+      \auxl \arrow[r,swap, equals,"\gluel_{a_3}\sy"] &
       (a_3,b_3)
     \end{tikzcd}
-  \end{center}
-  If $x$ is either $\auxl$ or $\auxr$ it is similar but easier. For completeness, we will write down the square we have to fill in the case that $x$ is $\auxr$.
-  \begin{center}
-    \begin{tikzcd}
+ \end{equation}
+	which we can fill, as the path on the bottom is definitionally equal to $\gluel_{a_3}\sy$ (as we applied path induction on the path that $f_2$ respects the basepoint) and the path on the right  also reduces to $\gluel_{a_3}\sy$ using that $\mapfunc{h\smsh k}(\gluel_z)=\gluel_{h(z)}$. Similarly, we can fill the square for $x \judgeq \auxr$, which is:
+  \begin{equation}\label{eq:pent-left-auxr}
+    \begin{tikzcd}[column sep=5em]
       \auxr \arrow[r, equals,"1"]
-      \arrow[d,equals,"1"] &
+      \arrow[d,swap,equals,"1"] &
       \auxr \arrow[d,equals,"\mapfunc{f_2\smsh g_2}(\gluer_{b_2}\sy)"] \\
-      \auxr \arrow[r,equals,"\gluer_{g_2(b_2)}\sy"] &
+      \auxr \arrow[r,swap, equals,"\gluer_{b_3}\sy"] &
       (a_3,b_3)
     \end{tikzcd}
-  \end{center}
-
-  If $x$ varies over $\gluer_b$, we need to fill the cube below. The front and the back are the
-  squares we just filled, the left square is a degenerate square, and the other three squares are
-  the squares in the definition of $q$ and $i$ to show that they respect $\gluer_b$ (and on the
-  right we apply $f_2\smsh g_2$ to that square).
+  \end{equation}
+	If $x$ varies over $\gluel_a$, after some reductions, we need to fill the following cube, where the front and the back are the squares in (\ref{eq:pent-left-ab}) for $(a,b_1)$ and (\ref{eq:pent-left-auxl}) respectively; the left square is degenerate; the other three sides are the squares in the definition of $i$ and $t$ to show that they respect $\gluel_a$ (given in (\ref{eq:i-gluel}) and (\ref{eq:t-gluel}) respectively), where we also apply $f_2 \smsh g_2$ to the square on the right. We suppress in the diagram the arguments of $\gluer$ in $\gluer\tr\gluer\sy$ (which match, so the concatenation results equal to the identity path).
+	\begin{equation}\label{eq:pent-left-gluel}
+	\begin{tikzcd}[column sep=5em]
+	& \auxl
+		\arrow[rr, equals, "1"]
+		\arrow[dd, swap, equals, near end, "1"]
+	&& \auxl
+		\arrow[dd, equals, "\mapfunc{f_2\smsh g_2} (\gluel_{a_2}\sy)"]
+	\\
+	(a_3,b_3)
+		\arrow[ur, equals, "\gluel_{a_3}"]
+		\arrow[dd, swap, equals, "1"]
+		\arrow[rr, equals, crossing over, near end, "1"]
+	&& (a_3,b_3)
+		\arrow[ur, equals, near start, "\mapfunc{f_2\smsh g_2}(\gluel_{a_2})"]
+		%\arrow[dd, equals, near start, "\mapfunc{f_2\smsh g_2}(\gluer\tr\gluer\sy)"]
+	\\
+	& \auxl
+		\arrow[rr, swap, equals, near start, "\gluel_{a_3}\sy"]
+	&& (a_3,b_3)
+	\\
+	(a_3,b_3)
+		\arrow[ur, equals, "\gluel_{a_3}"]
+		\arrow[rr, swap, equals, "\gluer\tr\gluer\sy"]
+	&& (a_3,b_3)
+		\arrow[ur, swap, equals, "1"] %1
+		\arrow[from=uu, equals, crossing over, very near start, "\mapfunc{f_2 \smsh g_2}(\gluer\tr\gluer\sy)"]
+	\end{tikzcd}
+	\end{equation}
+	Similarly, if $x$ varies over $\gluer_b$, we need to fill the cube below: the front and the back are the squares in (\ref{eq:pent-left-ab}) for $(a_1,b)$ and (\ref{eq:pent-left-auxr}) respectively; the left square is again degenerate; the other three sides come from the fact that $i$ and $t$ respect $\gluer_b$ (given in (\ref{eq:i-gluer}) and (\ref{eq:t-gluer}) respectively). Again, we omit the arguments of $\gluer$ in $\gluer\tr\gluer\sy$ (in this case, not a priori judgementally equal).
+	\begin{equation}\label{eq:pent-left-gluer}
+	\begin{tikzcd}[column sep=4em]
+	& \auxr
+		\arrow[rr, equals,"1"]
+		\arrow[dd, swap, equals, near end,"1"]
+	&& \auxr
+		\arrow[dd,equals,"\mapfunc{f_2\smsh g_2}(\gluer_{b_2}\sy)"]
+	\\
+	(a_3,g_2(g_1(b)))
+		\arrow[rr, equals, near end, crossing over, "1"]
+		\arrow[dd, swap, equals, "1"]
+		\arrow[ur, equals, "\gluer_{g_2(g_1(b))}"]
+	&& (a_3,g_2(g_1(b)))
+		\arrow[ur, equals, near start, "\mapfunc{f_2\smsh g_2}(\gluer_{g_1(b)})"]
+	\\
+	& \auxr
+		\arrow[rr, swap, equals, near start, "\gluer_{b_3}\sy"]
+	&& (a_3,b_3)
+	\\
+	(a_3,g_2(g_1(b)))
+		\arrow[rr, swap, equals,"\gluer\tr\gluer\sy"]
+		\arrow[ur, equals, near end, "\gluer_{g_2(g_1(b))}"]
+	&& (a_3,b_3)
+		\arrow[from=uu, equals, crossing over, very near start, "\mapfunc{f_2\smsh g_2}(\gluer\tr\gluer\sy)"]
+		\arrow[ur, swap, equals, "1"]
+	\end{tikzcd}
+	\end{equation}
+  %After canceling applications of  $\mapfunc{h\smsh k}(\gluer_z)=\gluer_{k(z)}$ on various sides of the squares (TODO).
+  In order to fill the cubes in (\ref{eq:pent-left-gluel}) and (\ref{eq:pent-left-gluer}), we generalize the paths and fill the cubes by path induction. The cube in (\ref{eq:pent-left-gluel}) can be generalized to a cube:
   \begin{center}
-    \begin{tikzcd}
-      & \auxr \arrow[rr, equals,"1"] \arrow[dd,equals,near start,"1"] & &
-      \auxr \arrow[dd,equals,"\mapfunc{f_2\smsh g_2}(\gluer_{b_2}\sy)"] \\
-      (f_2(a_2),g_2(g_1(b)))\arrow[rr, equals, near start, crossing over, "1"]
-      \arrow[dd,equals,"1"] \arrow[ur,equals] & &
-      (f_2(a_2),g_2(g_1(b))) \arrow[ur,equals] & \\
-      & \auxr \arrow[rr,equals,near start, "\gluer_{g_2(b_2)}\sy"] & & (a_3,b_3) \\
-      (a_3,g_2(g_1(b))) \arrow[rr,equals,"\gluer\tr\gluer\sy"] \arrow[ur,equals] & &
-      (a_3,b_3) \arrow[from=uu, equals, crossing over, very near start, "\mapfunc{f_2\smsh g_2}(\gluer\tr\gluer\sy)"]       \arrow[ur,equals] &
-    \end{tikzcd}
-  \end{center}
-  After canceling applications of
-  $\mapfunc{h\smsh k}(\gluer_z)=\gluer_{k(z)}$ on various sides of the squares (TODO).
-
-
-  If $x$ varies over $\gluel_a$ the proof is very similar. Only in the end we need to fill the
-  following cube instead (TODO).
-
+  	\begin{tikzcd}[column sep=3em]
+	& h(y)
+		\arrow[rr, equals,"1"]
+		\arrow[dd, swap, equals, near end,"1"]
+	&& h(y)
+		\arrow[dd,equals,"\mapfunc{h}(p_l\sy)"]
+	\\
+	h(x)
+		\arrow[rr, equals, near end, crossing over, "1"]
+		\arrow[dd, swap, equals, "1"]
+		\arrow[ur, equals, "q_l"]
+	&& h(x)
+		\arrow[ur, equals, near start, "\mapfunc{h}(p_l)"]
+	\\
+	& h(y)
+		\arrow[rr, swap, equals, near start, "q_l\sy"]
+	&& h(x)
+	\\
+	h(x)
+		\arrow[rr, swap, equals,"q_r\tr q_r\sy"]
+		\arrow[ur, equals, "q_l"]
+	&& h(x)
+		\arrow[from=uu, equals, crossing over, near start, "\mapfunc{h}(p_r\tr p_r\sy)"]
+		\arrow[ur, swap, equals, "1"]
+	\end{tikzcd}
+	\end{center}
+	for $X$ and $X'$ pointed types; a map $h : X \to X'$; terms $x$, $y$ $z : X$; paths $p_l : x = y$, $p_r : x = z$, $q_l : h(x) = h(y)$, $q_r : h(x) = h(z)$; and 2-paths $s_l : \mapfunc{h}(p_l) = q_l$ (for the back and the top) and $s_r : \mapfunc{h}(p_r) = q_r$ (for the right side). This cube is filled by path induction on $s_l$, $s_r$, $p_l$ and $p_r$. The cube in (\ref{eq:pent-left-gluer}) can be generalized to a similar cube:
+	 \begin{center}
+  	\begin{tikzcd}[column sep=3em]
+	& h(y)
+		\arrow[rr, equals,"1"]
+		\arrow[dd, swap, equals, near end,"1"]
+	&& h(y)
+		\arrow[dd,equals,"\mapfunc{h}(p_b)"]
+	\\
+	h(x)
+		\arrow[rr, equals, near end, crossing over, "1"]
+		\arrow[dd, swap, equals, "1"]
+		\arrow[ur, equals, "q_l"]
+	&& h(x)
+		\arrow[ur, equals, near start, "\mapfunc{h}(p_l)"]
+	\\
+	& h(y)
+		\arrow[rr, swap, equals, near start, "q_b"]
+	&& h(z)
+	\\
+	h(x)
+		\arrow[rr, swap, equals,"q_l\tr q_b"]
+		\arrow[ur, equals, "q_l"]
+	&& h(z)
+		\arrow[from=uu, equals, crossing over, near start, "\mapfunc{h}(p_l\tr p_b)"]
+		\arrow[ur, swap, equals, "1"]
+	\end{tikzcd}
+	\end{center}
+	for paths $p_l : x = y$, $p_b : y = z$, $q_l : h(x) = h(y)$, $q_b : h(y) = h(z)$ and for 2-paths $s_l : \mapfunc{h}(p_l) = q_l$ (for the top) and $s_b : \mapfunc{h}(p_b) = q_b$ (for the back).
+	
+	\textbf{Case $f_2\judgeq 0$ (diagram on the right)}.	(TODO)
+	
   To show that this homotopy is pointed, (TODO)
 
 \end{proof}
@@ -336,19 +577,20 @@ which is natural in $A$, $B$ and dinatural in $C$.
 \end{thm}
 The naturality and dinaturality means that the following squares commute for $f : A' \to A$ $g:B\to B'$ and $h:C\to C'$.
 \begin{center}
-\begin{tikzcd}
+\begin{tikzcd}[column sep=5em]
 (A\pmap B) \arrow[r,"({-})\smsh C"]\arrow[d,"f\pmap B"] &
 (A\smsh C\pmap B\smsh C)\arrow[d,"f\smsh C\pmap B\smsh C"] \\
 (A'\pmap B) \arrow[r,"({-})\smsh C"] &
 (A'\smsh C\pmap B\smsh C)
 \end{tikzcd}
-\begin{tikzcd}
+\qquad
+\begin{tikzcd}[column sep=5em]
 (A\pmap B) \arrow[r,"({-})\smsh C"]\arrow[d,"A\pmap g"] &
 (A\smsh C\pmap B\smsh C)\arrow[d,"A\smsh C\pmap g\smsh C"] \\
 (A\pmap B') \arrow[r,"({-})\smsh C"] &
 (A\smsh C\pmap B'\smsh C)
 \end{tikzcd}
-\begin{tikzcd}[column sep=large]
+\begin{tikzcd}[column sep=5em]
 (A\pmap B) \arrow[r,"({-})\smsh C"]\arrow[d,"({-})\smsh C'"] &
 (A\smsh C\pmap B\smsh C)\arrow[d,"A\smsh C\pmap B\smsh h"] \\
 (A\smsh C'\pmap B\smsh C') \arrow[r,"A\smsh h\pmap B\smsh C'"] &
@@ -564,7 +806,7 @@ argument, the back square commutes because composition on the left commutes with
 
 \section{Symmetric monoidality}
 We aim to prove that the smash product is a (1-coherent) symmetric monoidal product [REF: Brunerie] for pointed types, i.e., that
-\[(\pType,\, \bool,\, \smsh,\, \alpha,\, \lambda,\, \rho,\, \gamma)\]
+\[(\type^*,\, \bool,\, \smsh,\, \alpha,\, \lambda,\, \rho,\, \gamma)\]
 is a symmetric monoidal category, with the type of booleans $\bool$ (pointed in $0_\bool$) as unit, and for suitable instances of $\alpha$, $\lambda$, $\rho$ and $\gamma$ witnessing associativity, left- and right unitality and the braiding for $\smsh$ and satisfying appropriate coherence relations (associativity pentagon; unitors triangle; braiding-unitors triangle; associativity-braiding hexagon; double braiding).
 
 Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right unitality and braiding equivalences for the smash product, in the following way.
@@ -579,7 +821,7 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 			    &\simeq A \smsh B\to C\to X && (e)\\
 		    	&\simeq (A \smsh B)\smsh C\to X. && (e)
 			\end{align*}
-		\item $\lambdabar_X : (B \to X) \simeq (\bool \smsh B \to X)$, where $\bool$ is the type of booleans, as the composition of the equivalences:
+		\item $\lambdabar_X : (B \to X) \simeq (\bool \smsh B \to X)$ as the composition of the equivalences:
 			\begin{align*}
 				B \to X &\simeq \bool \to B \to X && (\two\sy)\\
 				&\simeq \bool \smsh B \to X && (e)
@@ -925,7 +1167,7 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 	\begin{align*}
 		(B \smsh \gamma) \o \alpha \o (\gamma \smsh C)
 		&\sim \gammabar^L(\idfunc) \o \alphabar \o \gammabar^R(\idfunc) &&\text{(simplification)}\\
-		&\sim (\gammabar^R \o \alphabar \o \gammabar^L)(\idfunc) &&\text{(naturality of $\alphabar$ and $\gammabar^R$)}\\
+		&\sim (\gammabar^R \o \alphabar \o \gammabar^L)(\idfunc) &&\text{(nat. of $\alphabar$ and $\gammabar^R$)}\\
 		&\judgeq (e \o \gammabar \o e\sy \o e \o e \o (B \to e\sy) \o e\sy \o e \o (B \to \gammabar) \o e\sy)(\idfunc)\\
 		&\sim (e \o \gammabar \o e \o (B \to e\sy) \o (B \to \gammabar) \o e\sy)(\idfunc) &&\text{(cancelling)}\\
 		&\sim (e \o \gammabar \o e \o (B \to (e\sy \o \gammabar)) \o e\sy)(\idfunc) &&\text{(funct. of $B \to -$)}\\
@@ -964,7 +1206,7 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 \end{proof}
 
 \begin{cor}
-	$(\pType,\, \bool,\, \smsh,\, \alpha,\, \lambda,\, \rho,\, \gamma)$ has a structure of a symmetric monoidal category, for $\alpha$, $\lambda$, $\rho$ and $\gamma$ as in \autoref{def:smash-alrg}.
+	$(\type^*,\, \bool,\, \smsh,\, \alpha,\, \lambda,\, \rho,\, \gamma)$ has a structure of a symmetric monoidal category, for $\alpha$, $\lambda$, $\rho$ and $\gamma$ as in \autoref{def:smash-alrg}.
 \end{cor}
 \begin{proof}
 	Follows by the theorems in this section.
