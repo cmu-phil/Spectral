@@ -411,20 +411,42 @@ are filled by (corollaries of) \autoref{lem:smash-general}.
 
 \begin{lem}\label{lem:unit-counit}
   There is a unit $\eta_{A,B}\equiv\eta:A\pmap B\pmap A\smsh B$ natural in $A$ and counit
-  $\epsilon_{B,C}\equiv\epsilon : (B\pmap C)\smsh B \pmap C$ dinatural in $B$ and natural in $C$.
+  $\epsilon_{B,C}\equiv\epsilon : (B\pmap C)\smsh B \pmap C$ dinatural in $B$ and pointed natural in $C$.
   These maps satisfy the unit-counit laws:
   $$(A\to\epsilon_{A,B})\o \eta_{A\to B,A}\sim \idfunc[A\to B]\qquad
   \epsilon_{B,B\smsh C}\o \eta_{A,B}\smsh B\sim\idfunc[A\smsh B].$$
 \end{lem}
 Note: $\eta$ is also dinatural in $B$, but we don't need this.
 \begin{proof}
-  We define $\eta (a)(b)=(a,b)$. Then $\eta (a)$ respects the basepoint because
-  $(a,b_0)=(a_0,b_0)$. Also, $\eta$ itself respects the basepoint. To show this, we need to show
-  that $\eta (a_0)\sim 0$. The underlying maps are homotopic, since $(a_0,b)=(a_0,b_0)$. To show that
+  We define $\eta ab=(a,b)$. We define the path that $\eta a$ respects the basepoint as
+  $$(\eta a)_0\defeq\gluel_a\tr\gluel_{a_0}\sy:(a,b_0)=(a_0,b_0).$$ Also, $\eta$ itself respects the basepoint. To show this, we need to give $\eta_0:\eta (a_0)\sim 0$. The underlying maps are homotopic, by $$\eta_0b\defeq\gluer_b\cdot\gluer_{b_0}\sy:(a_0,b)=(a_0,b_0).$$ To show that
   this homotopy is pointed, we need to show that the two given proofs of $(a_0,b_0)=(a_0,b_0)$ are
   equal, but they are both equal to reflexivity:
-  $$\gluel_{a_0}\tr\gluel_{a_0}\sy=1=\gluer_{b_0}\tr\gluer_{b_0}\sy.$$
-  This defines the unit. To define the counit, given $x:(B\pmap C)\smsh B$, we construct
+  $$\eta_{00}:\gluel_{a_0}\tr\gluel_{a_0}\sy=1=\gluer_{b_0}\tr\gluer_{b_0}\sy.$$
+  This defines the unit. To show that it is natural in $A$, we need to give the following pointed homotopy $p_\eta(f)$ for $f:A\to A'$.
+  \begin{center}
+	\begin{tikzcd}
+	A \arrow[r,"\eta"]\arrow[d,"f"] &
+	(B\pmap A \smsh B)\arrow[d,"B\to f\smsh B"] \\
+	A' \arrow[r,"\eta"] &
+	(B\pmap A'\smsh B)
+	\end{tikzcd}
+  \end{center}
+  We may assume that $f_0$ is reflexivity. For the underlying homotopy we need to define for $a:A$ that $p_\eta(f,a):\eta(fa)\sim f\smsh B \circ \eta a$, which is another pointed homotopy. For $b:B$ we have $\eta(fa,b)\equiv(fa,b)\equiv(f\smsh B)(\eta ab).$
+  The homotopy $p_\eta(f,a)$ is pointed, since $$(f\smsh B \circ \eta a)_0=\apfunc{f\smsh B}(\gluel_a\cdot\gluel_{a_0}\sy)=\gluel_{fa}\cdot\gluel_{a_0'}\sy=(\eta(fa))_0.$$
+  Now we need to show that $p_\eta(f)$ is pointed, for which we need to fill the following diagram.
+  \begin{center}
+	\begin{tikzcd}
+	\eta(fa_0) \arrow[equals,rr,"{p_\eta(f,a_0)}"]\arrow[dr,equals,"{\eta_0}"] & &
+	f\smsh B \circ \eta a_0\arrow[dl,equals,"{f\smsh B\circ\eta_0}"] \\
+	& 0_{B,A'\smsh B} &
+	\end{tikzcd}
+  \end{center}
+  These pointed homotopies have equal underlying homotopies, since for $b:B$ we have 
+  $$p_\eta(f,a_0,b)\cdot\apfunc{f\smsh B}(\eta_0 b)=1\cdot\apfunc{f\smsh B}(\gluer_b\cdot\gluer_{b_0}\sy)=\gluer_{b}\cdot\gluer_{b_0}\sy=\eta_0b.$$
+  The homotopies are pointed in the same way (TODO).
+
+  To define the counit, given $x:(B\pmap C)\smsh B$, we construct
   $\epsilon (x):C$ by induction on $x$. If $x\jdeq(f,b)$ we set $\epsilon(f,b)\defeq f(b)$. If $x$
   is either $\auxl$ or $\auxr$ then we set $\epsilon (x)\defeq c_0:C$. If $x$ varies over $\gluel_f$
   then we need to show that $f(b_0)=c_0$, which is true by $f_0$. If $x$ varies over $\gluer_b$ we
@@ -434,24 +456,30 @@ Note: $\eta$ is also dinatural in $B$, but we don't need this.
   Now we need to show that the unit and counit are (di)natural. (TODO).
 
   Finally, we need to show the unit-counit laws. For the underlying homotopy of the first one, let
-  $f:A\to B$. We need to show that $p:\epsilon\o\eta f\sim f$. For the underlying homotopy of $p$,
-  let $a:A$, and we need to show that $\epsilon(f,a)=f(a)$, which is true by reflexivity. To show
-  that $p$ is a pointed homotopy, we need to show that
-  $p(a_0)\tr f_0=\mapfunc{\epsilon}(\eta f)_0\tr \epsilon_0$, which reduces to
+  $f:A\to B$. We need to show that $p_f:\epsilon\o\eta f\sim f$. We define $p_f(a)=1:\epsilon(f,a)=f(a)$. To show that $p_f$ is a pointed homotopy, we need to show that
+  $p_f(a_0)\tr f_0=\mapfunc{\epsilon}(\eta f)_0\tr \epsilon_0$, which reduces to
   $f_0=\mapfunc{\epsilon}(\gluel_f\tr\gluel_0\sy)$, but we can reduce the right hand side: (note:
   $0_0$ denotes the proof that $0(a_0)=b_0$, which is reflexivity)
   $$\mapfunc{\epsilon}(\gluel_f\tr\gluel_0\sy)=\mapfunc{\epsilon}(\gluel_f)\tr(\mapfunc{\epsilon}(\gluel_0))\sy=f_0\tr 0_0\sy=f_0.$$
   Now we need to show that $p$ itself respects the basepoint of $A\to B$, i.e. that the composite
-  $\epsilon\o\eta(0)\sim\epsilon\o0\sim0$ is equal to $p$ for $f\equiv 0_{A,B}$. The underlying
+  $\epsilon\o\eta(0)\sim\epsilon\o0\sim0$ is equal to $p_{0_{A,B}}$. The underlying
   homotopies are the same for $a : A$; on the one side we have
   $\mapfunc{\epsilon}(\gluer_{a}\tr\gluer_{a_0}\sy)$ and on the other side we have reflexivity
-  (note: this typechecks, since $0_{A,B}a\equiv0_{A,B}a_0$). These paths are equal, since
+  (note: this typechecks since $0_{A,B}a\equiv0_{A,B}a_0$). These paths are equal, since
   $$\mapfunc{\epsilon}(\gluer_{a}\tr\gluer_{a_0}\sy)=\mapfunc{\epsilon}(\gluer_{a})\tr(\mapfunc\epsilon(\gluer_{a_0}))\sy=1\cdot1\sy\equiv1.$$
-  Both pointed homotopies are pointed in the same way, which requires some path-algebra, and we skip
-  the proof here.
+  Both pointed homotopies are pointed in the same way, which requires some path-algebra, and we skip the proof here.
 
-  For the underlying homotopy of the second one, we need to show for $x:A\smsh B$ that
-  $\epsilon(\eta\smsh B(x))=x$, which we prove by induction to $x$. (TODO).
+  For the underlying homotopy of the second unit-counit law, we need to show for $x:A\smsh B$ that
+  $q(x):\epsilon((\eta\smsh B)x)=x$, which we prove by induction to $x$. If $x\equiv(a,b)$ then we can define $q(a,b)\defeq1_{(a,b)}$. If $x$ is $\auxl$ or $\auxr$ then the left-hand side reduces to $(a_0,b_0)$, so we can define $q(\auxl)\defeq\gluel_{a_0}$ and $q(\auxr)\defeq\gluer_{b_0}$. The following computation shows that $q$ respects $\gluel_a$:
+  $$\apfunc{\epsilon\circ\eta\smsh B}(\gluel_a)\cdot\gluel_{a_0}= \apfunc{\epsilon}(\gluel_{\eta a})\cdot\gluel_{a_0}=(\eta a)_0\cdot\gluel_{a_0}=\gluel_a\cdot\gluel_{a_0}\sy\cdot\gluel_{a_0}=\gluel_a.$$
+  To show that it respects $\gluer_b$ we compute
+  $$\apfunc{\epsilon\circ\eta\smsh B}(\gluer_b)\cdot\gluer_{b_0}=
+  \apfunc{\epsilon({-},b)}(\eta_0)\cdot\apfunc{\epsilon}(\gluer_b)\cdot\gluer_{b_0}=
+  \apfunc{\lam{f}fb}(\eta_0)\cdot\gluer_{b_0}=
+  \eta_0b\cdot\gluer_{b_0}=
+  %\gluer_b\cdot\gluer_{b_0}\sy\cdot\gluer_{b_0}=
+  \gluer_b.$$
+  To show that $q$ is a pointed homotopy, we need to show that $(\epsilon\circ\eta\smsh B)_0=1$, For this we compute $$(\epsilon\circ\eta\smsh B)_0=\apfunc{\epsilon({-},b_0)}(\eta_0)=\eta_0b_0=\gluer_{b_0}\cdot\gluer_{b_0}\sy=1.$$
 \end{proof}
 
 \begin{defn}
