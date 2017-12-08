@@ -14,7 +14,8 @@ prespectrum.mk (λ z, X ∧ Y z) begin
   exact !glue
 end
 
-definition smash_prespectrum_fun {X X' : Type*} {Y Y' : prespectrum} (f : X →* X') (g : Y →ₛ Y') : smash_prespectrum X Y →ₛ smash_prespectrum X' Y' :=
+definition smash_prespectrum_fun {X X' : Type*} {Y Y' : prespectrum} (f : X →* X') (g : Y →ₛ Y') :
+  smash_prespectrum X Y →ₛ smash_prespectrum X' Y' :=
 smap.mk (λn, smash_functor f (g n)) begin
   intro n,
   refine susp_to_loop_psquare _ _ _ _ _,
@@ -22,12 +23,12 @@ smap.mk (λn, smash_functor f (g n)) begin
   refine vconcat_phomotopy _ (smash_functor_split f (g (S n))),
   refine phomotopy_vconcat (smash_functor_split f (susp_functor (g n))) _,
   refine phconcat _ _,
-  let glue_adjoint := susp_pelim (Y n) (Y (S n)) (glue Y n),
-  exact pid X' ∧→ glue_adjoint,
-  exact smash_functor_psquare (pvrefl f) (phrefl glue_adjoint),
-  refine smash_functor_psquare (phrefl (pid X')) _,
+  let glue_adjoint := susp_pelim (Y' n) (Y' (S n)) (glue Y' n),
+  exact pid X ∧→ glue_adjoint,
+  refine smash_functor_psquare (phrefl (pid X)) _,
   refine loop_to_susp_square _ _ _ _ _,
-  exact smap.glue_square g n
+  exact smap.glue_square g n,
+  exact smash_functor_psquare (pvrefl f) (phrefl glue_adjoint)
 end
 
   /- smash of a spectrum and a type -/

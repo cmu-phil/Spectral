@@ -1,6 +1,6 @@
 -- Authors: Floris van Doorn
 
-import homotopy.smash types.pointed2 .pushout homotopy.red_susp
+import homotopy.smash types.pointed2 .pushout homotopy.red_susp ..pointed
 
 open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops wedge is_trunc
      function red_susp unit
@@ -536,14 +536,15 @@ namespace smash
     square (p₁ ⬝ p₁⁻¹) p₂⁻¹ p₂ idp :=
   proof square_of_eq (con.right_inv p₁ ⬝ (con.right_inv p₂)⁻¹) qed
 
-  private definition my_cube_fillerl {A B C : Type} {g : B → C} {f : A → B} {a₁ a₂ : A} {b₀ : B}
-    {p : f ~ λa, b₀} {q : Πa, g (f a) = g b₀} (r : (λa, ap g (p a)) ~ q) :
-    cube (hrfl ⬝hp (r a₁)⁻¹) hrfl
-         (my_squarel (q a₁) (q a₂)) (aps g (my_squarel (p a₁) (p a₂)))
-         (hrfl ⬝hp (!ap_con ⬝ whisker_left _ !ap_inv ⬝ (r a₁) ◾ (r a₂)⁻²)⁻¹)
-           (hrfl ⬝hp (r a₂)⁻²⁻¹ ⬝hp !ap_inv⁻¹) :=
+  private definition my_cube_fillerl {B C : Type} {g : B → C} {fa₁ fa₂ b₀ : B}
+    {pa₁ : fa₁ = b₀} {pa₂ : fa₂ = b₀} {qa₁ : g (fa₁) = g b₀} {qa₂ : g (fa₂) = g b₀}
+    (ra₁ : ap g (pa₁) = qa₁) (ra₂ : ap g (pa₂) = qa₂) :
+    cube (hrfl ⬝hp (ra₁)⁻¹) hrfl
+         (my_squarel (qa₁) (qa₂)) (aps g (my_squarel (pa₁) (pa₂)))
+         (hrfl ⬝hp (!ap_con ⬝ whisker_left _ !ap_inv ⬝ (ra₁) ◾ (ra₂)⁻²)⁻¹)
+           (hrfl ⬝hp (ra₂)⁻²⁻¹ ⬝hp !ap_inv⁻¹) :=
   begin
-    induction r using homotopy.rec_on_idp, induction p using homotopy.rec_on_idp_left, exact idc
+    induction ra₂, induction ra₁, induction pa₂, induction pa₁, exact idc
   end
 
   private definition my_cube_fillerr {B C : Type} {g : B → C} {b₀ bl br : B}
@@ -615,11 +616,11 @@ namespace smash
       refine !con.assoc ⬝ _, apply con_eq_of_eq_inv_con,
       refine whisker_right _ _ ⬝ _, rotate 1, rexact functor_gluer'2_same f' g' (g b₀),
       refine !inv_con_cancel_right ⬝ _,
-      exact sorry, -- TODO: FIX, the proof below should work (with some small changes)
-      -- refine _ ⬝ whisker_left _ _,
-      -- rotate 2, refine ap (whisker_left _) _, symmetry, exact !idp_con ⬝ !idp_con ⬝ !whisker_right_idp ⬝ !idp_con,
-      -- symmetry, apply whisker_left_idp
-      }
+      refine !whisker_left_idp⁻¹ ⬝ _,
+      refine !con_idp ⬝ _,
+      apply whisker_left,
+      apply ap (whisker_left idp),
+      exact (!idp_con ⬝ !idp_con ⬝ !whisker_right_idp ⬝ !idp_con)⁻¹ }
   end
 
   /- a version where the left maps are identities -/
@@ -725,7 +726,7 @@ namespace smash
 
   /- Using these lemmas we show that smash_functor_left is natural in all arguments -/
 
-  definition smash_functor_left_natural_left (f : A' →* A) :
+  definition smash_functor_left_natural_left (B C : Type*) (f : A' →* A) :
     psquare (smash_functor_left A B C) (smash_functor_left A' B C)
             (ppcompose_right f) (ppcompose_right (f ∧→ pid C)) :=
   begin
@@ -739,7 +740,7 @@ namespace smash
       apply smash_functor_pcompose_pconst1_pid }
   end
 
-  definition smash_functor_left_natural_middle (f : B →* B') :
+  definition smash_functor_left_natural_middle (A C : Type*) (f : B →* B') :
     psquare (smash_functor_left A B C) (smash_functor_left A B' C)
             (ppcompose_left f) (ppcompose_left (f ∧→ pid C)) :=
   begin
@@ -753,7 +754,7 @@ namespace smash
       apply smash_functor_pcompose_pconst2_pid }
   end
 
-  definition smash_functor_left_natural_right (f : C →* C') :
+  definition smash_functor_left_natural_right (A B : Type*) (f : C →* C') :
     psquare (smash_functor_left A B C) (ppcompose_right (pid A ∧→ f))
             (smash_functor_left A B C') (ppcompose_left (pid B ∧→ f)) :=
   begin
@@ -772,6 +773,18 @@ namespace smash
       refine idp ◾** !refl_trans ⬝ !trans_left_inv }
   end
 
+  definition smash_functor_left_natural_middle_phomotopy (A C : Type*) {f f' : B →* B'}
+    (p : f ~* f') : smash_functor_left_natural_middle A C f =
+    ppcompose_left_phomotopy p ⬝ph* smash_functor_left_natural_middle A C f' ⬝hp*
+    ppcompose_left_phomotopy (p ∧~ phomotopy.rfl) :=
+  begin
+    induction p using phomotopy_rec_idp,
+    symmetry,
+    refine !ppcompose_left_phomotopy_refl ◾ph* idp ◾hp*
+     (ap ppcompose_left_phomotopy !smash_functor_phomotopy_refl ⬝
+     !ppcompose_left_phomotopy_refl) ⬝ _,
+    exact !rfl_phomotopy_hconcat ⬝ !hconcat_phomotopy_rfl
+  end
 
   /- the following is not really used, but a symmetric version of the natural equivalence
      smash_functor_left -/
@@ -877,11 +890,11 @@ namespace smash
       refine !con.assoc ⬝ _, apply con_eq_of_eq_inv_con,
       refine whisker_right _ _ ⬝ _, rotate 1, rexact functor_gluel'2_same f' g (f a₀),
       refine !inv_con_cancel_right ⬝ _,
-      exact sorry, -- TODO: FIX, the proof below should work
-      -- refine _ ⬝ whisker_left _ _,
-      -- rotate 2, refine ap (whisker_left _) _, symmetry, exact !idp_con ⬝ !idp_con ⬝ !whisker_right_idp ⬝ !idp_con,
-      -- symmetry, apply whisker_left_idp
-      }
+      refine !whisker_left_idp⁻¹ ⬝ _,
+      refine !con_idp ⬝ _,
+      apply whisker_left,
+      apply ap (whisker_left idp),
+      exact (!idp_con ⬝ !idp_con ⬝ !whisker_right_idp ⬝ !idp_con)⁻¹ }
   end
 
   /- a version where the left maps are identities -/
@@ -985,7 +998,7 @@ namespace smash
   smash_functor_pcompose_pconst3 (pid A) (pid A) g
 
   /- Using these lemmas we show that smash_functor_right is natural in all arguments -/
-  definition smash_functor_right_natural_right (f : C →* C') :
+  definition smash_functor_right_natural_right (A B : Type*) (f : C →* C') :
     psquare (smash_functor_right A B C) (smash_functor_right A B C')
             (ppcompose_left f) (ppcompose_left (pid A ∧→ f)) :=
   begin
@@ -999,7 +1012,7 @@ namespace smash
       apply smash_functor_pcompose_pconst4_pid }
   end
 
-  definition smash_functor_right_natural_middle (f : B' →* B) :
+  definition smash_functor_right_natural_middle (A C : Type*) (f : B' →* B) :
     psquare (smash_functor_right A B C) (smash_functor_right A B' C)
             (ppcompose_right f) (ppcompose_right (pid A ∧→ f)) :=
   begin
@@ -1013,7 +1026,7 @@ namespace smash
       apply smash_functor_pcompose_pconst3_pid }
   end
 
-  definition smash_functor_right_natural_left (f : A →* A') :
+  definition smash_functor_right_natural_left (B C : Type*) (f : A →* A') :
     psquare (smash_functor_right A B C) (ppcompose_right (f ∧→ (pid B)))
             (smash_functor_right A' B C) (ppcompose_left (f ∧→ (pid C))) :=
   begin

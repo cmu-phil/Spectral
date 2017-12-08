@@ -723,7 +723,7 @@ namespace group
     (hψ : Πg, g ∈ S → ψ g ∈ T) (hφ : Πg, g ∈ R → φ g ∈ S) :
     quotient_ab_group_functor ψ hψ ∘g quotient_ab_group_functor φ hφ ~
     quotient_ab_group_functor (ψ ∘g φ) (λg, proof hψ (φ g) qed ∘ hφ g) :=
-  @quotient_group_functor_compose G H K R _ S _ T _ ψ φ  hψ hφ 
+  @quotient_group_functor_compose G H K R _ S _ T _ ψ φ  hψ hφ
 
   definition quotient_ab_group_functor_gid :
     quotient_ab_group_functor (gid G) (λg, id) ~ gid (quotient_ab_group R) :=

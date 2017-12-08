@@ -749,7 +749,7 @@ namespace spectrum
     begin
       intro k,
       note sq1 := homotopy_group_homomorphism_psquare (k+2) (ptranspose (smap.glue_square f (-n - 2 +[ℤ] k))),
-      note sq2 := homotopy_group_functor_hsquare (k+2) (ap1_psquare (ptransport_natural E F f (add.assoc (-n - 2) k 1))),
+      note sq2 := homotopy_group_functor_psquare (k+2) (ap1_psquare (ptransport_natural E F f (add.assoc (-n - 2) k 1))),
       note sq3 := (homotopy_group_succ_in_natural (k+2) (f (-n - 2 +[ℤ] (k+1))))⁻¹ʰᵗʸʰ,
       note sq4 := hsquare_of_psquare sq2,
       note rect := sq1 ⬝htyh sq4 ⬝htyh sq3,

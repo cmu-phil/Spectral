@@ -573,7 +573,7 @@ We define the pointed equivalences:
 \begin{thm}\label{thm:smash-functor-right}
 Given pointed types $A$, $B$ and $C$, the functorial action of the smash product induces a map
 $$({-})\smsh C:(A\pmap B)\pmap(A\smsh C\pmap B\smsh C)$$
-which is natural in $A$, $B$ and dinatural in $C$.
+which is natural in $A$, pointed natural in $B$ and dinatural in $C$.
 \end{thm}
 The naturality and dinaturality means that the following squares commute for $f : A' \to A$ $g:B\to B'$ and $h:C\to C'$.
 \begin{center}
@@ -614,8 +614,8 @@ fill the following square (after reducing out the applications of function exten
 \end{tikzcd}
 \end{center}
 The naturality in $B$ is almost the same: for the underlying homotopy we need to show
-$(g \o k)\smsh C = g\smsh C \o k\smsh C$. For the pointedness we need to fill the following
-square, which follows from \autoref{lem:smash-coh}.
+$i:(g \o k)\smsh C = g\smsh C \o k\smsh C$. For the pointedness we need to fill the following
+square, which follows from the left pentagon in \autoref{lem:smash-coh}.
 \begin{center}
 \begin{tikzcd}
 (g \o 0)\smsh C \arrow[r, equals]\arrow[dd,equals] &
@@ -625,6 +625,14 @@ square, which follows from \autoref{lem:smash-coh}.
 0
 \end{tikzcd}
 \end{center}
+To show that this naturality is pointed, we need to show that if $g=0$ then this homotopy is the same as the concatenation of the following pointed homotopies:
+$$q:({-})\smsh C \circ (A \to 0)\sim ({-})\smsh C \circ 0 \sim 0 \sim 0 \circ ({-})\smsh C\sim 0\smsh B \circ ({-})\smsh C.$$
+To show that the underlying homotopies are the same, we need to show that $i(0,f,\idfunc[C],\idfunc[C])$ is equal to the following concatenation of pointed homotopies
+$$q(f):(0\circ f)\smsh C\sim 0\smsh C \sim 0 \sim 0 \circ f\smsh C\sim 0\smsh B \circ f\smsh C,$$
+which is the right pentagons in \autoref{lem:smash-coh}. 
+To show that these pointed homotopies respect the basepoint in the same way, we need to show that (TODO)
+``$R\mathrel\square(0\smsh C \circ t)\cdot q_0=L$ where $L$ and $R$ are the left and right pentagons applied to $0$ and $\square$ is whiskering.''
+
 The dinaturality in $C$ is a bit harder. For the underlying homotopy we need to show
 $B\smsh h\o k\smsh C=k\smsh C'\o A\smsh h$. This follows by applying interchange twice:
 $$B\smsh h\o k\smsh C\sim(\idfunc[B]\o k)\smsh(h\o\idfunc[C])\sim(k\o\idfunc[A])\smsh(\idfunc[C']\o h)\sim k\smsh C'\o A\smsh h.$$
@@ -692,10 +700,9 @@ Note: $\eta$ is also dinatural in $B$, but we don't need this.
   $\epsilon (x):C$ by induction on $x$. If $x\jdeq(f,b)$ we set $\epsilon(f,b)\defeq f(b)$. If $x$
   is either $\auxl$ or $\auxr$ then we set $\epsilon (x)\defeq c_0:C$. If $x$ varies over $\gluel_f$
   then we need to show that $f(b_0)=c_0$, which is true by $f_0$. If $x$ varies over $\gluer_b$ we
-  need to show that $0(b)=c_0$ which is true by reflexivity. The map $\epsilon$ defined as such is trivially a pointed map,
-  which defines the counit.
+  need to show that $0(b)=c_0$ which is true by reflexivity. Now $\epsilon_0\defeq 1:\epsilon(0_{B,C},b_0)=c_0$ shows that $\epsilon$ is pointed.
 
-  Now we need to show that the unit and counit are (di)natural. (TODO).
+  Now we need to show that the counit is natural in $B$ and pointed natural in $C$.
 
   Finally, we need to show the unit-counit laws. For the underlying homotopy of the first one, let
   $f:A\to B$. We need to show that $p_f:\epsilon\o\eta f\sim f$. We define $p_f(a)=1:\epsilon(f,a)=f(a)$. To show that $p_f$ is a pointed homotopy, we need to show that
@@ -745,7 +752,7 @@ $$(A\pmap B\pmap C)\lpmap{({-})\smsh B}(A\smsh B\pmap (B\pmap C)\smsh B)\lpmap{A
 %   \end{align*}
 \end{proof}
 \begin{lem}\label{lem:e-natural}
-	The function $e$ is natural in $A$, $B$ and $C$.
+	The function $e$ is natural in $A$, $B$ and pointed natural in $C$.
 \end{lem}
 \begin{proof}
 	\textbf{Naturality of $e$ in $A$}. Suppose that $f:A'\pmap A$. Then the following diagram commutes. The left square commutes by naturality of $({-})\smsh B$ in the first argument and the right square commutes because composition on the left commutes with composition on the right.
@@ -771,6 +778,7 @@ $$(A\pmap B\pmap C)\lpmap{({-})\smsh B}(A\smsh B\pmap (B\pmap C)\smsh B)\lpmap{A
 		(A\smsh B\pmap C')
 	\end{tikzcd}
 	\end{center}
+Pointed naturality: TODO.
 
 	\textbf{Naturality of $e$ in $B$}. Suppose that $f:B'\pmap B$. Here the diagram is a bit more
 complicated, since $({-})\smsh B$ is dinatural (instead of natural) in $B$. Then we get the
@@ -796,15 +804,7 @@ argument, the back square commutes because composition on the left commutes with
   inductive type to prove that.
 \end{rmk}
 
-\begin{lem}\label{lem:e-pointed-natural}
-	The function $e$ is pointed natural in $C$.
-\end{lem}
-
-\begin{proof}
-	(TODO)
-\end{proof}
-
-\section{Symmetric monoidality}
+\section{Symmetric monoid product}
 We aim to prove that the smash product is a (1-coherent) symmetric monoidal product [REF: Brunerie] for pointed types, i.e., that
 \[(\type^*,\, \bool,\, \smsh,\, \alpha,\, \lambda,\, \rho,\, \gamma)\]
 is a symmetric monoidal category, with the type of booleans $\bool$ (pointed in $0_\bool$) as unit, and for suitable instances of $\alpha$, $\lambda$, $\rho$ and $\gamma$ witnessing associativity, left- and right unitality and the braiding for $\smsh$ and satisfying appropriate coherence relations (associativity pentagon; unitors triangle; braiding-unitors triangle; associativity-braiding hexagon; double braiding).

@@ -655,8 +655,21 @@ namespace EM
   definition cokernel {G H : AbGroup} (φ : G →g H) : AbGroup :=
   quotient_ab_group (image φ)
 
+  /- todo: in algebra/quotient_group, do the first steps without assuming that N is normal,
+  then this is qg for (image φ) in H -/
+  definition image_cosets {G H : Group} (φ : G →g H) : Set* :=
+  sorry
+
+  definition homotopy_group_EMadd1_functor1 {G H : AbGroup} (φ : G →g H) (n : ℕ) :
+    πg[n+1] (pfiber (EMadd1_functor φ (n+1))) ≃g cokernel φ :=
+  sorry
+
+  definition homotopy_group_EMadd1_functor2 {G H : AbGroup} (φ : G →g H) (n : ℕ) :
+    πg[n+1] (pfiber (EMadd1_functor φ n)) ≃g Kernel φ :=
+  sorry
+
   definition trunc_fiber_EM1_functor {G H : Group} (φ : G →g H) :
-    ptrunc 0 (pfiber (EM1_functor φ)) ≃* sorry :=
+    ptrunc 0 (pfiber (EM1_functor φ)) ≃* image_cosets φ :=
   sorry
 
 end EM

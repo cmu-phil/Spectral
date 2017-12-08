@@ -8,6 +8,43 @@ open pointed eq equiv function is_equiv unit is_trunc trunc nat algebra sigma gr
 
 namespace pointed
 
+  definition phomotopy_mk_eq {A B : Type*} {f g : A →* B} {h k : f ~ g}
+    {h₀ : h pt ⬝ respect_pt g = respect_pt f} {k₀ : k pt ⬝ respect_pt g = respect_pt f} (p : h ~ k)
+    (q : whisker_right (respect_pt g) (p pt) ⬝ k₀ = h₀) : phomotopy.mk h h₀ = phomotopy.mk k k₀ :=
+  phomotopy_eq p (idp ◾ to_right_inv !eq_con_inv_equiv_con_eq _ ⬝
+    q ⬝ (to_right_inv !eq_con_inv_equiv_con_eq _)⁻¹)
+
+
+  section phsquare
+  /-
+    Squares of pointed homotopies
+  -/
+
+  variables {A : Type*} {P : A → Type} {p₀ : P pt}
+            {f f' f₀₀ f₂₀ f₄₀ f₀₂ f₂₂ f₄₂ f₀₄ f₂₄ f₄₄ : ppi P p₀}
+            {p₁₀ : f₀₀ ~* f₂₀} {p₃₀ : f₂₀ ~* f₄₀}
+            {p₀₁ : f₀₀ ~* f₀₂} {p₂₁ : f₂₀ ~* f₂₂} {p₄₁ : f₄₀ ~* f₄₂}
+            {p₁₂ : f₀₂ ~* f₂₂} {p₃₂ : f₂₂ ~* f₄₂}
+            {p₀₃ : f₀₂ ~* f₀₄} {p₂₃ : f₂₂ ~* f₂₄} {p₄₃ : f₄₂ ~* f₄₄}
+            {p₁₄ : f₀₄ ~* f₂₄} {p₃₄ : f₂₄ ~* f₄₄}
+
+  definition phtranspose (p : phsquare p₁₀ p₁₂ p₀₁ p₂₁) : phsquare p₀₁ p₂₁ p₁₀ p₁₂ :=
+  p⁻¹
+
+  definition eq_top_of_phsquare (p : phsquare p₁₀ p₁₂ p₀₁ p₂₁) : p₁₀ = p₀₁ ⬝* p₁₂ ⬝* p₂₁⁻¹* :=
+  eq_trans_symm_of_trans_eq p
+
+  definition eq_bot_of_phsquare (p : phsquare p₁₀ p₁₂ p₀₁ p₂₁) : p₁₂ = p₀₁⁻¹* ⬝* p₁₀ ⬝* p₂₁ :=
+  eq_symm_trans_of_trans_eq p⁻¹ ⬝ !trans_assoc⁻¹
+
+  definition eq_left_of_phsquare (p : phsquare p₁₀ p₁₂ p₀₁ p₂₁) : p₀₁ = p₁₀ ⬝* p₂₁ ⬝* p₁₂⁻¹* :=
+  eq_top_of_phsquare (phtranspose p)
+
+  definition eq_right_of_phsquare (p : phsquare p₁₀ p₁₂ p₀₁ p₂₁) : p₂₁ = p₁₀⁻¹* ⬝* p₀₁ ⬝* p₁₂ :=
+  eq_bot_of_phsquare (phtranspose p)
+
+  end phsquare
+
   -- /- the pointed type of (unpointed) dependent maps -/
   -- definition pupi [constructor] {A : Type} (P : A → Type*) : Type* :=
   -- pointed.mk' (Πa, P a)
@@ -33,11 +70,31 @@ namespace pointed
   --     apply equiv_eq_closed_right, exact !idp_con⁻¹ }
   -- end
 
+
+  /- todo: make type argument explicit in ppcompose_left and ppcompose_left_* -/
+  /- todo: delete papply_pcompose -/
+  /- todo: pmap_pbool_equiv is a special case of ppmap_pbool_pequiv. -/
+
   definition ppcompose_left_pid [constructor] (A B : Type*) : ppcompose_left (pid B) ~* pid (ppmap A B) :=
   phomotopy_mk_ppmap (λf, pid_pcompose f) (!trans_refl ⬝ !phomotopy_of_eq_of_phomotopy⁻¹)
 
   definition ppcompose_right_pid [constructor] (A B : Type*) : ppcompose_right (pid A) ~* pid (ppmap A B) :=
   phomotopy_mk_ppmap (λf, pcompose_pid f) (!trans_refl ⬝ !phomotopy_of_eq_of_phomotopy⁻¹)
+
+  section
+  variables {A A' : Type*} {P : A → Type} {P' : A' → Type} {p₀ : P pt} {p₀' : P' pt} {k l : ppi P p₀}
+  definition phomotopy_of_eq_inv (p : k = l) :
+    phomotopy_of_eq p⁻¹ = (phomotopy_of_eq p)⁻¹* :=
+  begin induction p, exact !refl_symm⁻¹ end
+
+  /- todo: replace regular pap -/
+  definition pap' (f : ppi P p₀ → ppi P' p₀') (p : k ~* l) : f k ~* f l :=
+  by induction p using phomotopy_rec_idp; reflexivity
+
+  definition phomotopy_of_eq_ap (f : ppi P p₀ → ppi P' p₀') (p : k = l) :
+    phomotopy_of_eq (ap f p) = pap' f (phomotopy_of_eq p) :=
+  begin induction p, exact !phomotopy_rec_idp_refl⁻¹ end
+  end
 
   /- remove some duplicates: loop_ppmap_commute, loop_ppmap_pequiv, loop_ppmap_pequiv', pfunext -/
   definition pfunext (X Y : Type*) : ppmap X (Ω Y) ≃* Ω (ppmap X Y) :=
@@ -147,11 +204,67 @@ namespace pointed
 
 /- Homotopy between a function and its eta expansion -/
 
-  definition pmap_eta {X Y : Type*} (f : X →* Y) : f ~* pmap.mk f (respect_pt f) :=
+  definition pmap_eta [constructor] {X Y : Type*} (f : X →* Y) : f ~* pmap.mk f (respect_pt f) :=
   begin
     fapply phomotopy.mk,
     reflexivity,
     esimp, exact !idp_con
+  end
+
+  definition papply_point [constructor] (A B : Type*) : papply B pt ~* pconst (ppmap A B) B :=
+  phomotopy.mk (λf, respect_pt f) idp
+
+  definition pmap_swap_map [constructor] {A B C : Type*} (f : A →* ppmap B C) :
+    ppmap B (ppmap A C) :=
+  begin
+    fapply pmap.mk,
+    { intro b, exact papply C b ∘* f },
+    { apply eq_of_phomotopy, exact pwhisker_right f (papply_point B C) ⬝* !pconst_pcompose }
+  end
+
+  definition pmap_swap_map_pconst (A B C : Type*) :
+    pmap_swap_map (pconst A (ppmap B C)) ~* pconst B (ppmap A C) :=
+  begin
+    fapply phomotopy_mk_ppmap,
+    { intro b, reflexivity },
+    { refine !refl_trans ⬝ !phomotopy_of_eq_of_phomotopy⁻¹ }
+  end
+
+  definition papply_pmap_swap_map [constructor] {A B C : Type*} (f : A →* ppmap B C) (a : A) :
+    papply C a ∘* pmap_swap_map f ~* f a :=
+  begin
+    fapply phomotopy.mk,
+    { intro b, reflexivity },
+    { exact !idp_con ⬝ !ap_eq_of_phomotopy⁻¹ }
+  end
+
+  definition pmap_swap_map_pmap_swap_map {A B C : Type*} (f : A →* ppmap B C) :
+    pmap_swap_map (pmap_swap_map f) ~* f :=
+  begin
+    fapply phomotopy_mk_ppmap,
+    { exact papply_pmap_swap_map f },
+    { refine _ ⬝ !phomotopy_of_eq_of_phomotopy⁻¹,
+      fapply phomotopy_mk_eq, intro b, exact !idp_con,
+      refine !whisker_right_idp ◾ (!idp_con ◾ idp) ⬝ _ ⬝ !idp_con⁻¹ ◾ idp,
+      symmetry, exact sorry }
+  end
+
+  definition pmap_swap [constructor] (A B C : Type*) : ppmap A (ppmap B C) →* ppmap B (ppmap A C) :=
+  begin
+    fapply pmap.mk,
+    { exact pmap_swap_map },
+    { exact eq_of_phomotopy (pmap_swap_map_pconst A B C) }
+  end
+
+  definition pmap_swap_pequiv [constructor] (A B C : Type*) :
+    ppmap A (ppmap B C) ≃* ppmap B (ppmap A C) :=
+  begin
+    fapply pequiv_of_pmap,
+    { exact pmap_swap A B C },
+    fapply adjointify,
+    { exact pmap_swap B A C },
+    { intro f, apply eq_of_phomotopy, exact pmap_swap_map_pmap_swap_map f },
+    { intro f, apply eq_of_phomotopy, exact pmap_swap_map_pmap_swap_map f }
   end
 
   -- this should replace pnatural_square
@@ -176,10 +289,39 @@ namespace pointed
   section psquare
   variables {A A' A₀₀ A₂₀ A₄₀ A₀₂ A₂₂ A₄₂ A₀₄ A₂₄ A₄₄ : Type*}
             {f₁₀ f₁₀' : A₀₀ →* A₂₀} {f₃₀ : A₂₀ →* A₄₀}
-            {f₀₁ f₀₁' : A₀₀ →* A₀₂} {f₂₁ f₂₁' : A₂₀ →* A₂₂} {f₄₁ : A₄₀ →* A₄₂}
+            {f₀₁ f₀₁' : A₀₀ →* A₀₂} {f₂₁ f₂₁' : A₂₀ →* A₂₂} {f₄₁ f₄₁' : A₄₀ →* A₄₂}
             {f₁₂ f₁₂' : A₀₂ →* A₂₂} {f₃₂ : A₂₂ →* A₄₂}
             {f₀₃ : A₀₂ →* A₀₄} {f₂₃ : A₂₂ →* A₂₄} {f₄₃ : A₄₂ →* A₄₄}
-            {f₁₄ : A₀₄ →* A₂₄} {f₃₄ : A₂₄ →* A₄₄}
+            {f₁₄ f₁₄' : A₀₄ →* A₂₄} {f₃₄ : A₂₄ →* A₄₄}
+
+  definition phconst_square (f₀₁ : A₀₀ →* A₀₂) (f₂₁ : A₂₀ →* A₂₂) :
+    psquare (pconst A₀₀ A₂₀) (pconst A₀₂ A₂₂) f₀₁ f₂₁ :=
+  !pcompose_pconst ⬝* !pconst_pcompose⁻¹*
+
+  definition pvconst_square (f₁₀ : A₀₀ →* A₂₀) (f₁₂ : A₀₂ →* A₂₂) :
+    psquare f₁₀ f₁₂ (pconst A₀₀ A₀₂) (pconst A₂₀ A₂₂) :=
+  !pconst_pcompose ⬝* !pcompose_pconst⁻¹*
+
+  definition pvconst_square_pcompose (f₃₀ : A₂₀ →* A₄₀) (f₁₀ : A₀₀ →* A₂₀)
+    (f₃₂ : A₂₂ →* A₄₂) (f₁₂ : A₀₂ →* A₂₂) :
+    pvconst_square (f₃₀ ∘* f₁₀) (f₃₂ ∘* f₁₂) = pvconst_square f₁₀ f₁₂ ⬝h* pvconst_square f₃₀ f₃₂ :=
+  begin
+    refine eq_right_of_phsquare !passoc_pconst_left ◾** !passoc_pconst_right⁻¹⁻²** ⬝ idp ◾**
+      (!trans_symm ⬝ !trans_symm ◾** idp) ⬝ !trans_assoc⁻¹ ⬝ _ ◾** idp,
+    refine !trans_assoc⁻¹ ⬝ _ ◾** !pwhisker_left_symm⁻¹ ⬝ !trans_assoc ⬝
+      idp ◾** !pwhisker_left_trans⁻¹,
+    apply trans_symm_eq_of_eq_trans,
+    refine _ ⬝ idp ◾** !passoc_pconst_middle⁻¹ ⬝ !trans_assoc⁻¹ ⬝ !trans_assoc⁻¹,
+    refine _ ◾** idp ⬝ !trans_assoc,
+    refine idp ◾** _ ⬝ !trans_assoc⁻¹,
+    refine ap (pwhisker_right f₁₀) _ ⬝ !pwhisker_right_trans,
+    refine !trans_refl⁻¹ ⬝ idp ◾** !trans_left_inv⁻¹ ⬝ !trans_assoc⁻¹,
+  end
+
+  definition phconst_square_pcompose (f₀₃ : A₀₂ →* A₀₄) (f₁₀ : A₀₀ →* A₂₀)
+    (f₂₃ : A₂₂ →* A₂₄) (f₂₁ : A₂₀ →* A₂₂) :
+    phconst_square (f₀₃ ∘* f₀₁) (f₂₃ ∘* f₁₂) = phconst_square f₀₁ f₁₂ ⬝v* phconst_square f₀₃ f₂₃ :=
+  sorry
 
   definition ptranspose (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : psquare f₀₁ f₂₁ f₁₀ f₁₂ :=
   p⁻¹*
@@ -187,9 +329,94 @@ namespace pointed
   definition hsquare_of_psquare (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : hsquare f₁₀ f₁₂ f₀₁ f₂₁ :=
   p
 
-  definition homotopy_group_functor_hsquare (n : ℕ) (h : psquare f₁₀ f₁₂ f₀₁ f₂₁) :
-    psquare (π→[n] f₁₀) (π→[n] f₁₂)
-            (π→[n] f₀₁) (π→[n] f₂₁) :=
+  definition rfl_phomotopy_hconcat (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : phomotopy.rfl ⬝ph* p = p :=
+  idp ◾** (ap (pwhisker_left f₁₂) !refl_symm ⬝ !pwhisker_left_refl) ⬝ !trans_refl
+
+  definition hconcat_phomotopy_rfl (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : p ⬝hp* phomotopy.rfl = p :=
+  !pwhisker_right_refl ◾** idp ⬝ !refl_trans
+
+  definition rfl_phomotopy_vconcat (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : phomotopy.rfl ⬝pv* p = p :=
+  !pwhisker_left_refl ◾** idp ⬝ !refl_trans
+
+  definition vconcat_phomotopy_rfl (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : p ⬝vp* phomotopy.rfl = p :=
+  idp ◾** (ap (pwhisker_right f₀₁) !refl_symm ⬝ !pwhisker_right_refl) ⬝ !trans_refl
+
+  definition phomotopy_hconcat_phconcat (p : f₀₁' ~* f₀₁) (q : psquare f₁₀ f₁₂ f₀₁ f₂₁)
+    (r : psquare f₃₀ f₃₂ f₂₁ f₄₁) : (p ⬝ph* q) ⬝h* r = p ⬝ph* (q ⬝h* r) :=
+  begin
+    induction p using phomotopy_rec_idp,
+    exact !refl_phomotopy_hconcat ◾h* idp ⬝ !refl_phomotopy_hconcat⁻¹
+  end
+
+  definition phconcat_hconcat_phomotopy (p : psquare f₁₀ f₁₂ f₀₁ f₂₁)
+    (q : psquare f₃₀ f₃₂ f₂₁ f₄₁) (r : f₄₁' ~* f₄₁) : (p ⬝h* q) ⬝hp* r = p ⬝h* (q ⬝hp* r) :=
+  begin
+    induction r using phomotopy_rec_idp,
+    exact !hconcat_phomotopy_rfl ⬝ idp ◾h* !hconcat_phomotopy_rfl⁻¹
+  end
+
+  definition phomotopy_hconcat_phomotopy (p : f₀₁' ~* f₀₁) (q : psquare f₁₀ f₁₂ f₀₁ f₂₁)
+    (r : f₂₁' ~* f₂₁) : (p ⬝ph* q) ⬝hp* r = p ⬝ph* (q ⬝hp* r) :=
+  begin
+    induction r using phomotopy_rec_idp,
+    exact !hconcat_phomotopy_rfl ⬝ idp ◾ph* !hconcat_phomotopy_rfl⁻¹
+  end
+
+  definition hconcat_phomotopy_phconcat (p : psquare f₁₀ f₁₂ f₀₁ f₂₁)
+    (q : f₂₁' ~* f₂₁) (r : psquare f₃₀ f₃₂ f₂₁' f₄₁) : (p ⬝hp* q) ⬝h* r = p ⬝h* (q⁻¹* ⬝ph* r) :=
+  begin
+    induction q using phomotopy_rec_idp,
+    exact !hconcat_phomotopy_rfl ◾h* idp ⬝ idp ◾h* (!refl_symm ◾ph* idp ⬝ !refl_phomotopy_hconcat)⁻¹
+  end
+
+  definition phconcat_phomotopy_hconcat (p : psquare f₁₀ f₁₂ f₀₁ f₂₁)
+    (q : f₂₁ ~* f₂₁') (r : psquare f₃₀ f₃₂ f₂₁' f₄₁) : p ⬝h* (q ⬝ph* r) = (p ⬝hp* q⁻¹*) ⬝h* r :=
+  begin
+    induction q using phomotopy_rec_idp,
+    exact idp ◾h* !refl_phomotopy_hconcat ⬝ (idp ◾hp* !refl_symm ⬝ !hconcat_phomotopy_rfl)⁻¹ ◾h* idp
+  end
+
+  definition hconcat_phomotopy_hconcat_cancel (p : psquare f₁₀ f₁₂ f₀₁ f₂₁)
+    (q : f₂₁' ~* f₂₁) (r : psquare f₃₀ f₃₂ f₂₁ f₄₁) : (p ⬝hp* q) ⬝h* (q ⬝ph* r) = p ⬝h* r :=
+  begin
+    induction q using phomotopy_rec_idp,
+    exact !hconcat_phomotopy_rfl ◾h* !refl_phomotopy_hconcat
+  end
+
+  definition phomotopy_hconcat_phinverse {f₁₀ : A₀₀ ≃* A₂₀} {f₁₂ : A₀₂ ≃* A₂₂}
+    (p : f₀₁' ~* f₀₁) (q : psquare f₁₀ f₁₂ f₀₁ f₂₁) : (p ⬝ph* q)⁻¹ʰ* = q⁻¹ʰ* ⬝hp* p :=
+  begin
+    induction p using phomotopy_rec_idp,
+    exact !refl_phomotopy_hconcat⁻²ʰ* ⬝ !hconcat_phomotopy_rfl⁻¹
+  end
+
+  definition hconcat_phomotopy_phinverse {f₁₀ : A₀₀ ≃* A₂₀} {f₁₂ : A₀₂ ≃* A₂₂}
+    (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) (q : f₂₁' ~* f₂₁) : (p ⬝hp* q)⁻¹ʰ* = q ⬝ph* p⁻¹ʰ* :=
+  begin
+    induction q using phomotopy_rec_idp,
+    exact !hconcat_phomotopy_rfl⁻²ʰ* ⬝ !refl_phomotopy_hconcat⁻¹
+  end
+
+  definition pvconst_square_phinverse (f₁₀ : A₀₀ ≃* A₂₀) (f₁₂ : A₀₂ ≃* A₂₂) :
+    (pvconst_square f₁₀ f₁₂)⁻¹ʰ* = pvconst_square f₁₀⁻¹ᵉ* f₁₂⁻¹ᵉ* :=
+  begin
+    exact sorry
+  end
+
+  definition ppcompose_left_phomotopy_hconcat (A : Type*) (p : f₀₁' ~* f₀₁)
+    (q : psquare f₁₀ f₁₂ f₀₁ f₂₁) : ppcompose_left_psquare (p ⬝ph* q) =
+    @ppcompose_left_phomotopy A _ _ _ _ p ⬝ph* ppcompose_left_psquare q :=
+  sorry --used
+
+  definition ppcompose_left_hconcat_phomotopy (A : Type*) (p : psquare f₁₀ f₁₂ f₀₁ f₂₁)
+    (q : f₂₁' ~* f₂₁) : ppcompose_left_psquare (p ⬝hp* q) =
+    ppcompose_left_psquare p ⬝hp* @ppcompose_left_phomotopy A _ _ _ _ q :=
+  sorry
+
+  definition ppcompose_left_pvconst_square (A : Type*) (f₁₀ : A₀₀ →* A₂₀) (f₁₂ : A₀₂ →* A₂₂) :
+    ppcompose_left_psquare (pvconst_square f₁₀ f₁₂) =
+    !ppcompose_left_pconst ⬝ph* pvconst_square (ppcompose_left f₁₀) (@ppcompose_left A _ _ f₁₂) ⬝hp*
+    !ppcompose_left_pconst :=
   sorry
 
   end psquare
@@ -281,6 +508,72 @@ namespace pointed
   definition pmap_of_map_pt [constructor] {A : Type*} {B : Type} (f : A → B) :
     A →* pointed.MK B (f pt) :=
   pmap.mk f idp
+
+  definition papply_natural_right [constructor] {A B B' : Type*} (f : B →* B') (a : A) :
+    psquare (papply B a) (papply B' a) (ppcompose_left f) f :=
+  begin
+    fapply phomotopy.mk,
+    { intro g, reflexivity },
+    { refine !idp_con ⬝ !ap_eq_of_phomotopy ⬝ !idp_con⁻¹ }
+  end
+
+  -- definition foo {A B : Type} {f : A → B} {a₀ a₁ a₂ : A} {b₀ b₁ b₂ : B}
+  --   {p₀ : a₀ = a₀} {p₁ : a₀ = a₀} (q₀ : ap f p₀ = idp) (q₁ : ap f p₁ = idp) :
+  --   whisker_right (ap f p₁) (idp_con (ap f p₀⁻¹) ⬝ !ap_inv ⬝ q₀⁻²)⁻¹ ⬝ !con.assoc ⬝
+  --   whisker_left idp (con_eq_of_eq_con_inv (eq_con_inv_of_con_eq _)) ⬝ _
+  --   = !idp_con ⬝ q₁ :=
+  -- _
+
+/-
+whisker_right
+    (ap (λ f, pppi.to_fun f a)
+       (eq_of_phomotopy (pcompose_pconst (pconst B B'))))
+    (idp_con
+       (ap (λ y, pppi.to_fun y a)
+          (eq_of_phomotopy
+             (pconst_pcompose (ppi_const (λ a, B))))⁻¹) ⬝ ap_inv
+       (λ y, pppi.to_fun y a)
+       (eq_of_phomotopy
+          (pconst_pcompose (ppi_const (λ a, B)))) ⬝ inverse2
+       (ap_eq_of_phomotopy (pconst_pcompose (ppi_const (λ a, B)))
+          a))⁻¹ ⬝ (con.assoc
+     (ppi.to_fun (pvconst_square (papply B a) (papply B' a))
+        (ppi_const (λ a, B)))
+     (ap (λ f, pppi.to_fun f a)
+        (eq_of_phomotopy (pconst_pcompose (ppi_const (λ a, B))))⁻¹)
+     (ap (λ f, pppi.to_fun f a)
+        (eq_of_phomotopy
+           (pcompose_pconst (pconst B B')))) ⬝ whisker_left
+     (ppi.to_fun (pvconst_square (papply B a) (papply B' a))
+        (ppi_const (λ a, B)))
+     (con_eq_of_eq_con_inv
+        (eq_con_inv_of_con_eq
+           (pwhisker_left_1 B' (ppmap A B) (ppmap A B') (papply B' a)
+              (pconst (ppmap A B) (ppmap A B'))
+              (ppcompose_left (pconst B B'))
+              (ppcompose_left_pconst A B B')⁻¹*))) ⬝ respect_pt
+     (pvconst_square (papply B a) (papply B' a))) = idp_con
+    (ap (λ f, pppi.to_fun f a)
+       (eq_of_phomotopy
+          (pcompose_pconst (pconst B B')))) ⬝ ap_eq_of_phomotopy
+    (pcompose_pconst (pconst B B'))
+    a
+-/
+
+
+
+  definition papply_natural_right_pconst {A : Type*} (B B' : Type*) (a : A) :
+    papply_natural_right (pconst B B') a = !ppcompose_left_pconst ⬝ph* !pvconst_square :=
+  begin
+    fapply phomotopy_mk_eq,
+    { intro g, symmetry, refine !idp_con ⬝ !ap_inv ⬝ !ap_eq_of_phomotopy⁻² },
+    {
+
+      esimp [pvconst_square],
+    --esimp [inv_con_eq_of_eq_con, pwhisker_left_1]
+      exact sorry }
+  end
+
 
   /- TODO: computation rule -/
   open pi

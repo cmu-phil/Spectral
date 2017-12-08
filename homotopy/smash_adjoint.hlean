@@ -53,8 +53,10 @@ namespace smash
   end
 
   definition smash_pmap_unit_pt_natural [constructor] (B : Type*) (f : A →* A') :
-    smash_functor_pid_pinr' B f pt ⬝* pwhisker_left (smash_functor f (pid B)) (smash_pmap_unit_pt A B) ⬝*
-      pcompose_pconst (f ∧→ (pid B)) = pinr_phomotopy (respect_pt f) ⬝* smash_pmap_unit_pt A' B :=
+    smash_functor_pid_pinr' B f pt ⬝*
+    pwhisker_left (smash_functor f (pid B)) (smash_pmap_unit_pt A B) ⬝*
+    pcompose_pconst (f ∧→ (pid B)) =
+    pinr_phomotopy (respect_pt f) ⬝* smash_pmap_unit_pt A' B :=
   begin
     induction f with f f₀, induction A' with A' a₀', esimp at *,
     induction f₀, refine _ ⬝ !refl_trans⁻¹,
@@ -147,7 +149,7 @@ namespace smash
       refine _ ⬝ (ap_is_constant respect_pt _)⁻¹, refine !idp_con⁻¹ }
   end
 
-  definition smash_pmap_counit_natural_left (g : B →* B') :
+  definition smash_pmap_counit_natural_left (C : Type*) (g : B →* B') :
     psquare (pid (ppmap B' C) ∧→ g) (smash_pmap_counit B C)
             (ppcompose_right g ∧→ pid B) (smash_pmap_counit B' C) :=
   begin
@@ -336,20 +338,20 @@ namespace smash
   definition smash_pelim_natural_left (B C : Type*) (f : A' →* A) :
     psquare (smash_pelim A B C) (smash_pelim A' B C)
             (ppcompose_right f) (ppcompose_right (f ∧→ pid B)) :=
-  smash_functor_left_natural_left f ⬝h* !ppcompose_left_ppcompose_right
+  smash_functor_left_natural_left (ppmap B C) B f ⬝h* !ppcompose_left_ppcompose_right
 
   definition smash_pelim_natural_middle (A C : Type*) (f : B' →* B) :
     psquare (smash_pelim A B C) (smash_pelim A B' C)
             (ppcompose_left (ppcompose_right f)) (ppcompose_right (pid A ∧→ f)) :=
   pwhisker_tl _ !ppcompose_left_ppcompose_right ⬝*
   (!smash_functor_left_natural_right⁻¹* ⬝pv*
-  smash_functor_left_natural_middle (ppcompose_right f) ⬝h*
+  smash_functor_left_natural_middle _ _ (ppcompose_right f) ⬝h*
   ppcompose_left_psquare !smash_pmap_counit_natural_left)
 
-  definition smash_pelim_natural_right (f : C →* C') :
+  definition smash_pelim_natural_right (A B : Type*) (f : C →* C') :
     psquare (smash_pelim A B C) (smash_pelim A B C')
             (ppcompose_left (ppcompose_left f)) (ppcompose_left f) :=
-  smash_functor_left_natural_middle (ppcompose_left f) ⬝h*
+  smash_functor_left_natural_middle _ _ (ppcompose_left f) ⬝h*
   ppcompose_left_psquare (smash_pmap_counit_natural_right _ f)
 
   definition smash_pelim_natural_lm (C : Type*) (f : A' →* A) (g : B' →* B) :
@@ -393,28 +395,29 @@ namespace smash
     (smash_adjoint_pmap A B C')⁻¹ᵉ* (ppcompose_left f ∘* g) :=
   smash_elim_natural_right f g
 
-   definition smash_adjoint_pmap_inv_natural_right [constructor] {A B C C' : Type*} (f : C →* C') :
-    ppcompose_left f ∘* smash_adjoint_pmap_inv A B C ~*
-    smash_adjoint_pmap_inv A B C' ∘* ppcompose_left (ppcompose_left f) :=
-  smash_pelim_natural_right f
+   definition smash_adjoint_pmap_inv_natural_right [constructor] (A B : Type*) (f : C →* C') :
+    psquare (smash_adjoint_pmap_inv A B C) (smash_adjoint_pmap_inv A B C')
+            (ppcompose_left (ppcompose_left f)) (ppcompose_left f) :=
+  smash_pelim_natural_right A B f
 
-  definition smash_adjoint_pmap_natural_right [constructor] {A B C C' : Type*} (f : C →* C') :
-    ppcompose_left (ppcompose_left f) ∘* smash_adjoint_pmap A B C ~*
-    smash_adjoint_pmap A B C' ∘* ppcompose_left f :=
-  (smash_adjoint_pmap_inv_natural_right f)⁻¹ʰ*
+  definition smash_adjoint_pmap_natural_right [constructor] (A B : Type*) (f : C →* C') :
+    psquare (smash_adjoint_pmap A B C) (smash_adjoint_pmap A B C')
+            (ppcompose_left f) (ppcompose_left (ppcompose_left f)) :=
+  (smash_adjoint_pmap_inv_natural_right A B f)⁻¹ʰ*
 
   definition smash_adjoint_pmap_natural_lm (C : Type*) (f : A →* A') (g : B →* B') :
     psquare (smash_adjoint_pmap A' B' C) (smash_adjoint_pmap A B C)
             (ppcompose_right (f ∧→ g)) (ppcompose_left (ppcompose_right g) ∘* ppcompose_right f) :=
   (smash_pelim_natural_lm C f g)⁻¹ʰ*
 
+  /- some naturalities we skipped, but are now easier to prove -/
   definition smash_elim_inv_natural_middle (f : B' →* B)
     (g : A ∧ B →* C) : ppcompose_right f ∘* smash_elim_inv g ~* smash_elim_inv (g ∘* pid A ∧→ f) :=
   !pcompose_pid⁻¹* ⬝* !passoc ⬝* phomotopy_of_eq (smash_adjoint_pmap_natural_lm C (pid A) f g)
 
   definition smash_pmap_unit_natural_left (f : B →* B') :
-    ppcompose_left (pid A ∧→ f) ∘* smash_pmap_unit A B ~*
-    ppcompose_right f ∘* smash_pmap_unit A B' :=
+    psquare (smash_pmap_unit A B) (ppcompose_right f)
+            (smash_pmap_unit A B') (ppcompose_left (pid A ∧→ f)) :=
   begin
     refine pwhisker_left _ !smash_pelim_inv_pid⁻¹* ⬝* _ ⬝* pwhisker_left _ !smash_pelim_inv_pid,
     refine !smash_elim_inv_natural_right ⬝* _ ⬝* !smash_elim_inv_natural_middle⁻¹*,
@@ -461,7 +464,17 @@ namespace smash
 
   definition smash_assoc_elim_natural_right_pt (f : X →* X') (g : A ∧ (B ∧ C) →* X) :
     f ∘* smash_assoc_elim_pequiv A B C X g ~* smash_assoc_elim_pequiv A B C X' (f ∘* g) :=
-  phomotopy_of_eq (smash_assoc_elim_natural_right A B C f g)
+  begin
+    refine !smash_adjoint_pmap_inv_natural_right_pt ⬝* _,
+    apply smash_elim_phomotopy,
+    refine !smash_adjoint_pmap_inv_natural_right_pt ⬝* _,
+    apply smash_elim_phomotopy,
+    refine !passoc⁻¹* ⬝* _,
+    refine pwhisker_right _ !smash_adjoint_pmap_natural_right ⬝* _,
+    refine !passoc ⬝* _,
+    apply pwhisker_left,
+    refine !smash_adjoint_pmap_natural_right_pt
+  end
 
   definition smash_assoc_elim_inv_natural_right_pt (f : X →* X') (g : (A ∧ B) ∧ C →* X) :
     f ∘* (smash_assoc_elim_pequiv A B C X)⁻¹ᵉ* g ~*
@@ -517,9 +530,9 @@ namespace smash
   definition smash_assoc_elim_right_natural_right (A B C D : Type*) (f : X →* X') :
     psquare (smash_assoc_elim_right_pequiv A B C D X) (smash_assoc_elim_right_pequiv A B C D X')
             (ppcompose_left f) (ppcompose_left f) :=
-  smash_adjoint_pmap_natural_right f ⬝h*
+  smash_adjoint_pmap_natural_right (A ∧ (B ∧ C)) D f ⬝h*
   smash_assoc_elim_natural_right A B C (ppcompose_left f) ⬝h*
-  smash_adjoint_pmap_inv_natural_right f
+  smash_adjoint_pmap_inv_natural_right ((A ∧ B) ∧ C) D f
 
   definition smash_assoc_smash_functor (A B C D : Type*) :
     smash_assoc A B C ∧→ pid D ~* !smash_assoc_elim_right_pequiv (pid _) :=
@@ -534,7 +547,7 @@ namespace smash
 
   definition ppcompose_right_smash_assoc (A B C X : Type*) :
     ppcompose_right (smash_assoc A B C) ~* smash_assoc_elim_pequiv A B C X :=
-  sorry -- one hole left
+  sorry
 
   definition smash_functor_smash_assoc (A B C D : Type*) :
     pid A ∧→ smash_assoc B C D ~* !smash_assoc_elim_left_pequiv (pid _) :=
@@ -543,7 +556,7 @@ namespace smash
     refine pap (!smash_adjoint_pmap_inv ∘* ppcompose_left _) !smash_pelim_inv_pid ⬝* _,
     refine pap !smash_adjoint_pmap_inv (pwhisker_right _ !ppcompose_right_smash_assoc⁻¹* ⬝*
       !smash_pmap_unit_natural_left⁻¹*) ⬝* _,
-    refine phomotopy_of_eq (smash_adjoint_pmap_inv_natural_right (pid A ∧→ smash_assoc B C D)
+    refine phomotopy_of_eq (smash_adjoint_pmap_inv_natural_right _ _ (pid A ∧→ smash_assoc B C D)
       !smash_pmap_unit)⁻¹ ⬝* _,
     refine pwhisker_left _ _ ⬝* !pcompose_pid,
     apply smash_pmap_unit_counit
@@ -589,10 +602,10 @@ namespace smash
   definition smash_susp_elim_natural_right (A B : Type*) (f : X →* X') :
     psquare (smash_susp_elim_pequiv A B X) (smash_susp_elim_pequiv A B X')
             (ppcompose_left f) (ppcompose_left f) :=
-  smash_adjoint_pmap_natural_right f ⬝h*
+  smash_adjoint_pmap_natural_right (⅀ A) B f ⬝h*
   susp_adjoint_loop_natural_right (ppcompose_left f) ⬝h*
   ppcompose_left_psquare (loop_pmap_commute_natural_right B f) ⬝h*
-  (smash_adjoint_pmap_natural_right (Ω→ f))⁻¹ʰ* ⬝h*
+  (smash_adjoint_pmap_natural_right A B (Ω→ f))⁻¹ʰ* ⬝h*
   (susp_adjoint_loop_natural_right f)⁻¹ʰ*
 
   definition smash_susp_elim_natural_left (X : Type*) (f : A' →* A) (g : B' →* B) :
@@ -639,6 +652,11 @@ namespace smash
             ≃* ⅀ B ∧ A  : smash_comm A (⅀ B)
         ... ≃* ⅀(B ∧ A) : susp_smash B A
         ... ≃* ⅀(A ∧ B) : susp_pequiv (smash_comm B A)
+
+
+  definition smash_susp_natural (f : A →* A') (g : B →* B') :
+    psquare (smash_susp A B) (smash_susp A' B') (f ∧→ ⅀→g) (⅀→ (f ∧→ g)) :=
+  sorry
 
   definition susp_smash_move (A B : Type*) : ⅀ A ∧ B ≃* A ∧ ⅀ B :=
   susp_smash A B ⬝e* (smash_susp A B)⁻¹ᵉ*

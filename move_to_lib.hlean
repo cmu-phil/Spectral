@@ -932,6 +932,9 @@ namespace is_conn
   definition is_conn_zero_pointed {A : Type*} (p : Πa a' : A, ∥ a = a' ∥) : is_conn 0 A :=
   is_conn_zero (tr pt) p
 
+  definition is_conn_zero_pointed' {A : Type*} (p : Πa : A, ∥ a = pt ∥) : is_conn 0 A :=
+  is_conn_zero_pointed (λa a', tconcat (p a) (tinverse (p a')))
+
   definition is_conn_fiber (n : ℕ₋₂) {A B : Type} (f : A → B) (b : B) [is_conn n A] [is_conn (n.+1) B] :
     is_conn n (fiber f b) :=
   is_conn_equiv_closed_rev _ !fiber.sigma_char _
@@ -951,10 +954,8 @@ namespace misc
   pType.mk (Σ(a : A), merely (pt = a)) ⟨pt, tr idp⟩
 
   lemma is_conn_component [instance] (A : Type*) : is_conn 0 (component A) :=
-  is_contr.mk (tr pt)
-    begin
-      intro x, induction x with x, induction x with a p, induction p with p, induction p, reflexivity
-    end
+  is_conn_zero_pointed'
+    begin intro x, induction x with a p, induction p with p, induction p, exact tidp end
 
   definition component_incl [constructor] (A : Type*) : component A →* A :=
   pmap.mk pr1 idp
