@@ -6,9 +6,12 @@ Authors: Floris van Doorn, Egbert Rijke
 Constructions with groups
 -/
 
-import algebra.group_theory hit.set_quotient types.list types.sum
+import algebra.group_theory hit.set_quotient types.list types.sum ..move_to_lib
 
 open eq algebra is_trunc set_quotient relation sigma sigma.ops prod sum list trunc function equiv
+     prod.ops decidable is_equiv
+
+universe variable u
 
 namespace group
 
@@ -157,6 +160,19 @@ namespace group
       esimp, refine !foldl_append ⬝ _, esimp, apply fgh_helper_mul}
   end
 
+  definition free_group_hom_eq [constructor] {φ ψ : free_group X →g G}
+    (H : Πx, φ (free_group_inclusion x) = ψ (free_group_inclusion x)) : φ ~ ψ :=
+  begin
+    refine set_quotient.rec_prop _, intro l,
+    induction l with s l IH,
+    { exact respect_one φ ⬝ (respect_one ψ)⁻¹ },
+    { refine respect_mul φ (class_of [s]) (class_of l) ⬝ _ ⬝
+        (respect_mul ψ (class_of [s]) (class_of l))⁻¹,
+      refine ap011 mul _ IH, induction s with x x, exact H x,
+      refine respect_inv φ (class_of [inl x]) ⬝ ap inv (H x) ⬝
+        (respect_inv ψ (class_of [inl x]))⁻¹ }
+  end
+
   definition fn_of_free_group_hom [unfold_full] (φ : free_group X →g G) : X → G :=
   φ ∘ free_group_inclusion
 
@@ -167,12 +183,323 @@ namespace group
     { exact fn_of_free_group_hom},
     { exact free_group_hom},
     { intro f, apply eq_of_homotopy, intro x, esimp, unfold [foldl], apply one_mul},
-    { intro φ, apply homomorphism_eq, refine set_quotient.rec_prop _, intro l, esimp,
-      induction l with s l IH,
-      { esimp [foldl], exact (respect_one φ)⁻¹},
-      { rewrite [foldl_cons, fgh_helper_mul],
-        refine _ ⬝ (respect_mul φ (class_of [s]) (class_of l))⁻¹,
-        rewrite [IH], induction s: rewrite [▸*, one_mul], rewrite [-respect_inv φ]}}
+    { intro φ, apply homomorphism_eq, apply free_group_hom_eq, intro x, apply one_mul }
   end
 
-  end group
+end group
+
+/- alternative definition of free group on a set with decidable equality -/
+
+namespace list
+
+variables {X : Type.{u}} {v w : X ⊎ X} {l : list (X ⊎ X)}
+
+inductive is_reduced {X : Type} : list (X ⊎ X) → Type :=
+| nil       : is_reduced []
+| singleton : Πv, is_reduced [v]
+| cons      : Π⦃v w l⦄, sum.flip v ≠ w → is_reduced (w::l) → is_reduced (v::w::l)
+
+definition is_reduced_code (H : is_reduced l) : Type.{u} :=
+begin
+  cases l with v l, { exact is_reduced.nil = H },
+  cases l with w l, { exact is_reduced.singleton v = H },
+  exact Σ(pH : sum.flip v ≠ w × is_reduced (w::l)), is_reduced.cons pH.1 pH.2 = H
+end
+
+definition is_reduced_encode (H : is_reduced l) : is_reduced_code H :=
+begin
+  induction H with v v w l p Hl IH,
+  { exact idp },
+  { exact idp },
+  { exact ⟨(p, Hl), idp⟩ }
+end
+
+definition is_prop_is_reduced (l : list (X ⊎ X)) : is_prop (is_reduced l) :=
+begin
+  apply is_prop.mk, intro H₁ H₂, induction H₁ with v v w l p Hl IH,
+  { exact is_reduced_encode H₂ },
+  { exact is_reduced_encode H₂ },
+  { cases is_reduced_encode H₂ with pH' q, cases pH' with p' Hl', esimp at q,
+    subst q, exact ap011 (λx y, is_reduced.cons x y) !is_prop.elim (IH Hl') }
+end
+
+definition rlist (X : Type) : Type :=
+Σ(l : list (X ⊎ X)), is_reduced l
+
+local attribute [instance] is_prop_is_reduced
+definition rlist_eq {l l' : rlist X} (p : l.1 = l'.1) : l = l' :=
+subtype_eq p
+
+definition is_trunc_rlist {n : ℕ₋₂} {X : Type} (H : is_trunc (n.+2) X) : is_trunc (n.+2) (rlist X) :=
+begin
+  apply is_trunc_sigma, { apply is_trunc_list, apply is_trunc_sum },
+  intro l, apply is_trunc_succ_of_is_prop
+end
+
+definition is_reduced_invert (v : X ⊎ X) : is_reduced (v::l) → is_reduced l :=
+begin
+  assert H : Π⦃l'⦄, is_reduced l' → l' = v::l → is_reduced l,
+  { intro l' Hl', revert l, induction Hl' with v' v' w' l' p' Hl' IH: intro l p,
+    { cases p },
+    { cases cons_eq_cons p with q r, subst r, apply is_reduced.nil },
+    { cases cons_eq_cons p with q r, subst r, exact Hl' }},
+  intro Hl, exact H Hl idp
+end
+
+definition rnil [constructor] : rlist X :=
+⟨[], !is_reduced.nil⟩
+
+definition rsingleton [constructor] (x : X ⊎ X) : rlist X :=
+⟨[x], !is_reduced.singleton⟩
+
+definition is_reduced_doubleton [constructor] {x y : X ⊎ X} (p : flip x ≠ y) :
+  is_reduced [x, y] :=
+is_reduced.cons p !is_reduced.singleton
+
+definition rdoubleton [constructor] {x y : X ⊎ X} (p : flip x ≠ y) : rlist X :=
+⟨[x, y], is_reduced_doubleton p⟩
+
+definition is_reduced_concat (Hn : sum.flip v ≠ w) (Hl : is_reduced (concat v l)) :
+  is_reduced (concat w (concat v l)) :=
+begin
+  assert H : Π⦃l'⦄, is_reduced l' → l' = concat v l → is_reduced (concat w l'),
+  { clear Hl, intro l' Hl', revert l, induction Hl' with v' v' w' l' p' Hl' IH: intro l p,
+    { exfalso, exact concat_neq_nil _ _ p⁻¹ },
+    { cases concat_eq_singleton p⁻¹ with q r, subst q,
+      exact is_reduced_doubleton Hn },
+    { do 2 esimp [concat], apply is_reduced.cons p', cases l with x l,
+      { cases p },
+      { apply IH l, esimp [concat] at p, revert p, generalize concat v l, intro l'' p,
+        cases cons_eq_cons p with q r, exact r }}},
+  exact H Hl idp
+end
+
+definition is_reduced_reverse (H : is_reduced l) : is_reduced (reverse l) :=
+begin
+  induction H with v v w l p Hl IH,
+  { apply is_reduced.nil },
+  { apply is_reduced.singleton },
+  { refine is_reduced_concat _ IH, intro q, apply p, subst q, apply flip_flip }
+end
+
+definition rreverse [constructor] (l : rlist X) : rlist X := ⟨reverse l.1, is_reduced_reverse l.2⟩
+
+definition is_reduced_flip (H : is_reduced l) : is_reduced (map flip l) :=
+begin
+  induction H with v v w l p Hl IH,
+  { apply is_reduced.nil },
+  { apply is_reduced.singleton },
+  { refine is_reduced.cons _ IH, intro q, apply p, exact !flip_flip⁻¹ ⬝ ap flip q ⬝ !flip_flip }
+end
+
+definition rflip [constructor] (l : rlist X) : rlist X := ⟨map flip l.1, is_reduced_flip l.2⟩
+
+definition rcons' [decidable_eq X] (v : X ⊎ X) (l : list (X ⊎ X)) : list (X ⊎ X) :=
+begin
+  cases l with w l,
+  { exact [v] },
+  { exact if q : sum.flip v = w then l else v::w::l }
+end
+
+definition is_reduced_rcons [decidable_eq X] (v : X ⊎ X) (Hl : is_reduced l) :
+  is_reduced (rcons' v l) :=
+begin
+  cases l with w l, apply is_reduced.singleton,
+  apply dite (sum.flip v = w): intro q,
+  { have is_set (X ⊎ X), from !is_trunc_sum,
+    rewrite [↑rcons', dite_true q _], exact is_reduced_invert w Hl },
+  { rewrite [↑rcons', dite_false q], exact is_reduced.cons q Hl, }
+end
+
+definition rcons [constructor] [decidable_eq X] (v : X ⊎ X) (l : rlist X) : rlist X :=
+⟨rcons' v l.1, is_reduced_rcons v l.2⟩
+
+definition rcons_eq [decidable_eq X] : is_reduced (v::l) → rcons' v l = v :: l :=
+begin
+  assert H : Π⦃l'⦄, is_reduced l' → l' = v::l → rcons' v l = l',
+  { intro l' Hl', revert l, induction Hl' with v' v' w' l' p' Hl' IH: intro l p,
+    { cases p },
+    { cases cons_eq_cons p with q r, subst r, cases p, reflexivity },
+    { cases cons_eq_cons p with q r, subst q, subst r, rewrite [↑rcons', dite_false p'], }},
+  intro Hl, exact H Hl idp
+end
+
+definition rcons_rcons_eq [decidable_eq X] (p : flip v = w) (l : rlist X) :
+  rcons v (rcons w l) = l :=
+begin
+  have is_set (X ⊎ X), from !is_trunc_sum,
+  induction l with l Hl,
+  apply rlist_eq, esimp,
+  induction l with u l IH,
+  { exact dite_true p _ },
+  { apply dite (sum.flip w = u): intro q,
+    { rewrite [↑rcons' at {1}, dite_true q _], subst p, induction (!flip_flip⁻¹ ⬝ q),
+      exact rcons_eq Hl },
+    { rewrite [↑rcons', dite_false q, dite_true p _] }}
+end
+
+definition reduce_list' [decidable_eq X] (l : list (X ⊎ X)) : list (X ⊎ X) :=
+begin
+  induction l with v l IH,
+  { exact [] },
+  { exact rcons' v IH }
+end
+
+definition is_reduced_reduce_list [decidable_eq X] (l : list (X ⊎ X)) :
+  is_reduced (reduce_list' l) :=
+begin
+  induction l with v l IH, apply is_reduced.nil,
+  apply is_reduced_rcons, exact IH
+end
+
+definition reduce_list [constructor] [decidable_eq X] (l : list (X ⊎ X)) : rlist X :=
+⟨reduce_list' l, is_reduced_reduce_list l⟩
+
+definition rappend' [decidable_eq X] (l : list (X ⊎ X)) (l' : rlist X) : rlist X := foldr rcons l' l
+definition rappend_rcons' [decidable_eq X] (x : X ⊎ X) (l₁ : list (X ⊎ X)) (l₂ : rlist X) :
+  rappend' (rcons' x l₁) l₂ = rcons x (rappend' l₁ l₂) :=
+begin
+  induction l₁ with x' l₁ IH,
+  { reflexivity },
+  { apply dite (sum.flip x = x'): intro p,
+    { have is_set (X ⊎ X), from !is_trunc_sum, rewrite [↑rcons', dite_true p _],
+      exact (rcons_rcons_eq p _)⁻¹ },
+    { rewrite [↑rcons', dite_false p] }}
+end
+
+definition rappend_cons' [decidable_eq X] (x : X ⊎ X) (l₁ : list (X ⊎ X)) (l₂ : rlist X) :
+  rappend' (x::l₁) l₂ = rcons x (rappend' l₁ l₂) :=
+idp
+
+definition rappend [decidable_eq X] (l l' : rlist X) : rlist X := rappend' l.1 l'
+
+definition rappend_rcons [decidable_eq X] (x : X ⊎ X) (l₁ l₂ : rlist X) :
+  rappend (rcons x l₁) l₂ = rcons x (rappend l₁ l₂) :=
+rappend_rcons' x l₁.1 l₂
+
+definition rappend_assoc [decidable_eq X] (l₁ l₂ l₃ : rlist X) :
+  rappend (rappend l₁ l₂) l₃ = rappend l₁ (rappend l₂ l₃) :=
+begin
+  induction l₁ with l₁ h, unfold rappend, clear h, induction l₁ with x l₁ IH,
+  { reflexivity },
+  { rewrite [rappend_cons', ▸*, rappend_rcons', IH] }
+end
+
+definition rappend_rnil [decidable_eq X] (l : rlist X) : rappend l rnil = l :=
+begin
+  induction l with l H, apply rlist_eq, esimp, induction H with v v w l p Hl IH,
+  { reflexivity },
+  { reflexivity },
+  { rewrite [↑rappend at *, rappend_cons', ↑rcons, IH, ↑rcons', dite_false p] }
+end
+
+definition rnil_rappend [decidable_eq X] (l : rlist X) : rappend rnil l = l :=
+by reflexivity
+
+definition rappend_left_inv [decidable_eq X] (l : rlist X) :
+  rappend (rflip (rreverse l)) l = rnil :=
+begin
+  induction l with l H, apply rlist_eq, induction l with x l IH,
+  { reflexivity },
+  { have is_set (X ⊎ X), from !is_trunc_sum,
+    rewrite [↑rappend, ↑rappend', reverse_cons, map_concat, foldr_concat],
+    refine ap (λx, (rappend' _ x).1) (rlist_eq (dite_true !flip_flip _)) ⬝
+      IH (is_reduced_invert _ H) }
+end
+
+
+end list open list
+
+namespace group
+  open sigma.ops
+
+  variables (X : Type) [decidable_eq X] {G : Group}
+  definition group_dfree_group [constructor] : group (rlist X) :=
+  group.mk (is_trunc_rlist _) rappend rappend_assoc rnil rnil_rappend rappend_rnil
+           (rflip ∘ rreverse) rappend_left_inv
+
+  definition dfree_group [constructor] : Group :=
+  Group.mk _ (group_dfree_group X)
+
+  variable {X}
+  definition fgh_helper_rcons (f : X → G) (g : G) (x : X ⊎ X) {l : list (X ⊎ X)} :
+    foldl (fgh_helper f) g (rcons' x l) = foldl (fgh_helper f) g (x :: l) :=
+  begin
+    cases l with x' l, reflexivity,
+    apply dite (sum.flip x = x'): intro q,
+    { have is_set (X ⊎ X), from !is_trunc_sum,
+      rewrite [↑rcons', dite_true q _, foldl_cons, foldl_cons, -q],
+      induction x with x, rewrite [↑fgh_helper,mul_inv_cancel_right],
+      rewrite [↑fgh_helper,inv_mul_cancel_right] },
+    { rewrite [↑rcons', dite_false q] }
+  end
+
+  definition fgh_helper_rappend (f : X → G) (g : G) (l l' : rlist X) :
+    foldl (fgh_helper f) g (rappend l l').1 = foldl (fgh_helper f) g (l.1 ++ l'.1) :=
+  begin
+    revert g, induction l with l lH, unfold rappend, clear lH,
+    induction l with v l IH: intro g, reflexivity,
+    rewrite [rappend_cons', ↑rcons, fgh_helper_rcons, foldl_cons, IH]
+  end
+
+  local attribute [instance] is_prop_is_reduced
+
+  -- definition dfree_group_hom' [constructor] {G : InfGroup} (f : X → G) :
+  -- Σ(f : dfree_group X → G), is_mul_hom f :=
+  -- ⟨λx, foldl (fgh_helper f) 1 x.1,
+  --   begin intro l₁ l₂, exact !fgh_helper_rappend ⬝ !foldl_append ⬝ !fgh_helper_mul end⟩
+
+  -- definition dfree_group_hom_eq' [constructor] {φ ψ : dfree_group X →g G}
+  --   (H : Πx, φ (rsingleton (inl x)) = ψ (rsingleton (inl x))) : φ ~ ψ :=
+  -- begin
+  --   assert H2 : Πv, φ (rsingleton v) = ψ (rsingleton v),
+  --   { intro v, induction v with x x, exact H x,
+  --     exact respect_inv φ _ ⬝ ap inv (H x) ⬝ (respect_inv ψ _)⁻¹ },
+  --   intro l, induction l with l Hl,
+  --   induction Hl with v v w l p Hl IH,
+  --   { exact respect_one φ ⬝ (respect_one ψ)⁻¹ },
+  --   { exact H2 v },
+  --   { refine ap φ (rlist_eq (rcons_eq (is_reduced.cons p Hl))⁻¹) ⬝
+  --       respect_mul φ (rsingleton v) ⟨_, Hl⟩ ⬝ ap011 mul (H2 v) IH ⬝ _,
+  --     symmetry, exact ap ψ (rlist_eq (rcons_eq (is_reduced.cons p Hl))⁻¹) ⬝
+  --       respect_mul ψ (rsingleton v) ⟨_, Hl⟩ }
+  -- end
+
+  definition dfree_group_hom [constructor] {G : Group} (f : X → G) : dfree_group X →g G :=
+  homomorphism.mk (λx, foldl (fgh_helper f) 1 x.1)
+    begin intro l₁ l₂, exact !fgh_helper_rappend ⬝ !foldl_append ⬝ !fgh_helper_mul end
+
+  local attribute [instance] is_prop_is_reduced
+
+  definition dfree_group_hom_eq [constructor] {φ ψ : dfree_group X →g G}
+    (H : Πx, φ (rsingleton (inl x)) = ψ (rsingleton (inl x))) : φ ~ ψ :=
+  begin
+    assert H2 : Πv, φ (rsingleton v) = ψ (rsingleton v),
+    { intro v, induction v with x x, exact H x,
+      exact respect_inv φ _ ⬝ ap inv (H x) ⬝ (respect_inv ψ _)⁻¹ },
+    intro l, induction l with l Hl,
+    induction Hl with v v w l p Hl IH,
+    { exact respect_one φ ⬝ (respect_one ψ)⁻¹ },
+    { exact H2 v },
+    { refine ap φ (rlist_eq (rcons_eq (is_reduced.cons p Hl))⁻¹) ⬝
+        respect_mul φ (rsingleton v) ⟨_, Hl⟩ ⬝ ap011 mul (H2 v) IH ⬝ _,
+      symmetry, exact ap ψ (rlist_eq (rcons_eq (is_reduced.cons p Hl))⁻¹) ⬝
+        respect_mul ψ (rsingleton v) ⟨_, Hl⟩ }
+  end
+
+  variable (X)
+
+  definition free_group_of_dfree_group [constructor] : dfree_group X →g free_group X :=
+  dfree_group_hom free_group_inclusion
+
+  definition dfree_group_of_free_group [constructor] : free_group X →g dfree_group X :=
+  free_group_hom (λx, rsingleton (inl x))
+
+  definition dfree_group_isomorphism : dfree_group X ≃g free_group X :=
+  begin
+    apply isomorphism.MK (free_group_of_dfree_group X) (dfree_group_of_free_group X),
+    { apply free_group_hom_eq, intro x, reflexivity },
+    { apply dfree_group_hom_eq, intro x, reflexivity }
+  end
+
+end group

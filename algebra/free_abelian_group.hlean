@@ -49,7 +49,7 @@ namespace group
     { reflexivity},
     { repeat esimp [map], exact cancel2 x},
     { repeat esimp [map], exact cancel1 x},
-    { repeat esimp [map], apply rflip},
+    { repeat esimp [map], apply fcg_rel.rflip},
     { rewrite [+map_append], exact resp_append IH₁ IH₂},
     { exact rtrans IH₁ IH₂}
   end
@@ -60,7 +60,7 @@ namespace group
     { reflexivity},
     { repeat esimp [map], exact cancel2 x},
     { repeat esimp [map], exact cancel1 x},
-    { repeat esimp [map], apply rflip},
+    { repeat esimp [map], apply fcg_rel.rflip},
     { rewrite [+reverse_append], exact resp_append IH₂ IH₁},
     { exact rtrans IH₁ IH₂}
   end

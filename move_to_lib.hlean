@@ -1,6 +1,6 @@
 -- definitions, theorems and attributes which should be moved to files in the HoTT library
 
-import homotopy.sphere2 homotopy.cofiber homotopy.wedge hit.prop_trunc hit.set_quotient eq2 types.pointed2
+import homotopy.sphere2 homotopy.cofiber homotopy.wedge hit.prop_trunc hit.set_quotient eq2 types.pointed2 algebra.graph
 
 open eq nat int susp pointed sigma is_equiv equiv fiber algebra trunc pi group
      is_trunc function unit prod bool
@@ -11,7 +11,7 @@ attribute ap010 [unfold 7]
 attribute tro_invo_tro [unfold 9] -- TODO: move
   -- TODO: homotopy_of_eq and apd10 should be the same
   -- TODO: there is also apd10_eq_of_homotopy in both pi and eq(?)
-
+universe variable u
 
 
 namespace algebra
@@ -23,6 +23,16 @@ definition add_sub_cancel_middle (a b : A) : a + (b - a) = b :=
 end algebra
 
 namespace eq
+
+  definition pathover_tr_pathover_idp_of_eq {A : Type} {B : A → Type} {a a' : A} {b : B a} {b' : B a'} {p : a = a'}
+    (q : b =[p] b') :
+    pathover_tr p b ⬝o pathover_idp_of_eq (tr_eq_of_pathover q) = q :=
+  begin induction q; reflexivity end
+
+  -- rename pathover_of_tr_eq_idp
+  definition pathover_of_tr_eq_idp' {A : Type} {B : A → Type} {a a₂ : A} (p : a = a₂) (b : B a) :
+    pathover_of_tr_eq idp = pathover_tr p b :=
+  by induction p; constructor
 
 definition homotopy.symm_symm {A : Type} {P : A → Type} {f g : Πx, P x} (H : f ~ g) :
   H⁻¹ʰᵗʸ⁻¹ʰᵗʸ = H :=
@@ -129,6 +139,11 @@ begin apply eq_of_homotopy, intro x, apply inv_inv end
   (ghomotopy_group_ptrunc_of_le H A)⁻¹ᵍ ⬝g
   homotopy_group_isomorphism_of_pequiv n f ⬝g
   ghomotopy_group_ptrunc_of_le H B
+
+definition fundamental_group_isomorphism {X : Type*} {G : Group}
+  (e : Ω X ≃ G) (hom_e : Πp q, e (p ⬝ q) = e p * e q) : π₁ X ≃g G :=
+isomorphism_of_equiv (trunc_equiv_trunc 0 e ⬝e (trunc_equiv 0 G))
+  begin intro p q, induction p with p, induction q with q, exact hom_e p q end
 
 definition equiv_pathover2 {A : Type} {a a' : A} (p : a = a')
   {B : A → Type} {C : A → Type} (f : B a ≃ C a) (g : B a' ≃ C a')
@@ -545,10 +560,17 @@ namespace lift
     [H : is_trunc n A] : is_trunc n (plift A) :=
   is_trunc_lift A n
 
+  definition lift_functor2 {A B C : Type} (f : A → B → C) (x : lift A) (y : lift B) : lift C :=
+  up (f (down x) (down y))
+
 end lift
 
 namespace trunc
   open trunc_index
+
+definition Prop_eq {P Q : Prop} (H : P ↔ Q) : P = Q :=
+tua (equiv_of_is_prop (iff.mp H) (iff.mpr H))
+
   definition trunc_index_equiv_nat [constructor] : ℕ₋₂ ≃ ℕ :=
   equiv.MK add_two sub_two add_two_sub_two sub_two_add_two
 
@@ -676,6 +698,19 @@ end is_trunc
 namespace sigma
   open sigma.ops
 
+definition eq.rec_sigma {A : Type} {B : A → Type} {a : A} {b : B a}
+  (P : Π⦃a'⦄ {b' : B a'}, ⟨a, b⟩ = ⟨a', b'⟩ → Type)
+  (IH : P idp) ⦃a' : A⦄ {b' : B a'} (p : ⟨a, b⟩ = ⟨a', b'⟩) : P p :=
+begin
+  apply transport (λp, P p) (to_left_inv !sigma_eq_equiv p),
+  generalize !sigma_eq_equiv p, esimp, intro q,
+  induction q with q₁ q₂, induction q₂, exact IH
+end
+
+  definition ap_dpair_eq_dpair_pr {A A' : Type} {B : A → Type} {a a' : A} {b : B a} {b' : B a'} (f : Πa, B a → A') (p : a = a') (q : b =[p] b')
+    : ap (λx, f x.1 x.2) (dpair_eq_dpair p q) = apd011 f p q :=
+  by induction q; reflexivity
+
   definition sigma_eq_equiv_of_is_prop_right [constructor] {A : Type} {B : A → Type} (u v : Σa, B a)
     [H : Π a, is_prop (B a)] : u = v ≃ u.1 = v.1 :=
   !sigma_eq_equiv ⬝e !sigma_equiv_of_is_contr_right
@@ -762,6 +797,49 @@ by induction q'; reflexivity
 end sigma open sigma
 
 namespace group
+
+definition isomorphism.MK [constructor] {G H : Group} (φ : G →g H) (ψ : H →g G)
+  (p : φ ∘g ψ ~ gid H) (q : ψ ∘g φ ~ gid G) : G ≃g H :=
+isomorphism.mk φ (adjointify φ ψ p q)
+
+protected definition homomorphism.sigma_char [constructor]
+  (A B : Group) : (A →g B) ≃ Σ(f : A → B), is_mul_hom f :=
+begin
+  fapply equiv.MK,
+    {intro F, exact ⟨F, _⟩ },
+    {intro p, cases p with f H, exact (homomorphism.mk f H) },
+    {intro p, cases p, reflexivity },
+    {intro F, cases F, reflexivity },
+end
+
+definition homomorphism_pathover {A : Type} {a a' : A} (p : a = a')
+  {B : A → Group} {C : A → Group} (f : B a →g C a) (g : B a' →g C a')
+  (r : homomorphism.φ f =[p] homomorphism.φ g) : f =[p] g :=
+begin
+  fapply pathover_of_fn_pathover_fn,
+  { intro a, apply homomorphism.sigma_char },
+  { fapply sigma_pathover, exact r, apply is_prop.elimo }
+end
+
+protected definition isomorphism.sigma_char [constructor]
+  (A B : Group) : (A ≃g B) ≃ Σ(f : A →g B), is_equiv f :=
+begin
+  fapply equiv.MK,
+    {intro F, exact ⟨F, _⟩ },
+    {intro p, cases p with f H, exact (isomorphism.mk f H) },
+    {intro p, cases p, reflexivity },
+    {intro F, cases F, reflexivity },
+end
+
+definition isomorphism_pathover {A : Type} {a a' : A} (p : a = a')
+  {B : A → Group} {C : A → Group} (f : B a ≃g C a) (g : B a' ≃g C a')
+  (r : pathover (λa, B a → C a) f p g) : f =[p] g :=
+begin
+  fapply pathover_of_fn_pathover_fn,
+  { intro a, apply isomorphism.sigma_char },
+  { fapply sigma_pathover, apply homomorphism_pathover, exact r, apply is_prop.elimo }
+end
+
 --  definition is_equiv_isomorphism
 
 
@@ -816,9 +894,10 @@ namespace group
 end group open group
 
 namespace fiber
+  open pointed sigma
 
-  definition is_contr_pfiber_pid (A : Type*) : is_contr (pfiber (pid A)) :=
-  is_contr.mk pt begin intro x, induction x with a p, esimp at p, cases p, reflexivity end
+definition is_contr_pfiber_pid (A : Type*) : is_contr (pfiber (pid A)) :=
+is_contr.mk pt begin intro x, induction x with a p, esimp at p, cases p, reflexivity end
 
 definition fiber_functor [constructor] {A A' B B' : Type} {f : A → B} {f' : A' → B'} {b : B} {b' : B'}
   (g : A → A') (h : B → B') (H : hsquare g h f f') (p : h b = b') (x : fiber f b) : fiber f' b' :=
@@ -1142,6 +1221,10 @@ namespace sum
     {f₁₀ : A₀₀ → A₂₀} {f₁₂ : A₀₂ → A₂₂} {f₀₁ : A₀₀ → A₀₂} {f₂₁ : A₂₀ → A₂₂}
     {g₁₀ : B₀₀ → B₂₀} {g₁₂ : B₀₂ → B₂₂} {g₀₁ : B₀₀ → B₀₂} {g₂₁ : B₂₀ → B₂₂}
     {h₀₁ : B₀₀ → A₀₂} {h₂₁ : B₂₀ → A₂₂}
+
+  definition flip_flip (x : A ⊎ B) : flip (flip x) = x :=
+  begin induction x: reflexivity end
+
   definition sum_rec_hsquare [unfold 16] (h : hsquare f₁₀ f₁₂ f₀₁ f₂₁)
     (k : hsquare g₁₀ f₁₂ h₀₁ h₂₁) : hsquare (f₁₀ +→ g₁₀) f₁₂ (sum.rec f₀₁ h₀₁) (sum.rec f₂₁ h₂₁) :=
   begin intro x, induction x with a b, exact h a, exact k b end
@@ -1195,3 +1278,181 @@ namespace equiv
   end
 
 end equiv
+
+
+namespace paths
+
+variables {A : Type} {R : A → A → Type} {a₁ a₂ a₃ a₄ : A}
+inductive all (T : Π⦃a₁ a₂ : A⦄, R a₁ a₂ → Type) : Π⦃a₁ a₂ : A⦄, paths R a₁ a₂ → Type :=
+| nil {} : Π{a : A}, all T (@nil A R a)
+| cons   : Π{a₁ a₂ a₃ : A} {r : R a₂ a₃} {p : paths R a₁ a₂}, T r → all T p → all T (cons r p)
+
+inductive Exists (T : Π⦃a₁ a₂ : A⦄, R a₁ a₂ → Type) : Π⦃a₁ a₂ : A⦄, paths R a₁ a₂ → Type :=
+| base : Π{a₁ a₂ a₃ : A} {r : R a₂ a₃} (p : paths R a₁ a₂), T r → Exists T (cons r p)
+| cons : Π{a₁ a₂ a₃ : A} (r : R a₂ a₃) {p : paths R a₁ a₂}, Exists T p → Exists T (cons r p)
+
+inductive mem (l : R a₃ a₄) : Π⦃a₁ a₂ : A⦄, paths R a₁ a₂ → Type :=
+| base : Π{a₂ : A} (p : paths R a₂ a₃), mem l (cons l p)
+| cons : Π{a₁ a₂ a₃ : A} (r : R a₂ a₃) {p : paths R a₁ a₂}, mem l p → mem l (cons r p)
+
+definition len (p : paths R a₁ a₂) : ℕ :=
+begin
+  induction p with a a₁ a₂ a₃ r p IH,
+  { exact 0 },
+  { exact nat.succ IH }
+end
+
+definition mem_equiv_Exists (l : R a₁ a₂) (p : paths R a₃ a₄) :
+  mem l p ≃ Exists (λa a' r, ⟨a₁, a₂, l⟩ = ⟨a, a', r⟩) p :=
+sorry
+
+end paths
+
+namespace list
+open is_trunc trunc sigma.ops prod.ops lift
+variables {A B X : Type}
+
+definition foldl_homotopy {f g : A → B → A} (h : f ~2 g) (a : A) : foldl f a ~ foldl g a :=
+begin
+  intro bs, revert a, induction bs with b bs p: intro a, reflexivity, esimp [foldl],
+  exact p (f a b) ⬝ ap010 (foldl g) (h a b) bs
+end
+
+definition cons_eq_cons {x x' : X} {l l' : list X} (p : x::l = x'::l') : x = x' × l = l' :=
+begin
+  refine lift.down (list.no_confusion p _), intro q r, split, exact q, exact r
+end
+
+definition concat_neq_nil (x : X) (l : list X) : concat x l ≠ nil :=
+begin
+  intro p, cases l: cases p,
+end
+
+definition concat_eq_singleton {x x' : X} {l : list X} (p : concat x l = [x']) :
+  x = x' × l = [] :=
+begin
+  cases l with x₂ l,
+  { cases cons_eq_cons p with q r, subst q, split: reflexivity },
+  { exfalso, esimp [concat] at p, apply concat_neq_nil x l, revert p, generalize (concat x l),
+    intro l' p, cases cons_eq_cons p with q r, exact r }
+end
+
+definition foldr_concat (f : A → B → B) (b : B) (a : A) (l : list A) :
+  foldr f b (concat a l) = foldr f (f a b) l :=
+begin
+  induction l with a' l p, reflexivity, rewrite [concat_cons, foldr_cons, p]
+end
+
+definition iterated_prod (X : Type.{u}) (n : ℕ) : Type.{u} :=
+iterate (prod X) n (lift unit)
+
+definition is_trunc_iterated_prod {k : ℕ₋₂} {X : Type} {n : ℕ} (H : is_trunc k X) :
+  is_trunc k (iterated_prod X n) :=
+begin
+  induction n with n IH,
+  { apply is_trunc_of_is_contr, apply is_trunc_lift },
+  { exact @is_trunc_prod _ _ _ H IH }
+end
+
+definition list_of_iterated_prod {n : ℕ} (x : iterated_prod X n) : list X :=
+begin
+  induction n with n IH,
+  { exact [] },
+  { exact x.1::IH x.2 }
+end
+
+definition list_of_iterated_prod_succ {n : ℕ} (x : X) (xs : iterated_prod X n) :
+  @list_of_iterated_prod X (succ n) (x, xs) = x::list_of_iterated_prod xs :=
+by reflexivity
+
+definition iterated_prod_of_list (l : list X) : Σn, iterated_prod X n :=
+begin
+  induction l with x l IH,
+  { exact ⟨0, up ⋆⟩ },
+  { exact ⟨succ IH.1, (x, IH.2)⟩ }
+end
+
+definition iterated_prod_of_list_cons (x : X) (l : list X) :
+  iterated_prod_of_list (x::l) =
+  ⟨succ (iterated_prod_of_list l).1, (x, (iterated_prod_of_list l).2)⟩ :=
+by reflexivity
+
+protected definition sigma_char [constructor] (X : Type) : list X ≃ Σ(n : ℕ), iterated_prod X n :=
+begin
+  apply equiv.MK iterated_prod_of_list (λv, list_of_iterated_prod v.2),
+  { intro x, induction x with n x, esimp, induction n with n IH,
+    { induction x with x, induction x, reflexivity },
+    { revert x, change Π(x : X × iterated_prod X n), _, intro xs, cases xs with x xs,
+      rewrite [list_of_iterated_prod_succ, iterated_prod_of_list_cons],
+      apply sigma_eq (ap succ (IH xs)..1),
+      apply pathover_ap, refine prod_pathover _ _ _ _ (IH xs)..2,
+      apply pathover_of_eq, reflexivity }},
+  { intro l, induction l with x l IH,
+    { reflexivity },
+    { exact ap011 cons idp IH }}
+end
+
+local attribute [instance] is_trunc_iterated_prod
+definition is_trunc_list [instance] {n : ℕ₋₂} {X : Type} (H : is_trunc (n.+2) X) :
+  is_trunc (n.+2) (list X) :=
+begin
+  assert H : is_trunc (n.+2) (Σ(k : ℕ), iterated_prod X k),
+  { apply is_trunc_sigma, apply is_trunc_succ_succ_of_is_set,
+    intro, exact is_trunc_iterated_prod H },
+  apply is_trunc_equiv_closed_rev _ (list.sigma_char X),
+end
+
+end list
+
+/- namespace logic? -/
+namespace decidable
+definition double_neg_elim {A : Type} (H : decidable A) (p : ¬ ¬ A) : A :=
+begin induction H, assumption, contradiction end
+
+
+definition dite_true {C : Type} [H : decidable C] {A : Type}
+  {t : C → A} {e : ¬ C → A} (c : C) (H' : is_prop C) : dite C t e = t c :=
+begin
+  induction H with H H,
+  exact ap t !is_prop.elim,
+  contradiction
+end
+
+definition dite_false {C : Type} [H : decidable C] {A : Type}
+  {t : C → A} {e : ¬ C → A} (c : ¬ C) : dite C t e = e c :=
+begin
+  induction H with H H,
+  contradiction,
+  exact ap e !is_prop.elim,
+end
+
+definition decidable_eq_of_is_prop (A : Type) [is_prop A] : decidable_eq A :=
+λa a', decidable.inl !is_prop.elim
+
+definition decidable_eq_sigma [instance] {A : Type} (B : A → Type) [HA : decidable_eq A]
+  [HB : Πa, decidable_eq (B a)] : decidable_eq (Σa, B a) :=
+begin
+  intro v v', induction v with a b, induction v' with a' b',
+  cases HA a a' with p np,
+  { induction p, cases HB a b b' with q nq,
+      induction q, exact decidable.inl idp,
+      apply decidable.inr, intro p, apply nq, apply @eq_of_pathover_idp A B,
+      exact change_path !is_prop.elim p..2 },
+  { apply decidable.inr, intro p, apply np, exact p..1 }
+end
+
+open sum
+definition decidable_eq_sum [instance] (A B : Type) [HA : decidable_eq A] [HB : decidable_eq B] :
+  decidable_eq (A ⊎ B) :=
+begin
+  intro v v', induction v with a b: induction v' with a' b',
+  { cases HA a a' with p np,
+    { exact decidable.inl (ap sum.inl p) },
+    { apply decidable.inr, intro p, cases p, apply np, reflexivity }},
+  { apply decidable.inr, intro p, cases p },
+  { apply decidable.inr, intro p, cases p },
+  { cases HB b b' with p np,
+    { exact decidable.inl (ap sum.inr p) },
+    { apply decidable.inr, intro p, cases p, apply np, reflexivity }},
+end
+end decidable

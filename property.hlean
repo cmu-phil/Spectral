@@ -3,7 +3,7 @@ Copyright (c) 2017 Jeremy Avigad. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jeremy Avigad
 -/
-import types.trunc .logic
+import types.trunc .logic .move_to_lib
 open funext eq trunc is_trunc logic
 
 definition property (X : Type) := X → Prop
@@ -18,9 +18,8 @@ definition mem (x : X) (a : property X) := a x
 infix ∈ := mem
 notation a ∉ b := ¬ mem a b
 
-/-theorem ext {a b : property X} (H : ∀x, x ∈ a ↔ x ∈ b) : a = b :=
-eq_of_homotopy (take x, propext (H x))
--/
+theorem ext {X : Type} {a b : property X} (H : ∀x, x ∈ a ↔ x ∈ b) : a = b :=
+eq_of_homotopy (take x, Prop_eq (H x))
 
 definition subproperty (a b : property X) : Prop := Prop.mk (∀⦃x⦄, x ∈ a → x ∈ b) _
 infix ⊆ := subproperty
@@ -33,10 +32,8 @@ theorem subproperty.refl (a : property X) : a ⊆ a := take x, assume H, H
 theorem subproperty.trans {a b c : property X} (subab : a ⊆ b) (subbc : b ⊆ c) : a ⊆ c :=
 take x, assume ax, subbc (subab ax)
 
-/-
-theorem subproperty.antisymm {a b : property X} (h₁ : a ⊆ b) (h₂ : b ⊆ a) : a = b :=
+theorem subproperty.antisymm {X : Type} {a b : property X} (h₁ : a ⊆ b) (h₂ : b ⊆ a) : a = b :=
 ext (λ x, iff.intro (λ ina, h₁ ina) (λ inb, h₂ inb))
--/
 
 -- an alterantive name
 /-

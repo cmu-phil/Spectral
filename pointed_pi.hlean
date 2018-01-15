@@ -599,6 +599,13 @@ namespace pointed
     pfiber f ≃* psigma_gen (λa, f a = pt) (respect_pt f) :=
   pequiv_of_equiv (fiber.sigma_char f pt) idp
 
+  definition fiberpt [constructor] {A B : Type*} {f : A →* B} : fiber f pt :=
+  fiber.mk pt (respect_pt f)
+
+  definition psigma_fiber_pequiv [constructor] {A B : Type*} (f : A →* B) :
+    psigma_gen (fiber f) fiberpt ≃* A :=
+  pequiv_of_equiv (sigma_fiber_equiv f) idp
+
   definition ppmap.sigma_char [constructor] (A B : Type*) :
     ppmap A B ≃* @psigma_gen (A →ᵘ* B) (λf, f pt = pt) idp :=
   pequiv_of_equiv pmap.sigma_char idp
