@@ -568,104 +568,133 @@ end lift
 namespace trunc
   open trunc_index
 
+
 definition Prop_eq {P Q : Prop} (H : P ↔ Q) : P = Q :=
 tua (equiv_of_is_prop (iff.mp H) (iff.mpr H))
 
-  definition trunc_index_equiv_nat [constructor] : ℕ₋₂ ≃ ℕ :=
-  equiv.MK add_two sub_two add_two_sub_two sub_two_add_two
+definition trunc_index_equiv_nat [constructor] : ℕ₋₂ ≃ ℕ :=
+equiv.MK add_two sub_two add_two_sub_two sub_two_add_two
 
-  definition is_set_trunc_index [instance] : is_set ℕ₋₂ :=
-  is_trunc_equiv_closed_rev 0 trunc_index_equiv_nat
+definition is_set_trunc_index [instance] : is_set ℕ₋₂ :=
+is_trunc_equiv_closed_rev 0 trunc_index_equiv_nat
 
-  definition is_contr_ptrunc_minus_one (A : Type*) : is_contr (ptrunc -1 A) :=
-  is_contr_of_inhabited_prop pt
+definition is_contr_ptrunc_minus_one (A : Type*) : is_contr (ptrunc -1 A) :=
+is_contr_of_inhabited_prop pt
 
-  -- TODO: redefine loopn_ptrunc_pequiv
-  definition apn_ptrunc_functor (n : ℕ₋₂) (k : ℕ) {A B : Type*} (f : A →* B) :
-    Ω→[k] (ptrunc_functor (n+k) f) ∘* (loopn_ptrunc_pequiv n k A)⁻¹ᵉ* ~*
-    (loopn_ptrunc_pequiv n k B)⁻¹ᵉ* ∘* ptrunc_functor n (Ω→[k] f) :=
-  begin
-    revert n, induction k with k IH: intro n,
-    { reflexivity },
-    { exact sorry }
-  end
+-- TODO: redefine loopn_ptrunc_pequiv
+definition apn_ptrunc_functor (n : ℕ₋₂) (k : ℕ) {A B : Type*} (f : A →* B) :
+  Ω→[k] (ptrunc_functor (n+k) f) ∘* (loopn_ptrunc_pequiv n k A)⁻¹ᵉ* ~*
+  (loopn_ptrunc_pequiv n k B)⁻¹ᵉ* ∘* ptrunc_functor n (Ω→[k] f) :=
+begin
+  revert n, induction k with k IH: intro n,
+  { reflexivity },
+  { exact sorry }
+end
 
-  definition ptrunc_pequiv_natural [constructor] (n : ℕ₋₂) {A B : Type*} (f : A →* B) [is_trunc n A]
-    [is_trunc n B] : f ∘* ptrunc_pequiv n A ~* ptrunc_pequiv n B ∘* ptrunc_functor n f :=
-  begin
-    fapply phomotopy.mk,
-    { intro a, induction a with a, reflexivity },
-    { refine !idp_con ⬝ _ ⬝ !idp_con⁻¹, refine !ap_compose'⁻¹ ⬝ _, apply ap_id }
-  end
+definition ptrunc_pequiv_natural [constructor] (n : ℕ₋₂) {A B : Type*} (f : A →* B) [is_trunc n A]
+  [is_trunc n B] : f ∘* ptrunc_pequiv n A ~* ptrunc_pequiv n B ∘* ptrunc_functor n f :=
+begin
+  fapply phomotopy.mk,
+  { intro a, induction a with a, reflexivity },
+  { refine !idp_con ⬝ _ ⬝ !idp_con⁻¹, refine !ap_compose'⁻¹ ⬝ _, apply ap_id }
+end
 
-  definition ptr_natural [constructor] (n : ℕ₋₂) {A B : Type*} (f : A →* B) :
-    ptrunc_functor n f ∘* ptr n A ~* ptr n B ∘* f :=
-  begin
-    fapply phomotopy.mk,
-    { intro a, reflexivity },
-    { reflexivity }
-  end
+definition ptr_natural [constructor] (n : ℕ₋₂) {A B : Type*} (f : A →* B) :
+  ptrunc_functor n f ∘* ptr n A ~* ptr n B ∘* f :=
+begin
+  fapply phomotopy.mk,
+  { intro a, reflexivity },
+  { reflexivity }
+end
 
-  definition ptrunc_elim_pcompose (n : ℕ₋₂) {A B C : Type*} (g : B →* C) (f : A →* B) [is_trunc n B]
-    [is_trunc n C] : ptrunc.elim n (g ∘* f) ~* g ∘* ptrunc.elim n f :=
-  begin
-    fapply phomotopy.mk,
-    { intro a, induction a with a, reflexivity },
-    { apply idp_con }
-  end
+definition ptrunc_elim_pcompose (n : ℕ₋₂) {A B C : Type*} (g : B →* C) (f : A →* B) [is_trunc n B]
+  [is_trunc n C] : ptrunc.elim n (g ∘* f) ~* g ∘* ptrunc.elim n f :=
+begin
+  fapply phomotopy.mk,
+  { intro a, induction a with a, reflexivity },
+  { apply idp_con }
+end
 
-  definition ptrunc_elim_ptr_phomotopy_pid (n : ℕ₋₂) (A : Type*):
-    ptrunc.elim n (ptr n A) ~* pid (ptrunc n A) :=
-  begin
-    fapply phomotopy.mk,
-    { intro a, induction a with a, reflexivity },
-    { apply idp_con }
-  end
+definition ptrunc_elim_ptr_phomotopy_pid (n : ℕ₋₂) (A : Type*):
+  ptrunc.elim n (ptr n A) ~* pid (ptrunc n A) :=
+begin
+  fapply phomotopy.mk,
+  { intro a, induction a with a, reflexivity },
+  { apply idp_con }
+end
 
-  definition is_trunc_ptrunc_of_is_trunc [instance] [priority 500] (A : Type*)
-    (n m : ℕ₋₂) [H : is_trunc n A] : is_trunc n (ptrunc m A) :=
-  is_trunc_trunc_of_is_trunc A n m
+definition is_trunc_ptrunc_of_is_trunc [instance] [priority 500] (A : Type*)
+  (n m : ℕ₋₂) [H : is_trunc n A] : is_trunc n (ptrunc m A) :=
+is_trunc_trunc_of_is_trunc A n m
 
-  definition ptrunc_pequiv_ptrunc_of_is_trunc {n m k : ℕ₋₂} {A : Type*}
-    (H1 : n ≤ m) (H2 : n ≤ k) (H : is_trunc n A) : ptrunc m A ≃* ptrunc k A :=
-  have is_trunc m A, from is_trunc_of_le A H1,
-  have is_trunc k A, from is_trunc_of_le A H2,
-  pequiv.MK (ptrunc.elim _ (ptr k A)) (ptrunc.elim _ (ptr m A))
-    abstract begin
-      refine !ptrunc_elim_pcompose⁻¹* ⬝* _,
-      exact ptrunc_elim_phomotopy _ !ptrunc_elim_ptr ⬝* !ptrunc_elim_ptr_phomotopy_pid,
-    end end
-    abstract begin
-      refine !ptrunc_elim_pcompose⁻¹* ⬝* _,
-      exact ptrunc_elim_phomotopy _ !ptrunc_elim_ptr ⬝* !ptrunc_elim_ptr_phomotopy_pid,
-    end end
+definition ptrunc_pequiv_ptrunc_of_is_trunc {n m k : ℕ₋₂} {A : Type*}
+  (H1 : n ≤ m) (H2 : n ≤ k) (H : is_trunc n A) : ptrunc m A ≃* ptrunc k A :=
+have is_trunc m A, from is_trunc_of_le A H1,
+have is_trunc k A, from is_trunc_of_le A H2,
+pequiv.MK (ptrunc.elim _ (ptr k A)) (ptrunc.elim _ (ptr m A))
+  abstract begin
+    refine !ptrunc_elim_pcompose⁻¹* ⬝* _,
+    exact ptrunc_elim_phomotopy _ !ptrunc_elim_ptr ⬝* !ptrunc_elim_ptr_phomotopy_pid,
+  end end
+  abstract begin
+    refine !ptrunc_elim_pcompose⁻¹* ⬝* _,
+    exact ptrunc_elim_phomotopy _ !ptrunc_elim_ptr ⬝* !ptrunc_elim_ptr_phomotopy_pid,
+  end end
 
-  definition ptrunc_change_index {k l : ℕ₋₂} (p : k = l) (X : Type*)
-    : ptrunc k X ≃* ptrunc l X :=
-  pequiv_ap (λ n, ptrunc n X) p
+definition ptrunc_change_index {k l : ℕ₋₂} (p : k = l) (X : Type*)
+  : ptrunc k X ≃* ptrunc l X :=
+pequiv_ap (λ n, ptrunc n X) p
 
-  definition ptrunc_functor_le {k l : ℕ₋₂} (p : l ≤ k) (X : Type*)
-    : ptrunc k X →* ptrunc l X :=
-  have is_trunc k (ptrunc l X), from is_trunc_of_le _ p,
-  ptrunc.elim _ (ptr l X)
+definition ptrunc_functor_le {k l : ℕ₋₂} (p : l ≤ k) (X : Type*)
+  : ptrunc k X →* ptrunc l X :=
+have is_trunc k (ptrunc l X), from is_trunc_of_le _ p,
+ptrunc.elim _ (ptr l X)
 
-  definition trunc_index.pred [unfold 1] (n : ℕ₋₂) : ℕ₋₂ :=
-  begin cases n with n, exact -2, exact n end
+definition trunc_index.pred [unfold 1] (n : ℕ₋₂) : ℕ₋₂ :=
+begin cases n with n, exact -2, exact n end
 
-  /- A more general version of ptrunc_elim_phomotopy, where the proofs of truncatedness might be different -/
-  definition ptrunc_elim_phomotopy2 [constructor] (k : ℕ₋₂) {A B : Type*} {f g : A →* B} (H₁ : is_trunc k B)
-    (H₂ : is_trunc k B) (p : f ~* g) : @ptrunc.elim k A B H₁ f ~* @ptrunc.elim k A B H₂ g :=
-  begin
-    fapply phomotopy.mk,
-    { intro x, induction x with a, exact p a },
-    { exact to_homotopy_pt p }
-  end
+/- A more general version of ptrunc_elim_phomotopy, where the proofs of truncatedness might be different -/
+definition ptrunc_elim_phomotopy2 [constructor] (k : ℕ₋₂) {A B : Type*} {f g : A →* B} (H₁ : is_trunc k B)
+  (H₂ : is_trunc k B) (p : f ~* g) : @ptrunc.elim k A B H₁ f ~* @ptrunc.elim k A B H₂ g :=
+begin
+  fapply phomotopy.mk,
+  { intro x, induction x with a, exact p a },
+  { exact to_homotopy_pt p }
+end
+
+definition pmap_ptrunc_equiv [constructor] (n : ℕ₋₂) (A B : Type*) [H : is_trunc n B] :
+  (ptrunc n A →* B) ≃ (A →* B) :=
+begin
+  fapply equiv.MK,
+  { intro g, exact g ∘* ptr n A },
+  { exact ptrunc.elim n },
+  { intro f, apply eq_of_phomotopy, apply ptrunc_elim_ptr },
+  { intro g, apply eq_of_phomotopy,
+    exact ptrunc_elim_pcompose n g (ptr n A) ⬝* pwhisker_left g (ptrunc_elim_ptr_phomotopy_pid n A) ⬝*
+      pcompose_pid g }
+end
+
+definition pmap_ptrunc_pequiv [constructor] (n : ℕ₋₂) (A B : Type*) [H : is_trunc n B] :
+  ppmap (ptrunc n A) B ≃* ppmap A B :=
+pequiv_of_equiv (pmap_ptrunc_equiv n A B) (eq_of_phomotopy (pconst_pcompose (ptr n A)))
+
+definition loopn_ptrunc_pequiv_nat (n : ℕ) (k : ℕ) (A : Type*) :
+  Ω[k] (ptrunc (n+k) A) ≃* ptrunc n (Ω[k] A) :=
+loopn_pequiv_loopn k (ptrunc_change_index (of_nat_add_of_nat n k)⁻¹ A) ⬝e* loopn_ptrunc_pequiv n k A
 
 end trunc
 
 namespace is_trunc
 
   open trunc_index is_conn
+
+  lemma is_trunc_loopn_nat (m n : ℕ) (A : Type*) [H : is_trunc (n + m) A] :
+    is_trunc n (Ω[m] A) :=
+  @is_trunc_loopn n m A (transport (λk, is_trunc k _) (of_nat_add_of_nat n m)⁻¹ H)
+
+  lemma is_trunc_loop_nat (n : ℕ) (A : Type*) [H : is_trunc (n + 1) A] :
+    is_trunc n (Ω A) :=
+  is_trunc_loop A n
 
   definition is_trunc_of_eq {n m : ℕ₋₂} (p : n = m) {A : Type} (H : is_trunc n A) : is_trunc m A :=
   transport (λk, is_trunc k A) p H
@@ -793,6 +822,20 @@ by induction q'; reflexivity
   λx, sigma_functor_compose g₂₁ g₁₀ x ⬝
       sigma_functor_homotopy h k x ⬝
       (sigma_functor_compose g₁₂ g₀₁ x)⁻¹
+
+definition sigma_equiv_of_embedding_left_fun [constructor] {X Y : Type} {P : Y → Type} {f : X → Y}
+  (H : Πy, P y → fiber f y) (v : Σy, P y) : Σx, P (f x) :=
+⟨fiber.point (H v.1 v.2), transport P (point_eq (H v.1 v.2))⁻¹ v.2⟩
+
+definition sigma_equiv_of_is_embedding_left [constructor] {X Y : Type} {P : Y → Type} [HP : Πy, is_prop (P y)]
+  {f : X → Y} (Hf : is_embedding f) (H : Πy, P y → fiber f y) : (Σy, P y) ≃ Σx, P (f x) :=
+begin
+  apply equiv.MK (sigma_equiv_of_embedding_left_fun H) (sigma_functor f (λa, id)),
+  { intro v, induction v with x p, esimp [sigma_equiv_of_embedding_left_fun],
+    fapply sigma_eq, apply @is_injective_of_is_embedding _ _ f, exact point_eq (H (f x) p),
+    apply is_prop.elimo },
+  { intro v, induction v with y p, esimp, fapply sigma_eq, exact point_eq (H y p), apply is_prop.elimo },
+end
 
 end sigma open sigma
 
@@ -1021,6 +1064,22 @@ namespace is_conn
   definition is_conn_fun_compose {n : ℕ₋₂} {A B C : Type} (g : B → C) (f : A → B)
     (H : is_conn_fun n g) (K : is_conn_fun n f) : is_conn_fun n (g ∘ f) :=
   sorry
+
+/- the k-connectification of X, the fiber of the map X → ∥X∥ₖ. -/
+definition connect (k : ℕ) (X : Type*) : Type* :=
+pfiber (ptr k X)
+
+definition is_conn_connect (k : ℕ) (X : Type*) : is_conn k (connect k X) :=
+sorry
+
+definition connconnect [constructor] (k : ℕ) (X : Type*) : Type*[k]  :=
+pconntype.mk (connect k X) (is_conn_connect k X) pt
+
+definition loopn_connect (k : ℕ) (X : Type*) : Ω[k+1] (connect k X) ≃* Ω[k+1] X :=
+sorry
+
+definition is_conn_of_is_conn_succ_nat (n : ℕ) (A : Type) [is_conn (n+1) A] : is_conn n A :=
+is_conn_of_is_conn_succ n A
 
 end is_conn
 

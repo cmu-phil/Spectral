@@ -7,8 +7,9 @@ Formalization of the higher groups paper
 -/
 
 import .move_to_lib
-open eq is_conn pointed is_trunc trunc equiv is_equiv trunc_index susp nat algebra
+open eq is_conn pointed is_trunc trunc equiv is_equiv trunc_index susp nat algebra prod.ops sigma sigma.ops
 namespace higher_group
+set_option pp.binder_types true
 
   /- We require that the carrier has a point (preserved by the equivalence) -/
 
@@ -38,12 +39,38 @@ namespace higher_group
   open ωGrp (renaming B→oB e→oe)
 
   /- some basic properties -/
+  lemma is_trunc_B' (G : [n;k]Grp) : is_trunc (k+n) (B G) :=
+  begin
+    apply is_trunc_of_is_trunc_loopn,
+    exact is_trunc_equiv_closed _ (e G),
+    exact _
+  end
+
   lemma is_trunc_B (G : [n;k]Grp) : is_trunc (n+k) (B G) :=
-  sorry
+  transport (λm, is_trunc m (B G)) (add.comm k n) (is_trunc_B' G)
+
+  local attribute [instance] is_trunc_B
 
   /- some equivalences -/
   definition Grp_equiv (n k : ℕ) : [n;k]Grp ≃ (n+k)-Type*[k] :=
+  let f : Π(B : Type*[k]) (H : Σ(X : n-Type*), X ≃* Ω[k] B), (n+k)-Type*[k] :=
+    λB' H, ptruncconntype.mk B' (is_trunc_B (Grp.mk H.1 B' H.2)) pt _
+  in
+  calc
+    [n;k]Grp ≃ Σ(B : Type*[k]), Σ(X : n-Type*), X ≃* Ω[k] B : sorry
+         ... ≃ Σ(B : (n+k)-Type*[k]), Σ(X : n-Type*), X ≃* Ω[k] B :
+               @sigma_equiv_of_is_embedding_left _ _ _ sorry ptruncconntype.to_pconntype sorry
+                 (λB' H, fiber.mk (f B' H) sorry)
+         ... ≃ Σ(B : (n+k)-Type*[k]), Σ(X : n-Type*),
+                 X = ptrunctype_of_pType (Ω[k] B) !is_trunc_loopn_nat :> n-Type* :
+               sigma_equiv_sigma_right (λB, sigma_equiv_sigma_right (λX, sorry))
+         ... ≃ (n+k)-Type*[k] : sigma_equiv_of_is_contr_right
+
+  definition Grp_eq_equiv {n k : ℕ} (G H : [n;k]Grp) : (G = H) ≃ (B G ≃* B H) :=
   sorry
+
+  definition Grp_eq {n k : ℕ} {G H : [n;k]Grp} (e : B G ≃* B H) : G = H :=
+  (Grp_eq_equiv G H)⁻¹ᵉ e
 
   definition InfGrp_equiv (k : ℕ) : [∞;k]Grp ≃ Type*[k] :=
   sorry
@@ -52,57 +79,61 @@ namespace higher_group
 
   /- Constructions -/
   definition Decat (G : [n+1;k]Grp) : [n;k]Grp :=
-  Grp.mk (ptrunctype.mk (ptrunc n G) _ pt) (pconntype.mk (ptrunc (n +[ℕ₋₂] k) (B G)) _ pt)
+  Grp.mk (ptrunctype.mk (ptrunc n G) _ pt) (pconntype.mk (ptrunc (n + k) (B G)) _ pt)
     abstract begin
       refine ptrunc_pequiv_ptrunc n (e G) ⬝e* _,
-      symmetry, exact !loopn_ptrunc_pequiv
+      symmetry, exact sorry --!loopn_ptrunc_pequiv
     end end
 
   definition Disc (G : [n;k]Grp) : [n+1;k]Grp :=
   Grp.mk (ptrunctype.mk G (show is_trunc (n.+1) G, from _) pt) (B G) (e G)
 
-  definition Disc_adjoint_Decat (G : [n;k]Grp) (H : [n+1;k]Grp) :
-    ppmap (B (Disc G)) (B H) ≃* ppmap (B G) (B (Decat H)) :=
+  definition Decat_adjoint_Disc (G : [n+1;k]Grp) (H : [n;k]Grp) :
+    ppmap (B (Decat G)) (B H) ≃* ppmap (B G) (B (Disc H)) :=
+  pmap_ptrunc_pequiv (n + k) (B G) (B H)
+
+  definition Decat_adjoint_Disc_natural {G G' : [n+1;k]Grp} {H H' : [n;k]Grp}
+    (eG : B G' ≃* B G) (eH : B H ≃* B H') :
+    psquare (Decat_adjoint_Disc G H)
+            (Decat_adjoint_Disc G' H')
+            (ppcompose_left eH ∘* ppcompose_right (ptrunc_functor _ eG))
+            (ppcompose_left eH ∘* ppcompose_right eG) :=
   sorry
-  /- To do: naturality -/
 
   definition Decat_Disc (G : [n;k]Grp) : Decat (Disc G) = G :=
-  sorry
+  Grp_eq !ptrunc_pequiv
 
   definition InfDecat (n : ℕ) (G : [∞;k]Grp) : [n;k]Grp :=
-  Grp.mk (ptrunctype.mk (ptrunc n G) _ pt) (pconntype.mk (ptrunc (n +[ℕ₋₂] k) (iB G)) _ pt)
+  Grp.mk (ptrunctype.mk (ptrunc n G) _ pt) (pconntype.mk (ptrunc (n + k) (iB G)) _ pt)
     abstract begin
       refine ptrunc_pequiv_ptrunc n (ie G) ⬝e* _,
-      symmetry, exact !loopn_ptrunc_pequiv
+      symmetry, exact !loopn_ptrunc_pequiv_nat
     end end
 
   definition InfDisc (n : ℕ) (G : [n;k]Grp) : [∞;k]Grp :=
   InfGrp.mk G (B G) (e G)
 
-  definition InfDisc_adjoint_InfDecat (G : [n;k]Grp) (H : [∞;k]Grp) :
-    ppmap (iB (InfDisc n G)) (iB H) ≃* ppmap (B G) (B (InfDecat n H)) :=
-  sorry
+  definition InfDecat_adjoint_InfDisc (G : [∞;k]Grp) (H : [n;k]Grp) :
+    ppmap (B (InfDecat n G)) (B H) ≃* ppmap (iB G) (iB (InfDisc n H)) :=
+  pmap_ptrunc_pequiv (n + k) (iB G) (B H)
+
   /- To do: naturality -/
 
   definition InfDecat_InfDisc (G : [n;k]Grp) : InfDecat n (InfDisc n G) = G :=
   sorry
 
   definition Loop (G : [n+1;k]Grp) : [n;k+1]Grp :=
-  have is_trunc (n.+1) G, from !is_trunc_ptrunctype,
-  Grp.mk (ptrunctype.mk (Ω G) !is_trunc_loop pt)
-    sorry
+  Grp.mk (ptrunctype.mk (Ω G) !is_trunc_loop_nat pt)
+    (connconnect (k+1) (B G))
     abstract begin
-      exact sorry
+      exact loop_pequiv_loop (e G) ⬝e* (loopn_connect k (B G))⁻¹ᵉ* ⬝e* _
     end end
 
   definition Deloop (G : [n;k+1]Grp) : [n+1;k]Grp :=
-  have is_conn (k.+1) (B G), from !is_conn_pconntype,
   have is_trunc (n + (k + 1)) (B G), from is_trunc_B G,
-  have is_trunc (n +[ℕ] 1 +[ℕ₋₂] k) (pconntype.to_pType (B G)), from transport (λn, is_trunc n _)
-    (ap trunc_index.of_nat (nat.succ_add n k)⁻¹ ⬝ !of_nat_add_of_nat⁻¹) this,
-  have is_trunc (n + 1) (Ω[k] (B G)), from !is_trunc_loopn,
-  Grp.mk (ptrunctype.mk (Ω[k] (B G)) _ pt)
-    (pconntype.mk (B G) !is_conn_of_is_conn_succ pt)
+  have is_trunc ((n + 1) + k) (B G), from transport (λ(n : ℕ), is_trunc n _) (succ_add n k)⁻¹ this,
+  Grp.mk (ptrunctype.mk (Ω[k] (B G)) !is_trunc_loopn_nat pt)
+    (pconntype.mk (B G) !is_conn_of_is_conn_succ_nat pt)
     (pequiv_of_equiv erfl idp)
 
   /- to do: adjunction, and Loop ∘ Deloop = id -/
