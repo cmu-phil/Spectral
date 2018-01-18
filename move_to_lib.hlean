@@ -707,7 +707,7 @@ namespace is_trunc
   end
 
   lemma is_trunc_of_is_trunc_loopn (m n : ℕ) (A : Type*) (H : is_trunc n (Ω[m] A))
-    (H2 : is_conn m A) : is_trunc (m + n) A :=
+    (H2 : is_conn (m.-1) A) : is_trunc (m + n) A :=
   begin
     revert A H H2; induction m with m IH: intro A H H2,
     { rewrite [nat.zero_add], exact H },
@@ -716,11 +716,11 @@ namespace is_trunc
     { apply IH,
       { apply is_trunc_equiv_closed _ !loopn_succ_in },
       apply is_conn_loop },
-    exact is_conn_of_le _ (zero_le_of_nat (succ m))
+    exact is_conn_of_le _ (zero_le_of_nat m)
   end
 
   lemma is_trunc_of_is_set_loopn (m : ℕ) (A : Type*) (H : is_set (Ω[m] A))
-    (H2 : is_conn m A) : is_trunc m A :=
+    (H2 : is_conn (m.-1) A) : is_trunc m A :=
   is_trunc_of_is_trunc_loopn m 0 A H H2
 
 end is_trunc

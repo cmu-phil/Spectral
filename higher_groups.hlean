@@ -15,16 +15,16 @@ set_option pp.binder_types true
 
   structure Grp.{u} (n k : ℕ) : Type.{u+1} := /- (n,k)Grp, denoted here as [n;k]Grp -/
     (car : ptrunctype.{u} n)
-    (B : pconntype.{u} k)
+    (B : pconntype.{u} (k.-1))
     (e : car ≃* Ω[k] B)
 
   structure InfGrp.{u} (k : ℕ) : Type.{u+1} := /- (∞,k)Grp, denoted here as [∞;k]Grp -/
     (car : pType.{u})
-    (B : pconntype.{u} k)
+    (B : pconntype.{u} (k.-1))
     (e : car ≃* Ω[k] B)
 
   structure ωGrp (n : ℕ) := /- (n,ω)Grp, denoted here as [n;ω]Grp -/
-    (B : Π(k : ℕ), (n+k)-Type*[k])
+    (B : Π(k : ℕ), (n+k)-Type*[k.-1])
     (e : Π(k : ℕ), B k ≃* Ω (B (k+1)))
 
   attribute InfGrp.car Grp.car [coercion]
@@ -52,19 +52,19 @@ set_option pp.binder_types true
   local attribute [instance] is_trunc_B
 
   /- some equivalences -/
-  definition Grp_equiv (n k : ℕ) : [n;k]Grp ≃ (n+k)-Type*[k] :=
-  let f : Π(B : Type*[k]) (H : Σ(X : n-Type*), X ≃* Ω[k] B), (n+k)-Type*[k] :=
+  definition Grp_equiv (n k : ℕ) : [n;k]Grp ≃ (n+k)-Type*[k.-1] :=
+  let f : Π(B : Type*[k.-1]) (H : Σ(X : n-Type*), X ≃* Ω[k] B), (n+k)-Type*[k.-1] :=
     λB' H, ptruncconntype.mk B' (is_trunc_B (Grp.mk H.1 B' H.2)) pt _
   in
   calc
-    [n;k]Grp ≃ Σ(B : Type*[k]), Σ(X : n-Type*), X ≃* Ω[k] B : sorry
-         ... ≃ Σ(B : (n+k)-Type*[k]), Σ(X : n-Type*), X ≃* Ω[k] B :
+    [n;k]Grp ≃ Σ(B : Type*[k.-1]), Σ(X : n-Type*), X ≃* Ω[k] B : sorry
+         ... ≃ Σ(B : (n+k)-Type*[k.-1]), Σ(X : n-Type*), X ≃* Ω[k] B :
                @sigma_equiv_of_is_embedding_left _ _ _ sorry ptruncconntype.to_pconntype sorry
                  (λB' H, fiber.mk (f B' H) sorry)
-         ... ≃ Σ(B : (n+k)-Type*[k]), Σ(X : n-Type*),
+         ... ≃ Σ(B : (n+k)-Type*[k.-1]), Σ(X : n-Type*),
                  X = ptrunctype_of_pType (Ω[k] B) !is_trunc_loopn_nat :> n-Type* :
                sigma_equiv_sigma_right (λB, sigma_equiv_sigma_right (λX, sorry))
-         ... ≃ (n+k)-Type*[k] : sigma_equiv_of_is_contr_right
+         ... ≃ (n+k)-Type*[k.-1] : sigma_equiv_of_is_contr_right
 
   definition Grp_eq_equiv {n k : ℕ} (G H : [n;k]Grp) : (G = H) ≃ (B G ≃* B H) :=
   sorry
@@ -72,7 +72,7 @@ set_option pp.binder_types true
   definition Grp_eq {n k : ℕ} {G H : [n;k]Grp} (e : B G ≃* B H) : G = H :=
   (Grp_eq_equiv G H)⁻¹ᵉ e
 
-  definition InfGrp_equiv (k : ℕ) : [∞;k]Grp ≃ Type*[k] :=
+  definition InfGrp_equiv (k : ℕ) : [∞;k]Grp ≃ Type*[k.-1] :=
   sorry
 
   -- maybe to do: ωGrp ≃ Σ(X : spectrum), is_sconn n X
@@ -124,30 +124,29 @@ set_option pp.binder_types true
 
   definition Loop (G : [n+1;k]Grp) : [n;k+1]Grp :=
   Grp.mk (ptrunctype.mk (Ω G) !is_trunc_loop_nat pt)
-    (connconnect (k+1) (B G))
-    abstract begin
-      exact loop_pequiv_loop (e G) ⬝e* (loopn_connect k (B G))⁻¹ᵉ* ⬝e* _
-    end end
+    (connconnect k (B G))
+    (loop_pequiv_loop (e G) ⬝e* (loopn_connect k (B G))⁻¹ᵉ*)
 
   definition Deloop (G : [n;k+1]Grp) : [n+1;k]Grp :=
+  have is_conn k (B G), from is_conn_pconntype (B G),
   have is_trunc (n + (k + 1)) (B G), from is_trunc_B G,
   have is_trunc ((n + 1) + k) (B G), from transport (λ(n : ℕ), is_trunc n _) (succ_add n k)⁻¹ this,
   Grp.mk (ptrunctype.mk (Ω[k] (B G)) !is_trunc_loopn_nat pt)
-    (pconntype.mk (B G) !is_conn_of_is_conn_succ_nat pt)
+    (pconntype.mk (B G) !is_conn_of_is_conn_succ pt)
     (pequiv_of_equiv erfl idp)
 
   /- to do: adjunction, and Loop ∘ Deloop = id -/
 
   definition Forget (G : [n;k+1]Grp) : [n;k]Grp :=
-  have is_conn (k.+1) (B G), from !is_conn_pconntype,
+  have is_conn k (B G), from !is_conn_pconntype,
   Grp.mk G (pconntype.mk (Ω (B G)) !is_conn_loop pt)
     abstract begin
       refine e G ⬝e* !loopn_succ_in
     end end
 
   definition Stabilize (G : [n;k]Grp) : [n;k+1]Grp :=
-  have is_conn (k+1) (susp (B G)), from !is_conn_susp,
-  have Hconn : is_conn (k+1) (ptrunc (n + k + 1) (susp (B G))), from !is_conn_ptrunc,
+  have is_conn k (susp (B G)), from !is_conn_susp,
+  have Hconn : is_conn k (ptrunc (n + k + 1) (susp (B G))), from !is_conn_ptrunc,
   Grp.mk (ptrunctype.mk (ptrunc n (Ω[k+1] (susp (B G)))) _ pt)
     (pconntype.mk (ptrunc (n+k+1) (susp (B G))) Hconn pt)
     abstract begin
