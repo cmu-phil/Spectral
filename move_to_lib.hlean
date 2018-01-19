@@ -568,6 +568,21 @@ end lift
 namespace trunc
   open trunc_index
 
+/- replace trunc_trunc_equiv_left by this -/
+definition trunc_trunc_equiv_left' [constructor] (A : Type) {n m : ℕ₋₂} (H : n ≤ m)
+  : trunc n (trunc m A) ≃ trunc n A :=
+begin
+  note H2 := is_trunc_of_le (trunc n A) H,
+  fapply equiv.MK,
+  { intro x, induction x with x, induction x with x, exact tr x },
+  { exact trunc_functor n tr },
+  { intro x, induction x with x, reflexivity},
+  { intro x, induction x with x, induction x with x, reflexivity}
+end
+
+definition is_equiv_ptrunc_functor_ptr [constructor] (A : Type*) {n m : ℕ₋₂} (H : n ≤ m)
+  : is_equiv (ptrunc_functor n (ptr m A)) :=
+to_is_equiv (trunc_trunc_equiv_left' A H)⁻¹ᵉ
 
 definition Prop_eq {P Q : Prop} (H : P ↔ Q) : P = Q :=
 tua (equiv_of_is_prop (iff.mp H) (iff.mpr H))
@@ -682,7 +697,7 @@ definition loopn_ptrunc_pequiv_nat (n : ℕ) (k : ℕ) (A : Type*) :
   Ω[k] (ptrunc (n+k) A) ≃* ptrunc n (Ω[k] A) :=
 loopn_pequiv_loopn k (ptrunc_change_index (of_nat_add_of_nat n k)⁻¹ A) ⬝e* loopn_ptrunc_pequiv n k A
 
-end trunc
+end trunc open trunc
 
 namespace is_trunc
 
@@ -937,7 +952,12 @@ end
 end group open group
 
 namespace fiber
-  open pointed sigma
+  open pointed sigma sigma.ops
+
+definition fiber_eq_equiv' [constructor] {A B : Type} {f : A → B} {b : B} (x y : fiber f b)
+  : (x = y) ≃ (Σ(p : point x = point y), point_eq x = ap f p ⬝ point_eq y) :=
+@equiv_change_inv _ _ (fiber_eq_equiv x y) (λpq, fiber_eq pq.1 pq.2)
+  begin intro pq, cases pq, reflexivity end
 
 definition is_contr_pfiber_pid (A : Type*) : is_contr (pfiber (pid A)) :=
 is_contr.mk pt begin intro x, induction x with a p, esimp at p, cases p, reflexivity end
@@ -1001,7 +1021,7 @@ definition is_conn_fun_compose (k : ℕ₋₂) {A B C : Type} {g : B → C} {f :
   (Hg : is_conn_fun k g) (Hf : is_conn_fun k f) : is_conn_fun k (g ∘ f) :=
 λc, is_conn_equiv_closed_rev k (fiber_compose g f c) _
 
-end fiber
+end fiber open fiber
 
 namespace fin
 
@@ -1017,6 +1037,10 @@ namespace function
   definition is_contr_of_is_surjective (f : A → B) (H : is_surjective f) (HA : is_contr A)
     (HB : is_set B) : is_contr B :=
   is_contr.mk (f !center) begin intro b, induction H b, exact ap f !is_prop.elim ⬝ p end
+
+  definition is_surjective_of_is_contr [constructor] (f : A → B) (a : A) (H : is_contr B) :
+    is_surjective f :=
+  λb, image.mk a !eq_of_is_contr
 
   definition is_contr_of_is_embedding (f : A → B) (H : is_embedding f) (HB : is_prop B)
     (a₀ : A) : is_contr A :=
@@ -1057,23 +1081,84 @@ namespace is_conn
   definition is_conn_zero_pointed' {A : Type*} (p : Πa : A, ∥ a = pt ∥) : is_conn 0 A :=
   is_conn_zero_pointed (λa a', tconcat (p a) (tinverse (p a')))
 
-  definition is_conn_fiber (n : ℕ₋₂) {A B : Type} (f : A → B) (b : B) [is_conn n A] [is_conn (n.+1) B] :
-    is_conn n (fiber f b) :=
+  definition is_conn_fiber (n : ℕ₋₂) {A B : Type} (f : A → B) (b : B) [is_conn n A]
+    [is_conn (n.+1) B] : is_conn n (fiber f b) :=
   is_conn_equiv_closed_rev _ !fiber.sigma_char _
 
   definition is_conn_fun_compose {n : ℕ₋₂} {A B C : Type} (g : B → C) (f : A → B)
     (H : is_conn_fun n g) (K : is_conn_fun n f) : is_conn_fun n (g ∘ f) :=
   sorry
 
+-- definition is_conn_pfiber_of_equiv_on_homotopy_groups (n : ℕ) {A B : pType.{u}} (f : A →* B)
+--   [H : is_conn 0 A]
+--   (H1 : Πk, k ≤ n → is_equiv (π→[k] f))
+--   (H2 : is_surjective (π→[succ n] f)) :
+--   is_conn n (pfiber f) :=
+-- _
+
+-- definition is_conn_pelim [constructor] {k : ℕ} {X : Type*} (Y : Type*) (H : is_conn k X) :
+--   (X →* connect k Y) ≃ (X →* Y) :=
+
 /- the k-connectification of X, the fiber of the map X → ∥X∥ₖ. -/
 definition connect (k : ℕ) (X : Type*) : Type* :=
 pfiber (ptr k X)
 
 definition is_conn_connect (k : ℕ) (X : Type*) : is_conn k (connect k X) :=
-sorry
+is_conn_fun_tr k X (tr pt)
 
 definition connconnect [constructor] (k : ℕ) (X : Type*) : Type*[k]  :=
-pconntype.mk (connect k X) (is_conn_connect k X) pt
+pconntype.mk (connect k X) (is_conn_connect k X) pt.
+
+definition connect_intro [constructor] {k : ℕ} {X : Type*} {Y : Type*} (H : is_conn k X)
+  (f : X →* Y) : X →* connect k Y :=
+pmap.mk (λx, fiber.mk (f x) (is_conn.elim (k.-1) _ (ap tr (respect_pt f)) x))
+  begin
+    fapply fiber_eq, exact respect_pt f, apply is_conn.elim_β
+  end
+
+definition ppoint_connect_intro [constructor] {k : ℕ} {X : Type*} {Y : Type*} (H : is_conn k X)
+  (f : X →* Y) : ppoint (ptr k Y) ∘* connect_intro H f ~* f :=
+begin
+  induction f with f f₀, induction Y with Y y₀, esimp at (f,f₀), induction f₀,
+  fapply phomotopy.mk,
+  { intro x, reflexivity },
+  { symmetry, esimp, apply point_fiber_eq }
+end
+
+definition connect_intro_ppoint [constructor] {k : ℕ} {X : Type*} {Y : Type*} (H : is_conn k X)
+  (f : X →* connect k Y) : connect_intro H (ppoint (ptr k Y) ∘* f) ~* f :=
+begin
+  -- induction f with f f₀, --induction Y with Y y₀, esimp,
+  -- revert f₀, refine equiv_rect (fiber_eq_equiv' _ _)⁻¹ᵉ _ _,
+  -- intro pq, induction pq with p q, esimp,
+  fapply phomotopy.mk,
+  { intro x, fapply fiber_eq, reflexivity,
+    refine _ ⬝ !idp_con⁻¹,
+    refine @is_conn.elim (k.-1) _ _ _ (λx', !is_trunc_eq) _ x,
+    refine !is_conn.elim_β ⬝ _,
+    cases f with f f₀, esimp,
+    revert f₀, generalize f (Point X),
+    intro x p, cases p, reflexivity },
+  { esimp, exact sorry }
+end
+
+definition connect_intro_equiv [constructor] {k : ℕ} {X : Type*} (Y : Type*) (H : is_conn k X) :
+  (X →* connect k Y) ≃ (X →* Y) :=
+begin
+  fapply equiv.MK,
+  { intro f, exact ppoint (ptr k Y) ∘* f },
+  { intro g, exact connect_intro H g },
+  { intro g, apply eq_of_phomotopy, exact ppoint_connect_intro H g },
+  { intro f, apply eq_of_phomotopy, exact connect_intro_ppoint H f }
+end
+
+definition connect_intro_pequiv [constructor] {k : ℕ} {X : Type*} (Y : Type*) (H : is_conn k X) :
+  ppmap X (connect k Y) ≃* ppmap X Y :=
+pequiv_of_equiv (connect_intro_equiv Y H) (eq_of_phomotopy !pcompose_pconst)
+
+
+definition connect_pequiv {k : ℕ} {X : Type*} (H : is_conn k X) : connect k X ≃* X :=
+sorry
 
 definition loopn_connect (k : ℕ) (X : Type*) : Ω[k+1] (connect k X) ≃* Ω[k+1] X :=
 sorry
@@ -1088,6 +1173,7 @@ namespace misc
 
   open sigma.ops pointed trunc_index
 
+  /- this is equivalent to pfiber (A → ∥A∥₀) ≡ connect 0 A -/
   definition component [constructor] (A : Type*) : Type* :=
   pType.mk (Σ(a : A), merely (pt = a)) ⟨pt, tr idp⟩
 
