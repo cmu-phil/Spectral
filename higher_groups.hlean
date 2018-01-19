@@ -7,7 +7,8 @@ Formalization of the higher groups paper
 -/
 
 import .move_to_lib
-open eq is_conn pointed is_trunc trunc equiv is_equiv trunc_index susp nat algebra prod.ops sigma sigma.ops
+open eq is_conn pointed is_trunc trunc equiv is_equiv trunc_index susp nat algebra
+     prod.ops sigma sigma.ops
 namespace higher_group
 set_option pp.binder_types true
 universe variable u
@@ -52,8 +53,6 @@ transport (λm, is_trunc m (B G)) (add.comm k n) (is_trunc_B' G)
 
 local attribute [instance] is_trunc_B
 
-/- some equivalences -/
---set_option pp.all true
 definition Grp.sigma_char (n k : ℕ) :
   Grp.{u} n k ≃ Σ(B : pconntype.{u} (k.-1)), Σ(X : ptrunctype.{u} n), X ≃* Ω[k] B :=
 begin
@@ -65,31 +64,59 @@ begin
 end
 
 definition Grp_equiv (n k : ℕ) : [n;k]Grp ≃ (n+k)-Type*[k.-1] :=
-let f : Π(B : Type*[k.-1]) (H : Σ(X : n-Type*), X ≃* Ω[k] B), (n+k)-Type*[k.-1] :=
-  λB' H, ptruncconntype.mk B' (is_trunc_B (Grp.mk H.1 B' H.2)) pt _
-in
-calc
-  [n;k]Grp ≃ Σ(B : Type*[k.-1]), Σ(X : n-Type*), X ≃* Ω[k] B : Grp.sigma_char n k
-       ... ≃ Σ(B : (n+k)-Type*[k.-1]), Σ(X : n-Type*), X ≃* Ω[k] B :
-             @sigma_equiv_of_is_embedding_left _ _ _ sorry ptruncconntype.to_pconntype sorry
-               (λB' H, fiber.mk (f B' H) sorry)
-       ... ≃ Σ(B : (n+k)-Type*[k.-1]), Σ(X : n-Type*),
-               X = ptrunctype_of_pType (Ω[k] B) !is_trunc_loopn_nat :> n-Type* :
-             sigma_equiv_sigma_right (λB, sigma_equiv_sigma_right (λX, sorry))
-       ... ≃ (n+k)-Type*[k.-1] : sigma_equiv_of_is_contr_right
+Grp.sigma_char n k ⬝e
+sigma_equiv_of_is_embedding_left_contr
+  ptruncconntype.to_pconntype
+  (is_embedding_ptruncconntype_to_pconntype (n+k) (k.-1))
+  begin
+    intro X,
+    apply is_trunc_equiv_closed_rev -2,
+    { apply sigma_equiv_sigma_right, intro B',
+      refine _ ⬝e (ptrunctype_eq_equiv B' (ptrunctype.mk (Ω[k] X) !is_trunc_loopn_nat pt))⁻¹ᵉ,
+      assert lem : Π(A : n-Type*) (B : Type*) (H : is_trunc n B),
+        (A ≃* B) ≃ (A ≃* (ptrunctype.mk B H pt)),
+      { intro A B'' H, induction B'', reflexivity },
+      apply lem }
+  end
+  begin
+    intro B' H, apply fiber.mk (ptruncconntype.mk B' (is_trunc_B (Grp.mk H.1 B' H.2)) pt _),
+    induction B' with G' B' e', reflexivity
+  end
 
 definition Grp_equiv_pequiv {n k : ℕ} (G : [n;k]Grp) : Grp_equiv n k G ≃* B G :=
-sorry
+by reflexivity
 
-definition Grp_eq_equiv {n k : ℕ} (G H : [n;k]Grp) : (G = H) ≃ (B G ≃* B H) :=
-eq_equiv_fn_eq_of_equiv (Grp_equiv n k) _ _ ⬝e
-sorry -- use Grp_equiv_homotopy and equality in ptruncconntype
+definition Grp_eq_equiv {n k : ℕ} (G H : [n;k]Grp) : (G = H :> [n;k]Grp) ≃ (B G ≃* B H) :=
+eq_equiv_fn_eq_of_equiv (Grp_equiv n k) _ _ ⬝e !ptruncconntype_eq_equiv
 
 definition Grp_eq {n k : ℕ} {G H : [n;k]Grp} (e : B G ≃* B H) : G = H :=
 (Grp_eq_equiv G H)⁻¹ᵉ e
 
+/- similar properties for [∞;k]Grp -/
+
+definition InfGrp.sigma_char (k : ℕ) :
+  InfGrp.{u} k ≃ Σ(B : pconntype.{u} (k.-1)), Σ(X : pType.{u}), X ≃* Ω[k] B :=
+begin
+  fapply equiv.MK,
+  { intro G, exact ⟨iB G, G, ie G⟩ },
+  { intro v, exact InfGrp.mk v.2.1 v.1 v.2.2 },
+  { intro v, induction v with v₁ v₂, induction v₂, reflexivity },
+  { intro G, induction G, reflexivity },
+end
+
 definition InfGrp_equiv (k : ℕ) : [∞;k]Grp ≃ Type*[k.-1] :=
-sorry
+InfGrp.sigma_char k ⬝e
+@sigma_equiv_of_is_contr_right _ _
+  (λX, is_trunc_equiv_closed_rev -2 (sigma_equiv_sigma_right (λB', !pType_eq_equiv⁻¹ᵉ)))
+
+definition InfGrp_equiv_pequiv {k : ℕ} (G : [∞;k]Grp) : InfGrp_equiv k G ≃* iB G :=
+by reflexivity
+
+definition InfGrp_eq_equiv {k : ℕ} (G H : [∞;k]Grp) : (G = H :> [∞;k]Grp) ≃ (iB G ≃* iB H) :=
+eq_equiv_fn_eq_of_equiv (InfGrp_equiv k) _ _ ⬝e !pconntype_eq_equiv
+
+definition InfGrp_eq {k : ℕ} {G H : [∞;k]Grp} (e : iB G ≃* iB H) : G = H :=
+(InfGrp_eq_equiv G H)⁻¹ᵉ e
 
 -- maybe to do: ωGrp ≃ Σ(X : spectrum), is_sconn n X
 
@@ -182,8 +209,7 @@ Grp.mk (ptrunctype.mk (ptrunc n (Ω[k+1] (susp (B G)))) _ pt)
 
 definition ωForget (k : ℕ) (G : [n;ω]Grp) : [n;k]Grp :=
 have is_trunc (n + k) (oB G k), from _,
-have is_trunc (n +[ℕ₋₂] k) (oB G k), from transport (λn, is_trunc n _) !of_nat_add_of_nat⁻¹ this,
-have is_trunc n (Ω[k] (oB G k)), from !is_trunc_loopn,
+have is_trunc n (Ω[k] (oB G k)), from !is_trunc_loopn_nat,
 Grp.mk (ptrunctype.mk (Ω[k] (oB G k)) _ pt) (oB G k) (pequiv_of_equiv erfl idp)
 
 definition nStabilize (H : k ≤ l) (G : Grp.{u} n k) : Grp.{u} n l :=
@@ -207,8 +233,7 @@ sorry
 
 definition ωStabilize_of_le (H : k ≥ n + 2) (G : [n;k]Grp) : [n;ω]Grp :=
 ωGrp.mk_le k (λl H', Grp_equiv n l (nStabilize H' G))
-             (λl H', !Grp_equiv_pequiv ⬝e* Stabilize_pequiv (le.trans H H') (nStabilize H' G) ⬝e*
-               loop_pequiv_loop (!Grp_equiv_pequiv⁻¹ᵉ*))
+             (λl H', Stabilize_pequiv (le.trans H H') (nStabilize H' G))
 
 definition ωStabilize (G : [n;k]Grp) : [n;ω]Grp :=
 ωStabilize_of_le !le_max_left (nStabilize !le_max_right G)
