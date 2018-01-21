@@ -620,6 +620,19 @@ begin
     refine !idp_con ⬝ _, reflexivity },
 end
 
+definition pequiv.sigma_char_equiv' [constructor] (X Y : Type*) :
+  (X ≃* Y) ≃ Σ(f : X →* Y), is_equiv f :=
+begin
+  fapply equiv.MK,
+  { intro e, exact ⟨ pequiv.to_pmap e , pequiv.to_is_equiv e ⟩ },
+  { intro w, exact pequiv_of_pmap w.1 w.2 },
+  { intro w, induction w with f p, fapply sigma_eq,
+    { reflexivity }, { apply is_prop.elimo } },
+  { intro e, apply pequiv_eq, fapply phomotopy.mk,
+    { intro x, reflexivity },
+    { refine !idp_con ⬝ _, reflexivity } }
+end
+
 definition pType_eq_equiv (X Y : Type*) : (X = Y) ≃ (X ≃* Y) :=
 begin
   refine eq_equiv_fn_eq pType.sigma_char' X Y ⬝e !sigma_eq_equiv ⬝e _, esimp,
