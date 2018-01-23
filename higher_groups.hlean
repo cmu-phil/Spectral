@@ -247,13 +247,8 @@ begin
   apply @is_trunc_equiv_closed_rev _ _ _ (ptruncconntype_eq_equiv X Y),
   apply @is_trunc_equiv_closed_rev _ _ _ (pequiv.sigma_char_equiv' X Y),
   apply @is_trunc_subtype (X →* Y) (λ f, trunctype.mk' -1 (is_equiv f)),
-  apply is_trunc_pmap_of_is_conn X k.-2 (n + 1).-2 (n + k) Y,
-  { clear X Y, induction k with k IH,
-    { induction n with n IH,
-      { apply le.refl },
-      { exact trunc_index.succ_le_succ IH } },
-    { rewrite (trunc_index.succ_add_plus_two (nat.succ k).-2 (n + 1).-2),
-      exact trunc_index.succ_le_succ IH } },
+  apply is_trunc_pmap_of_is_conn X k.-2 (n.-1) (n + k) Y,
+  { apply le_of_eq, exact (sub_one_add_plus_two_sub_one n k)⁻¹ ⬝ !add_plus_two_comm },
   { exact _ }
 end
 

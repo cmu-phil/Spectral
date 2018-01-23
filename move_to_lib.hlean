@@ -424,6 +424,13 @@ namespace trunc_index
     { exact !succ_add_plus_two ⬝ ap succ IH}
   end
 
+  lemma sub_one_add_plus_two_sub_one (n m : ℕ) : n.-1 +2+ m.-1 = of_nat (n + m) :=
+  begin
+    induction m with m IH,
+    { reflexivity },
+    { exact ap succ IH }
+  end
+
 end trunc_index
 
 namespace int
