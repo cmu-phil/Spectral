@@ -530,7 +530,7 @@ namespace EM
     refine isomorphism_of_eq (ap (λx, πg[x+1] X) !zero_add⁻¹) ⬝g homotopy_group_add X 0 n ⬝g _ ⬝g
       !fundamental_group_EM1,
     exact homotopy_group_isomorphism_of_pequiv 0 e,
-    refine is_trunc_of_is_trunc_loopn n 1 X _ _,
+    refine is_trunc_of_is_trunc_loopn n 1 X _ (@is_conn_of_is_conn_succ _ _ H1),
     apply is_trunc_equiv_closed_rev 1 e
   end
 
