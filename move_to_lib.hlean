@@ -627,7 +627,7 @@ begin
     refine !idp_con ⬝ _, reflexivity },
 end
 
-definition pequiv.sigma_char_equiv' [constructor] (X Y : Type*) :
+definition pequiv.sigma_char_pmap [constructor] (X Y : Type*) :
   (X ≃* Y) ≃ Σ(f : X →* Y), is_equiv f :=
 begin
   fapply equiv.MK,

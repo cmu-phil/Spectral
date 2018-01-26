@@ -245,7 +245,7 @@ begin
   apply @is_trunc_equiv_closed_rev _ _ (n + 1) (Grp_equiv n k),
   apply is_trunc_succ_intro, intros X Y,
   apply @is_trunc_equiv_closed_rev _ _ _ (ptruncconntype_eq_equiv X Y),
-  apply @is_trunc_equiv_closed_rev _ _ _ (pequiv.sigma_char_equiv' X Y),
+  apply @is_trunc_equiv_closed_rev _ _ _ (pequiv.sigma_char_pmap X Y),
   apply @is_trunc_subtype (X →* Y) (λ f, trunctype.mk' -1 (is_equiv f)),
   apply is_trunc_pmap_of_is_conn X k.-2 (n.-1) (n + k) Y,
   { apply le_of_eq, exact (sub_one_add_plus_two_sub_one n k)⁻¹ ⬝ !add_plus_two_comm },
