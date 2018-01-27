@@ -1,4 +1,4 @@
-import homotopy.susp types.pointed2 ..move_to_lib
+import .pushout types.pointed2 ..move_to_lib
 
 open susp eq pointed function is_equiv lift equiv is_trunc nat
 
@@ -68,6 +68,106 @@ sorry
     intro p,
     refine pvconcat (suspend_psquare p) _,
     exact psquare_transpose (loop_susp_counit_natural f₁₂)
+  end
+
+  open pushout unit prod sigma sigma.ops
+
+  section
+    parameters {A : Type*} {n : ℕ} [HA : is_conn n A]
+
+    -- we end up not using this, because to prove that the
+    -- composition with the first projection is loop_susp_counit A
+    -- is hideous without HIT computations on path constructors
+    definition pullback_diagonal_prod_of_wedge : susp (Ω A)
+      ≃ Σ (a : A) (w : wedge A A), prod_of_wedge w = (a, a) :=
+    begin
+      refine equiv.trans _
+        (comm_equiv_unc (λ z, prod_of_wedge (prod.pr1 z) = (prod.pr2 z, prod.pr2 z))),
+      apply equiv.symm,
+      apply equiv.trans (sigma_equiv_sigma_right
+        (λ w, sigma_equiv_sigma_right
+          (λ a, prod_eq_equiv (prod_of_wedge w) (a, a)))),
+      apply equiv.trans !pushout.flattening', esimp,
+      fapply pushout.equiv
+        (λ z, ⟨pt, z.2⟩) (λ z, ⟨pt, glue z.1 ▸ z.2⟩) (λ p, star) (λ p, star),
+      { apply equiv.trans !sigma_unit_left, fapply equiv.MK,
+        { intro z, induction z with a w, induction w with p q, exact p ⬝ q⁻¹ },
+        { intro p, exact ⟨pt, (p, idp)⟩ },
+        { intro p, reflexivity },
+        { intro z, induction z with a w, induction w with p q, induction q,
+          reflexivity } },
+      { fapply equiv.MK,
+        { intro z, exact star },
+        { intro u, exact ⟨pt, ⟨pt, (idp, idp)⟩ ⟩ },
+        { intro u, induction u, reflexivity },
+        { intro z, induction z with a w, induction w with b z,
+          induction z with p q, induction p, esimp at q, induction q,
+          reflexivity } },
+      { fapply equiv.MK,
+        { intro z, exact star },
+        { intro u, exact ⟨pt, ⟨pt, (idp, idp)⟩ ⟩ },
+        { intro u, induction u, reflexivity },
+        { intro z, induction z with a w, induction w with b z,
+          induction z with p q, induction q, esimp at p, induction p,
+          reflexivity } },
+      { intro z, induction z with u w, induction u, induction w with a z,
+        induction z with p q, reflexivity },
+      { intro z, induction z with u w, induction u, induction w with a z,
+        induction z with p q, reflexivity }
+    end
+
+    -- instead we directly compare the fibers, using flattening twice
+    definition fiber_loop_susp_counit_equiv (a : A)
+      : fiber (loop_susp_counit A) a ≃ fiber prod_of_wedge (a, a) :=
+    begin
+      apply equiv.trans !fiber.sigma_char, apply equiv.trans !pushout.flattening',
+      apply equiv.symm, apply equiv.trans !fiber.sigma_char,
+      apply equiv.trans (sigma_equiv_sigma_right
+        (λ w, prod_eq_equiv (prod_of_wedge w) (a, a))), esimp,
+      apply equiv.trans !pushout.flattening',
+      esimp,
+      fapply pushout.equiv (λ z, ⟨pt, z.2⟩) (λ z, ⟨pt, glue z.1 ▸ z.2⟩)
+        (λ z, ⟨star, z.2⟩) (λ z, ⟨star, glue z.1 ▸ z.2⟩),
+      { fapply equiv.MK,
+        { intro w, induction w with u z, induction z with p q,
+          exact ⟨q ⬝ p⁻¹, q⟩ },
+        { intro z, induction z with p q, apply dpair star,
+          exact (p⁻¹ ⬝ q, q) },
+        { intro z, induction z with p q, esimp, induction q, esimp,
+          rewrite [idp_con,inv_inv] },
+        { intro w, induction w with u z, induction u, induction z with p q,
+          esimp, induction q, rewrite [idp_con,inv_inv] } },
+      { fapply equiv.MK,
+        { intro w, induction w with b z, induction z with p q, exact ⟨star, q⟩ },
+        { intro z, induction z with u p, induction u, esimp at p, esimp,
+          apply dpair a, esimp, exact (idp, p) },
+        { intro z, induction z with u p, induction u, reflexivity },
+        { intro w, induction w with b z, induction z with p q, esimp,
+          induction p, reflexivity } },
+      { fapply equiv.MK,
+        { intro w, induction w with b z, induction z with p q, exact ⟨star, p⟩ },
+        { intro z, induction z with u p, induction u, esimp at p, esimp,
+          apply dpair a, esimp, exact (p, idp) },
+        { intro z, induction z with u p, induction u, reflexivity },
+        { intro w, induction w with b z, induction z with p q, esimp,
+          induction q, reflexivity } },
+      { intro w, induction w with u z, induction u, induction z with p q,
+        reflexivity },
+      { intro w, induction w with u z, induction u, induction z with p q,
+        esimp, induction q, esimp, krewrite prod_transport, fapply sigma_eq,
+        { exact idp },
+        { esimp, rewrite eq_transport_Fl, rewrite eq_transport_Fl,
+          krewrite elim_glue, krewrite (ap_compose' pr1 prod_of_wedge (glue star)),
+          krewrite elim_glue, esimp, apply eq_pathover, rewrite idp_con, esimp,
+          apply square_of_eq, rewrite [idp_con,idp_con,inv_inv] } }
+    end
+
+    include HA
+
+    -- connectivity of loop_susp_counit
+    definition is_conn_fun_loop_susp_counit {k : ℕ} (H : k ≤ 2 * n)
+      : is_conn_fun k (loop_susp_counit A) :=
+    λ a, sorry
   end
 
 end susp
