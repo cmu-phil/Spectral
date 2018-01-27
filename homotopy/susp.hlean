@@ -164,10 +164,22 @@ sorry
 
     include HA
 
+    open is_conn trunc_index
+
     -- connectivity of loop_susp_counit
     definition is_conn_fun_loop_susp_counit {k : ℕ} (H : k ≤ 2 * n)
       : is_conn_fun k (loop_susp_counit A) :=
-    λ a, sorry
+    begin
+      intro a, apply is_conn.is_conn_equiv_closed_rev k (fiber_loop_susp_counit_equiv a),
+      fapply @is_conn.is_conn_of_le (fiber prod_of_wedge (a, a)) k (2 * n)
+        (of_nat_le_of_nat H),
+      assert H : of_nat (2 * n) = of_nat n + of_nat n,
+      { rewrite (of_nat_add_of_nat n n), apply ap of_nat,
+        apply trans (nat.mul_comm 2 n),
+        apply ap (λ k, k + n), exact nat.zero_add n },
+      rewrite H,
+      exact is_conn_fun_prod_of_wedge n n (a, a)
+    end
   end
 
 end susp
