@@ -886,3 +886,39 @@ namespace pushout
 
 
 end pushout
+
+namespace pushout
+  /- alternative version of the flattening lemma -/
+  -- should be moved to main library
+  section
+  open sigma sigma.ops
+
+  universe variables u₁ u₂ u₃ u₄
+  parameters {TL : Type.{u₁}} {BL : Type.{u₂}} {TR : Type.{u₃}}
+             (f : TL → BL) (g : TL → TR) (P : pushout f g → Type.{u₄})
+
+  local abbreviation F : sigma (λ x, P (inl (f x))) → sigma (P ∘ inl) :=
+  λ z, ⟨ f z.1 , z.2 ⟩
+
+  local abbreviation G : sigma (λ x, P (inl (f x))) → sigma (P ∘ inr) :=
+  λ z, ⟨ g z.1 , transport P (glue z.1) z.2 ⟩
+
+  local abbreviation Pglue : Π x, P (inl (f x)) ≃ P (inr (g x)) :=
+  λ x, equiv.mk (transport P (glue x)) (is_equiv_tr P (glue x))
+
+  protected definition flattening' : sigma P ≃ pushout F G :=
+  begin
+    assert H : Π w, P w ≃ pushout.elim_type (P ∘ inl) (P ∘ inr) Pglue w,
+    { intro w, induction w with x x x,
+      { exact erfl }, { exact erfl },
+      { apply equiv_pathover, intro pfx pgx q,
+        apply pathover_of_tr_eq,
+        apply eq.trans (ap10 (elim_type_glue.{u₁ u₂ u₃ u₄}
+          (P ∘ inl) (P ∘ inr) Pglue x) pfx), -- why do we need explicit universes here?
+        exact tr_eq_of_pathover q } },
+    apply equiv.trans (sigma_equiv_sigma_right H),
+    exact pushout.flattening f g (P ∘ inl) (P ∘ inr) Pglue
+  end
+
+  end
+end pushout
