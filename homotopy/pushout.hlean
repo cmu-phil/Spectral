@@ -884,7 +884,63 @@ namespace pushout
     apply pushout_of_equiv_right
   end
 
+end pushout
 
+namespace pushout -- should this be wedge?
+  /- the wedge connectivity lemma actually works as intended -/
+  section
+  open trunc_index is_conn prod prod.ops
+
+  -- of course, the tricky part is coming up with the statement;
+  -- the proof is easy!
+  private definition tricky_lemma {A B : Type} (f : A → B) {a a' : A}
+    (p : a = a') (P : B → Type) {r : f a = f a'} (α : ap f p = r)
+    (s : Π x, P (f x)) (e : Π y, P y)
+    (q : e (f a) = s a) (q' : e (f a') = s a')
+    (H : (ap (transport P r) q)⁻¹ ⬝ (apdt e r ⬝ q')
+         = (tr_compose P f p (s a) ⬝ ap (λ u, transport P u (s a)) α)⁻¹ ⬝ apdt s p)
+    : q =[p] q' :=
+  begin
+    induction α, induction p, apply pathover_idp_of_eq, esimp, esimp at H,
+    rewrite ap_id at H, rewrite idp_con at H,
+    exact (eq_con_of_inv_con_eq H)⁻¹,
+  end
+
+  parameters {A B : Type*}
+
+  private definition section_of_glue (P : A × B → Type)
+    (s : Π w, P (prod_of_wedge w))
+    : (s (inl pt)  = s (inr pt) :> P (pt, pt)) :=
+  ((tr_compose P prod_of_wedge (glue star) (s (inl pt)))
+    ⬝ (ap (λ q, transport P q (s (inl pt)))
+    (wedge.elim_glue (λ a, (a, pt)) (λ b, (pt, b)) idp)))⁻¹ ⬝ (apdt s (glue star))
+
+  parameters (n m : ℕ) [cA : is_conn n A] [cB : is_conn m B]
+  include cA cB
+
+  definition is_conn_fun_prod_of_wedge : is_conn_fun (m + n) (@prod_of_wedge A B) :=
+  begin
+    apply is_conn.is_conn_fun.intro, intro P, fapply is_retraction.mk,
+    { intros s z, induction z with a b,
+      exact @wedge_extension.ext A B n m cA cB (λ a b, P (a, b))
+        (λ a b, transport (λ k, is_trunc k (P (a, b))) (of_nat_add_of_nat m n)
+          (trunctype.struct (P (a, b))))
+        (λ a, s (inl a)) (λ b, s (inr b))
+        (section_of_glue P s) a b },
+    { intro s, apply eq_of_homotopy, intro w, induction w with a b,
+      { esimp, apply wedge_extension.β_left },
+      { esimp, apply wedge_extension.β_right },
+      { esimp, apply @tricky_lemma (wedge A B) (A × B)
+          (@prod_of_wedge A B) (inl pt) (inr pt) wedge.glue P idp
+          (wedge.elim_glue (λ a, (a, pt)) (λ b, (pt, b)) idp) s
+          (prod.rec (@wedge_extension.ext A B n m cA cB (λ a b, P (a, b))
+            (λ a b, transport (λ k, is_trunc k (P (a, b))) (of_nat_add_of_nat m n)
+              (trunctype.struct (P (a, b))))
+              (λ a, s (inl a)) (λ b, s (inr b)) (section_of_glue P s))),
+        esimp, rewrite [ap_id,idp_con], apply wedge_extension.coh } }
+  end
+
+  end
 end pushout
 
 namespace pushout
