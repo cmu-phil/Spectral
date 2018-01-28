@@ -78,6 +78,7 @@ sorry
     -- we end up not using this, because to prove that the
     -- composition with the first projection is loop_susp_counit A
     -- is hideous without HIT computations on path constructors
+    parameter (A)
     definition pullback_diagonal_prod_of_wedge : susp (Ω A)
       ≃ Σ (a : A) (w : wedge A A), prod_of_wedge w = (a, a) :=
     begin
@@ -116,6 +117,7 @@ sorry
         induction z with p q, reflexivity }
     end
 
+    parameter {A}
     -- instead we directly compare the fibers, using flattening twice
     definition fiber_loop_susp_counit_equiv (a : A)
       : fiber (loop_susp_counit A) a ≃ fiber prod_of_wedge (a, a) :=
@@ -166,6 +168,7 @@ sorry
 
     open is_conn trunc_index
 
+    parameter (A)
     -- connectivity of loop_susp_counit
     definition is_conn_fun_loop_susp_counit {k : ℕ} (H : k ≤ 2 * n)
       : is_conn_fun k (loop_susp_counit A) :=

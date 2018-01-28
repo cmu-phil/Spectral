@@ -1209,6 +1209,11 @@ namespace is_conn
 
 open unit trunc_index nat is_trunc pointed.ops sigma.ops prod.ops
 
+-- todo: make trunc_equiv_trunc_of_is_conn_fun a def.
+definition ptrunc_pequiv_ptrunc_of_is_conn_fun {A B : Type*} (n : ℕ₋₂) (f : A →* B)
+  [H : is_conn_fun n f] : ptrunc n A ≃* ptrunc n B :=
+pequiv_of_pmap (ptrunc_functor n f) (is_equiv_trunc_functor_of_is_conn_fun n f)
+
 definition is_conn_zero {A : Type} (a₀ : trunc 0 A) (p : Πa a' : A, ∥ a = a' ∥) : is_conn 0 A :=
 is_conn_succ_intro a₀ (λa a', is_conn_minus_one _ (p a a'))
 
@@ -1752,6 +1757,23 @@ begin
 end
 
 end list
+
+
+namespace susp
+open trunc_index
+/- move to freudenthal -/
+definition freudenthal_pequiv_trunc_index' (A : Type*) (n : ℕ) (k : ℕ₋₂) [HA : is_conn n A]
+  (H : k ≤ of_nat (2 * n)) : ptrunc k A ≃* ptrunc k (Ω (susp A)) :=
+begin
+  assert lem : Π(l : ℕ₋₂), l ≤ 0 → ptrunc l A ≃* ptrunc l (Ω (susp A)),
+  { intro l H', exact ptrunc_pequiv_ptrunc_of_le H' (freudenthal_pequiv A (zero_le (2 * n))) },
+  cases k with k, { exact lem -2 (minus_two_le 0) },
+  cases k with k, { exact lem -1 (succ_le_succ (minus_two_le -1)) },
+  rewrite [-of_nat_add_two at *, add_two_sub_two at HA],
+  exact freudenthal_pequiv A (le_of_of_nat_le_of_nat H)
+end
+
+end susp
 
 /- namespace logic? -/
 namespace decidable

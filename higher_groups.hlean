@@ -6,9 +6,9 @@ Authors: Ulrik Buchholtz, Egbert Rijke, Floris van Doorn
 Formalization of the higher groups paper
 -/
 
-import .pointed_pi
+import .homotopy.EM
 open eq is_conn pointed is_trunc trunc equiv is_equiv trunc_index susp nat algebra
-     prod.ops sigma sigma.ops
+     prod.ops sigma sigma.ops category EM
 namespace higher_group
 set_option pp.binder_types true
 universe variable u
@@ -120,7 +120,7 @@ definition InfGrp_eq {k : ℕ} {G H : [∞;k]Grp} (e : iB G ≃* iB H) : G = H :
 
 -- maybe to do: ωGrp ≃ Σ(X : spectrum), is_sconn n X
 
-/- Constructions -/
+/- Constructions on higher groups -/
 definition Decat (G : [n+1;k]Grp) : [n;k]Grp :=
 Grp.mk (ptrunctype.mk (ptrunc n G) _ pt) (pconntype.mk (ptrunc (n + k) (B G)) _ pt)
   abstract begin
@@ -182,10 +182,10 @@ definition Deloop_adjoint_Loop (G : [n;k+1]Grp) (H : [n+1;k]Grp) :
   ppmap (B (Deloop G)) (B H) ≃* ppmap (B G) (B (Loop H)) :=
 (connect_intro_pequiv _ !is_conn_pconntype)⁻¹ᵉ* /- still a sorry here -/
 
+/- to do: naturality -/
+
 definition Loop_Deloop (G : [n;k+1]Grp) : Loop (Deloop G) = G :=
 Grp_eq (connect_pequiv (is_conn_pconntype (B G)))
-
-/- to do: adjunction, and Loop ∘ Deloop = id -/
 
 definition Forget (G : [n;k+1]Grp) : [n;k]Grp :=
 have is_conn k (B G), from !is_conn_pconntype,
@@ -217,11 +217,36 @@ begin
   induction H with l H IH, exact G, exact Stabilize IH
 end
 
-lemma Stabilize_pequiv (H : k ≥ n + 2) (G : [n;k]Grp) : B G ≃* Ω (B (Stabilize G)) :=
-sorry
+definition Forget_Stabilize (H : k ≥ n + 2) (G : [n;k]Grp) : B (Forget (Stabilize G)) ≃* B G :=
+loop_ptrunc_pequiv _ _ ⬝e*
+begin
+  cases k with k,
+  { cases H },
+  { have k ≥ succ n, from le_of_succ_le_succ H,
+    assert this : n + succ k ≤ 2 * k,
+    { rewrite [two_mul, add_succ, -succ_add], exact nat.add_le_add_right this k },
+    exact freudenthal_pequiv (B G) this }
+end⁻¹ᵉ* ⬝e*
+ptrunc_pequiv (n + k) _
+
+definition Stabilize_Forget (H : k ≥ n + 1) (G : [n;k+1]Grp) : B (Stabilize (Forget G)) ≃* B G :=
+begin
+  assert lem1 : n + succ k ≤ 2 * k,
+  { rewrite [two_mul, add_succ, -succ_add], exact nat.add_le_add_right H k },
+  have is_conn k (B G), from !is_conn_pconntype,
+  have Π(G' : [n;k+1]Grp), is_trunc (n + k + 1) (B G'), from is_trunc_B,
+  note z := is_conn_fun_loop_susp_counit (B G) (nat.le_refl (2 * k)),
+  refine ptrunc_pequiv_ptrunc_of_le (of_nat_le_of_nat lem1) (@(ptrunc_pequiv_ptrunc_of_is_conn_fun _ _) z) ⬝e*
+    !ptrunc_pequiv,
+end
 
 theorem stabilization (H : k ≥ n + 2) : is_equiv (@Stabilize n k) :=
-sorry
+begin
+  fapply adjointify,
+  { exact Forget },
+  { intro G, apply Grp_eq, exact Stabilize_Forget (le.trans !self_le_succ H) _ },
+  { intro G, apply Grp_eq, exact Forget_Stabilize H G }
+end
 
 definition ωGrp.mk_le {n : ℕ} (k₀ : ℕ)
   (B : Π⦃k : ℕ⦄, k₀ ≤ k → (n+k)-Type*[k.-1])
@@ -233,7 +258,7 @@ sorry
 
 definition ωStabilize_of_le (H : k ≥ n + 2) (G : [n;k]Grp) : [n;ω]Grp :=
 ωGrp.mk_le k (λl H', Grp_equiv n l (nStabilize H' G))
-             (λl H', Stabilize_pequiv (le.trans H H') (nStabilize H' G))
+             (λl H', (Forget_Stabilize (le.trans H H') (nStabilize H' G))⁻¹ᵉ*)
 
 definition ωStabilize (G : [n;k]Grp) : [n;ω]Grp :=
 ωStabilize_of_le !le_max_left (nStabilize !le_max_right G)
@@ -251,5 +276,49 @@ begin
   { apply le_of_eq, exact (sub_one_add_plus_two_sub_one n k)⁻¹ ⬝ !add_plus_two_comm },
   { exact _ }
 end
+
+definition Grp_hom (G H : [n;k]Grp) : Type :=
+B G →* B H
+
+definition is_set_Grp_hom (G H : [0;k]Grp) : is_set (Grp_hom G H) :=
+is_trunc_pmap_of_is_conn _ (k.-2) _ k _ (le_of_eq (sub_one_add_plus_two_sub_one k 0)⁻¹)
+  (is_trunc_B' H)
+
+local attribute [instance] is_set_Grp_hom
+
+definition Grp_precategory [constructor] (k : ℕ) : precategory [0;k]Grp :=
+precategory.mk (λG H, Grp_hom G H) (λX Y Z g f, g ∘* f) (λX, pid (B X))
+  begin intros, apply eq_of_phomotopy, exact !passoc⁻¹* end
+  begin intros, apply eq_of_phomotopy, apply pid_pcompose end
+  begin intros, apply eq_of_phomotopy, apply pcompose_pid end
+
+definition cGrp [constructor] (k : ℕ) : Precategory :=
+Precategory.mk _ (Grp_precategory k)
+
+definition cGrp_equivalence_cType [constructor] (k : ℕ) : cGrp k ≃c cType*[k.-1] :=
+sorry
+
+-- print category.Grp
+-- set_option pp.universes true
+-- print equivalence.symm
+-- print equivalence.trans
+
+-- set_option pp.all true
+-- definition cGrp_equivalence_Grp [constructor] : cGrp 1 ≃c category.Grp :=
+-- equivalence.trans
+--   _
+--   (equivalence.symm Grp_equivalence_cptruncconntype')
+-- begin
+--   transitivity cptruncconntype'.{u} 0,
+--   exact sorry,
+--   symmetry, exact Grp_equivalence_cptruncconntype'
+-- end
+-- category.equivalence.{u+1 u u+1 u} (category.Category.to_Precategory.{u+1 u} category.Grp.{u})
+--   (EM.cptruncconntype'.{u} (@zero.{0} trunc_index has_zero_trunc_index))
+-- equivalence.trans
+--   _
+--   (equivalence.symm Grp_equivalence_cptruncconntype')
+
+
 
 end higher_group
