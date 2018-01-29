@@ -180,7 +180,7 @@ Grp.mk (ptrunctype.mk (Ω G) !is_trunc_loop_nat pt)
 
 definition Deloop_adjoint_Loop (G : [n;k+1]Grp) (H : [n+1;k]Grp) :
   ppmap (B (Deloop G)) (B H) ≃* ppmap (B G) (B (Loop H)) :=
-(connect_intro_pequiv _ !is_conn_pconntype)⁻¹ᵉ* /- still a sorry here -/
+(connect_intro_pequiv _ !is_conn_pconntype)⁻¹ᵉ*
 
 /- to do: naturality -/
 
@@ -263,7 +263,20 @@ definition ωStabilize_of_le (H : k ≥ n + 2) (G : [n;k]Grp) : [n;ω]Grp :=
 definition ωStabilize (G : [n;k]Grp) : [n;ω]Grp :=
 ωStabilize_of_le !le_max_left (nStabilize !le_max_right G)
 
+theorem ωstabilization (H : k ≥ n + 2) : is_equiv (@ωStabilize n k) :=
+sorry
+
 /- to do: adjunction (and ωStabilize ∘ ωForget =?= id) -/
+
+definition Grp_hom (G H : [n;k]Grp) : Type :=
+B G →* B H
+
+definition is_trunc_Grp_hom (G H : [n;k]Grp) : is_trunc n (Grp_hom G H) :=
+is_trunc_pmap_of_is_conn _ (k.-2) _ (k + n) _ (le_of_eq (sub_one_add_plus_two_sub_one k n)⁻¹)
+  (is_trunc_B' H)
+
+definition is_set_Grp_hom (G H : [0;k]Grp) : is_set (Grp_hom G H) :=
+is_trunc_Grp_hom G H
 
 definition is_trunc_Grp (n k : ℕ) : is_trunc (n + 1) [n;k]Grp :=
 begin
@@ -272,17 +285,8 @@ begin
   apply @is_trunc_equiv_closed_rev _ _ _ (ptruncconntype_eq_equiv X Y),
   apply @is_trunc_equiv_closed_rev _ _ _ (pequiv.sigma_char_pmap X Y),
   apply @is_trunc_subtype (X →* Y) (λ f, trunctype.mk' -1 (is_equiv f)),
-  apply is_trunc_pmap_of_is_conn X k.-2 (n.-1) (n + k) Y,
-  { apply le_of_eq, exact (sub_one_add_plus_two_sub_one n k)⁻¹ ⬝ !add_plus_two_comm },
-  { exact _ }
+  exact is_trunc_Grp_hom ((Grp_equiv n k)⁻¹ᵉ X) ((Grp_equiv n k)⁻¹ᵉ Y)
 end
-
-definition Grp_hom (G H : [n;k]Grp) : Type :=
-B G →* B H
-
-definition is_set_Grp_hom (G H : [0;k]Grp) : is_set (Grp_hom G H) :=
-is_trunc_pmap_of_is_conn _ (k.-2) _ k _ (le_of_eq (sub_one_add_plus_two_sub_one k 0)⁻¹)
-  (is_trunc_B' H)
 
 local attribute [instance] is_set_Grp_hom
 
@@ -298,10 +302,8 @@ Precategory.mk _ (Grp_precategory k)
 definition cGrp_equivalence_cType [constructor] (k : ℕ) : cGrp k ≃c cType*[k.-1] :=
 sorry
 
--- print category.Grp
--- set_option pp.universes true
--- print equivalence.symm
--- print equivalence.trans
+definition cGrp_equivalence_Grp [constructor] : cGrp 1 ≃c category.Grp :=
+sorry
 
 -- set_option pp.all true
 -- definition cGrp_equivalence_Grp [constructor] : cGrp 1 ≃c category.Grp :=
@@ -320,5 +322,16 @@ sorry
 --   (equivalence.symm Grp_equivalence_cptruncconntype')
 
 
+--has sorry
+print axioms ωstabilization
+print axioms Decat_adjoint_Disc_natural
+print axioms cGrp_equivalence_Grp
+
+
+-- no sorry's
+print axioms Decat_adjoint_Disc
+print axioms Deloop_adjoint_Loop
+print axioms stabilization
+print axioms is_trunc_Grp
 
 end higher_group

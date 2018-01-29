@@ -24,6 +24,15 @@ end algebra
 
 namespace eq
 
+  -- this should maybe replace whisker_left_idp and whisker_left_idp_con
+  definition whisker_left_idp_square {A : Type} {a a' : A} {p q : a = a'} (r : p = q) :
+    square (whisker_left idp r) r (idp_con p) (idp_con q) :=
+  begin induction r, exact hrfl end
+
+  definition ap_con_idp_left {A B : Type} (f : A → B) {a a' : A} (p : a = a') :
+    square (ap_con f idp p) idp (ap02 f (idp_con p)) (idp_con (ap f p)) :=
+  begin induction p, exact ids end
+
   definition pathover_tr_pathover_idp_of_eq {A : Type} {B : A → Type} {a a' : A} {b : B a} {b' : B a'} {p : a = a'}
     (q : b =[p] b') :
     pathover_tr p b ⬝o pathover_idp_of_eq (tr_eq_of_pathover q) = q :=
@@ -1321,29 +1330,23 @@ definition connect_intro_ppoint [constructor] {k : ℕ} {X : Type*} {Y : Type*} 
   (f : X →* connect k Y) : connect_intro H (ppoint (ptr k Y) ∘* f) ~* f :=
 begin
   cases f with f f₀,
-  -- revert f₀, refine equiv_rect (fiber_eq_equiv' _ _)⁻¹ᵉ _ _,
-  -- revert f,
-  -- refine equiv_rect (!sigma_pi_equiv_pi_sigma ⬝e arrow_equiv_arrow_right _ !fiber.sigma_char⁻¹ᵉ) _ _,
-  -- intro fg pq, induction pq with p q, induction fg with f g,
-  -- induction Y with Y y₀, esimp at *, esimp [connect] at (f, p, q), induction p,
   fapply phomotopy.mk,
   { intro x, fapply fiber_eq, reflexivity,
     refine @is_conn.elim (k.-1) _ _ _ (λx', !is_trunc_eq) _ x,
     refine !is_conn.elim_β ⬝ _,
     refine _ ⬝ !idp_con⁻¹,
-    refine !ap_compose⁻¹ ⬝ _,
-    exact ap_is_constant point_eq f₀ },
-  { esimp,
-    refine whisker_left _ !fiber_eq_eta ⬝ !fiber_eq_con ⬝ apd011 fiber_eq !idp_con _,
-    esimp,
+    symmetry, refine _ ⬝ !con_idp, exact fiber_eq_pr2 f₀ },
+  { esimp, refine whisker_left _ !fiber_eq_eta ⬝ !fiber_eq_con ⬝ apd011 fiber_eq !idp_con _, esimp,
     apply eq_pathover_constant_left,
     refine whisker_right _ (whisker_right _ (whisker_right _ !is_conn.elim_β)) ⬝pv _,
-    exact sorry
-    --apply move_bot_of_left,
-
---    refine whisker_right _ _ ⬝ _,
---    refine !is_conn.elim_β ⬝ _,
-    }
+    esimp [connect], refine _ ⬝vp !con_idp,
+    apply move_bot_of_left, refine !idp_con ⬝ !con_idp⁻¹ ⬝ph _,
+    refine !con.assoc ⬝ !con.assoc ⬝pv _, apply whisker_tl,
+    note r := eq_bot_of_square (transpose (whisker_left_idp_square (fiber_eq_pr2 f₀))⁻¹ᵛ),
+    refine !con.assoc⁻¹ ⬝ whisker_right _ r⁻¹ ⬝pv _, clear r,
+    apply move_top_of_left,
+    refine whisker_right_idp (ap_con tr idp (ap point f₀))⁻¹ᵖ ⬝pv _,
+    exact (ap_con_idp_left tr (ap point f₀))⁻¹ʰ }
 end
 
 definition connect_intro_equiv [constructor] {k : ℕ} {X : Type*} (Y : Type*) (H : is_conn k X) :
