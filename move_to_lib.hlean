@@ -373,19 +373,27 @@ namespace nat
     { exact H0 },
     { exact IH (Hs s H0) }
   end
-/-  have Hp : Πn, P n → P (pred n),
+
+  definition rec_down_le (P : ℕ → Type) (s : ℕ) (H0 : Πn, s ≤ n → P n) (Hs : Πn, P (n+1) → P n)
+    : Πn, P n :=
   begin
-    intro n p, cases n with n,
-    { exact p },
-    { exact Hs n p }
-  end,
-  have H : Πn, P (s - n),
+    induction s with s IH: intro n,
+    { exact H0 n (zero_le n) },
+    { apply IH, intro n' H, induction H with n' H IH2, apply Hs, exact H0 _ !le.refl,
+      exact H0 _ (succ_le_succ H) }
+  end
+
+  definition rec_down_le_univ {P : ℕ → Type} {s : ℕ} {H0 : Π⦃n⦄, s ≤ n → P n}
+    {Hs : Π⦃n⦄, P (n+1) → P n} (Q : Π⦃n⦄, P n → P (n + 1) → Type)
+    (HQ0 : Πn (H : s ≤ n), Q (H0 H) (H0 (le.step H))) (HQs : Πn (p : P (n+1)), Q (Hs p) p) :
+    Πn, Q (rec_down_le P s H0 Hs n) (rec_down_le P s H0 Hs (n + 1)) :=
   begin
-    intro n, induction n with n p,
-    { exact H0 },
-    { exact Hp (s - n) p }
-  end,
-  transport P (nat.sub_self s) (H s)-/
+    induction s with s IH: intro n,
+    { apply HQ0 },
+    { apply IH, intro n' H, induction H with n' H IH2,
+      { apply HQs },
+      { apply HQ0 }}
+  end
 
   /- this generalizes iterate_commute -/
   definition iterate_hsquare {A B : Type} {f : A → A} {g : B → B}

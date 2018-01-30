@@ -13,6 +13,19 @@ namespace higher_group
 set_option pp.binder_types true
 universe variable u
 
+/- Results not necessarily about higher groups which we repeat here, because they are mentioned in
+  the higher group paper -/
+namespace hide
+open pushout
+definition connect_intro_pequiv {k : ℕ} {X : Type*} (Y : Type*) (H : is_conn k X) :
+  ppmap X (connect k Y) ≃* ppmap X Y :=
+is_conn.connect_intro_pequiv Y H
+
+definition is_conn_fun_prod_of_wedge (n m : ℕ) (A B : Type*)
+  [cA : is_conn n A] [cB : is_conn m B] : is_conn_fun (m + n) (@prod_of_wedge A B) :=
+is_conn_fun_prod_of_wedge n m A B
+end hide
+
 /- We require that the carrier has a point (preserved by the equivalence) -/
 
 structure Grp (n k : ℕ) : Type := /- (n,k)Grp, denoted here as [n;k]Grp -/
@@ -205,7 +218,12 @@ Grp.mk (ptrunctype.mk (ptrunc n (Ω[k+1] (susp (B G)))) _ pt)
     exact ptrunc_change_index !of_nat_add_of_nat _
   end end
 
-/- to do: adjunction -/
+definition Stabilize_adjoint_Forget (G : [n;k]Grp) (H : [n;k+1]Grp) :
+  ppmap (B (Stabilize G)) (B H) ≃* ppmap (B G) (B (Forget H)) :=
+have is_trunc (n + k + 1) (B H), from !is_trunc_B,
+pmap_ptrunc_pequiv (n + k + 1) (⅀ (B G)) (B H) ⬝e* susp_adjoint_loop (B G) (B H)
+
+/- to do: naturality -/
 
 definition ωForget (k : ℕ) (G : [n;ω]Grp) : [n;k]Grp :=
 have is_trunc (n + k) (oB G k), from _,
@@ -240,7 +258,7 @@ begin
     !ptrunc_pequiv,
 end
 
-theorem stabilization (H : k ≥ n + 2) : is_equiv (@Stabilize n k) :=
+definition stabilization (H : k ≥ n + 2) : is_equiv (@Stabilize n k) :=
 begin
   fapply adjointify,
   { exact Forget },
@@ -249,9 +267,16 @@ begin
 end
 
 definition ωGrp.mk_le {n : ℕ} (k₀ : ℕ)
-  (B : Π⦃k : ℕ⦄, k₀ ≤ k → (n+k)-Type*[k.-1])
-  (e : Π⦃k : ℕ⦄ (H : k₀ ≤ k), B H ≃* Ω (B (le.step H))) : [n;ω]Grp :=
-sorry
+  (C : Π⦃k : ℕ⦄, k₀ ≤ k → ((n+k)-Type*[k.-1] : Type.{u+1}))
+  (e : Π⦃k : ℕ⦄ (H : k₀ ≤ k), C H ≃* Ω (C (le.step H))) : ([n;ω]Grp : Type.{u+1}) :=
+begin
+  fconstructor,
+  { apply rec_down_le _ k₀ C, intro n' D,
+    refine (ptruncconntype.mk (Ω D) _ pt _),
+      apply is_trunc_loop, apply is_trunc_ptruncconntype, apply is_conn_loop,
+      apply is_conn_ptruncconntype },
+  { intro n', apply rec_down_le_univ, exact e, intro n D, reflexivity }
+end
 
 /- for l ≤ k we want to define it as Ω[k-l] (B G),
    for H : l ≥ k we want to define it as nStabilize H G -/
@@ -263,7 +288,7 @@ definition ωStabilize_of_le (H : k ≥ n + 2) (G : [n;k]Grp) : [n;ω]Grp :=
 definition ωStabilize (G : [n;k]Grp) : [n;ω]Grp :=
 ωStabilize_of_le !le_max_left (nStabilize !le_max_right G)
 
-theorem ωstabilization (H : k ≥ n + 2) : is_equiv (@ωStabilize n k) :=
+definition ωstabilization (H : k ≥ n + 2) : is_equiv (@ωStabilize n k) :=
 sorry
 
 /- to do: adjunction (and ωStabilize ∘ ωForget =?= id) -/
@@ -302,11 +327,10 @@ Precategory.mk _ (Grp_precategory k)
 definition cGrp_equivalence_cType [constructor] (k : ℕ) : cGrp k ≃c cType*[k.-1] :=
 sorry
 
+-- set_option pp.all true
 definition cGrp_equivalence_Grp [constructor] : cGrp 1 ≃c category.Grp :=
 sorry
 
--- set_option pp.all true
--- definition cGrp_equivalence_Grp [constructor] : cGrp 1 ≃c category.Grp :=
 -- equivalence.trans
 --   _
 --   (equivalence.symm Grp_equivalence_cptruncconntype')
@@ -331,6 +355,7 @@ print axioms cGrp_equivalence_Grp
 -- no sorry's
 print axioms Decat_adjoint_Disc
 print axioms Deloop_adjoint_Loop
+print axioms Stabilize_adjoint_Forget
 print axioms stabilization
 print axioms is_trunc_Grp
 

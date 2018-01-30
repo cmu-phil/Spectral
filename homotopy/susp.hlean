@@ -181,7 +181,7 @@ sorry
         apply trans (nat.mul_comm 2 n),
         apply ap (λ k, k + n), exact nat.zero_add n },
       rewrite H,
-      exact is_conn_fun_prod_of_wedge n n (a, a)
+      exact is_conn_fun_prod_of_wedge n n A A (a, a)
     end
   end
 

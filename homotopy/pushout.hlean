@@ -906,7 +906,7 @@ namespace pushout -- should this be wedge?
     exact (eq_con_of_inv_con_eq H)⁻¹,
   end
 
-  parameters {A B : Type*}
+  parameters (n m : ℕ) {A B : Type*}
 
   private definition section_of_glue (P : A × B → Type)
     (s : Π w, P (prod_of_wedge w))
@@ -915,7 +915,8 @@ namespace pushout -- should this be wedge?
     ⬝ (ap (λ q, transport P q (s (inl pt)))
     (wedge.elim_glue (λ a, (a, pt)) (λ b, (pt, b)) idp)))⁻¹ ⬝ (apdt s (glue star))
 
-  parameters (n m : ℕ) [cA : is_conn n A] [cB : is_conn m B]
+  parameters (A B)
+  parameters [cA : is_conn n A] [cB : is_conn m B]
   include cA cB
 
   definition is_conn_fun_prod_of_wedge : is_conn_fun (m + n) (@prod_of_wedge A B) :=
