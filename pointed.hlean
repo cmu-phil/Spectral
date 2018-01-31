@@ -202,6 +202,15 @@ namespace pointed
   -- definition phomotopy_eq_equiv_phomotopy2 : p = q ≃ p ~*2 q :=
   -- sorry
 
+  definition pconst_pcompose_phomotopy {A B C : Type*} {f f' : A →* B} (p : f ~* f') :
+    pwhisker_left (pconst B C) p ⬝* pconst_pcompose f' = pconst_pcompose f :=
+  begin
+    fapply phomotopy_eq,
+    { intro a, apply ap_constant },
+    { induction p using phomotopy_rec_idp, induction B with B b₀, induction f with f f₀,
+      esimp at *, induction f₀, reflexivity }
+  end
+
 /- Homotopy between a function and its eta expansion -/
 
   definition pmap_eta [constructor] {X Y : Type*} (f : X →* Y) : f ~* pmap.mk f (respect_pt f) :=

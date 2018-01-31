@@ -940,3 +940,33 @@ namespace is_conn
   end
 
 end is_conn
+
+
+/- TODO: move, these facts use some of these pointed properties -/
+
+namespace trunc
+
+lemma pmap_ptrunc_pequiv_natural [constructor] (n : ℕ₋₂) {A A' B B' : Type*}
+  [H : is_trunc n B] [H : is_trunc n B'] (f : A' →* A) (g : B →* B') :
+  psquare (pmap_ptrunc_pequiv n A B) (pmap_ptrunc_pequiv n A' B')
+          (ppcompose_left g ∘* ppcompose_right (ptrunc_functor n f))
+          (ppcompose_left g ∘* ppcompose_right f) :=
+begin
+  refine _ ⬝v* _, exact pmap_ptrunc_pequiv n A' B,
+  { fapply phomotopy.mk,
+    { intro h, apply eq_of_phomotopy,
+      exact !passoc ⬝* pwhisker_left h (ptr_natural n f)⁻¹* ⬝* !passoc⁻¹* },
+    { xrewrite [▸*, +pcompose_right_eq_of_phomotopy, -+eq_of_phomotopy_trans],
+      apply ap eq_of_phomotopy,
+      refine !trans_assoc ⬝ idp ◾** (!trans_assoc⁻¹ ⬝ (eq_bot_of_phsquare (phtranspose
+               (passoc_pconst_left (ptrunc_functor n f) (ptr n A'))))⁻¹) ⬝ _,
+      refine !trans_assoc ⬝ idp ◾** !pconst_pcompose_phomotopy ⬝ _,
+      apply passoc_pconst_left }},
+  { fapply phomotopy.mk,
+    { intro h, apply eq_of_phomotopy, exact !passoc⁻¹* },
+    { xrewrite [▸*, pcompose_right_eq_of_phomotopy, pcompose_left_eq_of_phomotopy,
+        -+eq_of_phomotopy_trans],
+      apply ap eq_of_phomotopy, apply symm_trans_eq_of_eq_trans, symmetry,
+      apply passoc_pconst_middle }}
+end
+end trunc

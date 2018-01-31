@@ -1129,6 +1129,33 @@ pmap.mk (fiber_functor g h H (respect_pt h))
       exact !con.assoc ⬝ to_homotopy_pt H
   end
 
+definition ppoint_natural {A A' B B' : Type*} {f : A →* B} {f' : A' →* B'}
+  (g : A →* A') (h : B →* B') (H : psquare g h f f') :
+  psquare (ppoint f) (ppoint f') (pfiber_functor g h H) g :=
+begin
+  fapply phomotopy.mk,
+  { intro x, reflexivity },
+  { refine !idp_con ⬝ _ ⬝ !idp_con⁻¹, esimp, apply point_fiber_eq }
+end
+
+/- if we need this: do pfiber_functor_pcompose and so on first -/
+-- definition psquare_pfiber_functor [constructor] {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type*}
+--   {f₁ : A₁ →* B₁} {f₂ : A₂ →* B₂} {f₃ : A₃ →* B₃} {f₄ : A₄ →* B₄}
+--   {g₁₂ : A₁ →* A₂} {g₃₄ : A₃ →* A₄} {g₁₃ : A₁ →* A₃} {g₂₄ : A₂ →* A₄}
+--   {h₁₂ : B₁ →* B₂} {h₃₄ : B₃ →* B₄} {h₁₃ : B₁ →* B₃} {h₂₄ : B₂ →* B₄}
+--   (H₁₂ : psquare g₁₂ h₁₂ f₁ f₂) (H₃₄ : psquare g₃₄ h₃₄ f₃ f₄)
+--   (H₁₃ : psquare g₁₃ h₁₃ f₁ f₃) (H₂₄ : psquare g₂₄ h₂₄ f₂ f₄)
+--   (G : psquare g₁₂ g₃₄ g₁₃ g₂₄) (H : psquare h₁₂ h₃₄ h₁₃ h₂₄)
+--   /- pcube H₁₂ H₃₄ H₁₃ H₂₄ G H -/ :
+--   psquare (pfiber_functor g₁₂ h₁₂ H₁₂) (pfiber_functor g₃₄ h₃₄ H₃₄)
+--           (pfiber_functor g₁₃ h₁₃ H₁₃) (pfiber_functor g₂₄ h₂₄ H₂₄) :=
+-- begin
+--   fapply phomotopy.mk,
+--   { intro x, induction x with x p, induction B₁ with B₁ b₁₀, induction f₁ with f₁ f₁₀, esimp at *,
+--     induction p, esimp [fiber_functor], },
+--   { }
+-- end
+
 -- TODO: use this in pfiber_pequiv_of_phomotopy
 definition fiber_equiv_of_homotopy {A B : Type} {f g : A → B} (h : f ~ g) (b : B)
   : fiber f b ≃ fiber g b :=
@@ -1361,7 +1388,7 @@ definition connect_intro_equiv [constructor] {k : ℕ} {X : Type*} (Y : Type*) (
   (X →* connect k Y) ≃ (X →* Y) :=
 begin
   fapply equiv.MK,
-  { intro f, exact ppoint (ptr k Y) ∘* f },
+  { intro f, exact ppoint (ptr k Y) ∘*  f },
   { intro g, exact connect_intro H g },
   { intro g, apply eq_of_phomotopy, exact ppoint_connect_intro H g },
   { intro f, apply eq_of_phomotopy, exact connect_intro_ppoint H f }
@@ -1385,6 +1412,31 @@ loopn_pfiber (k+1) (ptr k X) ⬝e*
 
 definition is_conn_of_is_conn_succ_nat (n : ℕ) (A : Type) [is_conn (n+1) A] : is_conn n A :=
 is_conn_of_is_conn_succ n A
+
+definition connect_functor (k : ℕ) {X Y : Type*} (f : X →* Y) : connect k X →* connect k Y :=
+pfiber_functor f (ptrunc_functor k f) (ptr_natural k f)⁻¹*
+
+definition connect_intro_pequiv_natural {k : ℕ} {X X' : Type*} {Y Y' : Type*} (f : X' →* X)
+  (g : Y →* Y') (H : is_conn k X) (H' : is_conn k X') :
+  psquare (connect_intro_pequiv Y H) (connect_intro_pequiv Y' H')
+          (ppcompose_left (connect_functor k g) ∘* ppcompose_right f)
+          (ppcompose_left g ∘* ppcompose_right f) :=
+begin
+  refine _ ⬝v* _, exact connect_intro_pequiv Y H',
+  { fapply phomotopy.mk,
+    { intro h, apply eq_of_phomotopy, apply passoc },
+    { xrewrite [▸*, pcompose_right_eq_of_phomotopy, pcompose_left_eq_of_phomotopy,
+        -+eq_of_phomotopy_trans],
+      apply ap eq_of_phomotopy, apply passoc_pconst_middle }},
+  { fapply phomotopy.mk,
+    { intro h, apply eq_of_phomotopy,
+      refine !passoc⁻¹* ⬝* pwhisker_right h (ppoint_natural _ _ _) ⬝* !passoc },
+    { xrewrite [▸*, +pcompose_left_eq_of_phomotopy, -+eq_of_phomotopy_trans],
+      apply ap eq_of_phomotopy,
+      refine !trans_assoc ⬝ idp ◾** !passoc_pconst_right ⬝ _,
+      refine !trans_assoc ⬝ idp ◾** !pcompose_pconst_phomotopy ⬝ _,
+      apply symm_trans_eq_of_eq_trans, symmetry, apply passoc_pconst_right }}
+end
 
 end is_conn
 

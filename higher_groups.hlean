@@ -149,12 +149,12 @@ definition Decat_adjoint_Disc (G : [n+1;k]Grp) (H : [n;k]Grp) :
 pmap_ptrunc_pequiv (n + k) (B G) (B H)
 
 definition Decat_adjoint_Disc_natural {G G' : [n+1;k]Grp} {H H' : [n;k]Grp}
-  (eG : B G' ≃* B G) (eH : B H ≃* B H') :
+  (g : B G' →* B G) (h : B H →* B H') :
   psquare (Decat_adjoint_Disc G H)
           (Decat_adjoint_Disc G' H')
-          (ppcompose_left eH ∘* ppcompose_right (ptrunc_functor _ eG))
-          (ppcompose_left eH ∘* ppcompose_right eG) :=
-sorry
+          (ppcompose_left h ∘* ppcompose_right (ptrunc_functor _ g))
+          (ppcompose_left h ∘* ppcompose_right g) :=
+pmap_ptrunc_pequiv_natural (n + k) g h
 
 definition Decat_Disc (G : [n;k]Grp) : Decat (Disc G) = G :=
 Grp_eq !ptrunc_pequiv
@@ -195,6 +195,14 @@ definition Deloop_adjoint_Loop (G : [n;k+1]Grp) (H : [n+1;k]Grp) :
   ppmap (B (Deloop G)) (B H) ≃* ppmap (B G) (B (Loop H)) :=
 (connect_intro_pequiv _ !is_conn_pconntype)⁻¹ᵉ*
 
+definition Deloop_adjoint_Loop_natural {G G' : [n;k+1]Grp} {H H' : [n+1;k]Grp}
+  (g : B G' →* B G) (h : B H →* B H') :
+  psquare (Deloop_adjoint_Loop G H)
+          (Deloop_adjoint_Loop G' H')
+          (ppcompose_left h ∘* ppcompose_right g)
+          (ppcompose_left (connect_functor k h) ∘* ppcompose_right g) :=
+(connect_intro_pequiv_natural g h _ _)⁻¹ʰ*
+
 /- to do: naturality -/
 
 definition Loop_Deloop (G : [n;k+1]Grp) : Loop (Deloop G) = G :=
@@ -222,6 +230,19 @@ definition Stabilize_adjoint_Forget (G : [n;k]Grp) (H : [n;k+1]Grp) :
   ppmap (B (Stabilize G)) (B H) ≃* ppmap (B G) (B (Forget H)) :=
 have is_trunc (n + k + 1) (B H), from !is_trunc_B,
 pmap_ptrunc_pequiv (n + k + 1) (⅀ (B G)) (B H) ⬝e* susp_adjoint_loop (B G) (B H)
+
+definition Stabilize_adjoint_Forget_natural {G G' : [n;k]Grp} {H H' : [n;k+1]Grp}
+  (g : B G' →* B G) (h : B H →* B H') :
+  psquare (Stabilize_adjoint_Forget G H)
+          (Stabilize_adjoint_Forget G' H')
+          (ppcompose_left h ∘* ppcompose_right (ptrunc_functor (n+k+1) (⅀→ g)))
+          (ppcompose_left (Ω→ h) ∘* ppcompose_right g) :=
+begin
+  have is_trunc (n + k + 1) (B H), from !is_trunc_B,
+  have is_trunc (n + k + 1) (B H'), from !is_trunc_B,
+  refine pmap_ptrunc_pequiv_natural (n+k+1) (⅀→ g) h ⬝h* _,
+  exact susp_adjoint_loop_natural_left g ⬝v* susp_adjoint_loop_natural_right h
+end
 
 /- to do: naturality -/
 
@@ -348,14 +369,15 @@ sorry
 
 --has sorry
 print axioms ωstabilization
-print axioms Decat_adjoint_Disc_natural
 print axioms cGrp_equivalence_Grp
-
 
 -- no sorry's
 print axioms Decat_adjoint_Disc
+print axioms Decat_adjoint_Disc_natural
 print axioms Deloop_adjoint_Loop
+print axioms Deloop_adjoint_Loop_natural
 print axioms Stabilize_adjoint_Forget
+print axioms Stabilize_adjoint_Forget_natural
 print axioms stabilization
 print axioms is_trunc_Grp
 
