@@ -399,7 +399,7 @@ namespace EM
   attribute ptruncconntype'.A [coercion]
   attribute ptruncconntype'.H1 ptruncconntype'.H2 [instance]
 
-  definition ptruncconntype'_equiv_ptruncconntype (n : ℕ₋₂) :
+  definition ptruncconntype'_equiv_ptruncconntype [constructor] (n : ℕ₋₂) :
     (ptruncconntype' n : Type.{u+1}) ≃ ((n+1)-Type*[n] : Type.{u+1}) :=
   begin
     fapply equiv.MK,
