@@ -336,40 +336,28 @@ end
 
 local attribute [instance] is_set_Grp_hom
 
-definition Grp_precategory [constructor] (k : ℕ) : precategory [0;k]Grp :=
-precategory.mk (λG H, Grp_hom G H) (λX Y Z g f, g ∘* f) (λX, pid (B X))
-  begin intros, apply eq_of_phomotopy, exact !passoc⁻¹* end
-  begin intros, apply eq_of_phomotopy, apply pid_pcompose end
-  begin intros, apply eq_of_phomotopy, apply pcompose_pid end
-
 definition cGrp [constructor] (k : ℕ) : Precategory :=
-Precategory.mk _ (Grp_precategory k)
+pb_Precategory (cptruncconntype' (k.-1))
+               (Grp_equiv 0 k ⬝e equiv_ap (λx, x-Type*[k.-1]) (ap of_nat (zero_add k)) ⬝e
+                 (ptruncconntype'_equiv_ptruncconntype (k.-1))⁻¹ᵉ)
+
+example (k : ℕ) : Precategory.carrier (cGrp k) = [0;k]Grp := by reflexivity
 
 definition cGrp_equivalence_cType [constructor] (k : ℕ) : cGrp k ≃c cType*[k.-1] :=
-sorry
+!pb_Precategory_equivalence_of_equiv
 
--- set_option pp.all true
-definition cGrp_equivalence_Grp [constructor] : cGrp 1 ≃c category.Grp :=
-sorry
+definition cGrp_equivalence_Grp [constructor] : cGrp.{u} 1 ≃c category.Grp.{u} :=
+equivalence.trans !pb_Precategory_equivalence_of_equiv
+                  (equivalence.trans (equivalence.symm Grp_equivalence_cptruncconntype')
+                    proof equivalence.refl _ qed)
 
--- equivalence.trans
---   _
---   (equivalence.symm Grp_equivalence_cptruncconntype')
--- begin
---   transitivity cptruncconntype'.{u} 0,
---   exact sorry,
---   symmetry, exact Grp_equivalence_cptruncconntype'
--- end
--- category.equivalence.{u+1 u u+1 u} (category.Category.to_Precategory.{u+1 u} category.Grp.{u})
---   (EM.cptruncconntype'.{u} (@zero.{0} trunc_index has_zero_trunc_index))
--- equivalence.trans
---   _
---   (equivalence.symm Grp_equivalence_cptruncconntype')
-
+definition cGrp_equivalence_AbGrp [constructor] (k : ℕ) : cGrp.{u} (k+2) ≃c category.AbGrp.{u} :=
+equivalence.trans !pb_Precategory_equivalence_of_equiv
+                  (equivalence.trans (equivalence.symm (AbGrp_equivalence_cptruncconntype' k))
+                    proof equivalence.refl _ qed)
 
 --has sorry
 print axioms ωstabilization
-print axioms cGrp_equivalence_Grp
 
 -- no sorry's
 print axioms Decat_adjoint_Disc
@@ -380,5 +368,7 @@ print axioms Stabilize_adjoint_Forget
 print axioms Stabilize_adjoint_Forget_natural
 print axioms stabilization
 print axioms is_trunc_Grp
+print axioms cGrp_equivalence_Grp
+print axioms cGrp_equivalence_AbGrp
 
 end higher_group

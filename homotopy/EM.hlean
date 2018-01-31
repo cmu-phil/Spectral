@@ -4,7 +4,7 @@ import homotopy.EM algebra.category.functor.equivalence types.pointed2 ..pointed
        ..move_to_lib .susp ..algebra.exactness ..univalent_subcategory
 
 open eq equiv is_equiv algebra group nat pointed EM.ops is_trunc trunc susp function is_conn nat
-
+universe variable u
 /- TODO: try to fix the compilation time of this file -/
 
 namespace EM
@@ -315,7 +315,7 @@ namespace EM
   | 1     := EM1 (π₁ X)
   | (n+2) := EMadd1 (πag[n+2] X) (n+1)
 
-  definition EM_type_pequiv.{u} {X Y : pType.{u}} (n : ℕ) [Hn : is_succ n] (e : πg[n] Y ≃g πg[n] X)
+  definition EM_type_pequiv {X Y : pType.{u}} (n : ℕ) [Hn : is_succ n] (e : πg[n] Y ≃g πg[n] X)
     [H1 : is_conn (n.-1) X] [H2 : is_trunc n X] : EM_type Y n ≃* X :=
   begin
     induction Hn with n, cases n with n,
@@ -399,6 +399,16 @@ namespace EM
   attribute ptruncconntype'.A [coercion]
   attribute ptruncconntype'.H1 ptruncconntype'.H2 [instance]
 
+  definition ptruncconntype'_equiv_ptruncconntype (n : ℕ₋₂) :
+    (ptruncconntype' n : Type.{u+1}) ≃ ((n+1)-Type*[n] : Type.{u+1}) :=
+  begin
+    fapply equiv.MK,
+    { intro X, exact ptruncconntype.mk (ptruncconntype'.A X) _ pt _ },
+    { intro X, exact ptruncconntype'.mk X _ _ },
+    { intro X, induction X with X H1 x₀ H2, reflexivity },
+    { intro X, induction X with X H1 H2, induction X with X x₀, reflexivity }
+  end
+
   definition EM1_pequiv_ptruncconntype' (X : ptruncconntype' 0) : EM1 (πg[1] X) ≃* X :=
   @(EM1_pequiv_type X) _ (ptruncconntype'.H2 X)
 
@@ -416,7 +426,7 @@ namespace EM
 
   open category functor nat_trans
 
-  definition precategory_ptruncconntype'.{u} [constructor] (n : ℕ₋₂) :
+  definition precategory_ptruncconntype' [constructor] (n : ℕ₋₂) :
     precategory.{u+1 u} (ptruncconntype' n) :=
   begin
     fapply precategory.mk,
@@ -468,7 +478,7 @@ namespace EM
     begin intro, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_pid end
     begin intros, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_compose end
 
-  definition is_equivalence_EM1_cfunctor.{u} : is_equivalence EM1_cfunctor.{u} :=
+  definition is_equivalence_EM1_cfunctor : is_equivalence EM1_cfunctor.{u} :=
   begin
     fapply is_equivalence.mk,
     { exact homotopy_group_cfunctor.{u} },
@@ -492,7 +502,7 @@ namespace EM
         { apply eq_of_phomotopy, apply pright_inv }}}
   end
 
-  definition is_equivalence_EM_cfunctor.{u} (n : ℕ) : is_equivalence (EM_cfunctor.{u} (n+2)) :=
+  definition is_equivalence_EM_cfunctor (n : ℕ) : is_equivalence (EM_cfunctor.{u} (n+2)) :=
   begin
     fapply is_equivalence.mk,
     { exact ab_homotopy_group_cfunctor.{u} n },
@@ -516,10 +526,10 @@ namespace EM
         { apply eq_of_phomotopy, apply pright_inv }}}
   end
 
-  definition Grp_equivalence_cptruncconntype'.{u} [constructor] : Grp.{u} ≃c cType*[0] :=
+  definition Grp_equivalence_cptruncconntype' [constructor] : Grp.{u} ≃c cType*[0] :=
   equivalence.mk EM1_cfunctor.{u} is_equivalence_EM1_cfunctor.{u}
 
-  definition AbGrp_equivalence_cptruncconntype'.{u} [constructor] (n : ℕ) : AbGrp.{u} ≃c cType*[n.+1] :=
+  definition AbGrp_equivalence_cptruncconntype' [constructor] (n : ℕ) : AbGrp.{u} ≃c cType*[n.+1] :=
   equivalence.mk (EM_cfunctor.{u} (n+2)) (is_equivalence_EM_cfunctor.{u} n)
   end category
 
@@ -623,7 +633,7 @@ namespace EM
     open chain_complex prod fin
 
   /- TODO: other cases -/
-  definition LES_isomorphism_kernel_of_trivial.{u}
+  definition LES_isomorphism_kernel_of_trivial
     {X Y : pType.{u}} (f : X →* Y) (n : ℕ) [H : is_succ n]
     (H1 : is_contr (πg[n+1] Y)) : πg[n] (pfiber f) ≃g Kernel (π→g[n] f) :=
   begin
@@ -639,7 +649,7 @@ namespace EM
   end
 
   open group algebra is_trunc
-  definition homotopy_group_fiber_EM1_functor.{u} {G H : Group.{u}} (φ : G →g H) :
+  definition homotopy_group_fiber_EM1_functor {G H : Group.{u}} (φ : G →g H) :
     π₁ (pfiber (EM1_functor φ)) ≃g Kernel φ :=
   have H1 : is_trunc 1 (EM1 H), from sorry,
   have H2 : 1 <[ℕ] 1 + 1, from sorry,
