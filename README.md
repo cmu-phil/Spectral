@@ -1,4 +1,4 @@
-# Spectral Sequences
+# Spectral Sequences in Homotopy Type Theory
 
 Formalization project of the CMU HoTT group to formalize the Serre spectral sequence.
 
