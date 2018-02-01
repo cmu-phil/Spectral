@@ -17,13 +17,19 @@ universe variable u
   the higher group paper -/
 namespace hide
 open pushout
-definition connect_intro_pequiv {k : ℕ} {X : Type*} (Y : Type*) (H : is_conn k X) :
-  ppmap X (connect k Y) ≃* ppmap X Y :=
-is_conn.connect_intro_pequiv Y H
+definition connect_intro_pequiv {k : ℕ} {B : Type*} (A : Type*) (H : is_conn k B) :
+  ppmap B (connect k A) ≃* ppmap B A :=
+is_conn.connect_intro_pequiv A H
 
 definition is_conn_fun_prod_of_wedge (n m : ℕ) (A B : Type*)
   [cA : is_conn n A] [cB : is_conn m B] : is_conn_fun (m + n) (@prod_of_wedge A B) :=
 is_conn_fun_prod_of_wedge n m A B
+
+definition is_trunc_ppi_of_is_conn (k n : ℕ) (X : Type*) (H : is_conn (k.-1) X)
+  (Y : X → Type*) (H3 : Πx, is_trunc (k + n) (Y x)) :
+  is_trunc n (Π*(x : X), Y x) :=
+is_conn.is_trunc_ppi_of_is_conn _ (k.-2) _ _ (le_of_eq (sub_one_add_plus_two_sub_one k n)⁻¹) _ H3
+
 end hide
 
 /- The k-groupal n-types.
