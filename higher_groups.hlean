@@ -45,7 +45,7 @@ structure ωGType (n : ℕ) := /- (n,ω)GType, denoted here as [n;ω]GType -/
 
 attribute InfGType.car GType.car [coercion]
 
-variables {n k l : ℕ}
+variables {n k k' l : ℕ}
 notation `[`:95 n:0 `; ` k `]GType`:0 := GType n k
 notation `[∞; `:95 k:0 `]GType`:0 := InfGType k
 notation `[`:95 n:0 `;ω]GType`:0 := ωGType n
@@ -132,7 +132,33 @@ eq_equiv_fn_eq_of_equiv (InfGType_equiv k) _ _ ⬝e !pconntype_eq_equiv
 definition InfGType_eq {k : ℕ} {G H : [∞;k]GType} (e : iB G ≃* iB H) : G = H :=
 (InfGType_eq_equiv G H)⁻¹ᵉ e
 
--- maybe to do: ωGType ≃ Σ(X : spectrum), is_sconn n X
+/- alternative constructor for ωGType -/
+
+definition ωGType.mk_le {n : ℕ} (k₀ : ℕ)
+  (C : Π⦃k : ℕ⦄, k₀ ≤ k → ((n+k)-Type*[k.-1] : Type.{u+1}))
+  (e : Π⦃k : ℕ⦄ (H : k₀ ≤ k), C H ≃* Ω (C (le.step H))) : ([n;ω]GType : Type.{u+1}) :=
+begin
+  fconstructor,
+  { apply rec_down_le _ k₀ C, intro n' D,
+    refine (ptruncconntype.mk (Ω D) _ pt _),
+      apply is_trunc_loop, apply is_trunc_ptruncconntype, apply is_conn_loop,
+      apply is_conn_ptruncconntype },
+  { intro n', apply rec_down_le_univ, exact e, intro n D, reflexivity }
+end
+
+definition ωGType.mk_le_beta {n : ℕ} {k₀ : ℕ}
+  (C : Π⦃k : ℕ⦄, k₀ ≤ k → ((n+k)-Type*[k.-1] : Type.{u+1}))
+  (e : Π⦃k : ℕ⦄ (H : k₀ ≤ k), C H ≃* Ω (C (le.step H)))
+  (k : ℕ) (H : k₀ ≤ k) : oB (ωGType.mk_le k₀ C e) k ≃* C H :=
+ptruncconntype_eq_equiv _ _ !rec_down_le_beta_ge
+
+definition GType_hom (G H : [n;k]GType) : Type :=
+B G →* B H
+
+definition ωGType_hom (G H : [n;ω]GType) : Type* :=
+pointed.MK
+  (Σ(f : Πn, oB G n →* oB H n), Πn, psquare (f n) (Ω→ (f (n+1))) (oe G n) (oe H n))
+  ⟨λn, pconst (oB G n) (oB H n), λn, !phconst_square ⬝vp* !ap1_pconst⟩
 
 /- Constructions on higher groups -/
 definition Decat (G : [n+1;k]GType) : [n;k]GType :=
@@ -174,7 +200,13 @@ definition InfDecat_adjoint_InfDisc (G : [∞;k]GType) (H : [n;k]GType) :
   ppmap (B (InfDecat n G)) (B H) ≃* ppmap (iB G) (iB (InfDisc n H)) :=
 pmap_ptrunc_pequiv (n + k) (iB G) (B H)
 
-/- To do: naturality -/
+definition InfDecat_adjoint_InfDisc_natural {G G' : [∞;k]GType} {H H' : [n;k]GType}
+  (g : iB G' →* iB G) (h : B H →* B H') :
+  psquare (InfDecat_adjoint_InfDisc G H)
+          (InfDecat_adjoint_InfDisc G' H')
+          (ppcompose_left h ∘* ppcompose_right (ptrunc_functor _ g))
+          (ppcompose_left h ∘* ppcompose_right g) :=
+pmap_ptrunc_pequiv_natural (n + k) g h
 
 definition InfDecat_InfDisc (G : [n;k]GType) : InfDecat n (InfDisc n G) = G :=
 GType_eq !ptrunc_pequiv
@@ -204,8 +236,6 @@ definition Deloop_adjoint_Loop_natural {G G' : [n;k+1]GType} {H H' : [n+1;k]GTyp
           (ppcompose_left (connect_functor k h) ∘* ppcompose_right g) :=
 (connect_intro_pequiv_natural g h _ _)⁻¹ʰ*
 
-/- to do: naturality -/
-
 definition Loop_Deloop (G : [n;k+1]GType) : Loop (Deloop G) = G :=
 GType_eq (connect_pequiv (is_conn_pconntype (B G)))
 
@@ -227,6 +257,10 @@ GType.mk (ptrunctype.mk (ptrunc n (Ω[k+1] (susp (B G)))) _ pt)
     exact ptrunc_change_index !of_nat_add_of_nat _
   end end
 
+definition Stabilize_pequiv {G H : [n;k]GType} (e : B G ≃* B H) :
+  B (Stabilize G) ≃* B (Stabilize H) :=
+ptrunc_pequiv_ptrunc (n+k+1) (susp_pequiv e)
+
 definition Stabilize_adjoint_Forget (G : [n;k]GType) (H : [n;k+1]GType) :
   ppmap (B (Stabilize G)) (B H) ≃* ppmap (B G) (B (Forget H)) :=
 have is_trunc (n + k + 1) (B H), from !is_trunc_B,
@@ -243,18 +277,6 @@ begin
   have is_trunc (n + k + 1) (B H'), from !is_trunc_B,
   refine pmap_ptrunc_pequiv_natural (n+k+1) (⅀→ g) h ⬝h* _,
   exact susp_adjoint_loop_natural_left g ⬝v* susp_adjoint_loop_natural_right h
-end
-
-/- to do: naturality -/
-
-definition ωForget (k : ℕ) (G : [n;ω]GType) : [n;k]GType :=
-have is_trunc (n + k) (oB G k), from _,
-have is_trunc n (Ω[k] (oB G k)), from !is_trunc_loopn_nat,
-GType.mk (ptrunctype.mk (Ω[k] (oB G k)) _ pt) (oB G k) (pequiv_of_equiv erfl idp)
-
-definition nStabilize (H : k ≤ l) (G : GType.{u} n k) : GType.{u} n l :=
-begin
-  induction H with l H IH, exact G, exact Stabilize IH
 end
 
 definition Forget_Stabilize (H : k ≥ n + 2) (G : [n;k]GType) : B (Forget (Stabilize G)) ≃* B G :=
@@ -288,35 +310,83 @@ begin
   { intro G, apply GType_eq, exact Forget_Stabilize H G }
 end
 
-definition ωGType.mk_le {n : ℕ} (k₀ : ℕ)
-  (C : Π⦃k : ℕ⦄, k₀ ≤ k → ((n+k)-Type*[k.-1] : Type.{u+1}))
-  (e : Π⦃k : ℕ⦄ (H : k₀ ≤ k), C H ≃* Ω (C (le.step H))) : ([n;ω]GType : Type.{u+1}) :=
+/- an incomplete formalization of ω-Stabilization -/
+definition ωForget (k : ℕ) (G : [n;ω]GType) : [n;k]GType :=
+have is_trunc (n + k) (oB G k), from _,
+have is_trunc n (Ω[k] (oB G k)), from !is_trunc_loopn_nat,
+GType.mk (ptrunctype.mk (Ω[k] (oB G k)) _ pt) (oB G k) (pequiv_of_equiv erfl idp)
+
+definition nStabilize (H : k ≤ l) (G : GType.{u} n k) : GType.{u} n l :=
 begin
-  fconstructor,
-  { apply rec_down_le _ k₀ C, intro n' D,
-    refine (ptruncconntype.mk (Ω D) _ pt _),
-      apply is_trunc_loop, apply is_trunc_ptruncconntype, apply is_conn_loop,
-      apply is_conn_ptruncconntype },
-  { intro n', apply rec_down_le_univ, exact e, intro n D, reflexivity }
+  induction H with l H IH, exact G, exact Stabilize IH
 end
 
-/- for l ≤ k we want to define it as Ω[k-l] (B G),
-   for H : l ≥ k we want to define it as nStabilize H G -/
+definition nStabilize_pequiv (H H' : k ≤ l) {G G' : [n;k]GType}
+  (e : B G ≃* B G') : B (nStabilize H G) ≃* B (nStabilize H' G') :=
+begin
+  induction H with l H IH,
+  { exact e ⬝e* pequiv_ap (λH, B (nStabilize H G')) (is_prop.elim (le.refl k) H') },
+  cases H' with l H'',
+  { exfalso, exact not_succ_le_self H },
+  exact Stabilize_pequiv (IH H'')
+end
+
+definition nStabilize_pequiv_of_eq (H : k ≤ l) (p : k = l) (G : [n;k]GType) :
+  B (nStabilize H G) ≃* B G :=
+begin induction p, exact pequiv_ap (λH, B (nStabilize H G)) (is_prop.elim H (le.refl k)) end
 
 definition ωStabilize_of_le (H : k ≥ n + 2) (G : [n;k]GType) : [n;ω]GType :=
 ωGType.mk_le k (λl H', GType_equiv n l (nStabilize H' G))
-             (λl H', (Forget_Stabilize (le.trans H H') (nStabilize H' G))⁻¹ᵉ*)
+               (λl H', (Forget_Stabilize (le.trans H H') (nStabilize H' G))⁻¹ᵉ*)
+
+definition ωStabilize_of_le_beta (H : k ≥ n + 2) (G : [n;k]GType) (H' : l ≥ k) :
+  oB (ωStabilize_of_le H G) l ≃* GType_equiv n l (nStabilize H' G) :=
+ptruncconntype_eq_equiv _ _ !rec_down_le_beta_ge
+
+definition ωStabilize_of_le_pequiv (H : k ≥ n + 2) (H' : k' ≥ n + 2) {G : [n;k]GType}
+  {G' : [n;k']GType} (e : B G ≃* B G') (l : ℕ) (Hl : l ≥ k) (Hl' : l ≥ k') (p : k = k') :
+  oB (ωStabilize_of_le H G) l ≃* oB (ωStabilize_of_le H' G') l :=
+begin
+  refine ωStabilize_of_le_beta H G Hl ⬝e* _ ⬝e* (ωStabilize_of_le_beta H' G' Hl')⁻¹ᵉ*,
+  induction p,
+  exact nStabilize_pequiv _ _ e
+end
+
+definition ωForget_ωStabilize_of_le (H : k ≥ n + 2) (G : [n;k]GType) :
+  B (ωForget k (ωStabilize_of_le H G)) ≃* B G :=
+ωStabilize_of_le_beta H _ (le.refl k)
 
 definition ωStabilize (G : [n;k]GType) : [n;ω]GType :=
 ωStabilize_of_le !le_max_left (nStabilize !le_max_right G)
 
-definition ωstabilization (H : k ≥ n + 2) : is_equiv (@ωStabilize n k) :=
+definition ωForget_ωStabilize (H : k ≥ n + 2) (G : [n;k]GType) :
+  B (ωForget k (ωStabilize G)) ≃* B G :=
+begin
+  refine _ ⬝e* ωForget_ωStabilize_of_le H G,
+  esimp [ωForget, ωStabilize],
+  have H' : max (n + 2) k = k, from max_eq_right H,
+  exact ωStabilize_of_le_pequiv !le_max_left H (nStabilize_pequiv_of_eq _ H'⁻¹ _)
+          k (le_of_eq H') (le.refl k) H'
+end
+
+/-
+definition ωStabilize_adjoint_ωForget (G : [n;k]GType) (H : [n;ω]GType) :
+  ωGType_hom (ωStabilize G) H ≃* ppmap (B G) (B (ωForget k H)) :=
 sorry
 
-/- to do: adjunction (and ωStabilize ∘ ωForget =?= id) -/
+definition ωStabilize_ωForget (G : [n;ω]GType) (l : ℕ) :
+  oB (ωStabilize (ωForget k G)) l ≃* oB G l :=
+begin
+  exact sorry
+end
 
-definition GType_hom (G H : [n;k]GType) : Type :=
-B G →* B H
+definition ωstabilization (H : k ≥ n + 2) : is_equiv (@ωStabilize n k) :=
+begin
+  apply adjointify _ (ωForget k),
+  { intro G', exact sorry },
+  { intro G, apply GType_eq, exact ωForget_ωStabilize H G }
+end
+-/
 
 definition is_trunc_GType_hom (G H : [n;k]GType) : is_trunc n (GType_hom G H) :=
 is_trunc_pmap_of_is_conn _ (k.-2) _ (k + n) _ (le_of_eq (sub_one_add_plus_two_sub_one k n)⁻¹)
@@ -339,14 +409,11 @@ local attribute [instance] is_set_GType_hom
 
 definition cGType [constructor] (k : ℕ) : Precategory :=
 pb_Precategory (cptruncconntype' (k.-1))
-               (GType_equiv 0 k ⬝e equiv_ap (λx, x-Type*[k.-1]) (ap of_nat (zero_add k)) ⬝e
+               (GType_equiv 0 k ⬝e ptruncconntype_equiv (ap of_nat (zero_add k)) idp ⬝e
                  (ptruncconntype'_equiv_ptruncconntype (k.-1))⁻¹ᵉ)
 
 example (k : ℕ) : Precategory.carrier (cGType k) = [0;k]GType := by reflexivity
--- TODO
--- example (k : ℕ) (G H : cGType k) : (G ⟶ H) = (B G →* B H) :=
---   begin esimp [cGType] end
---by induction G, induction H, reflexivity
+example (k : ℕ) (G H : cGType k) : (G ⟶ H) = (B G →* B H) := by reflexivity
 
 definition cGType_equivalence_cType [constructor] (k : ℕ) : cGType k ≃c cType*[k.-1] :=
 !pb_Precategory_equivalence_of_equiv
@@ -361,12 +428,12 @@ equivalence.trans !pb_Precategory_equivalence_of_equiv
                   (equivalence.trans (equivalence.symm (AbGrp_equivalence_cptruncconntype' k))
                     proof equivalence.refl _ qed)
 
---has sorry
-print axioms ωstabilization
-
--- no sorry's
+print axioms GType_equiv
+print axioms InfGType_equiv
 print axioms Decat_adjoint_Disc
 print axioms Decat_adjoint_Disc_natural
+print axioms InfDecat_adjoint_InfDisc
+print axioms InfDecat_adjoint_InfDisc_natural
 print axioms Deloop_adjoint_Loop
 print axioms Deloop_adjoint_Loop_natural
 print axioms Stabilize_adjoint_Forget

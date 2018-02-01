@@ -391,8 +391,35 @@ namespace nat
     induction s with s IH: intro n,
     { apply HQ0 },
     { apply IH, intro n' H, induction H with n' H IH2,
-      { apply HQs },
+      { esimp, apply HQs },
       { apply HQ0 }}
+  end
+
+  definition rec_down_le_beta_ge (P : ℕ → Type) (s : ℕ) (H0 : Πn, s ≤ n → P n)
+    (Hs : Πn, P (n+1) → P n) (n : ℕ) (Hn : s ≤ n) : rec_down_le P s H0 Hs n = H0 n Hn :=
+  begin
+    revert n Hn, induction s with s IH: intro n Hn,
+    { exact ap (H0 n) !is_prop.elim },
+    { have Hn' : s ≤ n, from le.trans !self_le_succ Hn,
+      refine IH _ _ Hn' ⬝ _,
+      induction Hn' with n Hn' IH',
+      { exfalso, exact not_succ_le_self Hn },
+      { exact ap (H0 (succ n)) !is_prop.elim }}
+  end
+
+  definition rec_down_le_beta_lt (P : ℕ → Type) (s : ℕ) (H0 : Πn, s ≤ n → P n)
+    (Hs : Πn, P (n+1) → P n) (n : ℕ) (Hn : n < s) :
+    rec_down_le P s H0 Hs n = Hs n (rec_down_le P s H0 Hs (n+1)) :=
+  begin
+    revert n Hn, induction s with s IH: intro n Hn,
+    { exfalso, exact not_succ_le_zero n Hn },
+    { have Hn' : n ≤ s, from le_of_succ_le_succ Hn,
+      --esimp [rec_down_le],
+      exact sorry
+      -- induction Hn' with s Hn IH,
+      -- { },
+      -- { }
+}
   end
 
   /- this generalizes iterate_commute -/
@@ -1253,6 +1280,9 @@ namespace is_conn
 
 open unit trunc_index nat is_trunc pointed.ops sigma.ops prod.ops
 
+definition is_conn_of_eq {n m : ℕ₋₂} (p : n = m) {A : Type} (H : is_conn n A) : is_conn m A :=
+transport (λk, is_conn k A) p H
+
 -- todo: make trunc_equiv_trunc_of_is_conn_fun a def.
 definition ptrunc_pequiv_ptrunc_of_is_conn_fun {A B : Type*} (n : ℕ₋₂) (f : A →* B)
   [H : is_conn_fun n f] : ptrunc n A ≃* ptrunc n B :=
@@ -1324,6 +1354,15 @@ pconntype_eq_equiv X Y
 /- duplicate -/
 definition ptruncconntype_eq {n k : ℕ₋₂} {X Y : n-Type*[k]} (e : X ≃* Y) : X = Y :=
 (ptruncconntype_eq_equiv X Y)⁻¹ᵉ e
+
+definition ptruncconntype_functor [constructor] {n n' k k' : ℕ₋₂} (p : n = n') (q : k = k')
+  (X : n-Type*[k]) : n'-Type*[k'] :=
+ptruncconntype.mk X (is_trunc_of_eq p _) pt (is_conn_of_eq q _)
+
+definition ptruncconntype_equiv [constructor] {n n' k k' : ℕ₋₂} (p : n = n') (q : k = k') :
+  n-Type*[k] ≃ n'-Type*[k'] :=
+equiv.MK (ptruncconntype_functor p q) (ptruncconntype_functor p⁻¹ q⁻¹)
+         (λX, ptruncconntype_eq pequiv.rfl) (λX, ptruncconntype_eq pequiv.rfl)
 
 -- definition is_conn_pfiber_of_equiv_on_homotopy_groups (n : ℕ) {A B : pType.{u}} (f : A →* B)
 --   [H : is_conn 0 A]
