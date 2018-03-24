@@ -729,28 +729,28 @@ namespace spectrum
   /- homotopy group of a prespectrum -/
 
   definition pshomotopy_group_hom (n : ℤ) (E : prespectrum) (k : ℕ)
-    : πag[k + 2] (E (-n - 2 + k)) →g πag[k + 3] (E (-n - 2 + (k + 1))) :=
+    : πag[k + 2] (E (-n + 2 + k)) →g πag[k + 3] (E (-n + 2 + (k + 1))) :=
   begin
     refine _ ∘g π→g[k+2] (glue E _),
     refine (ghomotopy_group_succ_in _ (k+1))⁻¹ᵍ ∘g _,
     refine homotopy_group_isomorphism_of_pequiv (k+1)
-      (loop_pequiv_loop (pequiv_of_eq (ap E (add.assoc (-n - 2) k 1))))
+      (loop_pequiv_loop (pequiv_of_eq (ap E (add.assoc (-n + 2) k 1))))
   end
 
   definition pshomotopy_group (n : ℤ) (E : prespectrum) : AbGroup :=
-  group.seq_colim (λ(k : ℕ), πag[k+2] (E (-n - 2 + k))) (pshomotopy_group_hom n E)
+  group.seq_colim (λ(k : ℕ), πag[k+2] (E (-n + 2 + k))) (pshomotopy_group_hom n E)
 
   notation `πₚₛ[`:95 n:0 `]`:0 := pshomotopy_group n
 
   definition pshomotopy_group_fun (n : ℤ) {E F : prespectrum} (f : E →ₛ F) :
     πₚₛ[n] E →g πₚₛ[n] F :=
   proof
-  group.seq_colim_functor (λk, π→g[k+2] (f (-n - 2 +[ℤ] k)))
+  group.seq_colim_functor (λk, π→g[k+2] (f (-n + 2 +[ℤ] k)))
     begin
       intro k,
-      note sq1 := homotopy_group_homomorphism_psquare (k+2) (ptranspose (smap.glue_square f (-n - 2 +[ℤ] k))),
-      note sq2 := homotopy_group_functor_psquare (k+2) (ap1_psquare (ptransport_natural E F f (add.assoc (-n - 2) k 1))),
-      note sq3 := (homotopy_group_succ_in_natural (k+2) (f (-n - 2 +[ℤ] (k+1))))⁻¹ʰᵗʸʰ,
+      note sq1 := homotopy_group_homomorphism_psquare (k+2) (ptranspose (smap.glue_square f (-n + 2 +[ℤ] k))),
+      note sq2 := homotopy_group_functor_psquare (k+2) (ap1_psquare (ptransport_natural E F f (add.assoc (-n + 2) k 1))),
+      note sq3 := (homotopy_group_succ_in_natural (k+2) (f (-n + 2 +[ℤ] (k+1))))⁻¹ʰᵗʸʰ,
       note sq4 := hsquare_of_psquare sq2,
       note rect := sq1 ⬝htyh sq4 ⬝htyh sq3,
       exact sorry --sq1 ⬝htyh sq4 ⬝htyh sq3,
