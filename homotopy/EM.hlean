@@ -7,7 +7,30 @@ open eq equiv is_equiv algebra group nat pointed EM.ops is_trunc trunc susp func
 universe variable u
 /- TODO: try to fix the compilation time of this file -/
 
+
 namespace EM
+
+  /- move to HoTT-EM, this version doesn't require that X is connected -/
+  definition EM1_map' [unfold 6] {G : Group} {X : Type*} (e : G → Ω X)
+    (r : Πg h, e (g * h) = e g ⬝ e h) [is_trunc 1 X] : EM1 G → X :=
+  begin
+    intro x, induction x using EM.elim,
+    { exact Point X },
+    { exact e g },
+    { exact r g h }
+  end
+
+  definition EM1_pmap' [constructor] {G : Group} {X : Type*} (e : G → Ω X)
+    (r : Πg h, e (g * h) = e g ⬝ e h) [is_trunc 1 X] : EM1 G →* X :=
+  pmap.mk (EM1_map' e r) idp
+
+  definition loop_EM1_pmap' {G : Group} {X : Type*} (e : G →* Ω X)
+    (r : Πg h, e (g * h) = e g ⬝ e h) [is_trunc 1 X] : Ω→(EM1_pmap' e r) ∘* loop_EM1 G ~* e :=
+  begin
+    fapply phomotopy.mk,
+    { intro g, refine !idp_con ⬝ elim_pth r g },
+    { apply is_set.elim }
+  end
 
   definition EMadd1_functor_succ [unfold_full] {G H : AbGroup} (φ : G →g H) (n : ℕ) :
     EMadd1_functor φ (succ n) ~* ptrunc_functor (n+2) (susp_functor (EMadd1_functor φ n)) :=

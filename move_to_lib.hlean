@@ -890,6 +890,12 @@ end is_trunc
 namespace sigma
   open sigma.ops
 
+definition sigma_functor2 [constructor] {A₁ A₂ A₃ : Type}
+  {B₁ : A₁ → Type} {B₂ : A₂ → Type} {B₃ : A₃ → Type}
+  (f : A₁ → A₂ → A₃) (g : Π⦃a₁ a₂⦄, B₁ a₁ → B₂ a₂ → B₃ (f a₁ a₂))
+    (x₁ : Σa₁, B₁ a₁) (x₂ : Σa₂, B₂ a₂) : Σa₃, B₃ a₃ :=
+⟨f x₁.1 x₂.1, g x₁.2 x₂.2⟩
+
 definition eq.rec_sigma {A : Type} {B : A → Type} {a : A} {b : B a}
   (P : Π⦃a'⦄ {b' : B a'}, ⟨a, b⟩ = ⟨a', b'⟩ → Type)
   (IH : P idp) ⦃a' : A⦄ {b' : B a'} (p : ⟨a, b⟩ = ⟨a', b'⟩) : P p :=
@@ -1300,6 +1306,16 @@ is_conn_zero_pointed (λa a', tconcat (p a) (tinverse (p a')))
 definition is_conn_fiber (n : ℕ₋₂) {A B : Type} (f : A → B) (b : B) [is_conn n A]
   [is_conn (n.+1) B] : is_conn n (fiber f b) :=
 is_conn_equiv_closed_rev _ !fiber.sigma_char _
+
+definition is_conn_succ_of_is_conn_loop {n : ℕ₋₂} {A : Type*}
+  (H : is_conn 0 A) (H2 : is_conn n (Ω A)) : is_conn (n.+1) A :=
+begin
+  apply is_conn_succ_intro, exact tr pt,
+  intros a a',
+  induction merely_of_minus_one_conn (is_conn_eq -1 a a') with p, induction p,
+  induction merely_of_minus_one_conn (is_conn_eq -1 pt a) with p, induction p,
+  exact H2
+end
 
 definition is_conn_fun_compose {n : ℕ₋₂} {A B C : Type} (g : B → C) (f : A → B)
   (H : is_conn_fun n g) (K : is_conn_fun n f) : is_conn_fun n (g ∘ f) :=

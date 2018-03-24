@@ -2,7 +2,7 @@
 
 open eq is_trunc
 
-variables {I : Set} {P : I → Type} {i j k : I} {x x₁ x₂ : P i} {y y₁ y₂ : P j} {z : P k}
+variables {I : Type} [is_set I] {P : I → Type} {i j k : I} {x x₁ x₂ : P i} {y y₁ y₂ : P j} {z : P k}
           {Q : Π⦃i⦄, P i → Type}
 
 structure heq (x : P i) (y : P j) : Type :=
@@ -10,7 +10,7 @@ structure heq (x : P i) (y : P j) : Type :=
   (q : x =[p] y)
 
 namespace eq
-notation x ` ==[`:50 P:0 `] `:0 y:50 := @heq _ P _ _ x y
+notation x ` ==[`:50 P:0 `] `:0 y:50 := @heq _ _ P _ _ x y
 infix ` == `:50 := heq -- mostly for printing, since it will be almost always ambiguous what P is
 
 definition pathover_of_heq {p : i = j} (q : x ==[P] y) : x =[p] y :=
