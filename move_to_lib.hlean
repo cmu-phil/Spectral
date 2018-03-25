@@ -1110,6 +1110,248 @@ end
     induction x with a, induction x' with a', apply ap tr, exact h a a'
   end
 
+  /----------------- The following are properties for ∞-groups ----------------/
+
+  local attribute InfGroup_of_Group [coercion]
+
+  /- left and right actions -/
+  definition is_equiv_mul_right_inf [constructor] {A : InfGroup} (a : A) : is_equiv (λb, b * a) :=
+  adjointify _ (λb : A, b * a⁻¹) (λb, !inv_mul_cancel_right) (λb, !mul_inv_cancel_right)
+
+  definition right_action_inf [constructor] {A : InfGroup} (a : A) : A ≃ A :=
+  equiv.mk _ (is_equiv_mul_right_inf a)
+
+  /- homomorphisms -/
+
+  structure inf_homomorphism (G₁ G₂ : InfGroup) : Type :=
+    (φ : G₁ → G₂)
+    (p : is_mul_hom φ)
+
+  infix ` →∞g `:55 := inf_homomorphism
+
+  abbreviation inf_group_fun [unfold 3] [coercion] [reducible] := @inf_homomorphism.φ
+  definition inf_homomorphism.struct [unfold 3] [instance] [priority 900] {G₁ G₂ : InfGroup}
+    (φ : G₁ →∞g G₂) : is_mul_hom φ :=
+  inf_homomorphism.p φ
+
+  definition homomorphism_of_inf_homomorphism [constructor] {G H : Group} (φ : G →∞g H) : G →g H :=
+  homomorphism.mk φ (inf_homomorphism.struct φ)
+
+  definition inf_homomorphism_of_homomorphism [constructor] {G H : Group} (φ : G →g H) : G →∞g H :=
+  inf_homomorphism.mk φ (homomorphism.struct φ)
+
+  variables {G G₁ G₂ G₃ : InfGroup} {g h : G₁} {ψ : G₂ →∞g G₃} {φ₁ φ₂ : G₁ →∞g G₂} (φ : G₁ →∞g G₂)
+
+  definition to_respect_mul_inf /- φ -/ (g h : G₁) : φ (g * h) = φ g * φ h :=
+  respect_mul φ g h
+
+  theorem to_respect_one_inf /- φ -/ : φ 1 = 1 :=
+  have φ 1 * φ 1 = φ 1 * 1, by rewrite [-to_respect_mul_inf φ, +mul_one],
+  eq_of_mul_eq_mul_left' this
+
+  theorem to_respect_inv_inf /- φ -/ (g : G₁) : φ g⁻¹ = (φ g)⁻¹ :=
+  have φ (g⁻¹) * φ g = 1, by rewrite [-to_respect_mul_inf φ, mul.left_inv, to_respect_one_inf φ],
+  eq_inv_of_mul_eq_one this
+
+  definition pmap_of_inf_homomorphism [constructor] /- φ -/ : G₁ →* G₂ :=
+  pmap.mk φ begin esimp, exact to_respect_one_inf φ end
+
+  definition inf_homomorphism_change_fun [constructor] {G₁ G₂ : InfGroup}
+    (φ : G₁ →∞g G₂) (f : G₁ → G₂) (p : φ ~ f) : G₁ →∞g G₂ :=
+  inf_homomorphism.mk f
+    (λg h, (p (g * h))⁻¹ ⬝ to_respect_mul_inf φ g h ⬝ ap011 mul (p g) (p h))
+
+  /- categorical structure of groups + homomorphisms -/
+
+  definition inf_homomorphism_compose [constructor] [trans] [reducible]
+    (ψ : G₂ →∞g G₃) (φ : G₁ →∞g G₂) : G₁ →∞g G₃ :=
+  inf_homomorphism.mk (ψ ∘ φ) (is_mul_hom_compose _ _)
+
+  variable (G)
+  definition inf_homomorphism_id [constructor] [refl] : G →∞g G :=
+  inf_homomorphism.mk (@id G) (is_mul_hom_id G)
+  variable {G}
+
+  abbreviation inf_gid [constructor] := @inf_homomorphism_id
+  infixr ` ∘∞g `:75 := inf_homomorphism_compose
+
+  structure inf_isomorphism (A B : InfGroup) :=
+    (to_hom : A →∞g B)
+    (is_equiv_to_hom : is_equiv to_hom)
+
+  infix ` ≃∞g `:25 := inf_isomorphism
+  attribute inf_isomorphism.to_hom [coercion]
+  attribute inf_isomorphism.is_equiv_to_hom [instance]
+  attribute inf_isomorphism._trans_of_to_hom [unfold 3]
+
+  definition equiv_of_inf_isomorphism [constructor] (φ : G₁ ≃∞g G₂) : G₁ ≃ G₂ :=
+  equiv.mk φ _
+
+  definition pequiv_of_inf_isomorphism [constructor] (φ : G₁ ≃∞g G₂) :
+    G₁ ≃* G₂ :=
+  pequiv.mk φ begin esimp, exact _ end begin esimp, exact to_respect_one_inf φ end
+
+  definition inf_isomorphism_of_equiv [constructor] (φ : G₁ ≃ G₂)
+    (p : Πg₁ g₂, φ (g₁ * g₂) = φ g₁ * φ g₂) : G₁ ≃∞g G₂ :=
+  inf_isomorphism.mk (inf_homomorphism.mk φ p) !to_is_equiv
+
+  definition inf_isomorphism_of_eq [constructor] {G₁ G₂ : InfGroup} (φ : G₁ = G₂) : G₁ ≃∞g G₂ :=
+  inf_isomorphism_of_equiv (equiv_of_eq (ap InfGroup.carrier φ))
+    begin intros, induction φ, reflexivity end
+
+  definition to_ginv_inf [constructor] (φ : G₁ ≃∞g G₂) : G₂ →∞g G₁ :=
+  inf_homomorphism.mk φ⁻¹
+    abstract begin
+    intro g₁ g₂, apply eq_of_fn_eq_fn' φ,
+    rewrite [respect_mul φ, +right_inv φ]
+    end end
+
+  variable (G)
+  definition inf_isomorphism.refl [refl] [constructor] : G ≃∞g G :=
+  inf_isomorphism.mk !inf_gid !is_equiv_id
+  variable {G}
+
+  definition inf_isomorphism.symm [symm] [constructor] (φ : G₁ ≃∞g G₂) : G₂ ≃∞g G₁ :=
+  inf_isomorphism.mk (to_ginv_inf φ) !is_equiv_inv
+
+  definition inf_isomorphism.trans [trans] [constructor] (φ : G₁ ≃∞g G₂) (ψ : G₂ ≃∞g G₃) : G₁ ≃∞g G₃ :=
+  inf_isomorphism.mk (ψ ∘∞g φ) !is_equiv_compose
+
+  definition inf_isomorphism.eq_trans [trans] [constructor]
+     {G₁ G₂ : InfGroup} {G₃ : InfGroup} (φ : G₁ = G₂) (ψ : G₂ ≃∞g G₃) : G₁ ≃∞g G₃ :=
+  proof inf_isomorphism.trans (inf_isomorphism_of_eq φ) ψ qed
+
+  definition inf_isomorphism.trans_eq [trans] [constructor]
+    {G₁ : InfGroup} {G₂ G₃ : InfGroup} (φ : G₁ ≃∞g G₂) (ψ : G₂ = G₃) : G₁ ≃∞g G₃ :=
+  inf_isomorphism.trans φ (inf_isomorphism_of_eq ψ)
+
+  postfix `⁻¹ᵍ⁸`:(max + 1) := inf_isomorphism.symm
+  infixl ` ⬝∞g `:75 := inf_isomorphism.trans
+  infixl ` ⬝∞gp `:75 := inf_isomorphism.trans_eq
+  infixl ` ⬝∞pg `:75 := inf_isomorphism.eq_trans
+
+  definition pmap_of_inf_isomorphism [constructor] (φ : G₁ ≃∞g G₂) : G₁ →* G₂ :=
+  pequiv_of_inf_isomorphism φ
+
+  definition to_fun_inf_isomorphism_trans {G H K : InfGroup} (φ : G ≃∞g H) (ψ : H ≃∞g K) :
+    φ ⬝∞g ψ ~ ψ ∘ φ :=
+  by reflexivity
+
+  definition inf_homomorphism_mul [constructor] {G H : AbInfGroup} (φ ψ : G →∞g H) : G →∞g H :=
+  inf_homomorphism.mk (λg, φ g * ψ g)
+    abstract begin
+      intro g g', refine ap011 mul !to_respect_mul_inf !to_respect_mul_inf ⬝ _,
+      refine !mul.assoc ⬝ ap (mul _) (!mul.assoc⁻¹ ⬝ ap (λx, x * _) !mul.comm ⬝ !mul.assoc) ⬝
+             !mul.assoc⁻¹
+    end end
+
+  definition trivial_inf_homomorphism (A B : InfGroup) : A →∞g B :=
+  inf_homomorphism.mk (λa, 1) (λa a', (mul_one 1)⁻¹)
+
+  /- given an equivalence A ≃ B we can transport a group structure on A to a group structure on B -/
+
+  section
+
+    parameters {A B : Type} (f : A ≃ B) [inf_group A]
+
+    definition inf_group_equiv_mul (b b' : B) : B := f (f⁻¹ᶠ b * f⁻¹ᶠ b')
+
+    definition inf_group_equiv_one : B := f one
+
+    definition inf_group_equiv_inv (b : B) : B := f (f⁻¹ᶠ b)⁻¹
+
+    local infix * := inf_group_equiv_mul
+    local postfix ^ := inf_group_equiv_inv
+    local notation 1 := inf_group_equiv_one
+
+    theorem inf_group_equiv_mul_assoc (b₁ b₂ b₃ : B) : (b₁ * b₂) * b₃ = b₁ * (b₂ * b₃) :=
+    by rewrite [↑inf_group_equiv_mul, +left_inv f, mul.assoc]
+
+    theorem inf_group_equiv_one_mul (b : B) : 1 * b = b :=
+    by rewrite [↑inf_group_equiv_mul, ↑inf_group_equiv_one, left_inv f, one_mul, right_inv f]
+
+    theorem inf_group_equiv_mul_one (b : B) : b * 1 = b :=
+    by rewrite [↑inf_group_equiv_mul, ↑inf_group_equiv_one, left_inv f, mul_one, right_inv f]
+
+    theorem inf_group_equiv_mul_left_inv (b : B) : b^ * b = 1 :=
+    by rewrite [↑inf_group_equiv_mul, ↑inf_group_equiv_one, ↑inf_group_equiv_inv,
+                +left_inv f, mul.left_inv]
+
+    definition inf_group_equiv_closed : inf_group B :=
+    ⦃inf_group,
+      mul          := inf_group_equiv_mul,
+      mul_assoc    := inf_group_equiv_mul_assoc,
+      one          := inf_group_equiv_one,
+      one_mul      := inf_group_equiv_one_mul,
+      mul_one      := inf_group_equiv_mul_one,
+      inv          := inf_group_equiv_inv,
+      mul_left_inv := inf_group_equiv_mul_left_inv⦄
+
+  end
+
+  section
+    variables {A B : Type} (f : A ≃ B) [ab_inf_group A]
+    definition inf_group_equiv_mul_comm (b b' : B) : inf_group_equiv_mul f b b' = inf_group_equiv_mul f b' b :=
+    by rewrite [↑inf_group_equiv_mul, mul.comm]
+
+    definition ab_inf_group_equiv_closed : ab_inf_group B :=
+    ⦃ab_inf_group, inf_group_equiv_closed f,
+      mul_comm := inf_group_equiv_mul_comm f⦄
+  end
+
+  variable (G)
+
+  /- the trivial ∞-group -/
+  open unit
+  definition inf_group_unit [constructor] : inf_group unit :=
+  inf_group.mk (λx y, star) (λx y z, idp) star (unit.rec idp) (unit.rec idp) (λx, star) (λx, idp)
+
+  definition ab_inf_group_unit [constructor] : ab_inf_group unit :=
+  ⦃ab_inf_group, inf_group_unit, mul_comm := λx y, idp⦄
+
+  definition trivial_inf_group [constructor] : InfGroup :=
+  InfGroup.mk _ inf_group_unit
+
+  definition AbInfGroup_of_InfGroup (G : InfGroup.{u}) (H : Π x y : G, x * y = y * x) :
+    AbInfGroup.{u} :=
+  begin
+    induction G,
+    fapply AbInfGroup.mk,
+    assumption,
+    exact ⦃ab_inf_group, struct', mul_comm := H⦄
+  end
+
+  definition trivial_ab_inf_group : AbInfGroup.{0} :=
+  begin
+    fapply AbInfGroup_of_InfGroup trivial_inf_group, intro x y, reflexivity
+  end
+
+  definition trivial_inf_group_of_is_contr [H : is_contr G] : G ≃∞g trivial_inf_group :=
+  begin
+    fapply inf_isomorphism_of_equiv,
+    { apply equiv_unit_of_is_contr},
+    { intros, reflexivity}
+  end
+
+  definition ab_inf_group_of_is_contr (A : Type) [is_contr A] : ab_inf_group A :=
+  have ab_inf_group unit, from ab_inf_group_unit,
+  ab_inf_group_equiv_closed (equiv_unit_of_is_contr A)⁻¹ᵉ
+
+  definition inf_group_of_is_contr (A : Type) [is_contr A] : inf_group A :=
+  have ab_inf_group A, from ab_inf_group_of_is_contr A, by apply _
+
+  definition ab_inf_group_lift_unit : ab_inf_group (lift unit) :=
+  ab_inf_group_of_is_contr (lift unit)
+
+  definition trivial_ab_inf_group_lift : AbInfGroup :=
+  AbInfGroup.mk _ ab_inf_group_lift_unit
+
+  definition from_trivial_ab_inf_group (A : AbInfGroup) : trivial_ab_inf_group →∞g A :=
+  trivial_inf_homomorphism trivial_ab_inf_group A
+
+  definition to_trivial_ab_inf_group (A : AbInfGroup) : A →∞g trivial_ab_inf_group :=
+  trivial_inf_homomorphism A trivial_ab_inf_group
+
 end group open group
 
 namespace fiber

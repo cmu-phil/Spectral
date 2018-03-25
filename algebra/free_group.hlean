@@ -413,7 +413,7 @@ end list open list
 namespace group
   open sigma.ops
 
-  variables (X : Type) [decidable_eq X] {G : Group}
+  variables (X : Type) [decidable_eq X] {G : InfGroup}
   definition group_dfree_group [constructor] : group (rlist X) :=
   group.mk (is_trunc_rlist _) rappend rappend_assoc rnil rnil_rappend rappend_rnil
            (rflip ∘ rreverse) rappend_left_inv
@@ -422,28 +422,40 @@ namespace group
   Group.mk _ (group_dfree_group X)
 
   variable {X}
-  definition fgh_helper_rcons (f : X → G) (g : G) (x : X ⊎ X) {l : list (X ⊎ X)} :
-    foldl (fgh_helper f) g (rcons' x l) = foldl (fgh_helper f) g (x :: l) :=
+  definition dfgh_helper [unfold 6] (f : X → G) (g : G) (x : X + X) : G :=
+  g * sum.rec (λx, f x) (λx, (f x)⁻¹) x
+
+  theorem dfgh_helper_mul (f : X → G) (l)
+    : Π(g : G), foldl (dfgh_helper f) g l = g * foldl (dfgh_helper f) 1 l :=
+  begin
+    induction l with s l IH: intro g,
+    { unfold [foldl], exact !mul_one⁻¹},
+    { rewrite [+foldl_cons, IH], refine _ ⬝ (ap (λx, g * x) !IH⁻¹),
+      rewrite [-mul.assoc, ↑dfgh_helper, one_mul]}
+  end
+
+  definition dfgh_helper_rcons (f : X → G) (g : G) (x : X ⊎ X) {l : list (X ⊎ X)} :
+    foldl (dfgh_helper f) g (rcons' x l) = foldl (dfgh_helper f) g (x :: l) :=
   begin
     cases l with x' l, reflexivity,
     apply dite (sum.flip x = x'): intro q,
     { have is_set (X ⊎ X), from !is_trunc_sum,
       rewrite [↑rcons', dite_true q _, foldl_cons, foldl_cons, -q],
-      induction x with x, rewrite [↑fgh_helper,mul_inv_cancel_right],
-      rewrite [↑fgh_helper,inv_mul_cancel_right] },
+      induction x with x, rewrite [↑dfgh_helper,mul_inv_cancel_right],
+      rewrite [↑dfgh_helper,inv_mul_cancel_right] },
     { rewrite [↑rcons', dite_false q] }
   end
 
-  definition fgh_helper_rappend (f : X → G) (g : G) (l l' : rlist X) :
-    foldl (fgh_helper f) g (rappend l l').1 = foldl (fgh_helper f) g (l.1 ++ l'.1) :=
+  definition dfgh_helper_rappend (f : X → G) (g : G) (l l' : rlist X) :
+    foldl (dfgh_helper f) g (rappend l l').1 = foldl (dfgh_helper f) g (l.1 ++ l'.1) :=
   begin
     revert g, induction l with l lH, unfold rappend, clear lH,
     induction l with v l IH: intro g, reflexivity,
-    rewrite [rappend_cons', ↑rcons, fgh_helper_rcons, foldl_cons, IH]
+    rewrite [rappend_cons', ↑rcons, dfgh_helper_rcons, foldl_cons, IH]
   end
 
   local attribute [instance] is_prop_is_reduced
-
+  local attribute [coercion] InfGroup_of_Group
   -- definition dfree_group_hom' [constructor] {G : InfGroup} (f : X → G) :
   -- Σ(f : dfree_group X → G), is_mul_hom f :=
   -- ⟨λx, foldl (fgh_helper f) 1 x.1,
@@ -465,27 +477,46 @@ namespace group
   --       respect_mul ψ (rsingleton v) ⟨_, Hl⟩ }
   -- end
 
-  definition dfree_group_hom [constructor] {G : Group} (f : X → G) : dfree_group X →g G :=
-  homomorphism.mk (λx, foldl (fgh_helper f) 1 x.1)
-    begin intro l₁ l₂, exact !fgh_helper_rappend ⬝ !foldl_append ⬝ !fgh_helper_mul end
+  definition dfree_group_inf_hom [constructor] (G : InfGroup) (f : X → G) : dfree_group X →∞g G :=
+  inf_homomorphism.mk (λx, foldl (dfgh_helper f) 1 x.1)
+                      (λl₁ l₂, !dfgh_helper_rappend ⬝ !foldl_append ⬝ !dfgh_helper_mul)
 
-  local attribute [instance] is_prop_is_reduced
-
-  definition dfree_group_hom_eq [constructor] {φ ψ : dfree_group X →g G}
+  definition dfree_group_inf_hom_eq [constructor] {G : InfGroup} {φ ψ : dfree_group X →∞g G}
     (H : Πx, φ (rsingleton (inl x)) = ψ (rsingleton (inl x))) : φ ~ ψ :=
   begin
     assert H2 : Πv, φ (rsingleton v) = ψ (rsingleton v),
     { intro v, induction v with x x, exact H x,
-      exact respect_inv φ _ ⬝ ap inv (H x) ⬝ (respect_inv ψ _)⁻¹ },
+      exact to_respect_inv_inf φ _ ⬝ ap inv (H x) ⬝ (to_respect_inv_inf ψ _)⁻¹ },
     intro l, induction l with l Hl,
     induction Hl with v v w l p Hl IH,
-    { exact respect_one φ ⬝ (respect_one ψ)⁻¹ },
+    { exact to_respect_one_inf φ ⬝ (to_respect_one_inf ψ)⁻¹ },
     { exact H2 v },
     { refine ap φ (rlist_eq (rcons_eq (is_reduced.cons p Hl))⁻¹) ⬝
         respect_mul φ (rsingleton v) ⟨_, Hl⟩ ⬝ ap011 mul (H2 v) IH ⬝ _,
       symmetry, exact ap ψ (rlist_eq (rcons_eq (is_reduced.cons p Hl))⁻¹) ⬝
         respect_mul ψ (rsingleton v) ⟨_, Hl⟩ }
   end
+
+  definition dfree_group_hom [constructor] {G : Group} (f : X → G) : dfree_group X →g G :=
+  homomorphism_of_inf_homomorphism (dfree_group_inf_hom G f)
+
+  -- todo: use the inf-version
+  definition dfree_group_hom_eq [constructor] {G : Group} {φ ψ : dfree_group X →g G}
+    (H : Πx, φ (rsingleton (inl x)) = ψ (rsingleton (inl x))) : φ ~ ψ :=
+  begin
+    assert H2 : Πv, φ (rsingleton v) = ψ (rsingleton v),
+    { intro v, induction v with x x, exact H x,
+      exact to_respect_inv φ _ ⬝ ap inv (H x) ⬝ (to_respect_inv ψ _)⁻¹ },
+    intro l, induction l with l Hl,
+    induction Hl with v v w l p Hl IH,
+    { exact to_respect_one φ ⬝ (to_respect_one ψ)⁻¹ },
+    { exact H2 v },
+    { refine ap φ (rlist_eq (rcons_eq (is_reduced.cons p Hl))⁻¹) ⬝
+        respect_mul φ (rsingleton v) ⟨_, Hl⟩ ⬝ ap011 mul (H2 v) IH ⬝ _,
+      symmetry, exact ap ψ (rlist_eq (rcons_eq (is_reduced.cons p Hl))⁻¹) ⬝
+        respect_mul ψ (rsingleton v) ⟨_, Hl⟩ }
+  end
+
 
   variable (X)
 
