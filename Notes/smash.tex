@@ -357,49 +357,59 @@ We define the pointed equivalences:
  	Suppose that we have maps $A_1\lpmap{f_1}A_2\lpmap{f_2}A_3$ and $B_1\lpmap{g_1}B_2\lpmap{g_2}B_3$
  	and suppose that either $f_1$ or $f_2$ is constant. Then there are two homotopies
   $(f_2 \o f_1)\smsh (g_2 \o g_1)\sim 0$, one which uses the interchange law and one which does not. These two homotopies are equal. Specifically, the following two diagrams commute:
-	\begin{center}
-	\begin{tikzcd}
+	\begin{equation}\label{eq:pent-statement}
+	\begin{tikzcd}[column sep=2em]
 		(f_2 \o 0)\smsh (g_2 \o g_1)
 			\arrow[r, equals, "i"]
 			\arrow[dd, swap, equals, "\zeroh' \smsh (g_2 \o g_1)"]
 		&(f_2 \smsh g_2)\o (0 \smsh g_1)
 			\arrow[d, equals, "(f_2 \smsh g_2) \o t_{g_1}"]
-		\\
-		& (f_2 \smsh g_2)\o 0
-			\arrow[d,equals, "\zeroh'"]
-		\\
-		0\smsh (g_2 \o g_1)
-			\arrow[r,equals, swap, "t_{g_2 \o g_1}"]
-		& 0
-	\end{tikzcd}
-	\qquad
-	\begin{tikzcd}
-		(0 \o f_1)\smsh (g_2 \o g_1)
+		& (0 \o f_1)\smsh (g_2 \o g_1)
 			\arrow[r, equals, "i"]
 			\arrow[dd, swap, equals, "\zeroh \smsh (g_2 \o g_1)"]
 		& (0 \smsh g_2)\o (f_1 \smsh g_1)
 			\arrow[d,equals, "t_{g_2} \o (f_1 \smsh g_1)"]
 		\\
-		& 0\o (f_1 \smsh g_1)
+		& (f_2 \smsh g_2)\o 0
+			\arrow[d,equals, "\zeroh'"]
+		&& 0\o (f_1 \smsh g_1)
 			\arrow[d,equals, "\zeroh"]
 		\\
 		0\smsh (g_2 \o g_1)
+			\arrow[r,equals, swap, "t_{g_2 \o g_1}"]
+		& 0
+		& 0\smsh (g_2 \o g_1)
 			\arrow[r,swap, equals, "t_{g_2 \o g_1}"]
 		& 0
 	\end{tikzcd}
-	\end{center}
+%	\qquad
+%	\begin{tikzcd}
+%		(0 \o f_1)\smsh (g_2 \o g_1)
+%			\arrow[r, equals, "i"]
+%			\arrow[dd, swap, equals, "\zeroh \smsh (g_2 \o g_1)"]
+%		& (0 \smsh g_2)\o (f_1 \smsh g_1)
+%			\arrow[d,equals, "t_{g_2} \o (f_1 \smsh g_1)"]
+%		\\
+%		& 0\o (f_1 \smsh g_1)
+%			\arrow[d,equals, "\zeroh"]
+%		\\
+%		0\smsh (g_2 \o g_1)
+%			\arrow[r,swap, equals, "t_{g_2 \o g_1}"]
+%		& 0
+%	\end{tikzcd}
+	\end{equation}
 
 \end{lem}
 \begin{proof}
 %  We will only do the case where $f_1\jdeq 0$, i.e. fill the diagram on the left. The other case is similar (and slightly easier).
 	
-	\textbf{Case $f_1\judgeq 0$ (diagram on the left)}. First apply induction on the paths that $f_2$, $g_1$ and $g_2$
+	\textbf{Case $f_1\judgeq 0$}. In order to fill the diagram on the left in (\ref{eq:pent-statement}), we first apply induction on the paths that $f_2$, $g_1$ and $g_2$
   respect the basepoint. In this case $f_2\o0$ is definitionally equal to $0$, and the canonical
   proof that $f_2\o 0\sim0$ is (definitionally) equal to reflexivity. This means that the homotopy
   $(f_2 \o 0)\smsh (g_2 \o g_1)\sim0\smsh (g_2 \o g_1)$ is also equal to reflexivity, and also the
   path that $f_2 \smsh g_2$ respects the basepoint is reflexivity, hence the homotopy
   $(f_2 \smsh g_2)\o 0\sim0$ is also reflexivity. This means we need to fill the following square:
-	\begin{center}
+	\begin{equation}\label{eq:pent-left-all}
 	\begin{tikzcd}
 		(f_2 \o 0)\smsh (g_2 \o g_1)
 			\arrow[r, equals,"i"]
@@ -411,7 +421,7 @@ We define the pointed equivalences:
 			\arrow[r, swap, equals,"t_{g_1 \o g_2}"]
 		& 0
 	\end{tikzcd}
-	\end{center}
+	\end{equation}
   For the underlying homotopy, take $x : A_1\smsh B_1$ and apply induction on $x$. Suppose
   $x\equiv(a,b)$ for $a:A_1$ and $b:B_1$. With the notational convention for basepoints as in \autoref{lem:interchange}, we have to fill the square (we use that the paths that the maps respect the basepoints are reflexivity):
   \begin{equation}\label{eq:pent-left-ab}
@@ -477,7 +487,35 @@ We define the pointed equivalences:
 		\arrow[from=uu, equals, crossing over, very near start, "\mapfunc{f_2 \smsh g_2}(\gluer\tr\gluer\sy)"]
 	\end{tikzcd}
 	\end{equation}
-	Similarly, if $x$ varies over $\gluer_b$, we need to fill the cube below: the front and the back are the squares in (\ref{eq:pent-left-ab}) for $(a_1,b)$ and (\ref{eq:pent-left-auxr}) respectively; the left square is again degenerate; the other three sides come from the fact that $i$ and $t$ respect $\gluer_b$ (given in (\ref{eq:i-gluer}) and (\ref{eq:t-gluer}) respectively). Again, we omit the arguments of $\gluer$ in $\gluer\tr\gluer\sy$ (in this case, not a priori judgementally equal).
+	Such a cube can be generalized to the cube:
+  \begin{center}
+  	\begin{tikzcd}[column sep=3em]
+	& h(y)
+		\arrow[rr, equals,"1"]
+		\arrow[dd, swap, equals, near end,"1"]
+	&& h(y)
+		\arrow[dd,equals,"\mapfunc{h}(p_l\sy)"]
+	\\
+	h(x)
+		\arrow[rr, equals, near end, crossing over, "1"]
+		\arrow[dd, swap, equals, "1"]
+		\arrow[ur, equals, "q_l"]
+	&& h(x)
+		\arrow[ur, equals, near start, "\mapfunc{h}(p_l)"]
+	\\
+	& h(y)
+		\arrow[rr, swap, equals, near start, "q_l\sy"]
+	&& h(x)
+	\\
+	h(x)
+		\arrow[rr, swap, equals,"q_r\tr q_r\sy"]
+		\arrow[ur, equals, "q_l"]
+	&& h(x)
+		\arrow[from=uu, equals, crossing over, near start, "\mapfunc{h}(p_r\tr p_r\sy)"]
+		\arrow[ur, swap, equals, "1"]
+	\end{tikzcd}
+	\end{center}
+	for $X$ and $X'$ pointed types; a map $h : X \to X'$; terms $x$, $y$ $z : X$; paths $p_l : x = y$, $p_r : x = z$, $q_l : h(x) = h(y)$, $q_r : h(x) = h(z)$; and 2-paths $s_l : \mapfunc{h}(p_l) = q_l$ (for the back and the top) and $s_r : \mapfunc{h}(p_r) = q_r$ (for the right side). This cube is filled by path induction on $s_l$, $s_r$, $p_l$ and $p_r$. Finally, if $x$ varies over $\gluer_b$, we need to fill the cube below: the front and the back are the squares in (\ref{eq:pent-left-ab}) for $(a_1,b)$ and (\ref{eq:pent-left-auxr}) respectively; the left square is again degenerate; the other three sides come from the fact that $i$ and $t$ respect $\gluer_b$ (given in (\ref{eq:i-gluer}) and (\ref{eq:t-gluer}) respectively). Again, we omit the arguments of $\gluer$ in $\gluer\tr\gluer\sy$ (in this case, not a priori judgementally equal).
 	\begin{equation}\label{eq:pent-left-gluer}
 	\begin{tikzcd}[column sep=4em]
 	& \auxr
@@ -506,35 +544,7 @@ We define the pointed equivalences:
 	\end{tikzcd}
 	\end{equation}
   %After canceling applications of  $\mapfunc{h\smsh k}(\gluer_z)=\gluer_{k(z)}$ on various sides of the squares (TODO).
-  In order to fill the cubes in (\ref{eq:pent-left-gluel}) and (\ref{eq:pent-left-gluer}), we generalize the paths and fill the cubes by path induction. The cube in (\ref{eq:pent-left-gluel}) can be generalized to a cube:
-  \begin{center}
-  	\begin{tikzcd}[column sep=3em]
-	& h(y)
-		\arrow[rr, equals,"1"]
-		\arrow[dd, swap, equals, near end,"1"]
-	&& h(y)
-		\arrow[dd,equals,"\mapfunc{h}(p_l\sy)"]
-	\\
-	h(x)
-		\arrow[rr, equals, near end, crossing over, "1"]
-		\arrow[dd, swap, equals, "1"]
-		\arrow[ur, equals, "q_l"]
-	&& h(x)
-		\arrow[ur, equals, near start, "\mapfunc{h}(p_l)"]
-	\\
-	& h(y)
-		\arrow[rr, swap, equals, near start, "q_l\sy"]
-	&& h(x)
-	\\
-	h(x)
-		\arrow[rr, swap, equals,"q_r\tr q_r\sy"]
-		\arrow[ur, equals, "q_l"]
-	&& h(x)
-		\arrow[from=uu, equals, crossing over, near start, "\mapfunc{h}(p_r\tr p_r\sy)"]
-		\arrow[ur, swap, equals, "1"]
-	\end{tikzcd}
-	\end{center}
-	for $X$ and $X'$ pointed types; a map $h : X \to X'$; terms $x$, $y$ $z : X$; paths $p_l : x = y$, $p_r : x = z$, $q_l : h(x) = h(y)$, $q_r : h(x) = h(z)$; and 2-paths $s_l : \mapfunc{h}(p_l) = q_l$ (for the back and the top) and $s_r : \mapfunc{h}(p_r) = q_r$ (for the right side). This cube is filled by path induction on $s_l$, $s_r$, $p_l$ and $p_r$. The cube in (\ref{eq:pent-left-gluer}) can be generalized to a similar cube:
+  This cube can be generalized to the cube:
 	 \begin{center}
   	\begin{tikzcd}[column sep=3em]
 	& h(y)
@@ -562,13 +572,68 @@ We define the pointed equivalences:
 		\arrow[ur, swap, equals, "1"]
 	\end{tikzcd}
 	\end{center}
-	for paths $p_l : x = y$, $p_b : y = z$, $q_l : h(x) = h(y)$, $q_b : h(y) = h(z)$ and for 2-paths $s_l : \mapfunc{h}(p_l) = q_l$ (for the top) and $s_b : \mapfunc{h}(p_b) = q_b$ (for the back).
+	for paths $p_l : x = y$, $p_b : y = z$, $q_l : h(x) = h(y)$, $q_b : h(y) = h(z)$ and for 2-paths $s_l : \mapfunc{h}(p_l) = q_l$ (for the top) and $s_b : \mapfunc{h}(p_b) = q_b$ (for the back). Again, a filler is provided by path induction on the squares and paths defining the cube.
 	
-	\textbf{Case $f_2\judgeq 0$ (diagram on the right)}.	(TODO)
+	(TODO: this homotopy is pointed)
 	
-  To show that this homotopy is pointed, (TODO)
+	\textbf{Case $f_2\judgeq 0$}. The case for the diagram on the right in (\ref{eq:pent-statement}) is easier and can be resolved analogously. Again, we first apply induction on the paths that $f_1$, $g_1$ and $g_2$ respect the basepoint, reducing the diagram to the following square:
+	\begin{equation}\label{eq:pent-right-all}
+	\begin{tikzcd}
+		(0 \o f_1)\smsh (g_2 \o g_1)
+			\arrow[r, equals,"i"]
+			\arrow[d, swap, equals,"1"]
+		& (0 \smsh g_2)\o (f_1 \smsh g_1)
+			\arrow[d,equals,"t_{g_1}\o (f_2\smsh g_2)"]
+		\\
+		0 \smsh (g_2 \o g_1)
+			\arrow[r, swap, equals,"t_{g_1 \o g_2}"]
+		& 0
+	\end{tikzcd}
+	\end{equation}
+	For the underlying homotopy. let $x : A_1 \smsh B_1$ and apply induction on $x$. For the point constructors: if $x \judgeq (a,b)$, $x \judgeq \auxl$ or $x \judgeq \auxr$, we have to fill (respectively) the squares:
+	\begin{equation}\label{eq:pent-right-ab}
+	\begin{tikzcd}[column sep=5em]
+	(a_3,g_2(g_1(b)))
+      	\arrow[r, equals,"1"]
+      	\arrow[d,swap,equals,"1"]
+		%\arrow[d,equals,"\gluer_{g_2(g_1(b))}\tr\gluer_{g_2(g_1(b_1))}\sy"]
+	& (a_3,g_2(g_1(b)))
+		\arrow[d,equals,"\gluer_{g_2(g_1(b))}\tr\gluer_{b_3}\sy"]
+	\\
+	(a_3,g_2(g_1(b)))
+		\arrow[r,swap,equals,"\gluer_{g_2(g_1(b))}\tr\gluer_{b_3}\sy"]
+	& (a_3,b_3)	
+	\end{tikzcd}
+	\end{equation}
+	\begin{equation}\label{eq:pent-right-aux}
+    \begin{tikzcd}[column sep=5em]
+	\auxl
+      	\arrow[r, equals,"1"]
+    	\arrow[d,swap,equals,"1"]
+	& \auxl
+		\arrow[d,equals,"\gluel_{a_3}\sy"]
+	& \auxr
+		\arrow[r, equals, "1"]
+		\arrow[d, swap, equals, "1"]
+	& \auxr
+		\arrow[d, equals, "\gluer_{b_3}\sy"]
+	\\
+	\auxl
+		\arrow[r,swap, equals,"\gluel_{a_3}\sy"]
+	& (a_3, b_3)
+	& \auxr
+		\arrow[r, swap, equals, "\gluer_{b_3}\sy"]
+	& (a_3, b_3)
+    \end{tikzcd}
+	\end{equation}
+	which can be done by reflexivity. The cubes to be filled for $x$ varying over $\gluel_a$ or $		gluel_b$ are similar to the ones in (\ref{eq:pent-left-gluel}) and (\ref{eq:pent-left-gluel}) and can be generalized accordingly. (ADD REMARK cubically, ap id p reduces to refl, so the cases are exactly the same).
 
+	(TODO: this homotopy is pointed)
 \end{proof}
+
+\begin{lem}
+	(TODO: the fillers in \autoref{lem:smash-coh} are the same)
+\end{lem}
 
 \begin{thm}\label{thm:smash-functor-right}
 Given pointed types $A$, $B$ and $C$, the functorial action of the smash product induces a map
