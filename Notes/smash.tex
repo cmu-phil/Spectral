@@ -216,7 +216,7 @@ We define the pointed equivalences:
 \begin{lem}\label{lem:smash-general}
 	The smash product is functorial: if $f:A\pmap A'$ and $g:B\pmap B'$ then
     $f\smsh g:A\smsh B\pmap A'\smsh B'$. We write $A\smsh g$ or $f\smsh B$ if one of the
-    functions is the identity function. Moreover, if $p:f\sim f'$ and $q:g\sim g'$ then $p\smsh q:f\smsh g\sim f'\smsh g'$; this operation preserves reflexivities, symmetries and transitivies. We will write $p \smsh g$ or $f \smsh q$ if one of the homotopies is reflexivity.
+    functions is the identity function. Moreover, if $p:f\sim f'$ and $q:g\sim g'$ then $p\smsh q:f\smsh g\sim f'\smsh g'$; this operation preserves reflexivities, symmetries and transitivities. We will write $p \smsh g$ or $f \smsh q$ if one of the homotopies is reflexivity.
 %	The smash product satisfies the following properties.
 %  \begin{itemize}
 %  \item The smash product is functorial: if $f:A\pmap A'$ and $g:B\pmap B'$ then
@@ -729,7 +729,7 @@ are filled by (corollaries of) \autoref{lem:smash-general}.
   $\epsilon_{B,C}\equiv\epsilon : (B\pmap C)\smsh B \pmap C$ dinatural in $B$ and pointed natural in $C$.
   These maps satisfy the unit-counit laws:
   $$(A\to\epsilon_{A,B})\o \eta_{A\to B,A}\sim \idfunc[A\to B]\qquad
-  \epsilon_{B,B\smsh C}\o \eta_{A,B}\smsh B\sim\idfunc[A\smsh B].$$
+  \epsilon_{B,A\smsh B}\o \eta_{A,B}\smsh B\sim\idfunc[A\smsh B].$$
 \end{lem}
 Note: $\eta$ is also dinatural in $B$, but we don't need this.
 \begin{proof}
