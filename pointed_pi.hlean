@@ -846,6 +846,22 @@ namespace pointed
     { exact !ppi_eq_equiv_natural_gen_refl ◾ (!idp_con ⬝ !eq_of_phomotopy_refl) }
   end
 
+  definition loopn_pppi_pequiv [constructor] (n : ℕ) {A : Type*} (B : A → Type*) :
+    Ω[n] (Π*a, B a) ≃* Π*(a : A), Ω[n] (B a) :=
+  begin
+    induction n with n IH,
+    { reflexivity },
+    { refine loop_pequiv_loop IH ⬝e* loop_pppi_pequiv (λa, Ω[n] (B a)) }
+  end
+
+  -- definition trivial_homotopy_group_pppi {A : Type*} {B : A → Type*} {n : ℕ}
+  --   (H : Πa, is_contr (Ω[n] (B a))) : is_contr (π[n] (Π*a, B a)) :=
+  -- begin
+  --   apply is_trunc_trunc_of_is_trunc,
+  --   apply is_trunc_equiv_closed_rev,
+  --   apply loopn_pppi_pequiv
+  -- end
+
 
 /- below is an alternate proof strategy for the naturality of loop_pppi_pequiv_natural,
   where we define loop_pppi_pequiv as composite of pointed equivalences, and proved the

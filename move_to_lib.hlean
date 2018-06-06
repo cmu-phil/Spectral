@@ -59,6 +59,16 @@ namespace nat
 
 end nat
 
+  definition max0_monotone {n m : ℤ} (H : n ≤ m) : max0 n ≤ max0 m :=
+  begin
+    induction n with n n,
+    { induction m with m m,
+      { exact le_of_of_nat_le_of_nat H },
+      { exfalso, exact not_neg_succ_le_of_nat H }},
+    { apply zero_le }
+  end
+
+
   -- definition ppi_eq_equiv_internal : (k = l) ≃ (k ~* l) :=
   --   calc (k = l) ≃ ppi.sigma_char P p₀ k = ppi.sigma_char P p₀ l
   --                  : eq_equiv_fn_eq (ppi.sigma_char P p₀) k l
@@ -1494,3 +1504,18 @@ namespace category
   isomorphism.mk _ (is_isomorphism_pb_Precategory_functor C f)
 
 end category
+
+namespace chain_complex
+  open fin
+  definition is_contr_homotopy_group_fiber {A B : pType.{u}} {f : A →* B} {n : ℕ}
+    (H1 : is_embedding (π→[n] f)) (H2 : is_surjective (π→g[n+1] f)) : is_contr (π[n] (pfiber f)) :=
+  begin
+    apply @is_contr_of_is_embedding_of_is_surjective +3ℕ (LES_of_homotopy_groups f) (n, 0),
+    exact is_exact_LES_of_homotopy_groups f (n, 1), exact H1, exact H2
+  end
+
+  definition is_contr_homotopy_group_fiber_of_is_equiv {A B : pType.{u}} {f : A →* B} {n : ℕ}
+    (H1 : is_equiv (π→[n] f)) (H2 : is_equiv (π→g[n+1] f)) : is_contr (π[n] (pfiber f)) :=
+  is_contr_homotopy_group_fiber (is_embedding_of_is_equiv _) (is_surjective_of_is_equiv _)
+
+end chain_complex

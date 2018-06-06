@@ -845,18 +845,18 @@ namespace spectrum
                   ij_sequence jk_sequence ki_sequence
 
   open int
-  parameters (ub : ℤ) (lb : ℤ → ℤ)
-    (Aub : Π(s n : ℤ), s ≥ ub + 1 → is_equiv (f s n))
+  parameters (ub : ℤ → ℤ) (lb : ℤ → ℤ)
+    (Aub : Π(s n : ℤ), s ≥ ub n + 1 → is_equiv (πₛ→[n] (f s)))
     (Alb : Π(s n : ℤ), s ≤ lb n → is_contr (πₛ[n] (A s)))
 
   definition B : I → ℕ
   | (n, s) := max0 (s - lb n)
 
   definition B' : I → ℕ
-  | (n, s) := max0 (ub - s)
+  | (n, s) := max0 (ub n - s)
 
   definition B'' : I → ℕ
-  | (n, s) := max0 (ub + 1 - s)
+  | (n, s) := max0 (max (ub n + 1 - s) (ub (n+1) + 1 - s))
 
   lemma iterate_deg_i (n s : ℤ) (m : ℕ) : (deg i_sequence)^[m] (n, s) = (n, s - m) :=
   begin
@@ -884,7 +884,6 @@ namespace spectrum
     is_surjective (i_sequence ((deg i_sequence)⁻¹ᵉ^[t+1] x)) :=
   begin
     apply is_surjective_of_is_equiv,
-    apply is_equiv_homotopy_group_functor,
     apply Aub, induction x with n s,
     rewrite [iterate_deg_i_inv, ▸*, of_nat_add, -add.assoc],
     apply add_le_add_right,
@@ -894,12 +893,13 @@ namespace spectrum
 
   lemma Elb ⦃x : I⦄ ⦃t : ℕ⦄ (h : B'' x ≤ t) : is_contr (E_sequence ((deg i_sequence)⁻¹ᵉ^[t] x)) :=
   begin
-    apply is_contr_homotopy_group_of_is_contr,
-    apply is_contr_fiber_of_is_equiv,
-    apply Aub, induction x with n s,
+    induction x with n s,
     rewrite [iterate_deg_i_inv, ▸*],
-    apply le_add_of_sub_left_le,
-    apply le_of_max0_le h,
+    apply is_contr_shomotopy_group_sfiber_of_is_equiv,
+    apply Aub, apply le_add_of_sub_left_le, apply le_of_max0_le, refine le.trans _ h,
+    apply max0_monotone, apply le_max_left,
+    apply Aub, apply le_add_of_sub_left_le, apply le_of_max0_le, refine le.trans _ h,
+    apply max0_monotone, apply le_max_right
   end
 
   definition is_bounded_sequence [constructor] : is_bounded exact_couple_sequence :=
@@ -910,13 +910,13 @@ namespace spectrum
       refine !add.assoc ⬝ ap (add s) !add.comm ⬝ !add.assoc⁻¹,
     end
 
-  definition converges_to_sequence : (λn s, πₛ[n] (sfiber (f s))) ⟹ᵍ (λn, πₛ[n] (A ub)) :=
+  definition converges_to_sequence : (λn s, πₛ[n] (sfiber (f s))) ⟹ᵍ (λn, πₛ[n] (A (ub n))) :=
   begin
     fapply converges_to.mk,
     { exact exact_couple_sequence },
     { exact is_bounded_sequence },
-    { intro n, exact ub },
-    { intro n, change max0 (ub - ub) = 0, exact ap max0 (sub_self ub) },
+    { exact ub },
+    { intro n, change max0 (ub n - ub n) = 0, exact ap max0 (sub_self (ub n)) },
     { intro ns, reflexivity },
     { intro n, reflexivity },
     { intro r, exact - 1 },

@@ -703,7 +703,24 @@ namespace spectrum
                              πg_glue Y n ∘g (by reflexivity) qed
   | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
 --(homomorphism_LES_of_homotopy_groups_fun (f (2 - n)) (1, 2) ∘g πg_glue Y n)
+
+  definition is_contr_shomotopy_group_sfiber {n : ℤ}
+    (H1 : is_embedding (πₛ→[n] f)) (H2 : is_surjective (πₛ→[n+1] f)) :
+    is_contr (πₛ[n] (sfiber f)) :=
+  begin
+    apply @is_contr_of_is_embedding_of_is_surjective +3ℤ LES_of_shomotopy_groups (n, 0),
+    exact is_exact_LES_of_shomotopy_groups (n, 1), exact H1, exact H2
+  end
+
+  definition is_contr_shomotopy_group_sfiber_of_is_equiv {n : ℤ}
+    (H1 : is_equiv (πₛ→[n] f)) (H2 : is_equiv (πₛ→[n+1] f)) :
+    is_contr (πₛ[n] (sfiber f)) :=
+  proof
+    is_contr_shomotopy_group_sfiber (is_embedding_of_is_equiv _) (is_surjective_of_is_equiv _)
+  qed
+
   end LES
+
 
   /- homotopy group of a prespectrum -/
 

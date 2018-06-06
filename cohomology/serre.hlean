@@ -128,12 +128,13 @@ qed
 
 section atiyah_hirzebruch
   parameters {X : Type*} (Y : X → spectrum) (s₀ : ℤ) (H : Πx, is_strunc s₀ (Y x))
+  include H
 
   definition atiyah_hirzebruch_exact_couple : exact_couple rℤ Z2 :=
   @exact_couple_sequence (λs, spi X (λx, strunc s (Y x)))
                          (λs, spi_compose_left (λx, postnikov_smap (Y x) s))
 
-  include H
+--  include H
   definition atiyah_hirzebruch_ub ⦃s n : ℤ⦄ (Hs : s ≤ n - 1) :
     is_contr (πₛ[n] (spi X (λx, strunc s (Y x)))) :=
   begin
@@ -141,7 +142,7 @@ section atiyah_hirzebruch
     apply is_strunc_spi, intro x, exact is_strunc_strunc _ _
   end
 
-  definition atiyah_hirzebruch_lb ⦃s n : ℤ⦄ (Hs : s ≥ s₀ + 1) :
+  definition atiyah_hirzebruch_lb' ⦃s n : ℤ⦄ (Hs : s ≥ s₀ + 1) :
     is_equiv (spi_compose_left (λx, postnikov_smap (Y x) s) n) :=
   begin
     refine is_equiv_of_equiv_of_homotopy
@@ -161,13 +162,19 @@ section atiyah_hirzebruch
     reflexivity
   end
 
+  definition atiyah_hirzebruch_lb ⦃s n : ℤ⦄ (Hs : s ≥ s₀ + 1) :
+    is_equiv (πₛ→[n] (spi_compose_left (λx, postnikov_smap (Y x) s))) :=
+  begin
+    apply is_equiv_homotopy_group_functor, apply atiyah_hirzebruch_lb', exact Hs
+  end
+
   definition is_bounded_atiyah_hirzebruch : is_bounded atiyah_hirzebruch_exact_couple :=
-  is_bounded_sequence _ s₀ (λn, n - 1) atiyah_hirzebruch_lb atiyah_hirzebruch_ub
+  is_bounded_sequence _ (λn, s₀) (λn, n - 1) atiyah_hirzebruch_lb atiyah_hirzebruch_ub
 
   definition atiyah_hirzebruch_convergence' :
     (λn s, πₛ[n] (sfiber (spi_compose_left (λx, postnikov_smap (Y x) s)))) ⟹ᵍ
     (λn, πₛ[n] (spi X (λx, strunc s₀ (Y x)))) :=
-  converges_to_sequence _ s₀ (λn, n - 1) atiyah_hirzebruch_lb atiyah_hirzebruch_ub
+  converges_to_sequence _ (λn, s₀) (λn, n - 1) atiyah_hirzebruch_lb atiyah_hirzebruch_ub
 
   definition atiyah_hirzebruch_convergence :
     (λn s, opH^-(n-s)[(x : X), πₛ[s] (Y x)]) ⟹ᵍ (λn, pH^-n[(x : X), Y x]) :=
