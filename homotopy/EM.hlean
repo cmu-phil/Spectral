@@ -326,6 +326,18 @@ namespace EM
   EMadd1_pequiv_succ_natural f n !isomorphism.refl !isomorphism.refl (π→g[n+2] f)
     proof λa, idp qed
 
+  definition EMadd1_pmap_equiv (n : ℕ) (X Y : Type*) [is_conn (n+1) X] [is_trunc (n+1+1) X]
+    [is_conn (n+1) Y] [is_trunc (n+1+1) Y] : (X →* Y) ≃ πag[n+2] X →g πag[n+2] Y :=
+  begin
+    fapply equiv.MK,
+    { exact π→g[n+2] },
+    { exact λφ, (EMadd1_pequiv_type Y n ∘* EMadd1_functor φ (n+1)) ∘* (EMadd1_pequiv_type X n)⁻¹ᵉ* },
+    { intro φ, apply homomorphism_eq,
+      refine homotopy_group_functor_compose (n+2) _ _ ⬝hty _, exact sorry }, -- easy but tedious
+    { intro f, apply eq_of_phomotopy, refine (phomotopy_pinv_right_of_phomotopy _)⁻¹*,
+      apply EMadd1_pequiv_type_natural }
+  end
+
   /- The Eilenberg-MacLane space K(G,n) with the same homotopy group as X on level n.
      On paper this is written K(πₙ(X), n). The problem is that for
      * n = 0 the expression π₀(X) is a pointed set, and K(X,0) needs X to be a pointed set

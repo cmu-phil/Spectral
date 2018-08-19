@@ -606,5 +606,31 @@ definition ap1_gen_idp_eq {A B : Type} (f : A → B) {a : A} (q : f a = f a) (r 
   ap1_gen_idp f q = ap (λx, ap1_gen f x x idp) r :=
 begin cases r, reflexivity end
 
+definition pointed_change_point [constructor] (A : Type*) {a : A} (p : a = pt) :
+  pointed.MK A a ≃* A :=
+pequiv_of_eq_pt p ⬝e* (pointed_eta_pequiv A)⁻¹ᵉ*
+
+definition change_path_psquare {A B : Type*} (f : A →* B)
+  {a' : A} {b' : B} (p : a' = pt) (q : pt = b') :
+  psquare (pointed_change_point _ p)
+          (pointed_change_point _ q⁻¹)
+          (pmap.mk f (ap f p ⬝ respect_pt f ⬝ q)) f :=
+begin
+  fapply phomotopy.mk, exact homotopy.rfl,
+  exact !idp_con ⬝ !ap_id ◾ !ap_id ⬝ !con_inv_cancel_right ⬝ whisker_right _ (ap02 f !ap_id⁻¹)
+end
+
+definition change_path_psquare_cod {A B : Type*} (f : A →* B) {b' : B} (p : pt = b') :
+  f ~* pointed_change_point _ p⁻¹ ∘* pmap.mk f (respect_pt f ⬝ p) :=
+begin
+  fapply phomotopy.mk, exact homotopy.rfl, exact !idp_con ⬝ !ap_id ◾ !ap_id ⬝ !con_inv_cancel_right
+end
+
+definition change_path_psquare_cod' {A B : Type} (f : A → B) (a : A) {b' : B} (p : f a = b') :
+  pointed_change_point _ p ∘* pmap_of_map f a ~* pmap.mk f p :=
+begin
+  fapply phomotopy.mk, exact homotopy.rfl, refine whisker_left idp (ap_id p)⁻¹
+end
+
 
 end pointed

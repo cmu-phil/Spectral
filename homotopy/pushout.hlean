@@ -700,6 +700,19 @@ end
       apply eq_inv_con_of_con_eq, exact (to_homotopy_pt p)⁻¹ }
   end
 
+  definition pcofiber_elim_unique {X Y Z : Type*} {f : X →* Y}
+    {g₁ g₂ : pcofiber f →* Z} (h : g₁ ∘* pcod f ~* g₂ ∘* pcod f)
+    (sq : Πx, square (h (f x)) (respect_pt g₁ ⬝ (respect_pt g₂)⁻¹)
+      (ap g₁ (cofiber.glue x)) (ap g₂ (cofiber.glue x))) : g₁ ~* g₂ :=
+  begin
+    fapply phomotopy.mk,
+    { intro x, induction x with y x,
+      { exact h y },
+      { exact respect_pt g₁ ⬝ (respect_pt g₂)⁻¹ },
+      { apply eq_pathover, exact sq x }},
+    { apply inv_con_cancel_right }
+  end
+
   /-
     The maps  Z^{C_f} --> Z^Y --> Z^X  are exact at Z^Y.
     Here Y^X means pointed maps from X to Y and C_f is the cofiber of f.
