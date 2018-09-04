@@ -19,6 +19,10 @@ le_step_left > le_of_succ_le
 pmap.eta > pmap_eta
 pType.sigma_char' > pType.sigma_char
 cghomotopy_group to aghomotopy_group
+is_trunc_loop_of_is_trunc > is_trunc_loopn_of_is_trunc
+
+
+first two arguments reordered in is_trunc_loopn_nat
 -/
 
 namespace eq
@@ -94,224 +98,11 @@ namespace trunc
     { exact sorry }
   end
 
-  definition ptrunctype.sigma_char [constructor] (n : ℕ₋₂) :
-    n-Type* ≃ Σ(X : Type*), is_trunc n X :=
-  equiv.MK (λX, ⟨ptrunctype.to_pType X, _⟩)
-           (λX, ptrunctype.mk (carrier X.1) X.2 pt)
-           begin intro X, induction X with X HX, induction X, reflexivity end
-           begin intro X, induction X, reflexivity end
-
-  definition is_embedding_ptrunctype_to_pType (n : ℕ₋₂) : is_embedding (@ptrunctype.to_pType n) :=
-  begin
-    intro X Y, fapply is_equiv_of_equiv_of_homotopy,
-    { exact eq_equiv_fn_eq (ptrunctype.sigma_char n) _ _ ⬝e subtype_eq_equiv _ _ },
-    intro p, induction p, reflexivity
-  end
-
-  definition ptrunctype_eq_equiv {n : ℕ₋₂} (X Y : n-Type*) : (X = Y) ≃ (X ≃* Y) :=
-  equiv.mk _ (is_embedding_ptrunctype_to_pType n X Y) ⬝e pType_eq_equiv X Y
-
-  definition Prop_eq {P Q : Prop} (H : P ↔ Q) : P = Q :=
-  tua (equiv_of_is_prop (iff.mp H) (iff.mpr H))
-
-  definition is_trunc_ptrunc_of_is_trunc [instance] [priority 500] (A : Type*)
-    (n m : ℕ₋₂) [H : is_trunc n A] : is_trunc n (ptrunc m A) :=
-  is_trunc_trunc_of_is_trunc A n m
-
-  definition ptrunc_pequiv_ptrunc_of_is_trunc {n m k : ℕ₋₂} {A : Type*}
-    (H1 : n ≤ m) (H2 : n ≤ k) (H : is_trunc n A) : ptrunc m A ≃* ptrunc k A :=
-  have is_trunc m A, from is_trunc_of_le A H1,
-  have is_trunc k A, from is_trunc_of_le A H2,
-  pequiv.MK (ptrunc.elim _ (ptr k A)) (ptrunc.elim _ (ptr m A))
-    abstract begin
-      refine !ptrunc_elim_pcompose⁻¹* ⬝* _,
-      exact ptrunc_elim_phomotopy _ !ptrunc_elim_ptr ⬝* !ptrunc_elim_ptr_phomotopy_pid,
-    end end
-    abstract begin
-      refine !ptrunc_elim_pcompose⁻¹* ⬝* _,
-      exact ptrunc_elim_phomotopy _ !ptrunc_elim_ptr ⬝* !ptrunc_elim_ptr_phomotopy_pid,
-    end end
-
-  definition ptrunc_change_index {k l : ℕ₋₂} (p : k = l) (X : Type*)
-    : ptrunc k X ≃* ptrunc l X :=
-  pequiv_ap (λ n, ptrunc n X) p
-
-  definition ptrunc_functor_le {k l : ℕ₋₂} (p : l ≤ k) (X : Type*)
-    : ptrunc k X →* ptrunc l X :=
-  have is_trunc k (ptrunc l X), from is_trunc_of_le _ p,
-  ptrunc.elim _ (ptr l X)
-
-  definition trunc_index.pred [unfold 1] (n : ℕ₋₂) : ℕ₋₂ :=
-  begin cases n with n, exact -2, exact n end
-
-  /- A more general version of ptrunc_elim_phomotopy, where the proofs of truncatedness might be different -/
-  definition ptrunc_elim_phomotopy2 [constructor] (k : ℕ₋₂) {A B : Type*} {f g : A →* B} (H₁ : is_trunc k B)
-    (H₂ : is_trunc k B) (p : f ~* g) : @ptrunc.elim k A B H₁ f ~* @ptrunc.elim k A B H₂ g :=
-  begin
-    fapply phomotopy.mk,
-    { intro x, induction x with a, exact p a },
-    { exact to_homotopy_pt p }
-  end
-
-  definition pmap_ptrunc_equiv [constructor] (n : ℕ₋₂) (A B : Type*) [H : is_trunc n B] :
-    (ptrunc n A →* B) ≃ (A →* B) :=
-  begin
-    fapply equiv.MK,
-    { intro g, exact g ∘* ptr n A },
-    { exact ptrunc.elim n },
-    { intro f, apply eq_of_phomotopy, apply ptrunc_elim_ptr },
-    { intro g, apply eq_of_phomotopy,
-      exact ptrunc_elim_pcompose n g (ptr n A) ⬝* pwhisker_left g (ptrunc_elim_ptr_phomotopy_pid n A) ⬝*
-        pcompose_pid g }
-  end
-
-  definition pmap_ptrunc_pequiv [constructor] (n : ℕ₋₂) (A B : Type*) [H : is_trunc n B] :
-    ppmap (ptrunc n A) B ≃* ppmap A B :=
-  pequiv_of_equiv (pmap_ptrunc_equiv n A B) (eq_of_phomotopy (pconst_pcompose (ptr n A)))
-
-  definition loopn_ptrunc_pequiv_nat (n : ℕ) (k : ℕ) (A : Type*) :
-    Ω[k] (ptrunc (n+k) A) ≃* ptrunc n (Ω[k] A) :=
-  loopn_pequiv_loopn k (ptrunc_change_index (of_nat_add_of_nat n k)⁻¹ A) ⬝e* loopn_ptrunc_pequiv n k A
-
 end trunc open trunc
 
-namespace is_trunc
 
-  open trunc_index is_conn
-
-  lemma is_trunc_loopn_nat (m n : ℕ) (A : Type*) [H : is_trunc (n + m) A] :
-    is_trunc n (Ω[m] A) :=
-  @is_trunc_loopn n m A (transport (λk, is_trunc k _) (of_nat_add_of_nat n m)⁻¹ H)
-
-  lemma is_trunc_loop_nat (n : ℕ) (A : Type*) [H : is_trunc (n + 1) A] :
-    is_trunc n (Ω A) :=
-  is_trunc_loop A n
-
-  definition is_trunc_of_eq {n m : ℕ₋₂} (p : n = m) {A : Type} (H : is_trunc n A) : is_trunc m A :=
-  transport (λk, is_trunc k A) p H
-
-  definition is_trunc_succ_succ_of_is_trunc_loop (n : ℕ₋₂) (A : Type*) (H : is_trunc (n.+1) (Ω A))
-    (H2 : is_conn 0 A) : is_trunc (n.+2) A :=
-  begin
-    apply is_trunc_succ_of_is_trunc_loop, apply minus_one_le_succ,
-    refine is_conn.elim -1 _ _, exact H
-  end
-
-  lemma is_trunc_of_is_trunc_loopn (m n : ℕ) (A : Type*) (H : is_trunc n (Ω[m] A))
-    (H2 : is_conn (m.-1) A) : is_trunc (m + n) A :=
-  begin
-    revert A H H2; induction m with m IH: intro A H H2,
-    { rewrite [nat.zero_add], exact H },
-    rewrite [succ_add],
-    apply is_trunc_succ_succ_of_is_trunc_loop,
-    { apply IH,
-      { apply is_trunc_equiv_closed _ !loopn_succ_in },
-      apply is_conn_loop },
-    exact is_conn_of_le _ (zero_le_of_nat m)
-  end
-
-  lemma is_trunc_of_is_set_loopn (m : ℕ) (A : Type*) (H : is_set (Ω[m] A))
-    (H2 : is_conn (m.-1) A) : is_trunc m A :=
-  is_trunc_of_is_trunc_loopn m 0 A H H2
-
-  definition is_trunc_of_trivial_homotopy {n : ℕ} {m : ℕ₋₂} {A : Type} (H : is_trunc m A)
-    (H2 : Πk a, k > n → is_contr (π[k] (pointed.MK A a))) : is_trunc n A :=
-  begin
-    fapply is_trunc_is_equiv_closed_rev, { exact @tr n A },
-    apply whitehead_principle m,
-    { apply is_equiv_trunc_functor_of_is_conn_fun,
-      note z := is_conn_fun_tr n A,
-      apply is_conn_fun_of_le _ (of_nat_le_of_nat (zero_le n)), },
-    intro a k,
-    apply @nat.lt_ge_by_cases n (k+1),
-    { intro H3, apply @is_equiv_of_is_contr, exact H2 _ _ H3,
-      refine @trivial_homotopy_group_of_is_trunc _ _ _ _ H3, apply is_trunc_trunc },
-    { intro H3, apply @(is_equiv_π_of_is_connected _ H3), apply is_conn_fun_tr }
-  end
-
-  definition is_trunc_of_trivial_homotopy_pointed {n : ℕ} {m : ℕ₋₂} {A : Type*} (H : is_trunc m A)
-    (Hconn : is_conn 0 A) (H2 : Πk, k > n → is_contr (π[k] A)) : is_trunc n A :=
-  begin
-    apply is_trunc_of_trivial_homotopy H,
-    intro k a H3, revert a, apply is_conn.elim -1,
-    cases A with A a₀, exact H2 k H3
-  end
-
-  definition is_trunc_of_is_trunc_succ {n : ℕ} {A : Type} (H : is_trunc (n.+1) A)
-    (H2 : Πa, is_contr (π[n+1] (pointed.MK A a))) : is_trunc n A :=
-  begin
-    apply is_trunc_of_trivial_homotopy H,
-    intro k a H3, induction H3 with k H3 IH, exact H2 a,
-    apply @trivial_homotopy_group_of_is_trunc _ (n+1) _ H, exact succ_le_succ H3
-  end
-
-  definition is_trunc_of_is_trunc_succ_pointed {n : ℕ} {A : Type*} (H : is_trunc (n.+1) A)
-    (Hconn : is_conn 0 A) (H2 : is_contr (π[n+1] A)) : is_trunc n A :=
-  begin
-    apply is_trunc_of_trivial_homotopy_pointed H Hconn,
-    intro k H3, induction H3 with k H3 IH, exact H2,
-    apply @trivial_homotopy_group_of_is_trunc _ (n+1) _ H, exact succ_le_succ H3
-  end
-
-end is_trunc
 namespace sigma
   open sigma.ops
-
-definition sigma_functor2 [constructor] {A₁ A₂ A₃ : Type}
-  {B₁ : A₁ → Type} {B₂ : A₂ → Type} {B₃ : A₃ → Type}
-  (f : A₁ → A₂ → A₃) (g : Π⦃a₁ a₂⦄, B₁ a₁ → B₂ a₂ → B₃ (f a₁ a₂))
-    (x₁ : Σa₁, B₁ a₁) (x₂ : Σa₂, B₂ a₂) : Σa₃, B₃ a₃ :=
-⟨f x₁.1 x₂.1, g x₁.2 x₂.2⟩
-
-definition eq.rec_sigma {A : Type} {B : A → Type} {a : A} {b : B a}
-  (P : Π⦃a'⦄ {b' : B a'}, ⟨a, b⟩ = ⟨a', b'⟩ → Type)
-  (IH : P idp) ⦃a' : A⦄ {b' : B a'} (p : ⟨a, b⟩ = ⟨a', b'⟩) : P p :=
-begin
-  apply transport (λp, P p) (to_left_inv !sigma_eq_equiv p),
-  generalize !sigma_eq_equiv p, esimp, intro q,
-  induction q with q₁ q₂, induction q₂, exact IH
-end
-
-  definition ap_dpair_eq_dpair_pr {A A' : Type} {B : A → Type} {a a' : A} {b : B a} {b' : B a'} (f : Πa, B a → A') (p : a = a') (q : b =[p] b')
-    : ap (λx, f x.1 x.2) (dpair_eq_dpair p q) = apd011 f p q :=
-  by induction q; reflexivity
-
-  definition sigma_eq_equiv_of_is_prop_right [constructor] {A : Type} {B : A → Type} (u v : Σa, B a)
-    [H : Π a, is_prop (B a)] : u = v ≃ u.1 = v.1 :=
-  !sigma_eq_equiv ⬝e !sigma_equiv_of_is_contr_right
-
-  definition ap_sigma_pr1 {A B : Type} {C : B → Type} {a₁ a₂ : A} (f : A → B) (g : Πa, C (f a))
-    (p : a₁ = a₂) : (ap (λa, ⟨f a, g a⟩) p)..1 = ap f p :=
-  by induction p; reflexivity
-
-  definition ap_sigma_pr2 {A B : Type} {C : B → Type} {a₁ a₂ : A} (f : A → B) (g : Πa, C (f a))
-    (p : a₁ = a₂) : (ap (λa, ⟨f a, g a⟩) p)..2 =
-    change_path (ap_sigma_pr1 f g p)⁻¹ (pathover_ap C f (apd g p)) :=
-  by induction p; reflexivity
-
-definition ap_sigma_functor_sigma_eq {A A' : Type} {B : A → Type} {B' : A' → Type}
-  {a a' : A} {b : B a} {b' : B a'} (f : A → A') (g : Πa, B a → B' (f a)) (p : a = a') (q : b =[p] b') :
-  ap (sigma_functor f g) (sigma_eq p q) = sigma_eq (ap f p) (pathover_ap B' f (apo g q)) :=
-by induction q; reflexivity
-
-definition ap_sigma_functor_id_sigma_eq {A : Type} {B B' : A → Type}
-  {a a' : A} {b : B a} {b' : B a'} (g : Πa, B a → B' a) (p : a = a') (q : b =[p] b') :
-  ap (sigma_functor id g) (sigma_eq p q) = sigma_eq p (apo g q) :=
-by induction q; reflexivity
-
-definition sigma_eq_pr2_constant {A B : Type} {a a' : A} {b b' : B} (p : a = a')
-  (q : b =[p] b') : ap pr2 (sigma_eq p q) = (eq_of_pathover q) :=
-by induction q; reflexivity
-
-definition sigma_eq_pr2_constant2 {A B : Type} {a a' : A} {b b' : B} (p : a = a')
-  (q : b = b') : ap pr2 (sigma_eq p (pathover_of_eq p q)) = q :=
-by induction p; induction q; reflexivity
-
-definition sigma_eq_concato_eq {A : Type} {B : A → Type} {a a' : A} {b : B a} {b₁ b₂ : B a'}
-  (p : a = a') (q : b =[p] b₁) (q' : b₁ = b₂) : sigma_eq p (q ⬝op q') = sigma_eq p q ⬝ ap (dpair a') q' :=
-by induction q'; reflexivity
-
-
   -- open sigma.ops
   -- definition eq.rec_sigma {A : Type} {B : A → Type} {a₀ : A} {b₀ : B a₀}
   --   {P : Π(a : A) (b : B a), ⟨a₀, b₀⟩ = ⟨a, b⟩ → Type} (H : P a₀ b₀ idp) {a : A} {b : B a}
@@ -331,6 +122,60 @@ by induction q'; reflexivity
   --   { esimp, generalize ⟨b, c⟩, intro x q, }
   -- end
 --rexact @(ap pathover_pr1) _ idpo _,
+
+  definition sigma_functor2 [constructor] {A₁ A₂ A₃ : Type}
+    {B₁ : A₁ → Type} {B₂ : A₂ → Type} {B₃ : A₃ → Type}
+    (f : A₁ → A₂ → A₃) (g : Π⦃a₁ a₂⦄, B₁ a₁ → B₂ a₂ → B₃ (f a₁ a₂))
+      (x₁ : Σa₁, B₁ a₁) (x₂ : Σa₂, B₂ a₂) : Σa₃, B₃ a₃ :=
+  ⟨f x₁.1 x₂.1, g x₁.2 x₂.2⟩
+
+  definition eq.rec_sigma {A : Type} {B : A → Type} {a : A} {b : B a}
+    (P : Π⦃a'⦄ {b' : B a'}, ⟨a, b⟩ = ⟨a', b'⟩ → Type)
+    (IH : P idp) ⦃a' : A⦄ {b' : B a'} (p : ⟨a, b⟩ = ⟨a', b'⟩) : P p :=
+  begin
+    apply transport (λp, P p) (to_left_inv !sigma_eq_equiv p),
+    generalize !sigma_eq_equiv p, esimp, intro q,
+    induction q with q₁ q₂, induction q₂, exact IH
+  end
+
+  definition ap_dpair_eq_dpair_pr {A A' : Type} {B : A → Type} {a a' : A} {b : B a} {b' : B a'} (f : Πa, B a → A') (p : a = a') (q : b =[p] b')
+    : ap (λx, f x.1 x.2) (dpair_eq_dpair p q) = apd011 f p q :=
+  by induction q; reflexivity
+
+  definition sigma_eq_equiv_of_is_prop_right [constructor] {A : Type} {B : A → Type} (u v : Σa, B a)
+    [H : Π a, is_prop (B a)] : u = v ≃ u.1 = v.1 :=
+  !sigma_eq_equiv ⬝e !sigma_equiv_of_is_contr_right
+
+  definition ap_sigma_pr1 {A B : Type} {C : B → Type} {a₁ a₂ : A} (f : A → B) (g : Πa, C (f a))
+    (p : a₁ = a₂) : (ap (λa, ⟨f a, g a⟩) p)..1 = ap f p :=
+  by induction p; reflexivity
+
+  definition ap_sigma_pr2 {A B : Type} {C : B → Type} {a₁ a₂ : A} (f : A → B) (g : Πa, C (f a))
+    (p : a₁ = a₂) : (ap (λa, ⟨f a, g a⟩) p)..2 =
+    change_path (ap_sigma_pr1 f g p)⁻¹ (pathover_ap C f (apd g p)) :=
+  by induction p; reflexivity
+
+  definition ap_sigma_functor_sigma_eq {A A' : Type} {B : A → Type} {B' : A' → Type}
+    {a a' : A} {b : B a} {b' : B a'} (f : A → A') (g : Πa, B a → B' (f a)) (p : a = a') (q : b =[p] b') :
+    ap (sigma_functor f g) (sigma_eq p q) = sigma_eq (ap f p) (pathover_ap B' f (apo g q)) :=
+  by induction q; reflexivity
+
+  definition ap_sigma_functor_id_sigma_eq {A : Type} {B B' : A → Type}
+    {a a' : A} {b : B a} {b' : B a'} (g : Πa, B a → B' a) (p : a = a') (q : b =[p] b') :
+    ap (sigma_functor id g) (sigma_eq p q) = sigma_eq p (apo g q) :=
+  by induction q; reflexivity
+
+  definition sigma_eq_pr2_constant {A B : Type} {a a' : A} {b b' : B} (p : a = a')
+    (q : b =[p] b') : ap pr2 (sigma_eq p q) = (eq_of_pathover q) :=
+  by induction q; reflexivity
+
+  definition sigma_eq_pr2_constant2 {A B : Type} {a a' : A} {b b' : B} (p : a = a')
+    (q : b = b') : ap pr2 (sigma_eq p (pathover_of_eq p q)) = q :=
+  by induction p; induction q; reflexivity
+
+  definition sigma_eq_concato_eq {A : Type} {B : A → Type} {a a' : A} {b : B a} {b₁ b₂ : B a'}
+    (p : a = a') (q : b =[p] b₁) (q' : b₁ = b₂) : sigma_eq p (q ⬝op q') = sigma_eq p q ⬝ ap (dpair a') q' :=
+  by induction q'; reflexivity
 
   definition sigma_functor_compose {A A' A'' : Type} {B : A → Type} {B' : A' → Type}
     {B'' : A'' → Type} {f' : A' → A''} {f : A → A'} (g' : Πa, B' a → B'' (f' a))
@@ -359,26 +204,26 @@ by induction q'; reflexivity
       sigma_functor_homotopy h k x ⬝
       (sigma_functor_compose g₁₂ g₀₁ x)⁻¹
 
-definition sigma_equiv_of_is_embedding_left_fun [constructor] {X Y : Type} {P : Y → Type}
-  {f : X → Y} (H : Πy, P y → fiber f y) (v : Σy, P y) : Σx, P (f x) :=
-⟨fiber.point (H v.1 v.2), transport P (point_eq (H v.1 v.2))⁻¹ v.2⟩
+  definition sigma_equiv_of_is_embedding_left_fun [constructor] {X Y : Type} {P : Y → Type}
+    {f : X → Y} (H : Πy, P y → fiber f y) (v : Σy, P y) : Σx, P (f x) :=
+  ⟨fiber.point (H v.1 v.2), transport P (point_eq (H v.1 v.2))⁻¹ v.2⟩
 
-definition sigma_equiv_of_is_embedding_left_prop [constructor] {X Y : Type} {P : Y → Type}
-  (f : X → Y) (Hf : is_embedding f) (HP : Πx, is_prop (P (f x))) (H : Πy, P y → fiber f y) :
-  (Σy, P y) ≃ Σx, P (f x) :=
-begin
-  apply equiv.MK (sigma_equiv_of_is_embedding_left_fun H) (sigma_functor f (λa, id)),
-  { intro v, induction v with x p, esimp [sigma_equiv_of_is_embedding_left_fun],
-    fapply sigma_eq, apply @is_injective_of_is_embedding _ _ f, exact point_eq (H (f x) p),
-    apply is_prop.elimo },
-  { intro v, induction v with y p, esimp, fapply sigma_eq, exact point_eq (H y p),
-    apply tr_pathover }
-end
+  definition sigma_equiv_of_is_embedding_left_prop [constructor] {X Y : Type} {P : Y → Type}
+    (f : X → Y) (Hf : is_embedding f) (HP : Πx, is_prop (P (f x))) (H : Πy, P y → fiber f y) :
+    (Σy, P y) ≃ Σx, P (f x) :=
+  begin
+    apply equiv.MK (sigma_equiv_of_is_embedding_left_fun H) (sigma_functor f (λa, id)),
+    { intro v, induction v with x p, esimp [sigma_equiv_of_is_embedding_left_fun],
+      fapply sigma_eq, apply @is_injective_of_is_embedding _ _ f, exact point_eq (H (f x) p),
+      apply is_prop.elimo },
+    { intro v, induction v with y p, esimp, fapply sigma_eq, exact point_eq (H y p),
+      apply tr_pathover }
+  end
 
-definition sigma_equiv_of_is_embedding_left_contr [constructor] {X Y : Type} {P : Y → Type}
-  (f : X → Y) (Hf : is_embedding f) (HP : Πx, is_contr (P (f x))) (H : Πy, P y → fiber f y) :
-  (Σy, P y) ≃ X :=
-sigma_equiv_of_is_embedding_left_prop f Hf _ H ⬝e !sigma_equiv_of_is_contr_right
+  definition sigma_equiv_of_is_embedding_left_contr [constructor] {X Y : Type} {P : Y → Type}
+    (f : X → Y) (Hf : is_embedding f) (HP : Πx, is_contr (P (f x))) (H : Πy, P y → fiber f y) :
+    (Σy, P y) ≃ X :=
+  sigma_equiv_of_is_embedding_left_prop f Hf _ H ⬝e !sigma_equiv_of_is_contr_right
 
 end sigma open sigma
 

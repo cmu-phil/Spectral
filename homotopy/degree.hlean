@@ -59,6 +59,10 @@ namespace sphere
   attribute untrunc_of_is_trunc [unfold 4]
 
   definition surf_eq_loop : @surf 1 = circle.loop := sorry
+/-
+  Favonia had a good idea, which he got from Ulrik: use the cogroup structure on the suspension to construct a group structure on ΣX →* Y, from which you can easily show that deg(id) = 1. See in the Agda library the files cogroup, cohspace and Group/LoopSuspAdjoint (or something)
+-/
+
 
   -- definition π2S2_surf : π2S2 (tr surf) = 1 :> ℤ :=
   -- begin
