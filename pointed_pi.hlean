@@ -47,7 +47,7 @@ namespace pointed
     apply eq_of_fn_eq_fn eq_equiv_homotopy,
     apply eq_of_homotopy, intro b,
     refine !apd10_con ⬝ _,
-    refine whisker_right _ !pi.apd10_eq_of_homotopy ⬝ q b
+    refine whisker_right _ !apd10_eq_of_homotopy ⬝ q b
   end
 
   definition pupi_functor [constructor] {A A' : Type} {B : A → Type*} {B' : A' → Type*}
@@ -65,9 +65,9 @@ namespace pointed
   begin
     fapply phomotopy_mk_pupi,
     { intro h a, reflexivity },
-    { intro a, refine !idp_con ⬝ _, refine !apd10_con ⬝ _ ⬝ !pi.apd10_eq_of_homotopy⁻¹, esimp,
-      refine (!apd10_prepostcompose ⬝ ap02 (g' a) !pi.apd10_eq_of_homotopy) ◾
-             !pi.apd10_eq_of_homotopy }
+    { intro a, refine !idp_con ⬝ _, refine !apd10_con ⬝ _ ⬝ !apd10_eq_of_homotopy⁻¹, esimp,
+      refine (!apd10_prepostcompose ⬝ ap02 (g' a) !apd10_eq_of_homotopy) ◾
+             !apd10_eq_of_homotopy }
   end
 
   definition pupi_functor_pid (A : Type) (B : A → Type*) :
@@ -75,7 +75,7 @@ namespace pointed
   begin
     fapply phomotopy_mk_pupi,
     { intro h a, reflexivity },
-    { intro a, refine !idp_con ⬝ !pi.apd10_eq_of_homotopy⁻¹ }
+    { intro a, refine !idp_con ⬝ !apd10_eq_of_homotopy⁻¹ }
   end
 
   definition pupi_functor_phomotopy {A A' : Type} {B : A → Type*} {B' : A' → Type*}
@@ -86,8 +86,8 @@ namespace pointed
     fapply phomotopy_mk_pupi,
     { intro h a, exact q a (h (f a)) ⬝ ap (g' a) (apdt h (p a)) },
     { intro a, esimp,
-     exact whisker_left _ !pi.apd10_eq_of_homotopy ⬝ !con.assoc ⬝
-           to_homotopy_pt (q a) ⬝ !pi.apd10_eq_of_homotopy⁻¹ }
+     exact whisker_left _ !apd10_eq_of_homotopy ⬝ !con.assoc ⬝
+           to_homotopy_pt (q a) ⬝ !apd10_eq_of_homotopy⁻¹ }
   end
 
   definition pupi_pequiv [constructor] {A A' : Type} {B : A → Type*} {B' : A' → Type*}
@@ -634,7 +634,7 @@ namespace pointed
       fapply sigma_eq2,
       { refine !sigma_eq_pr1 ⬝ _ ⬝ !ap_sigma_pr1⁻¹,
         apply eq_of_fn_eq_fn eq_equiv_homotopy,
-        refine !apd10_eq_of_homotopy ⬝ _ ⬝ !apd10_to_fun_eq_of_phomotopy⁻¹,
+        refine !apd10_eq_of_homotopy_fn ⬝ _ ⬝ !apd10_to_fun_eq_of_phomotopy⁻¹,
         apply eq_of_homotopy, intro a, reflexivity },
       { exact sorry } }
   end

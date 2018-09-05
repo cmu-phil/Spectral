@@ -7,7 +7,7 @@ Truncatedness and truncation of spectra
 -/
 
 import .basic
-open int trunc eq is_trunc lift unit pointed equiv is_equiv algebra EM
+open int trunc eq is_trunc lift unit pointed equiv is_equiv algebra EM trunc_index
 
 namespace spectrum
 

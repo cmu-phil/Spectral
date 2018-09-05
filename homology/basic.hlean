@@ -54,7 +54,7 @@ namespace homology
 
     theorem Hh_homotopy (n : ℤ) {A B : Type*} (f g : A →* B) (h : f ~ g) : Hh theory n f ~ Hh theory n g := λ x,
     calc       Hh theory n f x
-             = Hh theory n (pmap.mk f (respect_pt f)) x : by exact ap (λ f, Hh theory n f x) (pmap.eta f)⁻¹
+             = Hh theory n (pmap.mk f (respect_pt f)) x : by exact ap (λ f, Hh theory n f x) (pmap_eta_eq f)⁻¹
          ... = Hh theory n (pmap.mk f (h pt ⬝ respect_pt g)) x : by exact Hh_homotopy' n f (respect_pt f) (h pt ⬝ respect_pt g) x
          ... = Hh theory n g x :
                begin

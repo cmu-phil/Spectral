@@ -723,7 +723,7 @@ incl_kshift_diag f x
 definition seq_colim_eq_equiv0' (a₀ a₁ : A 0) :
   ι f a₀ = ι f a₁ ≃ seq_colim (id_seq_diagram f 0 a₀ a₁) :=
 begin
-  refine total_space_method2 (ι f a₀) (seq_colim_over (id0_seq_diagram_over f a₀))
+  refine total_space_method (ι f a₀) (seq_colim_over (id0_seq_diagram_over f a₀))
     _ _ (ι f a₁) ⬝e _,
   { apply @(is_trunc_equiv_closed_rev _ (sigma_seq_colim_over_equiv _ _)),
     apply is_contr_seq_colim },

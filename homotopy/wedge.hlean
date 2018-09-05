@@ -258,9 +258,9 @@ pequiv.MK (nar_of_noo f g h) (noo_of_nar f g h)
 -- apply eq_pathover_id_right, refine ap_compose nar_of_noo _ _ ⬝ ap02 _ !elim_glue ⬝ph _
 -- apply eq_pathover_id_right, refine ap_compose noo_of_nar _ _ ⬝ ap02 _ !elim_glue ⬝ph _
 
-  definition loop_pequiv_of_cross_section {A B : Type*} (f : A →* B) (g : B →* A)
-    (h : f ∘* g ~* pid B) : Ω A ≃* Ω (pfiber f) ×* Ω B :=
-
+  -- definition loop_pequiv_of_cross_section {A B : Type*} (f : A →* B) (g : B →* A)
+  --   (h : f ∘* g ~* pid B) : Ω A ≃* Ω (pfiber f) ×* Ω B :=
+  -- sorry
 
 
 

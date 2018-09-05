@@ -111,7 +111,7 @@ namespace pushout
         refine ap (λx, apd10 x _) (ap_compose (λx, x ∘ f) pr1 _ ⬝ ap02 _ !prod_eq_pr1) ⬝ph _
                ⬝hp ap (λx, apd10 x _) (ap_compose (λx, x ∘ g) pr2 _ ⬝ ap02 _ !prod_eq_pr2)⁻¹,
         refine apd10 !apd10_ap_precompose_dependent a ⬝ph _ ⬝hp apd10 !apd10_ap_precompose_dependent⁻¹ a,
-        refine apd10 !apd10_eq_of_homotopy (f a) ⬝ph _ ⬝hp apd10 !apd10_eq_of_homotopy⁻¹ (g a),
+        refine !apd10_eq_of_homotopy ⬝ph _ ⬝hp !apd10_eq_of_homotopy⁻¹,
         refine ap_compose (pushout.elim h k p) _ _ ⬝pv _,
         refine aps (pushout.elim h k p) _ ⬝vp (!elim_glue ⬝ !ap_id⁻¹),
         esimp,   exact sorry
@@ -981,7 +981,7 @@ namespace pushout
     assert H : Π w, P w ≃ pushout.elim_type (P ∘ inl) (P ∘ inr) Pglue w,
     { intro w, induction w with x x x,
       { exact erfl }, { exact erfl },
-      { apply equiv_pathover, intro pfx pgx q,
+      { apply equiv_pathover2, intro pfx pgx q,
         apply pathover_of_tr_eq,
         apply eq.trans (ap10 (elim_type_glue.{u₁ u₂ u₃ u₄}
           (P ∘ inl) (P ∘ inr) Pglue x) pfx), -- why do we need explicit universes here?

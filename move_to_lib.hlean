@@ -23,6 +23,7 @@ is_trunc_loop_of_is_trunc > is_trunc_loopn_of_is_trunc
 
 
 first two arguments reordered in is_trunc_loopn_nat
+reorder pathover arguments of constructions with squareovers (mostly implicit)
 -/
 
 namespace eq

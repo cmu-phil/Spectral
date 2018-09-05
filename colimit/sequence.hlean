@@ -92,7 +92,7 @@ namespace seq_colim
   /- lreplace le_of_succ_le with this -/
 
   definition lrep_f {n m : ℕ} (H : succ n ≤ m) (a : A n) :
-    lrep f H (f a) = lrep f (le_step_left H) a :=
+    lrep f H (f a) = lrep f (le_of_succ_le H) a :=
   begin
     induction H with m H p,
     { reflexivity },

@@ -213,13 +213,6 @@ namespace pointed
 
 /- Homotopy between a function and its eta expansion -/
 
-  definition pmap_eta [constructor] {X Y : Type*} (f : X →* Y) : f ~* pmap.mk f (respect_pt f) :=
-  begin
-    fapply phomotopy.mk,
-    reflexivity,
-    esimp, exact !idp_con
-  end
-
   definition papply_point [constructor] (A B : Type*) : papply B pt ~* pconst (ppmap A B) B :=
   phomotopy.mk (λf, respect_pt f) idp
 

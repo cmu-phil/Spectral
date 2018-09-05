@@ -8,8 +8,8 @@ Authors: Michael Shulman, Floris van Doorn, Egbert Rijke, Stefano Piceghello, Yu
 import homotopy.LES_of_homotopy_groups ..algebra.splice ..algebra.seq_colim ..homotopy.EM ..homotopy.fwedge
        ..pointed_cubes
 
-open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc_index pi group
-     succ_str EM EM.ops function unit lift is_trunc
+open eq nat int susp pointed sigma is_equiv equiv fiber algebra trunc trunc_index pi group
+     succ_str EM EM.ops function unit lift is_trunc sigma.ops
 
 /---------------------
   Basic definitions
@@ -19,7 +19,7 @@ open eq nat int susp pointed pmap sigma is_equiv equiv fiber algebra trunc trunc
 
 structure gen_prespectrum (N : succ_str) :=
   (deloop : N → Type*)
-  (glue : Π(n:N), (deloop n) →* (Ω (deloop (S n))))
+  (glue : Π(n:N), deloop n →* Ω (deloop (S n)))
 
 attribute gen_prespectrum.deloop [coercion]
 
@@ -182,14 +182,12 @@ namespace spectrum
 
   definition smap_to_sigma [unfold 4] {N : succ_str} {X Y : gen_prespectrum N} (f : X →ₛ Y) : smap_sigma X Y :=
   begin
-    induction f with f fsq,
-    exact sigma.mk f fsq,
+    exact sigma.mk (smap.to_fun f) (glue_square f),
   end
 
   definition smap_to_struc [unfold 4] {N : succ_str} {X Y : gen_prespectrum N} (f : smap_sigma X Y) : X →ₛ Y :=
   begin
-    induction f with f fsq,
-    exact smap.mk f fsq,
+    exact smap.mk f.1 f.2,
   end
 
   definition smap_to_sigma_isretr {N : succ_str} {X Y : gen_prespectrum N} (f : smap_sigma X Y) :
@@ -220,43 +218,25 @@ namespace spectrum
   glue_square f n
 
   definition sid [constructor] [refl] {N : succ_str} (E : gen_prespectrum N) : E →ₛ E :=
-  smap.mk (λ n, pid (E n)) (λ n, psquare_of_phtpy_bot (ap1_pid) (psquare_of_pid_top_bot (phomotopy.rfl)))
-
-  --print sid
- --   smap.mk (λn, pid (E n))
- --   (λn, calc glue E n ∘* pid (E n) ~* glue E n                   : pcompose_pid
- --                             ...   ~* pid (Ω(E (S n))) ∘* glue E n : pid_pcompose
- --                             ...   ~* Ω→(pid (E (S n))) ∘* glue E n : pwhisker_right (glue E n) ap1_pid⁻¹*)
+  begin
+    apply smap.mk (λ n, pid (E n)),
+    intro n, exact phrfl ⬝vp* !ap1_pid
+  end
 
   definition scompose [trans] {N : succ_str} {X Y Z : gen_prespectrum N}
     (g : Y →ₛ Z) (f : X →ₛ Y) : X →ₛ Z :=
-    smap.mk (λn, g n ∘* f n)
-            (λ n, psquare_of_phtpy_bot
-                    (ap1_pcompose (g (S n)) (f (S n)))
-                    (psquare_hcompose (glue_square f n) (glue_square g n)))
-
-/-
-      (λn, calc glue Z n ∘* to_fun g n ∘* to_fun f n
-             ~* (glue Z n ∘* to_fun g n) ∘* to_fun f n                 : passoc
-         ... ~* (Ω→(to_fun g (S n)) ∘* glue Y n) ∘* to_fun f n      : pwhisker_right (to_fun f n) (glue_square g n)
-         ... ~* Ω→(to_fun g (S n)) ∘* (glue Y n ∘* to_fun f n)      : passoc
-         ... ~* Ω→(to_fun g (S n)) ∘* (Ω→ (f (S n)) ∘* glue X n) : pwhisker_left (Ω→(to_fun g (S n))) (glue_square f n)
-         ... ~* (Ω→(to_fun g (S n)) ∘* Ω→(f (S n))) ∘* glue X n  : passoc
-         ... ~* Ω→(to_fun g (S n) ∘* to_fun f (S n)) ∘* glue X n : pwhisker_right (glue X n) (ap1_pcompose _ _))
--/
+  begin
+    apply smap.mk (λn, g n ∘* f n),
+    intro n, exact (glue_square f n ⬝h* glue_square g n) ⬝vp* !ap1_pcompose
+  end
 
   infixr ` ∘ₛ `:60 := scompose
 
   definition szero [constructor] {N : succ_str} (E F : gen_prespectrum N) : E →ₛ F :=
-    smap.mk (λn, pconst (E n) (F n))
-            (λn, psquare_of_phtpy_bot (ap1_pconst (E (S n)) (F (S n)))
-                   (psquare_of_pconst_top_bot (glue E n) (glue F n)))
-
-/-
-      (λn, calc glue F n ∘* pconst (E n) (F n) ~* pconst (E n) (Ω(F (S n)))                    : pcompose_pconst
-                                         ...   ~* pconst (Ω(E (S n))) (Ω(F (S n))) ∘* glue E n : pconst_pcompose
-                                         ...   ~* Ω→(pconst (E (S n)) (F (S n))) ∘* glue E n   : pwhisker_right (glue E n) (ap1_pconst _ _))
--/
+  begin
+    apply smap.mk (λn, pconst (E n) (F n)),
+    intro n, exact !hpconst_square ⬝vp* !ap1_pconst
+  end
 
   definition stransport [constructor] {N : succ_str} {A : Type} {a a' : A} (p : a = a')
   (E : A → gen_prespectrum N) : E a →ₛ E a' :=
@@ -270,7 +250,7 @@ namespace spectrum
     (to_phomotopy : Πn, f n ~* g n)
     (glue_homotopy : Πn, ptube_v
                            (to_phomotopy n)
-                           (ap1_phomotopy (to_phomotopy (S n)))
+                           (Ω⇒ (to_phomotopy (S n)))
                            (glue_square f n)
                            (glue_square g n))
 
@@ -282,6 +262,7 @@ namespace spectrum
 -/
 
   infix ` ~ₛ `:50 := shomotopy
+  attribute [coercion] shomotopy.to_phomotopy
 
   definition shomotopy_compose {N : succ_str} {E F : gen_prespectrum N} {f g h : E →ₛ F} (p : g ~ₛ h) (q : f ~ₛ g) : f ~ₛ h :=
   shomotopy.mk
@@ -314,10 +295,7 @@ namespace spectrum
       (glue_square g n)
 
   definition shomotopy_to_sigma [unfold 6] {N : succ_str} {X Y : gen_prespectrum N} {f g : X →ₛ Y} (H : f ~ₛ g) : shomotopy_sigma f g :=
-  begin
-    induction H with H Hsq,
-    exact sigma.mk H Hsq,
-  end
+  ⟨H, shomotopy.glue_homotopy H⟩
 
   definition shomotopy_to_struct [unfold 6] {N : succ_str} {X Y : gen_prespectrum N} {f g : X →ₛ Y} (H : shomotopy_sigma f g) : f ~ₛ g :=
   begin
@@ -423,7 +401,7 @@ namespace spectrum
     refine change_path _ _,
 --    have p : eq_of_homotopy (λ n, eq_of_phomotopy phomotopy.rfl) = refl f,
     reflexivity,
-    refine (eq_of_homotopy_eta rfl)⁻¹ ⬝ _,
+    refine (eq_of_homotopy_apd10 rfl)⁻¹ ⬝ _,
     fapply ap (eq_of_homotopy), fapply eq_of_homotopy, intro n, refine (eq_of_phomotopy_refl _)⁻¹,
 --    fapply eq_of_phomotopy,
     fapply pathover_idp_of_eq,
@@ -552,6 +530,7 @@ namespace spectrum
   smap.mk (λn, ppoint (f n))
     begin
       intro n,
+--      refine _ ⬝vp* !ppoint_loop_pfiber_inv,
       refine _ ⬝* !passoc,
       refine _ ⬝* pwhisker_right _ !ppoint_loop_pfiber_inv⁻¹*,
       rexact (pfiber_pequiv_of_square_ppoint (equiv_glue X n) (equiv_glue Y n) (sglue_square f n))⁻¹*
@@ -562,7 +541,7 @@ namespace spectrum
   begin
     fapply shomotopy.mk,
     { intro n, exact pcompose_ppoint (f n) },
-    { intro n, exact sorry }
+    { intro n, esimp, exact sorry }
   end
 
   /---------------------
@@ -750,9 +729,9 @@ namespace spectrum
       intro k,
       note sq1 := homotopy_group_homomorphism_psquare (k+2) (ptranspose (smap.glue_square f (-n + 2 +[ℤ] k))),
       note sq2 := homotopy_group_functor_psquare (k+2) (ap1_psquare (ptransport_natural E F f (add.assoc (-n + 2) k 1))),
-      note sq3 := (homotopy_group_succ_in_natural (k+2) (f (-n + 2 +[ℤ] (k+1))))⁻¹ʰᵗʸʰ,
-      note sq4 := hsquare_of_psquare sq2,
-      note rect := sq1 ⬝htyh sq4 ⬝htyh sq3,
+      -- note sq3 := (homotopy_group_succ_in_natural (k+2) (f (-n + 2 +[ℤ] (k +[ℕ] 1))))⁻¹ʰᵗʸʰ,
+      -- note sq4 := hsquare_of_psquare sq2,
+      -- note rect := sq1 ⬝htyh sq4 ⬝htyh sq3,
       exact sorry --sq1 ⬝htyh sq4 ⬝htyh sq3,
     end
   qed

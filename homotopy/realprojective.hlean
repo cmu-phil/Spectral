@@ -151,7 +151,7 @@ begin
 end
 
 definition corollary_II_6 : Π A : BoolType, (pt = A) ≃ A :=
-@total_space_method BoolType pt BoolType.carrier theorem_II_2 idp
+@total_space_method BoolType pt BoolType.carrier theorem_II_2 pt
 
 definition is_conn_BoolType [instance] : is_conn 0 BoolType :=
 begin

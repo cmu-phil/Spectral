@@ -91,13 +91,22 @@ begin
   exact (pconst_pcompose fleft)⁻¹*,
 end
 
-definition phsquare_of_phomotopy {A B : Type*} {f g h i : A →* B} {phtpy_top : f ~* g} {phtpy_bot : h ~* i} {phtpy_left : f ~* h} {phtpy_right : g ~* i} (H : phtpy_top ⬝* phtpy_right ~* phtpy_left ⬝* phtpy_bot) : phsquare phtpy_top phtpy_bot phtpy_left phtpy_right :=
-  eq_of_phomotopy H
+definition phsquare_of_phomotopy {A B : Type*} {f g h i : A →* B} {phtpy_top : f ~* g}
+  {phtpy_bot : h ~* i} {phtpy_left : f ~* h} {phtpy_right : g ~* i}
+  (H : phtpy_top ⬝* phtpy_right ~* phtpy_left ⬝* phtpy_bot) :
+  phsquare phtpy_top phtpy_bot phtpy_left phtpy_right :=
+eq_of_phomotopy H
 
-definition ptube_v {A B C D : Type*} {ftop ftop' : A →* B} (phtpy_top : ftop ~* ftop') {fbot fbot' : C →* D} (phtpy_bot : fbot ~* fbot') {fleft : A →* C} {fright : B →* D} (psq_back : psquare ftop fbot fleft fright) (psq_front : psquare ftop' fbot' fleft fright) : Type :=
+definition ptube_v {A B C D : Type*} {ftop ftop' : A →* B} (phtpy_top : ftop ~* ftop')
+  {fbot fbot' : C →* D} (phtpy_bot : fbot ~* fbot') {fleft : A →* C} {fright : B →* D}
+  (psq_back : psquare ftop fbot fleft fright) (psq_front : psquare ftop' fbot' fleft fright) :
+  Type :=
 phsquare (pwhisker_left fright phtpy_top) (pwhisker_right fleft phtpy_bot) psq_back psq_front
 
-definition ptube_h {A B C D : Type*} {ftop : A →* B} {fbot : C →* D} {fleft fleft' : A →* C} (phtpy_left : fleft ~* fleft') {fright fright' : B →* D} (phtpy_right : fright ~* fright') (psq_back : psquare ftop fbot fleft fright) (psq_front : psquare ftop fbot fleft' fright') : Type :=
+definition ptube_h {A B C D : Type*} {ftop : A →* B} {fbot : C →* D} {fleft fleft' : A →* C}
+  (phtpy_left : fleft ~* fleft') {fright fright' : B →* D} (phtpy_right : fright ~* fright')
+  (psq_back : psquare ftop fbot fleft fright) (psq_front : psquare ftop fbot fleft' fright') :
+  Type :=
 phsquare (pwhisker_right ftop phtpy_right) (pwhisker_left fbot phtpy_left) psq_back psq_front
 
 --print pinv_right_phomotopy_of_phomotopy
