@@ -329,7 +329,7 @@ end
   definition trunc_isomorphism_of_equiv {A B : Type} [inf_group A] [inf_group B] (f : A ≃ B)
     (h : is_mul_hom f) : Group.mk (trunc 0 A) (trunc_group A) ≃g Group.mk (trunc 0 B) (trunc_group B) :=
   begin
-    apply isomorphism_of_equiv (equiv.mk (trunc_functor 0 f) (is_equiv_trunc_functor 0 f)), intros x x',
+    apply isomorphism_of_equiv (trunc_equiv_trunc 0 f), intros x x',
     induction x with a, induction x' with a', apply ap tr, exact h a a'
   end
 
@@ -425,7 +425,7 @@ end
   definition to_ginv_inf [constructor] (φ : G₁ ≃∞g G₂) : G₂ →∞g G₁ :=
   inf_homomorphism.mk φ⁻¹
     abstract begin
-    intro g₁ g₂, apply eq_of_fn_eq_fn' φ,
+    intro g₁ g₂, apply inj' φ,
     rewrite [respect_mul φ, +right_inv φ]
     end end
 
@@ -616,7 +616,7 @@ definition fiber_eq2_equiv {A B : Type} {f : A → B} {b : B} {x y : fiber f b}
   (q₂ : point_eq x = ap f p₂ ⬝ point_eq y) : (fiber_eq p₁ q₁ = fiber_eq p₂ q₂) ≃
   (Σ(r : p₁ = p₂), q₁ ⬝ whisker_right (point_eq y) (ap02 f r) = q₂) :=
 begin
-  refine (eq_equiv_fn_eq_of_equiv (fiber_eq_equiv' x y)⁻¹ᵉ _ _)⁻¹ᵉ ⬝e sigma_eq_equiv _ _ ⬝e _,
+  refine (eq_equiv_fn_eq (fiber_eq_equiv' x y)⁻¹ᵉ _ _)⁻¹ᵉ ⬝e sigma_eq_equiv _ _ ⬝e _,
   apply sigma_equiv_sigma_right, esimp, intro r,
   refine !eq_pathover_equiv_square ⬝e _,
   refine eq_hconcat_equiv !ap_constant ⬝e hconcat_eq_equiv (ap_compose (λx, x ⬝ _) _ _) ⬝e _,
@@ -713,7 +713,7 @@ end
 
 definition is_trunc_fun_compose (k : ℕ₋₂) {A B C : Type} {g : B → C} {f : A → B}
   (Hg : is_trunc_fun k g) (Hf : is_trunc_fun k f) : is_trunc_fun k (g ∘ f) :=
-λc, is_trunc_equiv_closed_rev k (fiber_compose g f c)
+λc, is_trunc_equiv_closed_rev k (fiber_compose g f c) _
 
 definition is_conn_fun_compose (k : ℕ₋₂) {A B C : Type} {g : B → C} {f : A → B}
   (Hg : is_conn_fun k g) (Hf : is_conn_fun k f) : is_conn_fun k (g ∘ f) :=
@@ -1093,7 +1093,7 @@ namespace sphere
   --   assert H : is_contr (Ω[n] (S m)),
   --   { apply homotopy_group_sphere_le, },
   --   apply phomotopy_of_eq,
-  --   apply eq_of_fn_eq_fn !sphere_pmap_pequiv,
+  --   apply inj !sphere_pmap_pequiv,
   --   apply @is_prop.elim
   -- end
 
@@ -1370,7 +1370,7 @@ begin
   assert H : is_trunc (n.+2) (Σ(k : ℕ), iterated_prod X k),
   { apply is_trunc_sigma, apply is_trunc_succ_succ_of_is_set,
     intro, exact is_trunc_iterated_prod H },
-  apply is_trunc_equiv_closed_rev _ (list.sigma_char X),
+  apply is_trunc_equiv_closed_rev _ (list.sigma_char X) _,
 end
 
 end list
@@ -1394,11 +1394,11 @@ definition freudenthal_pequiv_trunc_index' (A : Type*) (n : ℕ) (k : ℕ₋₂)
   (H : k ≤ of_nat (2 * n)) : ptrunc k A ≃* ptrunc k (Ω (susp A)) :=
 begin
   assert lem : Π(l : ℕ₋₂), l ≤ 0 → ptrunc l A ≃* ptrunc l (Ω (susp A)),
-  { intro l H', exact ptrunc_pequiv_ptrunc_of_le H' (freudenthal_pequiv A (zero_le (2 * n))) },
+  { intro l H', exact ptrunc_pequiv_ptrunc_of_le H' (freudenthal_pequiv (zero_le (2 * n)) A) },
   cases k with k, { exact lem -2 (minus_two_le 0) },
   cases k with k, { exact lem -1 (succ_le_succ (minus_two_le -1)) },
   rewrite [-of_nat_add_two at *, add_two_sub_two at HA],
-  exact freudenthal_pequiv A (le_of_of_nat_le_of_nat H)
+  exact freudenthal_pequiv (le_of_of_nat_le_of_nat H) A
 end
 
 end susp

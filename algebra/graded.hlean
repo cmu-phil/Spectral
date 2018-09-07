@@ -151,7 +151,7 @@ definition graded_hom_change_image {f : M₁ →gm M₂} {i j k : I} {m : M₂ k
   (q : deg f j = k) (h : image (f ↘ p) m) : image (f ↘ q) m :=
 begin
   have Σ(r : i = j), ap (deg f) r = p ⬝ q⁻¹,
-  from ⟨eq_of_fn_eq_fn (deg f) (p ⬝ q⁻¹), !ap_eq_of_fn_eq_fn'⟩,
+  from ⟨inj (deg f) (p ⬝ q⁻¹), !ap_inj'⟩,
   induction this with r s, induction r, induction q, esimp at s, induction s, exact h
 end
 
@@ -159,7 +159,7 @@ definition graded_hom_codom_rec {f : M₁ →gm M₂} {j : I} {P : Π⦃i⦄, de
   {i i' : I} (p : deg f i = j) (h : P p) (q : deg f i' = j) : P q :=
 begin
   have Σ(r : i = i'), ap (deg f) r = p ⬝ q⁻¹,
-  from ⟨eq_of_fn_eq_fn (deg f) (p ⬝ q⁻¹), !ap_eq_of_fn_eq_fn'⟩,
+  from ⟨inj (deg f) (p ⬝ q⁻¹), !ap_inj'⟩,
   induction this with r s, induction r, induction q, esimp at s, induction s, exact h
 end
 

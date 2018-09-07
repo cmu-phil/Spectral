@@ -159,7 +159,7 @@ sorry
         esimp, induction q, esimp, krewrite prod_transport, fapply sigma_eq,
         { exact idp },
         { esimp, rewrite eq_transport_Fl, rewrite eq_transport_Fl,
-          krewrite elim_glue, krewrite (ap_compose' pr1 prod_of_wedge (glue star)),
+          krewrite elim_glue, krewrite [-ap_compose' pr1 prod_of_wedge (glue star)],
           krewrite elim_glue, esimp, apply eq_pathover, rewrite idp_con, esimp,
           apply square_of_eq, rewrite [idp_con,idp_con,inv_inv] } }
     end

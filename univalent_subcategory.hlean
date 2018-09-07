@@ -254,7 +254,7 @@ induction p,
 
   definition Group_eq_equiv (G H : Group) : G = H ≃ (G ≃g H) :=
   begin
-    refine (eq_equiv_fn_eq_of_equiv sigma_char2 G H) ⬝e _,
+    refine (eq_equiv_fn_eq sigma_char2 G H) ⬝e _,
     refine !sigma_eq_equiv ⬝e _,
     refine sigma_equiv_sigma_right Group_eq_equiv_lemma ⬝e _,
     transitivity (Σ(e : (sigma_char2 G).1 ≃ (sigma_char2 H).1),
@@ -269,7 +269,7 @@ induction p,
   definition Group_eq2 {G H : Group} {p q : G = H}
     (r : isomorphism_of_eq p ~ isomorphism_of_eq q) : p = q :=
   begin
-    apply eq_of_fn_eq_fn (Group_eq_equiv G H),
+    apply inj (Group_eq_equiv G H),
     apply isomorphism_eq,
     intro g, refine to_fun_Group_eq_equiv p g ⬝ r g ⬝ (to_fun_Group_eq_equiv q g)⁻¹,
   end
@@ -293,8 +293,7 @@ definition AbGroup_to_Group [constructor] : functor (Precategory.mk AbGroup _)
 definition is_set_group (X : Type) : is_set (group X) :=
 begin
 apply is_trunc_of_imp_is_trunc, intros, assert H : is_set X, exact @group.is_set_carrier X a, clear a,
-apply is_trunc_equiv_closed, apply equiv.symm,
-apply group.sigma_char
+exact is_trunc_equiv_closed_rev _ !group.sigma_char _
 end
 
 definition ab_group_to_group (A  : Type) (g : ab_group A) : group A := _
@@ -330,7 +329,7 @@ assert H : (fiber (total f) ⟨a, c⟩)≃ fiber (f a) c,
 apply fiber_total_equiv,
 assert H2 : is_prop (fiber (f a) c),
 apply is_prop_fiber_of_is_embedding,
-apply is_trunc_equiv_closed -1 (H⁻¹ᵉ),
+exact is_trunc_equiv_closed -1 (H⁻¹ᵉ) _
 end
 
 definition AbGroup_to_Group_homot : AbGroup_to_Group ~ Group_sigma⁻¹ ∘ total ab_group_to_group ∘ AbGroup_sigma :=

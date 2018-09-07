@@ -1107,10 +1107,10 @@ namespace smash
     { reflexivity },
     { reflexivity },
     { apply eq_pathover_id_right,
-      refine ap_compose' smash_flip' _ _ ⬝ ap02 _ !elim_gluel ⬝ !elim_gluer ⬝ph _,
+      refine ap_compose smash_flip' _ _ ⬝ ap02 _ !elim_gluel ⬝ !elim_gluer ⬝ph _,
       apply hrfl },
     { apply eq_pathover_id_right,
-      refine ap_compose' smash_flip' _ _ ⬝ ap02 _ !elim_gluer ⬝ !elim_gluel ⬝ph _,
+      refine ap_compose smash_flip' _ _ ⬝ ap02 _ !elim_gluer ⬝ !elim_gluel ⬝ph _,
       apply hrfl }
   end
 
@@ -1137,13 +1137,13 @@ namespace smash
     { reflexivity },
     { reflexivity },
     { apply eq_pathover,
-      refine ap_compose' (smash_functor' _ _)  _ _ ⬝ ap02 _ !elim_gluel ⬝ !functor_gluer ⬝ph _
-        ⬝hp (ap_compose' smash_flip' _ _ ⬝ ap02 _ !functor_gluel)⁻¹ᵖ,
-      refine _ ⬝hp (!ap_con ⬝ !ap_compose'⁻¹ ◾ !elim_gluel)⁻¹, exact hrfl },
+      refine ap_compose (smash_functor' _ _)  _ _ ⬝ ap02 _ !elim_gluel ⬝ !functor_gluer ⬝ph _
+        ⬝hp (ap_compose smash_flip' _ _ ⬝ ap02 _ !functor_gluel)⁻¹ᵖ,
+      refine _ ⬝hp (!ap_con ⬝ !ap_compose' ◾ !elim_gluel)⁻¹, exact hrfl },
     { apply eq_pathover,
-      refine ap_compose' (smash_functor' _ _)  _ _ ⬝ ap02 _ !elim_gluer ⬝ !functor_gluel ⬝ph _
-        ⬝hp (ap_compose' smash_flip' _ _ ⬝ ap02 _ !functor_gluer)⁻¹ᵖ,
-      refine _ ⬝hp (!ap_con ⬝ !ap_compose'⁻¹ ◾ !elim_gluer)⁻¹, exact hrfl },
+      refine ap_compose (smash_functor' _ _)  _ _ ⬝ ap02 _ !elim_gluer ⬝ !functor_gluel ⬝ph _
+        ⬝hp (ap_compose smash_flip' _ _ ⬝ ap02 _ !functor_gluer)⁻¹ᵖ,
+      refine _ ⬝hp (!ap_con ⬝ !ap_compose' ◾ !elim_gluer)⁻¹, exact hrfl },
   end
 
   definition smash_flip_smash_functor (f : A →* C) (g : B →* D) :

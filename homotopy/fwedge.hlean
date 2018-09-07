@@ -151,7 +151,7 @@ namespace fwedge
 
   definition wedge_pmap_equiv  [constructor] (A B X : Type*) :
     ((A ∨ B) →* X) ≃ ((A →* X) × (B →* X)) :=
-    calc (A ∨ B) →* X ≃ ⋁(bool.rec A B) →* X : by exact pequiv_ppcompose_right (wedge_pequiv_fwedge A B)⁻¹ᵉ*
+    calc (A ∨ B) →* X ≃ ⋁(bool.rec A B) →* X : by exact ppmap_pequiv_ppmap_left (wedge_pequiv_fwedge A B)⁻¹ᵉ*
             ...       ≃ Πi, (bool.rec A B) i →* X : by exact fwedge_pmap_equiv (bool.rec A B) X
             ...       ≃  (A →* X) × (B →* X) : by exact pi_bool_left (λ i, bool.rec A B i →* X)
 
@@ -212,7 +212,7 @@ namespace fwedge
 
 -- hsquare 3:
   definition fwedge_to_wedge_nat_square {A B X Y : Type*} (f : X →* Y) :
-        hsquare (pequiv_ppcompose_right (wedge_pequiv_fwedge A B)) (pequiv_ppcompose_right (wedge_pequiv_fwedge A B)) (pcompose f) (pcompose f) :=
+        hsquare (ppmap_pequiv_ppmap_left (wedge_pequiv_fwedge A B)) (ppmap_pequiv_ppmap_left (wedge_pequiv_fwedge A B)) (pcompose f) (pcompose f) :=
   begin
     exact sorry
   end

@@ -107,9 +107,9 @@ begin
     refine ap02 _ (!elim_glue ⬝ !idp_con) ⬝ _,
     refine !ap_compose ⬝ _, refine ap02 _ !elim_glue ⬝ _,
     refine !ap_compose ⬝ _, esimp, refine ap02 _ !ap_sigma_functor_id_sigma_eq ⬝ _,
-    apply eq_of_fn_eq_fn (prod_eq_equiv _ _), apply pair_eq,
-    { exact !ap_compose'⁻¹ ⬝ !sigma_eq_pr1 ⬝ !prod_eq_pr1⁻¹ },
-    { refine !ap_compose'⁻¹ ⬝ _ ⬝ !prod_eq_pr2⁻¹, esimp,
+    apply inj (prod_eq_equiv _ _), apply pair_eq,
+    { exact !ap_compose' ⬝ !sigma_eq_pr1 ⬝ !prod_eq_pr1⁻¹ },
+    { refine !ap_compose' ⬝ _ ⬝ !prod_eq_pr2⁻¹, esimp,
       refine !sigma_eq_pr2_constant ⬝ _,
       refine !eq_of_pathover_apo ⬝ _, exact sorry }}
 end

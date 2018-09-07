@@ -75,7 +75,7 @@ namespace seq_colim
     { intro h, induction h with n h n h,
       { esimp, apply ap (ι' _ n), apply unit_arrow_eq},
       { esimp, apply eq_pathover_id_right,
-        refine ap_compose' (seq_colim.elim _ _ _) _ _ ⬝ph _,
+        refine ap_compose (seq_colim.elim _ _ _) _ _ ⬝ph _,
         refine ap02 _ !elim_glue ⬝ph _,
         refine !elim_glue ⬝ph _,
         refine _ ⬝pv natural_square_tr (@glue _ (seq_diagram_arrow_left f unit) n) (unit_arrow_eq h),

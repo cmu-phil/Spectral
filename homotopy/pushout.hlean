@@ -98,7 +98,7 @@ namespace pushout
 
 },
     { apply ap10,
-      apply eq_of_fn_eq_fn (equiv.mk _ (H D)),
+      apply inj (equiv.mk _ (H D)),
       fapply sigma_eq,
       { esimp, fapply prod_eq,
           apply eq_of_homotopy, intro b,
@@ -128,9 +128,9 @@ namespace pushout
 --     { intro x, exact sorry
 
 -- },
---     { intro d, apply eq_of_fn_eq_fn (equiv_lift D), esimp, revert d,
+--     { intro d, apply inj (equiv_lift D), esimp, revert d,
 --       apply ap10,
---       apply eq_of_fn_eq_fn (equiv.mk _ (H (lift.{_ (max u₁ u₂ u₃)} D))),
+--       apply inj (equiv.mk _ (H (lift.{_ (max u₁ u₂ u₃)} D))),
 --       fapply sigma_eq,
 --       { esimp, fapply prod_eq,
 --           apply eq_of_homotopy, intro b, apply ap up, esimp,
@@ -183,7 +183,7 @@ namespace pushout
       { reflexivity },
       { apply eq_pathover_id_right, apply hdeg_square,
         refine ap_compose pushout_vcompose_to _ _ ⬝ ap02 _ !elim_glue ⬝ _,
-        refine !ap_con ⬝ !elim_glue ◾ !ap_compose'⁻¹ ⬝ !idp_con ⬝ _, esimp, apply elim_glue }},
+        refine !ap_con ⬝ !elim_glue ◾ !ap_compose' ⬝ !idp_con ⬝ _, esimp, apply elim_glue }},
     { intro x, induction x with d y b,
       { reflexivity },
       { induction y with b c a,
@@ -281,10 +281,10 @@ namespace pushout
     { reflexivity },
     { reflexivity },
     { apply eq_pathover, apply hdeg_square, esimp,
-      refine !elim_glue ⬝ whisker_right _ (!ap_con ⬝ !ap_compose'⁻¹ ◾ idp) ◾
-        (ap02 _ !con_inv ⬝ !ap_con ⬝ whisker_left _ (ap02 _ !ap_inv⁻¹ ⬝ !ap_compose'⁻¹)) ⬝ _ ⬝
+      refine !elim_glue ⬝ whisker_right _ (!ap_con ⬝ !ap_compose' ◾ idp) ◾
+        (ap02 _ !con_inv ⬝ !ap_con ⬝ whisker_left _ (ap02 _ !ap_inv⁻¹ ⬝ !ap_compose')) ⬝ _ ⬝
         (ap_compose (pushout.functor h₂ i₂ j₂ p₂ q₂) _ _ ⬝ ap02 _ !elim_glue)⁻¹,
-      refine _ ⬝ (!ap_con ⬝ (!ap_con ⬝ !ap_compose'⁻¹ ◾ !elim_glue) ◾ !ap_compose'⁻¹)⁻¹ᵖ,
+      refine _ ⬝ (!ap_con ⬝ (!ap_con ⬝ !ap_compose' ◾ !elim_glue) ◾ !ap_compose')⁻¹ᵖ,
       refine !con.assoc⁻¹ ⬝ whisker_right _ _,
       exact whisker_right _ !con.assoc ⬝ !con.assoc }
   end
@@ -512,7 +512,7 @@ equiv.MK sum_pushout_of_pushout_sum pushout_sum_of_sum_pushout
     { apply eq_pathover_id_right,
       refine ap_compose pushout_sum_of_sum_pushout _ _ ⬝ ap02 _ !elim_glue ⬝ph _,
       induction a with a a':
-        (apply hdeg_square; refine !ap_compose'⁻¹ ⬝ !elim_glue ⬝ !con_idp ⬝ !idp_con) }
+        (apply hdeg_square; refine !ap_compose' ⬝ !elim_glue ⬝ !con_idp ⬝ !idp_con) }
   end end
 
 variables {f g f' g'}
@@ -534,7 +534,7 @@ begin
   { induction c with c c': reflexivity },
   { exact abstract begin apply eq_pathover,
     refine !ap_compose ⬝ ap02 _ !elim_glue ⬝ph _,
-    induction a with a a': exact hdeg_square (!ap_compose'⁻¹ ⬝ !elim_glue ⬝ !elim_glue⁻¹)
+    induction a with a a': exact hdeg_square (!ap_compose' ⬝ !elim_glue ⬝ !elim_glue⁻¹)
     end end }
 end
 
@@ -551,13 +551,13 @@ begin
   { induction c with c c': reflexivity },
   { exact abstract begin apply eq_pathover,
     refine !ap_compose ⬝ ap02 _ !elim_glue ⬝ph _ ⬝hp (!ap_compose ⬝ ap02 _ !elim_glue)⁻¹,
-    refine !ap_con ⬝ (!ap_con ⬝ !ap_compose'⁻¹ ◾ !elim_glue) ◾ (!ap_compose'⁻¹ ⬝ !ap_inv) ⬝ph _,
+    refine !ap_con ⬝ (!ap_con ⬝ !ap_compose' ◾ !elim_glue) ◾ (!ap_compose' ⬝ !ap_inv) ⬝ph _,
     induction a with a a',
-    { apply hdeg_square, refine !ap_compose'⁻¹ ◾ idp ◾ !ap_compose'⁻¹⁻² ⬝ _ ⬝ !ap_compose',
+    { apply hdeg_square, refine !ap_compose' ◾ idp ◾ !ap_compose'⁻² ⬝ _ ⬝ !ap_compose'⁻¹,
       refine _ ⬝ (ap_compose sum.inl _ _ ⬝ ap02 _ !elim_glue)⁻¹,
       exact (ap_compose sum.inl _ _ ◾ idp ⬝ !ap_con⁻¹) ◾ (!ap_inv⁻¹ ⬝ ap_compose sum.inl _ _) ⬝
         !ap_con⁻¹ },
-    { apply hdeg_square, refine !ap_compose'⁻¹ ◾ idp ◾ !ap_compose'⁻¹⁻² ⬝ _ ⬝ !ap_compose',
+    { apply hdeg_square, refine !ap_compose' ◾ idp ◾ !ap_compose'⁻² ⬝ _ ⬝ !ap_compose'⁻¹,
       refine _ ⬝ (ap_compose sum.inr _ _ ⬝ ap02 _ !elim_glue)⁻¹,
       exact (ap_compose sum.inr _ _ ◾ idp ⬝ !ap_con⁻¹) ◾ (!ap_inv⁻¹ ⬝ ap_compose sum.inr _ _) ⬝
         !ap_con⁻¹ } end end }
@@ -600,7 +600,7 @@ equiv.MK sigma_pushout_of_pushout_sigma pushout_sigma_of_sigma_pushout
     { apply eq_pathover_id_right,
       refine ap_compose pushout_sigma_of_sigma_pushout _ _ ⬝ ap02 _ !elim_glue ⬝ph _,
       induction a with a a',
-        apply hdeg_square, refine !ap_compose'⁻¹ ⬝ !elim_glue ⬝ !con_idp ⬝ !idp_con }
+        apply hdeg_square, refine !ap_compose' ⬝ !elim_glue ⬝ !con_idp ⬝ !idp_con }
   end end
 
 variables {f g}
@@ -621,12 +621,14 @@ begin
   { reflexivity },
   { exact abstract begin apply eq_pathover, apply hdeg_square,
     refine !ap_compose ⬝ ap02 _ !elim_glue ⬝ !ap_con ⬝
-      (!ap_con ⬝ (!ap_compose'⁻¹ ⬝ !ap_compose'⁻¹) ◾ !elim_glue) ◾
-      (!ap_compose'⁻¹ ⬝ ap02 _ !ap_inv⁻¹ ⬝ !ap_compose'⁻¹) ⬝ _,
-    exact
-      (ap_compose (sigma_functor s (λ x, pushout.functor (h₁ x) (h₂ x) (h₃ x) (p x) (q x))) _ _ ⬝
-      ap02 _ !elim_glue ⬝ !ap_compose'⁻¹ ⬝ ap_compose (dpair _) _ _ ⬝ ap02 _ !elim_glue ⬝
-      !ap_con ⬝ (!ap_con ⬝ !ap_compose'⁻¹ ◾ idp) ◾ !ap_compose'⁻¹)⁻¹ end end }
+      (!ap_con ⬝ (!ap_compose' ⬝ !ap_compose') ◾ !elim_glue) ◾
+      (!ap_compose' ⬝ ap02 _ !ap_inv⁻¹ ⬝ !ap_compose') ⬝ _,
+    symmetry,
+    refine
+      ap_compose (sigma_functor s (λ x, pushout.functor (h₁ x) (h₂ x) (h₃ x) (p x) (q x))) _ _ ⬝
+      ap02 _ !elim_glue ⬝ !ap_compose' ⬝ ap_compose (dpair _) _ _ ⬝ _,
+    exact ap02 _ !elim_glue ⬝ !ap_con ⬝ (!ap_con ⬝ !ap_compose' ◾ idp) ◾ !ap_compose'
+end end }
 end
 
 
@@ -696,7 +698,7 @@ end
     fapply phomotopy.mk,
     { intro y, reflexivity },
     { esimp, refine !idp_con ⬝ _,
-      refine _ ⬝ (!ap_con ⬝ (!ap_compose'⁻¹ ⬝ !ap_inv) ◾ !elim_glue)⁻¹,
+      refine _ ⬝ (!ap_con ⬝ (!ap_compose' ⬝ !ap_inv) ◾ !elim_glue)⁻¹,
       apply eq_inv_con_of_con_eq, exact (to_homotopy_pt p)⁻¹ }
   end
 
@@ -807,7 +809,7 @@ namespace pushout
     begin intro x, induction x: reflexivity end begin intro x, induction x: reflexivity end
 
   definition quotient_equiv_pushout_natural :
-    hsquare (quotient.functor _ _ f k) (pushout_quotient_functor f k)
+    hsquare (quotient.functor f k) (pushout_quotient_functor f k)
       (quotient_equiv_pushout R) (quotient_equiv_pushout Q) :=
   begin
     intro x, induction x with a a a' r,

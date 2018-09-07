@@ -56,7 +56,7 @@ calc (⟨e, p⟩ = ⟨f, q⟩)
     ≃ Σ (h : e = f), h ▸ p = q   : sigma_eq_equiv'
 ... ≃ Σ (h : e ~ f), p = h a ⬝ q :
 begin
-  apply sigma_equiv_sigma ((equiv_eq_char e f) ⬝e eq_equiv_homotopy),
+  apply sigma_equiv_sigma ((equiv_eq_char e f) ⬝e !eq_equiv_homotopy),
   intro h, induction h, esimp, change (p = q) ≃ (p = idp ⬝ q),
   rewrite idp_con
 end
@@ -84,7 +84,7 @@ definition BoolType.eq_equiv_equiv (A B : BoolType)
   : (A = B) ≃ (A ≃ B) :=
 calc (A = B)
     ≃ (BoolType.sigma_char A = BoolType.sigma_char B)
-    : eq_equiv_fn_eq_of_equiv
+    : eq_equiv_fn_eq
 ... ≃ (BoolType.carrier A = BoolType.carrier B)
     : begin
         induction A with A p, induction B with B q,
@@ -109,7 +109,7 @@ definition theorem_II_2_lemma_1 (e : bool ≃ bool)
 sum.elim (dichotomy (e ff)) (λ q, q)
 begin
   intro q, apply empty.elim, apply ff_ne_tt,
-  apply to_inv (eq_equiv_fn_eq_of_equiv e ff tt),
+  apply to_inv (eq_equiv_fn_eq e ff tt),
   exact q ⬝ p⁻¹,
 end
 
@@ -118,7 +118,7 @@ definition theorem_II_2_lemma_2 (e : bool ≃ bool)
 sum.elim (dichotomy (e ff))
 begin
   intro q, apply empty.elim, apply ff_ne_tt,
-  apply to_inv (eq_equiv_fn_eq_of_equiv e ff tt),
+  apply to_inv (eq_equiv_fn_eq e ff tt),
   exact q ⬝ p⁻¹
 end
 begin

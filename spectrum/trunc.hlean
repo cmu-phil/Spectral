@@ -113,7 +113,7 @@ end
 
 definition is_strunc_pequiv_closed {k : ℤ} {E F : spectrum} (H : Πn, E n ≃* F n)
   (H2 : is_strunc k E) : is_strunc k F :=
-λn, is_trunc_equiv_closed (maxm2 (k + n)) (H n)
+λn, is_trunc_equiv_closed (maxm2 (k + n)) (H n) _
 
 definition is_strunc_sunit (n : ℤ) : is_strunc n sunit :=
 begin

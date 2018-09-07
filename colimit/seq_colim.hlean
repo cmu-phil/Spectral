@@ -65,7 +65,7 @@ begin
                                                  (left_inv (@f _) a))) _,
     apply move_top_of_left, apply move_left_of_bot,
     refine ap02 _ (whisker_left _ (adj (@f _) a)) ⬝pv _,
-    rewrite [-+ap_con, -ap_compose', ap_id],
+    rewrite [-+ap_con, ap_compose', ap_id],
     apply natural_square_tr },
   { intro a, reflexivity }
 end
@@ -109,7 +109,7 @@ begin
   apply eq_pathover, apply hdeg_square,
   refine !seq_colim_functor_glue ⬝ _ ⬝ (ap_compose (seq_colim_functor _ _) _ _)⁻¹,
   refine _ ⬝ (ap02 _ proof !seq_colim_functor_glue qed ⬝ !ap_con)⁻¹,
-  refine _ ⬝ (proof !ap_compose'⁻¹ ⬝ ap_compose (ι f'') _ _ qed ◾ proof !seq_colim_functor_glue qed)⁻¹,
+  refine _ ⬝ (proof !ap_compose' ⬝ ap_compose (ι f'') _ _ qed ◾ proof !seq_colim_functor_glue qed)⁻¹,
   exact whisker_right _ !ap_con ⬝ !con.assoc
 end
 
@@ -355,7 +355,7 @@ definition seq_colim_over_equiv_glue {k : ℕ} (x : P (rep f k (f a))) :
   glue (seq_diagram_of_over g a) (rep_f f k a ▸o x) :=
 begin
   refine ap_compose (shift_down (seq_diagram_of_over g a)) _ _ ⬝ _,
-  exact ap02 _ !elim_glue ⬝ !ap_con ⬝ !ap_compose'⁻¹ ◾ !elim_glue
+  exact ap02 _ !elim_glue ⬝ !ap_con ⬝ !ap_compose' ◾ !elim_glue
 end
 
 variable {a}
@@ -578,7 +578,7 @@ begin
   induction v with x y,
   induction x with n a n a,
   { exact sigma_colim_rec_point g e w y },
-  { apply pi_pathover_left', intro x,
+  { apply pi_pathover_left, intro x,
     refine change_path (whisker_left _ !ap_inv ⬝ !con_inv_cancel_right)
       (_ ⬝o pathover_ap E (dpair _) (apd (sigma_colim_rec_point g e w) !seq_colim_over_glue⁻¹)),
     /- we can simplify the squareover we need to fill a bit if we apply this rule here -/
@@ -630,10 +630,10 @@ square (colim_sigma_of_sigma_colim_path1 g (g p)) (colim_sigma_of_sigma_colim_pa
     (glue (seq_diagram_of_over g (f a)) p)) :=
 begin
   refine !elim_glue ⬝ph _,
-  refine _ ⬝hp (ap_compose' (colim_sigma_of_sigma_colim_constructor g) _ _)⁻¹,
+  refine _ ⬝hp (ap_compose' (colim_sigma_of_sigma_colim_constructor g) _ _),
   refine _ ⬝hp ap02 _ !seq_colim_over_equiv_glue⁻¹,
   refine _ ⬝hp !ap_con⁻¹,
-  refine _ ⬝hp !ap_compose' ◾ !elim_glue⁻¹,
+  refine _ ⬝hp !ap_compose ◾ !elim_glue⁻¹,
   refine _ ⬝pv whisker_rt _ (natural_square0111 P (pathover_tro (rep_f f k a) p) g
                                                   (λn a p, glue (seq_diagram_sigma g) ⟨a, p⟩)),
   refine _ ⬝ whisker_left _ (ap02 _ !inv_inv⁻¹ ⬝ !ap_inv),
@@ -755,7 +755,7 @@ seq_colim_eq_equiv0' f a₀ a₁ ⬝e seq_colim_id_equiv_seq_colim_id0 f a₀ a�
 
 definition seq_colim_eq_equiv {n : ℕ} (a₀ a₁ : A n) :
   ι f a₀ = ι f a₁ ≃ seq_colim (id_seq_diagram f n a₀ a₁) :=
-eq_equiv_fn_eq_of_equiv (kshift_equiv f n) (ι f a₀) (ι f a₁) ⬝e
+eq_equiv_fn_eq (kshift_equiv f n) (ι f a₀) (ι f a₁) ⬝e
 eq_equiv_eq_closed (incl_kshift_diag0 f a₀)⁻¹ (incl_kshift_diag0 f a₁)⁻¹ ⬝e
 seq_colim_eq_equiv0' (kshift_diag f n) a₀ a₁ ⬝e
 @seq_colim_equiv _ _ _ (λk, ap (@f _))
@@ -805,19 +805,19 @@ equiv.MK (seq_colim_trunc_of_trunc_seq_colim f k) (trunc_seq_colim_of_seq_colim_
     { induction x with a, reflexivity },
     { induction x with a, apply eq_pathover_id_right, apply hdeg_square,
       refine ap_compose (seq_colim_trunc_of_trunc_seq_colim f k) _ _ ⬝ ap02 _ !elim_glue ⬝ _,
-      refine !ap_compose'⁻¹ ⬝ !elim_glue ⬝ _, exact !idp_con }
+      refine !ap_compose' ⬝ !elim_glue ⬝ _, exact !idp_con }
   end end
   abstract begin
     intro x, induction x with x, induction x with n a n a,
     { reflexivity },
     { apply eq_pathover, apply hdeg_square,
       refine ap_compose (trunc_seq_colim_of_seq_colim_trunc f k) _ _ ⬝ ap02 _ !elim_glue ⬝ _,
-      refine !ap_compose'⁻¹ ⬝ !elim_glue }
+      refine !ap_compose' ⬝ !elim_glue }
   end end
 
 theorem is_conn_seq_colim [instance] (k : ℕ₋₂) [H : Πn, is_conn k (A n)] :
   is_conn k (seq_colim f) :=
-is_trunc_equiv_closed_rev -2 (trunc_seq_colim_equiv f k)
+is_trunc_equiv_closed_rev -2 (trunc_seq_colim_equiv f k) _
 
 /- the colimit of a sequence of fibers is the fiber of the functorial action of the colimit -/
 definition domain_seq_colim_functor {A A' : ℕ → Type} {f : seq_diagram A}
@@ -866,7 +866,7 @@ theorem is_trunc_fun_seq_colim_functor (k : ℕ₋₂) (H : Πn, is_trunc_fun k 
   is_trunc_fun k (seq_colim_functor τ p) :=
 begin
   intro x, induction x using seq_colim.rec_prop,
-  exact is_trunc_equiv_closed_rev k (fiber_seq_colim_functor τ p a),
+  exact is_trunc_equiv_closed_rev k (fiber_seq_colim_functor τ p a) _
 end
 
 open is_conn

@@ -40,7 +40,7 @@ namespace left_module
     is_contr (part H n) :=
   begin
     induction n with n IH,
-    { exact is_trunc_equiv_closed_rev -2 (equiv_of_isomorphism (e0 H)) },
+    { exact is_trunc_equiv_closed_rev -2 (equiv_of_isomorphism (e0 H)) _ },
     { exact is_contr_right_of_short_exact_mod (ses H n) IH }
   end
 
@@ -55,7 +55,7 @@ namespace left_module
   have is_contr (part H 0), from
   nat.rec_down (λn, is_contr (part H n)) _ (HD' H _ !le.refl)
     (λn H2, is_contr_middle_of_short_exact_mod (ses H n) (HE n) H2),
-  is_contr_equiv_closed (equiv_of_isomorphism (e0 H))
+  is_contr_equiv_closed (equiv_of_isomorphism (e0 H)) _
 
   definition is_built_from_isomorphism (e : D ≃lm D') (f : Πn, E n ≃lm E' n)
     (H : is_built_from D E) : is_built_from D' E' :=
@@ -661,7 +661,7 @@ namespace left_module
   begin
     assert H2 : Π(l : ℕ), is_contr (Einfdiag n l),
     { intro l, apply is_contr_E,
-      refine @(is_trunc_equiv_closed_rev -2 (equiv_of_isomorphism (e c _))) (H n l) },
+      refine is_trunc_equiv_closed_rev -2 (equiv_of_isomorphism (e c _)) (H n l) },
     assert H3 : is_contr (Dinfdiag n 0),
     { fapply nat.rec_down (λk, is_contr (Dinfdiag n k)),
       { exact is_bounded.B HH (deg (k X) (n, s₀ n)) },
@@ -669,7 +669,7 @@ namespace left_module
       { intro l H,
         exact is_contr_middle_of_short_exact_mod (short_exact_mod_infpage HH (n, s₀ n) l)
                 (H2 l) H }},
-    refine @is_trunc_equiv_closed _ _ _ _ H3,
+    refine is_trunc_equiv_closed _ _ H3,
     exact equiv_of_isomorphism (Dinfdiag0 HH (n, s₀ n) (HB c n) ⬝lm f c n)
   end
 

@@ -205,7 +205,7 @@ begin
   { intro b p, note q := eq_of_inv_eq ((homotopy_top_of_hsquare' h₂ b)⁻¹ ⬝ p) ⬝ respect_pt eC,
     induction is_short_exact.ker_in_im H (eB b) q with a' r,
     apply image.mk (eA⁻¹ a'),
-    exact eq_of_fn_eq_fn eB ((homotopy_top_of_hsquare h₁⁻¹ʰᵗʸᵛ a')⁻¹ ⬝ r) },
+    exact inj eB ((homotopy_top_of_hsquare h₁⁻¹ʰᵗʸᵛ a')⁻¹ ⬝ r) },
   { apply is_surjective_homotopy_closed_rev (homotopy_top_of_hsquare' h₂),
     apply is_surjective_compose, apply is_surjective_of_is_equiv,
     apply is_surjective_compose, apply is_short_exact.is_surj H, apply is_surjective_of_is_equiv }

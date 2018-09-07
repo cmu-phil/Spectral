@@ -259,7 +259,7 @@ section
       end,
     have ∀ f : LeftModule.carrier M₁ → LeftModule.carrier M₂,
       is_set (is_module_hom (Ring.carrier R) f), from _,
-    apply is_trunc_equiv_closed_rev, exact H
+    exact is_trunc_equiv_closed_rev _ H _
   end
 
   variables {M₁ M₂}
@@ -350,9 +350,9 @@ end
   homomorphism.mk φ⁻¹
     abstract begin
     split,
-      intro g₁ g₂, apply eq_of_fn_eq_fn' φ,
+      intro g₁ g₂, apply inj' φ,
       rewrite [respect_add φ, +right_inv φ],
-      intro r x, apply eq_of_fn_eq_fn' φ,
+      intro r x, apply inj' φ,
       rewrite [to_respect_smul φ, +right_inv φ],
     end end
 

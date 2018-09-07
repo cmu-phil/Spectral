@@ -136,7 +136,7 @@ definition cohomology_isomorphism_refl (X : Type*) (Y : spectrum) (n : ℤ) (x :
 definition cohomology_isomorphism_right (X : Type*) {Y Y' : spectrum} (e : Πn, Y n ≃* Y' n)
   (n : ℤ) : H^n[X, Y] ≃g H^n[X, Y'] :=
 cohomology_isomorphism_shomotopy_group_sp_cotensor X Y !neg_neg ⬝g
-shomotopy_group_isomorphism_of_pequiv (-n) (λk, pequiv_ppcompose_left (e k)) ⬝g
+shomotopy_group_isomorphism_of_pequiv (-n) (λk, ppmap_pequiv_ppmap_right (e k)) ⬝g
 (cohomology_isomorphism_shomotopy_group_sp_cotensor X Y' !neg_neg)⁻¹ᵍ
 
 definition unreduced_cohomology_isomorphism {X X' : Type} (f : X' ≃ X) (Y : spectrum) (n : ℤ) :
@@ -231,7 +231,7 @@ definition cohomology_susp_1 (X : Type*) (Y : spectrum) (n : ℤ) :
   susp X →* Ω (Ω (Y (n + 1 + 2))) ≃ X →* Ω (Ω (Y (n+2))) :=
 calc
   susp X →* Ω[2] (Y (n + 1 + 2)) ≃ X →* Ω (Ω[2] (Y (n + 1 + 2))) : susp_adjoint_loop_unpointed
-    ... ≃ X →* Ω[2] (Y (n+2)) : equiv_of_pequiv (pequiv_ppcompose_left
+    ... ≃ X →* Ω[2] (Y (n+2)) : equiv_of_pequiv (ppmap_pequiv_ppmap_right
                                                   (cohomology_susp_2 Y n))
 
 definition cohomology_susp_1_pmap_mul {X : Type*} {Y : spectrum} {n : ℤ}
@@ -302,8 +302,8 @@ end
 
 theorem EM_dimension (G : AbGroup) (n : ℤ) (H : n ≠ 0) :
   is_contr (ordinary_cohomology (plift pbool) G n) :=
-@(is_trunc_equiv_closed_rev -2
-  (equiv_of_isomorphism (cohomology_isomorphism (pequiv_plift pbool) _ _)))
+is_trunc_equiv_closed_rev -2
+  (equiv_of_isomorphism (cohomology_isomorphism (pequiv_plift pbool) _ _))
   (EM_dimension' G n H)
 
 open group algebra
@@ -316,7 +316,7 @@ theorem is_contr_cohomology_of_is_contr_spectrum (n : ℤ) (X : Type*) (Y : spec
 begin
   apply is_trunc_trunc_of_is_trunc,
   apply is_trunc_pmap,
-  apply is_trunc_equiv_closed_rev,
+  refine is_contr_equiv_closed_rev _ H,
   exact loop_pequiv_loop (loop_pequiv_loop (pequiv_ap Y (add.assoc n 1 1)⁻¹) ⬝e* (equiv_glue Y (n+1))⁻¹ᵉ*) ⬝e
     (equiv_glue Y n)⁻¹ᵉ*
 end

@@ -135,17 +135,17 @@ namespace smash
       { apply eq_pathover,
         refine ap_compose (smash_pmap_counit B C') _ _ ⬝ph _ ⬝hp (ap_compose g _ _)⁻¹,
         refine ap02 _ !functor_gluel ⬝ph _ ⬝hp ap02 _ !elim_gluel⁻¹,
-        refine !ap_con ⬝ !ap_compose'⁻¹ ◾ !elim_gluel ⬝ph _,
+        refine !ap_con ⬝ !ap_compose' ◾ !elim_gluel ⬝ph _,
         refine !idp_con ⬝ph _, apply square_of_eq,
         refine !idp_con ⬝ !con_inv_cancel_right⁻¹ },
       { apply eq_pathover,
         refine ap_compose (smash_pmap_counit B C') _ _ ⬝ph _ ⬝hp (ap_compose g _ _)⁻¹,
         refine ap02 _ !functor_gluer ⬝ph _ ⬝hp ap02 _ !elim_gluer⁻¹,
-        refine !ap_con ⬝ !ap_compose'⁻¹ ◾ !elim_gluer ⬝ph _⁻¹ʰ,
+        refine !ap_con ⬝ !ap_compose' ◾ !elim_gluer ⬝ph _⁻¹ʰ,
         apply square_of_eq_bot, refine !idp_con ⬝ _,
         induction C' with C' c₀', induction g with g g₀, esimp at *,
         induction g₀, refine ap02 _ !eq_of_phomotopy_refl }},
-    { refine !idp_con ⬝ !idp_con ⬝ _, refine _ ⬝ !ap_compose',
+    { refine !idp_con ⬝ !idp_con ⬝ _, refine _ ⬝ !ap_compose,
       refine _ ⬝ (ap_is_constant respect_pt _)⁻¹, refine !idp_con⁻¹ }
   end
 
@@ -160,16 +160,16 @@ namespace smash
       { reflexivity },
       { apply eq_pathover, apply hdeg_square,
         refine ap_compose !smash_pmap_counit _ _ ⬝ ap02 _ !elim_gluel ⬝ !ap_con ⬝
-          !ap_compose'⁻¹ ◾ !elim_gluel ⬝ _,
+          !ap_compose' ◾ !elim_gluel ⬝ _,
         refine (ap_compose !smash_pmap_counit _ _ ⬝ ap02 _ !elim_gluel ⬝ !ap_con ⬝
-          !ap_compose'⁻¹ ◾ !elim_gluel ⬝ !idp_con)⁻¹ },
+          !ap_compose' ◾ !elim_gluel ⬝ !idp_con)⁻¹ },
       { apply eq_pathover, apply hdeg_square,
         refine ap_compose !smash_pmap_counit _ _ ⬝ ap02 _ (!elim_gluer ⬝ !idp_con) ⬝
           !elim_gluer ⬝ _,
         refine (ap_compose !smash_pmap_counit _ _ ⬝ ap02 _ !elim_gluer ⬝ !ap_con ⬝
-          !ap_compose'⁻¹ ◾ !elim_gluer ⬝ !con_idp ⬝ _)⁻¹,
+          !ap_compose' ◾ !elim_gluer ⬝ !con_idp ⬝ _)⁻¹,
         refine !to_fun_eq_of_phomotopy ⬝ _, reflexivity }},
-    { refine !idp_con ⬝ _, refine !ap_compose'⁻¹ ⬝ _ ⬝ !ap_ap011⁻¹, esimp,
+    { refine !idp_con ⬝ _, refine !ap_compose' ⬝ _ ⬝ !ap_ap011⁻¹, esimp,
       refine !to_fun_eq_of_phomotopy ⬝ _, exact !ap_constant⁻¹ }
   end
 
@@ -185,15 +185,15 @@ namespace smash
       { exact gluer pt },
       { apply eq_pathover_id_right,
         refine ap_compose smash_pmap_counit_map _ _ ⬝ ap02 _ !functor_gluel ⬝ph _,
-        refine !ap_con ⬝ !ap_compose'⁻¹ ◾ !elim_gluel ⬝ph _,
+        refine !ap_con ⬝ !ap_compose' ◾ !elim_gluel ⬝ph _,
         refine !idp_con ⬝ph _,
         apply square_of_eq, refine !idp_con ⬝ !inv_con_cancel_right⁻¹ },
       { apply eq_pathover_id_right,
         refine ap_compose smash_pmap_counit_map _ _ ⬝ ap02 _ !functor_gluer ⬝ph _,
-        refine !ap_con ⬝ !ap_compose'⁻¹ ◾ !elim_gluer ⬝ph _,
+        refine !ap_con ⬝ !ap_compose' ◾ !elim_gluer ⬝ph _,
         refine !ap_eq_of_phomotopy ⬝ph _,
         apply square_of_eq, refine !idp_con ⬝ !inv_con_cancel_right⁻¹ }},
-    { refine _ ⬝ !ap_compose', refine _ ⬝ (ap_is_constant respect_pt _)⁻¹,
+    { refine _ ⬝ !ap_compose, refine _ ⬝ (ap_is_constant respect_pt _)⁻¹,
          rexact (con.right_inv (gluel pt))⁻¹ }
   end
 
@@ -431,7 +431,7 @@ namespace smash
   calc
     ppmap (A ∧ (B ∧ C)) X
         ≃* ppmap A (ppmap (B ∧ C) X)     : smash_adjoint_pmap A (B ∧ C) X
-    ... ≃* ppmap A (ppmap B (ppmap C X)) : pequiv_ppcompose_left (smash_adjoint_pmap B C X)
+    ... ≃* ppmap A (ppmap B (ppmap C X)) : ppmap_pequiv_ppmap_right (smash_adjoint_pmap B C X)
     ... ≃* ppmap (A ∧ B) (ppmap C X)     : smash_adjoint_pmap_inv A B (ppmap C X)
     ... ≃* ppmap ((A ∧ B) ∧ C) X         : smash_adjoint_pmap_inv (A ∧ B) C X
 
@@ -517,7 +517,7 @@ namespace smash
     ppmap (D ∧ (A ∧ (B ∧ C))) X ≃* ppmap (D ∧ ((A ∧ B) ∧ C)) X :=
   calc     ppmap (D ∧ (A ∧ (B ∧ C))) X
         ≃* ppmap D (ppmap (A ∧ (B ∧ C)) X) : smash_adjoint_pmap D (A ∧ (B ∧ C)) X
-    ... ≃* ppmap D (ppmap ((A ∧ B) ∧ C) X) : pequiv_ppcompose_left (smash_assoc_elim_pequiv A B C X)
+    ... ≃* ppmap D (ppmap ((A ∧ B) ∧ C) X) : ppmap_pequiv_ppmap_right (smash_assoc_elim_pequiv A B C X)
     ... ≃* ppmap (D ∧ ((A ∧ B) ∧ C)) X     : smash_adjoint_pmap_inv D ((A ∧ B) ∧ C) X
 
   definition smash_assoc_elim_right_pequiv (A B C D X : Type*) :
@@ -595,7 +595,7 @@ namespace smash
   calc
     ppmap (⅀ A ∧ B) X ≃* ppmap (⅀ A) (ppmap B X) : smash_adjoint_pmap (⅀ A) B X
     ... ≃* ppmap A (Ω (ppmap B X)) : susp_adjoint_loop A (ppmap B X)
-    ... ≃* ppmap A (ppmap B (Ω X)) : pequiv_ppcompose_left (loop_ppmap_commute B X)
+    ... ≃* ppmap A (ppmap B (Ω X)) : ppmap_pequiv_ppmap_right (loop_ppmap_commute B X)
     ... ≃* ppmap (A ∧ B) (Ω X) : smash_adjoint_pmap A B (Ω X)
     ... ≃* ppmap (⅀ (A ∧ B)) X : susp_adjoint_loop (A ∧ B) X
 

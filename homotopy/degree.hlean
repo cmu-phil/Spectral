@@ -123,7 +123,7 @@ namespace sphere
     deg (g ∘* f) = deg g *[ℤ] deg f :=
   begin
     induction H with n,
-    refine ap (πnSn (n+1)) (homotopy_group_functor_compose (succ n) g f (tr surf)) ⬝ _,
+    refine ap (πnSn (n+1)) (homotopy_group_functor_pcompose (succ n) g f (tr surf)) ⬝ _,
     apply endomorphism_equiv_Z !πnSn !πnSn_surf (π→g[n+1] g)
   end
 

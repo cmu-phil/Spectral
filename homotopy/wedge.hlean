@@ -140,7 +140,7 @@ begin
   { induction v with p x, exact fiber.mk (inl x) p },
   { exact fiber.mk (inr pt) idp },
   { esimp, apply fiber_eq (wedge.glue ⬝ ap inr p), symmetry,
-      refine !ap_con ⬝ !wedge.elim_glue ◾ (!ap_compose'⁻¹ ⬝ !ap_id) ⬝ !idp_con }
+      refine !ap_con ⬝ !wedge.elim_glue ◾ (!ap_compose' ⬝ !ap_id) ⬝ !idp_con }
 end
 
 variables (X Y)
@@ -164,7 +164,7 @@ pmap.mk pfiber_wedge_pr2_of_pcofiber_pprod_incl1'
 --   begin
 --     fapply phomotopy.mk,
 --     { intro p, apply fiber_eq (wedge.glue ⬝ ap inr p ⬝ wedge.glue⁻¹), symmetry,
---       refine !ap_con ⬝ (!ap_con ⬝ !wedge.elim_glue ◾ (!ap_compose'⁻¹ ⬝ !ap_id)) ◾
+--       refine !ap_con ⬝ (!ap_con ⬝ !wedge.elim_glue ◾ (!ap_compose' ⬝ !ap_id)) ◾
 --         (!ap_inv ⬝ !wedge.elim_glue⁻²) ⬝ _, exact idp_con p },
 --     { esimp, refine fiber_eq2 (con.right_inv wedge.glue) _ ⬝ !fiber_eq_eta⁻¹,
 --       rewrite [idp_con, ↑fiber_eq_pr2, con2_idp, whisker_right_idp, whisker_right_idp],
@@ -186,8 +186,8 @@ pequiv.MK (pcofiber_pprod_incl1_of_pfiber_wedge_pr2 _ _)
     fapply phomotopy.mk,
     { intro x, esimp, induction x with x p,  induction x with x y,
       { reflexivity },
-      { refine (fiber_eq (ap inr p) _)⁻¹, refine !ap_id⁻¹ ⬝ !ap_compose' },
-      { apply @pi_pathover_right' _ _ _ _ (λ(xp : Σ(x : X ∨ Y), pppi.to_fun (wedge_pr2 X Y) x = pt),
+      { refine (fiber_eq (ap inr p) _)⁻¹, refine !ap_id⁻¹ ⬝ !ap_compose },
+      { apply @pi_pathover_right _ _ _ _ (λ(xp : Σ(x : X ∨ Y), pppi.to_fun (wedge_pr2 X Y) x = pt),
           pfiber_wedge_pr2_of_pcofiber_pprod_incl1'
           (pcofiber_pprod_incl1_of_pfiber_wedge_pr2' (mk xp.1 xp.2)) = mk xp.1 xp.2),
         intro p, apply eq_pathover, exact sorry }},

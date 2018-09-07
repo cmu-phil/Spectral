@@ -169,7 +169,7 @@ namespace EM
   end
 
   definition loopn_EMadd1_pequiv_EM1_succ (G : AbGroup) (n : ℕ) :
-    loopn_EMadd1_pequiv_EM1 G (succ n) ~* (loopn_succ_in (EMadd1 G (succ n)) n)⁻¹ᵉ* ∘*
+    loopn_EMadd1_pequiv_EM1 G (succ n) ~* (loopn_succ_in n (EMadd1 G (succ n)))⁻¹ᵉ* ∘*
       Ω→[n] (loop_EMadd1 G n) ∘* loopn_EMadd1_pequiv_EM1 G n :=
   by reflexivity
 
@@ -178,7 +178,7 @@ namespace EM
 
   definition loop_EMadd1_succ (G : AbGroup) (n : ℕ) :
     loop_EMadd1 G (n+1) ~* (loop_ptrunc_pequiv (n+1+1) (susp (EMadd1 G (n+1))))⁻¹ᵉ* ∘*
-    freudenthal_pequiv (EMadd1 G (n+1)) (add_mul_le_mul_add n 1 1) ∘*
+    freudenthal_pequiv (add_mul_le_mul_add n 1 1) (EMadd1 G (n+1)) ∘*
     (ptrunc_pequiv (n+1+1) (EMadd1 G (n+1)))⁻¹ᵉ* :=
   by reflexivity
 
@@ -333,7 +333,7 @@ namespace EM
     { exact π→g[n+2] },
     { exact λφ, (EMadd1_pequiv_type Y n ∘* EMadd1_functor φ (n+1)) ∘* (EMadd1_pequiv_type X n)⁻¹ᵉ* },
     { intro φ, apply homomorphism_eq,
-      refine homotopy_group_functor_compose (n+2) _ _ ⬝hty _, exact sorry }, -- easy but tedious
+      refine homotopy_group_functor_pcompose (n+2) _ _ ⬝hty _, exact sorry }, -- easy but tedious
     { intro f, apply eq_of_phomotopy, refine (phomotopy_pinv_right_of_phomotopy _)⁻¹*,
       apply EMadd1_pequiv_type_natural }
   end
@@ -504,14 +504,14 @@ namespace EM
     (λX, πg[1] X)
     (λX Y f, π→g[1] f)
     begin intro, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_pid end
-    begin intros, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_compose end
+    begin intros, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_pcompose end
 
   definition ab_homotopy_group_cfunctor (n : ℕ) : cType*[n.+1] ⇒ AbGrp :=
   functor.mk
     (λX, πag[n+2] X)
     (λX Y f, π→g[n+2] f)
     begin intro, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_pid end
-    begin intros, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_compose end
+    begin intros, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_pcompose end
 
   definition is_equivalence_EM1_cfunctor : is_equivalence EM1_cfunctor.{u} :=
   begin
@@ -576,7 +576,7 @@ namespace EM
       !fundamental_group_EM1,
     exact homotopy_group_isomorphism_of_pequiv 0 e,
     refine is_trunc_of_is_trunc_loopn n 1 X _ (@is_conn_of_is_conn_succ _ _ H1),
-    apply is_trunc_equiv_closed_rev 1 e
+    exact is_trunc_equiv_closed_rev 1 e _
   end
 
   definition EM1_pequiv_EM1 {G H : Group} (φ : G ≃g H) : EM1 G ≃* EM1 H :=
@@ -588,7 +588,7 @@ namespace EM
 
   definition is_contr_EM1 {G : Group} (H : is_contr G) : is_contr (EM1 G) :=
   is_contr_of_is_conn_of_is_trunc
-    (is_trunc_succ_succ_of_is_trunc_loop _ _ (is_trunc_equiv_closed _ !loop_EM1) _) !is_conn_EM1
+    (is_trunc_succ_succ_of_is_trunc_loop _ _ (is_trunc_equiv_closed _ !loop_EM1 _) _) !is_conn_EM1
 
   definition is_contr_EMadd1 (n : ℕ) {G : AbGroup} (H : is_contr G) : is_contr (EMadd1 G n) :=
   begin
@@ -675,7 +675,7 @@ namespace EM
     induction H with n,
     have H2 : is_exact (π→g[n+1] (ppoint f)) (π→g[n+1] f),
     from is_exact_of_is_exact_at (is_exact_LES_of_homotopy_groups f (n+1, 0)),
-    have H3 : is_exact (π→g[n+1] (boundary_map f) ∘g ghomotopy_group_succ_in Y n)
+    have H3 : is_exact (π→g[n+1] (boundary_map f) ∘g ghomotopy_group_succ_in n Y)
       (π→g[n+1] (ppoint f)),
     from is_exact_of_is_exact_at (is_exact_LES_of_homotopy_groups f (n+1, 1)),
     exact isomorphism_kernel_of_is_exact H3 H2 H1

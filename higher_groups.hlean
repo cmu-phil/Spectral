@@ -64,7 +64,7 @@ open ωGType (renaming B→oB e→oe)
 lemma is_trunc_B' (G : [n;k]GType) : is_trunc (k+n) (B G) :=
 begin
   apply is_trunc_of_is_trunc_loopn,
-  exact is_trunc_equiv_closed _ (e G),
+  exact is_trunc_equiv_closed _ (e G) _,
   exact _
 end
 
@@ -96,7 +96,8 @@ sigma_equiv_of_is_embedding_left_contr
       assert lem : Π(A : n-Type*) (B : Type*) (H : is_trunc n B),
         (A ≃* B) ≃ (A ≃* (ptrunctype.mk B H pt)),
       { intro A B'' H, induction B'', reflexivity },
-      apply lem }
+      apply lem },
+    exact _
   end
   begin
     intro B' H, apply fiber.mk (ptruncconntype.mk B' (is_trunc_B (GType.mk H.1 B' H.2)) pt _),
@@ -107,7 +108,7 @@ definition GType_equiv_pequiv {n k : ℕ} (G : [n;k]GType) : GType_equiv n k G �
 by reflexivity
 
 definition GType_eq_equiv {n k : ℕ} (G H : [n;k]GType) : (G = H :> [n;k]GType) ≃ (B G ≃* B H) :=
-eq_equiv_fn_eq_of_equiv (GType_equiv n k) _ _ ⬝e !ptruncconntype_eq_equiv
+eq_equiv_fn_eq (GType_equiv n k) _ _ ⬝e !ptruncconntype_eq_equiv
 
 definition GType_eq {n k : ℕ} {G H : [n;k]GType} (e : B G ≃* B H) : G = H :=
 (GType_eq_equiv G H)⁻¹ᵉ e
@@ -127,13 +128,13 @@ end
 definition InfGType_equiv (k : ℕ) : [∞;k]GType ≃ Type*[k.-1] :=
 InfGType.sigma_char k ⬝e
 @sigma_equiv_of_is_contr_right _ _
-  (λX, is_trunc_equiv_closed_rev -2 (sigma_equiv_sigma_right (λB', !pType_eq_equiv⁻¹ᵉ)))
+  (λX, is_trunc_equiv_closed_rev -2 (sigma_equiv_sigma_right (λB', !pType_eq_equiv⁻¹ᵉ)) _)
 
 definition InfGType_equiv_pequiv {k : ℕ} (G : [∞;k]GType) : InfGType_equiv k G ≃* iB G :=
 by reflexivity
 
 definition InfGType_eq_equiv {k : ℕ} (G H : [∞;k]GType) : (G = H :> [∞;k]GType) ≃ (iB G ≃* iB H) :=
-eq_equiv_fn_eq_of_equiv (InfGType_equiv k) _ _ ⬝e !pconntype_eq_equiv
+eq_equiv_fn_eq (InfGType_equiv k) _ _ ⬝e !pconntype_eq_equiv
 
 definition InfGType_eq {k : ℕ} {G H : [∞;k]GType} (e : iB G ≃* iB H) : G = H :=
 (InfGType_eq_equiv G H)⁻¹ᵉ e
@@ -293,7 +294,7 @@ begin
   { have k ≥ succ n, from le_of_succ_le_succ H,
     assert this : n + succ k ≤ 2 * k,
     { rewrite [two_mul, add_succ, -succ_add], exact nat.add_le_add_right this k },
-    exact freudenthal_pequiv (B G) this }
+    exact freudenthal_pequiv this (B G) }
 end⁻¹ᵉ* ⬝e*
 ptrunc_pequiv (n + k) _
 
@@ -434,6 +435,7 @@ equivalence.trans !pb_Precategory_equivalence_of_equiv
                   (equivalence.trans (equivalence.symm (AbGrp_equivalence_cptruncconntype' k))
                     proof equivalence.refl _ qed)
 
+/-
 print axioms GType_equiv
 print axioms InfGType_equiv
 print axioms Decat_adjoint_Disc
@@ -448,5 +450,6 @@ print axioms stabilization
 print axioms is_trunc_GType
 print axioms cGType_equivalence_Grp
 print axioms cGType_equivalence_AbGrp
+-/
 
 end higher_group

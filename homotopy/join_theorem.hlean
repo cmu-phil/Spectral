@@ -74,7 +74,7 @@ begin
   apply is_retraction_of_is_equiv,
   apply is_equiv_of_is_contr_fun,
   intro f,
-  refine is_contr_equiv_closed _,
+  refine is_contr_equiv_closed _ _,
   {exact unit},
   symmetry,
   exact sorry

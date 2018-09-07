@@ -197,7 +197,7 @@ namespace group
   begin
     apply isomorphism.mk (Group_trunc_pmap_homomorphism f),
     apply @is_equiv_trunc_functor,
-    exact to_is_equiv (pequiv_ppcompose_right f),
+    exact to_is_equiv (ppmap_pequiv_ppmap_left f),
   end
 
   definition Group_trunc_pmap_isomorphism_refl (A B : Type*) (x : Group_trunc_pmap A B) :

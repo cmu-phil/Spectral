@@ -89,7 +89,7 @@ definition SES_of_isomorphism_right {B C : AbGroup} (g : B ≃g C) : SES trivial
     intro b p,
     have q : g b = g 1,
     from p ⬝ (respect_one g)⁻¹,
-    note r := eq_of_fn_eq_fn (equiv_of_isomorphism g) q,
+    note r := inj (equiv_of_isomorphism g) q,
     fapply tr, fapply fiber.mk, exact unit.star, rewrite r,
   end
 
@@ -133,7 +133,7 @@ begin
   exact g,
   fapply is_embedding_of_is_injective,
   intro x y p,
-  fapply eq_of_fn_eq_fn (equiv_of_isomorphism α),
+  fapply inj (equiv_of_isomorphism α),
   fapply @is_injective_of_is_embedding _ _ f (SES.Hf ses) (α x) (α y),
   rewrite [H x], rewrite [H y], exact p,
   exact SES.Hg ses,

@@ -44,7 +44,7 @@ namespace pointed
     (q : p pt ⬝hty apd10 (respect_pt g) ~ apd10 (respect_pt f)) : f ~* g :=
   begin
     apply phomotopy.mk (λa, eq_of_homotopy (p a)),
-    apply eq_of_fn_eq_fn eq_equiv_homotopy,
+    apply inj !eq_equiv_homotopy,
     apply eq_of_homotopy, intro b,
     refine !apd10_con ⬝ _,
     refine whisker_right _ !apd10_eq_of_homotopy ⬝ q b
@@ -113,7 +113,7 @@ namespace pointed
   pupi_pequiv erfl f
 
   definition loop_pupi [constructor] {A : Type} (B : A → Type*) : Ω (Πᵘ*a, B a) ≃* Πᵘ*a, Ω (B a) :=
-  pequiv_of_equiv eq_equiv_homotopy idp
+  pequiv_of_equiv !eq_equiv_homotopy idp
 
   -- definition loop_pupi_natural [constructor] {A : Type} {B B' : A → Type*} (f : Πa, B a →* B' a) :
   --   psquare (Ω→ (pupi_functor_right f)) (pupi_functor_right (λa, Ω→ (f a)))
@@ -357,7 +357,7 @@ namespace pointed
     (q : p pt ⬝* phomotopy_of_eq (respect_pt g) = phomotopy_of_eq (respect_pt f)) : f ~* g :=
   begin
     apply phomotopy.mk (λa, eq_of_phomotopy (p a)),
-    apply eq_of_fn_eq_fn !ppi_eq_equiv,
+    apply inj !ppi_eq_equiv,
     refine !phomotopy_of_eq_con ⬝ _, esimp,
     refine ap (λx, x ⬝* _) !phomotopy_of_eq_of_phomotopy ⬝ q
   end
@@ -370,7 +370,7 @@ namespace pointed
 --     : f ~* g :=
 --   begin
 --     apply phomotopy.mk (λa, eq_of_phomotopy (p a)),
---     apply eq_of_fn_eq_fn (ppi_eq_equiv _ _),
+--     apply inj (ppi_eq_equiv _ _),
 --     refine !phomotopy_of_eq_con ⬝ _,
 -- --    refine !phomotopy_of_eq_of_phomotopy ◾** idp ⬝ q,
 --   end
@@ -501,7 +501,7 @@ namespace pointed
     (g : Π(a : A), ppmap (P a) (Q a)) :
     pmap_compose_ppi (λa, h a ∘* g a) f ~* pmap_compose_ppi h (pmap_compose_ppi g f)  :=
   phomotopy.mk homotopy.rfl
-    abstract !idp_con ⬝ whisker_right _ (!ap_con ⬝ whisker_right _ !ap_compose'⁻¹) ⬝ !con.assoc end
+    abstract !idp_con ⬝ whisker_right _ (!ap_con ⬝ whisker_right _ !ap_compose') ⬝ !con.assoc end
 
   definition ppi_assoc [constructor] (h : Π (a : A), Q a →* R a) (g : Π (a : A), P a →* Q a)
     (f : Π*a, P a) :
@@ -608,7 +608,7 @@ namespace pointed
 
   definition ppmap.sigma_char [constructor] (A B : Type*) :
     ppmap A B ≃* @psigma_gen (A →ᵘ* B) (λf, f pt = pt) idp :=
-  pequiv_of_equiv pmap.sigma_char idp
+  pequiv_of_equiv !pmap.sigma_char idp
 
   definition pppi.sigma_char [constructor] (B : A → Type*) :
     (Π*(a : A), B a) ≃* @psigma_gen (Πᵘ*a, B a) (λf, f pt = pt) idp :=
@@ -633,7 +633,7 @@ namespace pointed
     { refine !idp_con ⬝ !idp_con ⬝ _,
       fapply sigma_eq2,
       { refine !sigma_eq_pr1 ⬝ _ ⬝ !ap_sigma_pr1⁻¹,
-        apply eq_of_fn_eq_fn eq_equiv_homotopy,
+        apply inj !eq_equiv_homotopy,
         refine !apd10_eq_of_homotopy_fn ⬝ _ ⬝ !apd10_to_fun_eq_of_phomotopy⁻¹,
         apply eq_of_homotopy, intro a, reflexivity },
       { exact sorry } }
@@ -745,7 +745,7 @@ namespace pointed
              end
       ... ≃* ppmap A (psigma_gen (λb, f b = pt) (respect_pt f)) :
              by exact (ppmap_psigma _ _)⁻¹ᵉ*
-      ... ≃* ppmap A (pfiber f) : by exact pequiv_ppcompose_left !pfiber.sigma_char'⁻¹ᵉ*
+      ... ≃* ppmap A (pfiber f) : by exact ppmap_pequiv_ppmap_right !pfiber.sigma_char'⁻¹ᵉ*
 
   -- definition pppi_ppmap {A C : Type*} {B : A → Type*} :
   --   ppmap (/- dependent smash of B -/) C ≃* Π*(a : A), ppmap (B a) C :=

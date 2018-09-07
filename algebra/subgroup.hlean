@@ -32,7 +32,7 @@ namespace group
     { intro b, cases b, reflexivity },
     { intro a, cases a with a1 a2, cases a2, reflexivity }
   end,
-  is_trunc_equiv_closed _ this
+  is_trunc_equiv_closed _ this _
   qed
 
   /-- Every group G has at least two subgroups, the trivial subgroup containing only one, and the full subgroup. --/

@@ -332,13 +332,13 @@ namespace spectrum
   /-
   definition eq_of_shomotopy_pfun {N : succ_str} {X Y : gen_prespectrum N} {f g : X →ₛ Y} (H : f ~ₛ g) (n : N) : f n = g n :=
   begin
-    fapply eq_of_fn_eq_fn (smap_sigma_equiv X Y),
+    fapply inj (smap_sigma_equiv X Y),
     repeat exact sorry
   end-/
 
   definition fam_phomotopy_of_eq
     {N : Type} {X Y: N → Type*} (f g : Π n, X n →* Y n) : (f = g) ≃ (Π n, f n ~* g n) :=
-    (eq.eq_equiv_homotopy) ⬝e pi_equiv_pi_right (λ n, pmap_eq_equiv (f n) (g n))
+    !eq_equiv_homotopy ⬝e pi_equiv_pi_right (λ n, pmap_eq_equiv (f n) (g n))
 
 /-
   definition phomotopy_rec_on_eq [recursor]
@@ -385,7 +385,7 @@ namespace spectrum
 
   definition eq_of_shomotopy {N : succ_str} {X Y : gen_prespectrum N} {f g : X →ₛ Y} (H : f ~ₛ g) : f = g :=
   begin
-    fapply eq_of_fn_eq_fn (smap_sigma_equiv X Y)⁻¹ᵉ,
+    fapply inj (smap_sigma_equiv X Y)⁻¹ᵉ,
     induction f with f fsq,
     induction g with g gsq,
     induction H with H Hsq,
@@ -728,7 +728,7 @@ namespace spectrum
     : πag[k + 2] (E (-n + 2 + k)) →g πag[k + 3] (E (-n + 2 + (k + 1))) :=
   begin
     refine _ ∘g π→g[k+2] (glue E _),
-    refine (ghomotopy_group_succ_in _ (k+1))⁻¹ᵍ ∘g _,
+    refine (ghomotopy_group_succ_in (k+1) _)⁻¹ᵍ ∘g _,
     refine homotopy_group_isomorphism_of_pequiv (k+1)
       (loop_pequiv_loop (pequiv_of_eq (ap E (add.assoc (-n + 2) k 1))))
   end
@@ -796,7 +796,7 @@ namespace spectrum
   definition sp_cotensor [constructor] {N : succ_str} (A : Type*) (B : gen_spectrum N) :
     gen_spectrum N :=
     spectrum.MK (λn, ppmap A (B n))
-      (λn, (loop_ppmap_commute A (B (S n)))⁻¹ᵉ* ∘*ᵉ (pequiv_ppcompose_left (equiv_glue B n)))
+      (λn, (loop_ppmap_commute A (B (S n)))⁻¹ᵉ* ∘*ᵉ ppmap_pequiv_ppmap_right (equiv_glue B n))
 
   /- unpointed cotensor -/
   definition sp_ucotensor [constructor] {N : succ_str} (A : Type) (B : gen_spectrum N) :
