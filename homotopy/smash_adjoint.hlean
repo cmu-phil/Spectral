@@ -2,7 +2,7 @@
 -- informal proofs in collaboration with Egbert, Stefano, Robin, Ulrik
 
 /- the adjunction between the smash product and pointed maps -/
-import .smash .susp ..pointed ..move_to_lib ..pyoneda
+import .smash .susp ..pointed_pi ..pyoneda
 
 open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops wedge is_trunc
      function unit sigma susp sphere
@@ -595,7 +595,7 @@ namespace smash
   calc
     ppmap (⅀ A ∧ B) X ≃* ppmap (⅀ A) (ppmap B X) : smash_adjoint_pmap (⅀ A) B X
     ... ≃* ppmap A (Ω (ppmap B X)) : susp_adjoint_loop A (ppmap B X)
-    ... ≃* ppmap A (ppmap B (Ω X)) : ppmap_pequiv_ppmap_right (loop_ppmap_commute B X)
+    ... ≃* ppmap A (ppmap B (Ω X)) : ppmap_pequiv_ppmap_right (loop_ppmap_pequiv B X)
     ... ≃* ppmap (A ∧ B) (Ω X) : smash_adjoint_pmap A B (Ω X)
     ... ≃* ppmap (⅀ (A ∧ B)) X : susp_adjoint_loop (A ∧ B) X
 
@@ -604,7 +604,7 @@ namespace smash
             (ppcompose_left f) (ppcompose_left f) :=
   smash_adjoint_pmap_natural_right (⅀ A) B f ⬝h*
   susp_adjoint_loop_natural_right (ppcompose_left f) ⬝h*
-  ppcompose_left_psquare (loop_pmap_commute_natural_right B f) ⬝h*
+  ppcompose_left_psquare (loop_ppmap_pequiv_natural_right B f) ⬝h*
   (smash_adjoint_pmap_natural_right A B (Ω→ f))⁻¹ʰ* ⬝h*
   (susp_adjoint_loop_natural_right f)⁻¹ʰ*
 
@@ -618,7 +618,7 @@ namespace smash
            (susp_adjoint_loop_natural_left (f ∧→ g))⁻¹ʰ*,
     rotate 2,
     exact !ppcompose_left_ppcompose_right ⬝v*
-      ppcompose_left_psquare (loop_pmap_commute_natural_left X g),
+      ppcompose_left_psquare (loop_ppmap_pequiv_natural_left X g),
     exact susp_adjoint_loop_natural_left f ⬝v* susp_adjoint_loop_natural_right (ppcompose_right g)
   end
 

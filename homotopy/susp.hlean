@@ -52,21 +52,25 @@ namespace susp
             {f₁₀ : A₀₀ →* A₂₀} {f₁₂ : A₀₂ →* A₂₂}
             {f₀₁ : A₀₀ →* A₀₂} {f₂₁ : A₂₀ →* A₂₂}
 
-  -- rename: susp_functor_psquare
-  definition suspend_psquare (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : psquare (⅀→ f₁₀) (⅀→ f₁₂) (⅀→ f₀₁) (⅀→ f₂₁) :=
-sorry
+  definition susp_functor_psquare (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) :
+    psquare (⅀→ f₁₀) (⅀→ f₁₂) (⅀→ f₀₁) (⅀→ f₂₁) :=
+  !susp_functor_pcompose⁻¹* ⬝* susp_functor_phomotopy p ⬝* !susp_functor_pcompose
 
-  definition susp_to_loop_psquare (f₁₀ : A₀₀ →* A₂₀) (f₁₂ : A₀₂ →* A₂₂) (f₀₁ : susp A₀₀ →* A₀₂) (f₂₁ : susp A₂₀ →* A₂₂) : (psquare (⅀→ f₁₀) f₁₂ f₀₁ f₂₁) → (psquare f₁₀ (Ω→ f₁₂) ((loop_susp_pintro A₀₀ A₀₂) f₀₁) ((loop_susp_pintro A₂₀ A₂₂) f₂₁)) :=
+  definition susp_to_loop_psquare (f₁₀ : A₀₀ →* A₂₀) (f₁₂ : A₀₂ →* A₂₂)
+    (f₀₁ : susp A₀₀ →* A₀₂) (f₂₁ : susp A₂₀ →* A₂₂) : psquare (⅀→ f₁₀) f₁₂ f₀₁ f₂₁ →
+    psquare f₁₀ (Ω→ f₁₂) (loop_susp_pintro A₀₀ A₀₂ f₀₁) (loop_susp_pintro A₂₀ A₂₂ f₂₁) :=
   begin
     intro p,
     refine pvconcat _ (ap1_psquare p),
-    exact loop_susp_unit_natural f₁₀
+    exact (loop_susp_unit_natural f₁₀)⁻¹*
   end
 
-  definition loop_to_susp_square (f₁₀ : A₀₀ →* A₂₀) (f₁₂ : A₀₂ →* A₂₂) (f₀₁ : A₀₀ →* Ω A₀₂) (f₂₁ : A₂₀ →* Ω A₂₂) : (psquare f₁₀ (Ω→ f₁₂) f₀₁ f₂₁) → (psquare (⅀→ f₁₀) f₁₂ ((susp_pelim A₀₀ A₀₂) f₀₁) ((susp_pelim A₂₀ A₂₂) f₂₁)) :=
+  definition loop_to_susp_square (f₁₀ : A₀₀ →* A₂₀) (f₁₂ : A₀₂ →* A₂₂)
+    (f₀₁ : A₀₀ →* Ω A₀₂) (f₂₁ : A₂₀ →* Ω A₂₂) : psquare f₁₀ (Ω→ f₁₂) f₀₁ f₂₁ →
+    psquare (⅀→ f₁₀) f₁₂ (susp_pelim A₀₀ A₀₂ f₀₁) (susp_pelim A₂₀ A₂₂ f₂₁) :=
   begin
     intro p,
-    refine pvconcat (suspend_psquare p) _,
+    refine susp_functor_psquare p ⬝v* _,
     exact psquare_transpose (loop_susp_counit_natural f₁₂)
   end
 

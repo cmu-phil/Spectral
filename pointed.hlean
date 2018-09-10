@@ -97,82 +97,82 @@ namespace pointed
   end
 
   /- remove some duplicates: loop_ppmap_commute, loop_ppmap_pequiv, loop_ppmap_pequiv', pfunext -/
-  definition pfunext (X Y : Type*) : ppmap X (Ω Y) ≃* Ω (ppmap X Y) :=
-  (loop_ppmap_commute X Y)⁻¹ᵉ*
+  -- definition pfunext (X Y : Type*) : ppmap X (Ω Y) ≃* Ω (ppmap X Y) :=
+  -- (loop_ppmap_commute X Y)⁻¹ᵉ*
 
-  definition loop_phomotopy [constructor] {A B : Type*} (f : A →* B) : Type* :=
-  pointed.MK (f ~* f) phomotopy.rfl
+--   definition loop_phomotopy [constructor] {A B : Type*} (f : A →* B) : Type* :=
+--   pointed.MK (f ~* f) phomotopy.rfl
 
-  definition ppcompose_left_loop_phomotopy [constructor] {A B C : Type*} (g : B →* C) {f : A →* B}
-    {h : A →* C} (p : g ∘* f ~* h) : loop_phomotopy f →* loop_phomotopy h :=
-  pmap.mk (λq, p⁻¹* ⬝* pwhisker_left g q ⬝* p)
-    (idp ◾** !pwhisker_left_refl ◾** idp ⬝ !trans_refl ◾** idp ⬝ !trans_left_inv)
+--   definition ppcompose_left_loop_phomotopy [constructor] {A B C : Type*} (g : B →* C) {f : A →* B}
+--     {h : A →* C} (p : g ∘* f ~* h) : loop_phomotopy f →* loop_phomotopy h :=
+--   pmap.mk (λq, p⁻¹* ⬝* pwhisker_left g q ⬝* p)
+--     (idp ◾** !pwhisker_left_refl ◾** idp ⬝ !trans_refl ◾** idp ⬝ !trans_left_inv)
 
-  definition ppcompose_left_loop_phomotopy' [constructor] {A B C : Type*} (g : B →* C) (f : A →* B)
-    : loop_phomotopy f →* loop_phomotopy (g ∘* f) :=
-  pmap.mk (λq, pwhisker_left g q) !pwhisker_left_refl
+--   definition ppcompose_left_loop_phomotopy' [constructor] {A B C : Type*} (g : B →* C) (f : A →* B)
+--     : loop_phomotopy f →* loop_phomotopy (g ∘* f) :=
+--   pmap.mk (λq, pwhisker_left g q) !pwhisker_left_refl
 
-  definition loop_ppmap_pequiv' [constructor] (A B : Type*) :
-    Ω(ppmap A B) ≃* loop_phomotopy (pconst A B) :=
-  pequiv_of_equiv (pmap_eq_equiv _ _) idp
+--   definition loop_ppmap_pequiv' [constructor] (A B : Type*) :
+--     Ω(ppmap A B) ≃* loop_phomotopy (pconst A B) :=
+--   pequiv_of_equiv (pmap_eq_equiv _ _) idp
 
-  definition ppmap_loop_pequiv' [constructor] (A B : Type*) :
-    loop_phomotopy (pconst A B) ≃* ppmap A (Ω B) :=
-  pequiv_of_equiv (!phomotopy.sigma_char ⬝e !pmap.sigma_char⁻¹ᵉ) idp
+--   definition ppmap_loop_pequiv' [constructor] (A B : Type*) :
+--     loop_phomotopy (pconst A B) ≃* ppmap A (Ω B) :=
+--   pequiv_of_equiv (!phomotopy.sigma_char ⬝e !pmap.sigma_char⁻¹ᵉ) idp
 
-  definition loop_ppmap_pequiv [constructor] (A B : Type*) : Ω(ppmap A B) ≃* ppmap A (Ω B) :=
-  loop_ppmap_pequiv' A B ⬝e* ppmap_loop_pequiv' A B
+--   definition loop_ppmap_pequiv [constructor] (A B : Type*) : Ω(ppmap A B) ≃* ppmap A (Ω B) :=
+--   loop_ppmap_pequiv' A B ⬝e* ppmap_loop_pequiv' A B
 
-  definition loop_ppmap_pequiv'_natural_right' {X X' : Type} (x₀ : X) (A : Type*) (f : X → X') :
-    psquare (loop_ppmap_pequiv' A _) (loop_ppmap_pequiv' A _)
-            (Ω→ (ppcompose_left (pmap_of_map f x₀)))
-            (ppcompose_left_loop_phomotopy' (pmap_of_map f x₀) !pconst) :=
-  begin
-    fapply phomotopy.mk,
-    { esimp, intro p,
-     refine _ ⬝ ap011 (λx y, phomotopy_of_eq (ap1_gen _ x y _))
-                 proof !eq_of_phomotopy_refl⁻¹ qed proof !eq_of_phomotopy_refl⁻¹ qed,
-     refine _ ⬝ ap phomotopy_of_eq !ap1_gen_idp_left⁻¹,
-     exact !phomotopy_of_eq_pcompose_left⁻¹ },
-    { refine _ ⬝ !idp_con⁻¹, exact sorry }
-  end
+--   definition loop_ppmap_pequiv'_natural_right' {X X' : Type} (x₀ : X) (A : Type*) (f : X → X') :
+--     psquare (loop_ppmap_pequiv' A _) (loop_ppmap_pequiv' A _)
+--             (Ω→ (ppcompose_left (pmap_of_map f x₀)))
+--             (ppcompose_left_loop_phomotopy' (pmap_of_map f x₀) !pconst) :=
+--   begin
+--     fapply phomotopy.mk,
+--     { esimp, intro p,
+--      refine _ ⬝ ap011 (λx y, phomotopy_of_eq (ap1_gen _ x y _))
+--                  proof !eq_of_phomotopy_refl⁻¹ qed proof !eq_of_phomotopy_refl⁻¹ qed,
+--      refine _ ⬝ ap phomotopy_of_eq !ap1_gen_idp_left⁻¹,
+--      exact !phomotopy_of_eq_pcompose_left⁻¹ },
+--     { refine _ ⬝ !idp_con⁻¹, exact sorry }
+--   end
 
-  definition loop_ppmap_pequiv'_natural_right {X X' : Type*} (A : Type*) (f : X →* X') :
-    psquare (loop_ppmap_pequiv' A X) (loop_ppmap_pequiv' A X')
-            (Ω→ (ppcompose_left f)) (ppcompose_left_loop_phomotopy f !pcompose_pconst) :=
-  begin
-    induction X' with X' x₀', induction f with f f₀, esimp at f, esimp at f₀, induction f₀,
-    apply psquare_of_phomotopy,
-    exact sorry
-  end
+--   definition loop_ppmap_pequiv'_natural_right {X X' : Type*} (A : Type*) (f : X →* X') :
+--     psquare (loop_ppmap_pequiv' A X) (loop_ppmap_pequiv' A X')
+--             (Ω→ (ppcompose_left f)) (ppcompose_left_loop_phomotopy f !pcompose_pconst) :=
+--   begin
+--     induction X' with X' x₀', induction f with f f₀, esimp at f, esimp at f₀, induction f₀,
+--     apply psquare_of_phomotopy,
+--     exact sorry
+--   end
 
-  definition ppmap_loop_pequiv'_natural_right {X X' : Type*} (A : Type*) (f : X →* X') :
-    psquare (ppmap_loop_pequiv' A X) (ppmap_loop_pequiv' A X')
-            (ppcompose_left_loop_phomotopy f !pcompose_pconst) (ppcompose_left (Ω→ f)) :=
-  begin
-    exact sorry
-  end
+--   definition ppmap_loop_pequiv'_natural_right {X X' : Type*} (A : Type*) (f : X →* X') :
+--     psquare (ppmap_loop_pequiv' A X) (ppmap_loop_pequiv' A X')
+--             (ppcompose_left_loop_phomotopy f !pcompose_pconst) (ppcompose_left (Ω→ f)) :=
+--   begin
+--     exact sorry
+--   end
 
-  definition loop_pmap_commute_natural_right_direct {X X' : Type*} (A : Type*) (f : X →* X') :
-    psquare (loop_ppmap_pequiv A X) (loop_ppmap_pequiv A X')
-            (Ω→ (ppcompose_left f)) (ppcompose_left (Ω→ f)) :=
-  begin
-    induction X' with X' x₀', induction f with f f₀, esimp at f, esimp at f₀, induction f₀,
---    refine _ ⬝* _ ◾* _, rotate 4,
-    fapply phomotopy.mk,
-    { intro p, esimp, esimp [pmap_eq_equiv, pcompose_pconst], exact sorry },
-    { exact sorry }
-  end
+--   definition loop_pmap_commute_natural_right_direct {X X' : Type*} (A : Type*) (f : X →* X') :
+--     psquare (loop_ppmap_pequiv A X) (loop_ppmap_pequiv A X')
+--             (Ω→ (ppcompose_left f)) (ppcompose_left (Ω→ f)) :=
+--   begin
+--     induction X' with X' x₀', induction f with f f₀, esimp at f, esimp at f₀, induction f₀,
+-- --    refine _ ⬝* _ ◾* _, rotate 4,
+--     fapply phomotopy.mk,
+--     { intro p, esimp, esimp [pmap_eq_equiv, pcompose_pconst], exact sorry },
+--     { exact sorry }
+--   end
 
-  definition loop_pmap_commute_natural_left {A A' : Type*} (X : Type*) (f : A' →* A) :
-    psquare (loop_ppmap_commute A X) (loop_ppmap_commute A' X)
-            (Ω→ (ppcompose_right f)) (ppcompose_right f) :=
-  sorry
+--   definition loop_pmap_commute_natural_left {A A' : Type*} (X : Type*) (f : A' →* A) :
+--     psquare (loop_ppmap_commute A X) (loop_ppmap_commute A' X)
+--             (Ω→ (ppcompose_right f)) (ppcompose_right f) :=
+--   sorry
 
-  definition loop_pmap_commute_natural_right {X X' : Type*} (A : Type*) (f : X →* X') :
-    psquare (loop_ppmap_commute A X) (loop_ppmap_commute A X')
-            (Ω→ (ppcompose_left f)) (ppcompose_left (Ω→ f)) :=
-  loop_ppmap_pequiv'_natural_right A f ⬝h* ppmap_loop_pequiv'_natural_right A f
+--   definition loop_pmap_commute_natural_right {X X' : Type*} (A : Type*) (f : X →* X') :
+--     psquare (loop_ppmap_commute A X) (loop_ppmap_commute A X')
+--             (Ω→ (ppcompose_left f)) (ppcompose_left (Ω→ f)) :=
+--   loop_ppmap_pequiv'_natural_right A f ⬝h* ppmap_loop_pequiv'_natural_right A f
 
   /-
     Do we want to use a structure of homotopies between pointed homotopies? Or are equalities fine?
@@ -296,14 +296,6 @@ namespace pointed
             {f₀₃ : A₀₂ →* A₀₄} {f₂₃ : A₂₂ →* A₂₄} {f₄₃ : A₄₂ →* A₄₄}
             {f₁₄ f₁₄' : A₀₄ →* A₂₄} {f₃₄ : A₂₄ →* A₄₄}
 
-  definition phconst_square (f₀₁ : A₀₀ →* A₀₂) (f₂₁ : A₂₀ →* A₂₂) :
-    psquare (pconst A₀₀ A₂₀) (pconst A₀₂ A₂₂) f₀₁ f₂₁ :=
-  !pcompose_pconst ⬝* !pconst_pcompose⁻¹*
-
-  definition pvconst_square (f₁₀ : A₀₀ →* A₂₀) (f₁₂ : A₀₂ →* A₂₂) :
-    psquare f₁₀ f₁₂ (pconst A₀₀ A₀₂) (pconst A₂₀ A₂₂) :=
-  !pconst_pcompose ⬝* !pcompose_pconst⁻¹*
-
   definition pvconst_square_pcompose (f₃₀ : A₂₀ →* A₄₀) (f₁₀ : A₀₀ →* A₂₀)
     (f₃₂ : A₂₂ →* A₄₂) (f₁₂ : A₀₂ →* A₂₂) :
     pvconst_square (f₃₀ ∘* f₁₀) (f₃₂ ∘* f₁₂) = pvconst_square f₁₀ f₁₂ ⬝h* pvconst_square f₃₀ f₃₂ :=
@@ -324,12 +316,6 @@ namespace pointed
     (f₂₃ : A₂₂ →* A₂₄) (f₂₁ : A₂₀ →* A₂₂) :
     phconst_square (f₀₃ ∘* f₀₁) (f₂₃ ∘* f₁₂) = phconst_square f₀₁ f₁₂ ⬝v* phconst_square f₀₃ f₂₃ :=
   sorry
-
-  definition ptranspose (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : psquare f₀₁ f₂₁ f₁₀ f₁₂ :=
-  p⁻¹*
-
-  definition hsquare_of_psquare (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : hsquare f₁₀ f₁₂ f₀₁ f₂₁ :=
-  p
 
   definition rfl_phomotopy_hconcat (p : psquare f₁₀ f₁₂ f₀₁ f₂₁) : phomotopy.rfl ⬝ph* p = p :=
   idp ◾** (ap (pwhisker_left f₁₂) !refl_symm ⬝ !pwhisker_left_refl) ⬝ !trans_refl

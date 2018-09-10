@@ -38,6 +38,37 @@ namespace eq
     transport C (ap g₁ p) (f z) = f (transport C p z) :=
   by induction p; reflexivity
 
+  variables {A A' B : Type} {a a₂ a₃ : A} {p p' : a = a₂} {p₂ : a₂ = a₃}
+            {a' a₂' a₃' : A'} {b b₂ : B}
+
+  definition apd_eq_ap (f : A → A') (p : a = a₂) : eq_of_pathover (apd f p) = ap f p :=
+  begin induction p, reflexivity end
+
+  definition eq_of_pathover_idp_constant (p : b =[idpath a] b₂) :
+    eq_of_pathover_idp p = eq_of_pathover p :=
+  begin induction p using idp_rec_on, reflexivity end
+
+  definition eq_of_pathover_change_path (r : p = p') (q : a' =[p] a₂') :
+    eq_of_pathover (change_path r q) = eq_of_pathover q :=
+  begin induction r, reflexivity end
+
+  definition eq_of_pathover_cono (q : a' =[p] a₂') (q₂ : a₂' =[p₂] a₃') :
+    eq_of_pathover (q ⬝o q₂) = eq_of_pathover q ⬝ eq_of_pathover q₂ :=
+  begin induction q₂, reflexivity end
+
+  definition eq_of_pathover_invo (q : a' =[p] a₂') :
+    eq_of_pathover q⁻¹ᵒ = (eq_of_pathover q)⁻¹ :=
+  begin induction q, reflexivity end
+
+  definition eq_of_pathover_concato_eq (q : a' =[p] a₂') (q₂ : a₂' = a₃') :
+    eq_of_pathover (q ⬝op q₂) = eq_of_pathover q ⬝ q₂ :=
+  begin induction q₂, reflexivity end
+
+  definition eq_of_pathover_eq_concato (q : a' = a₂') (q₂ : a₂' =[p₂] a₃') :
+    eq_of_pathover (q ⬝po q₂) = q ⬝ eq_of_pathover q₂ :=
+  begin induction q, induction q₂, reflexivity end
+
+
 end eq open eq
 
 namespace nat
@@ -90,14 +121,21 @@ end nat
   --           ...  ≃ (k ~* l) : phomotopy.sigma_char k l
 
 namespace pointed
-/- move to pointed -/
-open sigma.ops
 
+infixr ` →** `:29 := ppmap
 
 end pointed open pointed
 
 namespace trunc
   open trunc_index sigma.ops
+
+  definition ptrunc_functor_pconst [constructor] (n : ℕ₋₂) (X Y : Type*) :
+    ptrunc_functor n (pconst X Y) ~* pconst (ptrunc n X) (ptrunc n Y) :=
+  begin
+    fapply phomotopy.mk,
+    { intro x, induction x with x, reflexivity },
+    { reflexivity }
+  end
 
   -- TODO: redefine loopn_ptrunc_pequiv
   definition apn_ptrunc_functor (n : ℕ₋₂) (k : ℕ) {A B : Type*} (f : A →* B) :
@@ -239,6 +277,29 @@ namespace sigma
 end sigma open sigma
 
 namespace group
+
+infixr ` →gg `:56 := aghomomorphism
+
+definition pmap_of_homomorphism2 [constructor] {G H K : AbGroup} (φ : G →g H →gg K) :
+  G →* H →** K :=
+pmap.mk (λg, pmap_of_homomorphism (φ g))
+  (eq_of_phomotopy (phomotopy_of_homotopy (ap010 group_fun (to_respect_one φ))))
+
+definition homomorphism_apply [constructor] (G H : AbGroup) (g : G) :
+  (G →gg H) →g H :=
+begin
+  fapply homomorphism.mk,
+  { intro φ, exact φ g },
+  { intros φ φ', reflexivity }
+end
+
+definition homomorphism_swap [constructor] {G H K : AbGroup} (φ : G →g H →gg K) :
+  H →g G →gg K :=
+begin
+  fapply homomorphism.mk,
+  { intro h, exact homomorphism_apply H K h ∘g φ },
+  { intro h h', apply homomorphism_eq, intro g, exact to_respect_mul (φ g) h h' }
+end
 
 definition isomorphism.MK [constructor] {G H : Group} (φ : G →g H) (ψ : H →g G)
   (p : φ ∘g ψ ~ gid H) (q : ψ ∘g φ ~ gid G) : G ≃g H :=
@@ -1132,10 +1193,6 @@ end injective_surjective
 
 -- Yuri Sulyma's code from HoTT MRC
 
-notation `⅀→`:(max+5) := susp_functor
-notation `⅀⇒`:(max+5) := susp_functor_phomotopy
-notation `Ω⇒`:(max+5) := ap1_phomotopy
-
 definition ap1_phomotopy_symm {A B : Type*} {f g : A →* B} (p : f ~* g) : (Ω⇒ p)⁻¹* = Ω⇒ (p⁻¹*) :=
 begin
   induction p using phomotopy_rec_idp,
@@ -1152,7 +1209,6 @@ begin
   rewrite [+ap1_phomotopy_refl],
   rewrite trans_refl
 end
-
 
 namespace pointed
 

@@ -28,7 +28,7 @@ is_conn_fun_prod_of_wedge n m A B
 definition is_trunc_ppi_of_is_conn (k n : ℕ) (X : Type*) (H : is_conn (k.-1) X)
   (Y : X → Type*) (H3 : Πx, is_trunc (k + n) (Y x)) :
   is_trunc n (Π*(x : X), Y x) :=
-is_conn.is_trunc_ppi_of_is_conn _ (k.-2) _ _ (le_of_eq (sub_one_add_plus_two_sub_one k n)⁻¹) _ H3
+is_conn.is_trunc_ppi_of_is_conn _ (k.-2) H _ _ (le_of_eq (sub_one_add_plus_two_sub_one k n)⁻¹) _ H3
 
 end hide
 
@@ -396,7 +396,7 @@ end
 -/
 
 definition is_trunc_GType_hom (G H : [n;k]GType) : is_trunc n (GType_hom G H) :=
-is_trunc_pmap_of_is_conn _ (k.-2) _ (k + n) _ (le_of_eq (sub_one_add_plus_two_sub_one k n)⁻¹)
+is_trunc_pmap_of_is_conn _ (k.-2) _ _ (k + n) _ (le_of_eq (sub_one_add_plus_two_sub_one k n)⁻¹)
   (is_trunc_B' H)
 
 definition is_set_GType_hom (G H : [0;k]GType) : is_set (GType_hom G H) :=

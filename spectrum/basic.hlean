@@ -235,7 +235,7 @@ namespace spectrum
   definition szero [constructor] {N : succ_str} (E F : gen_prespectrum N) : E →ₛ F :=
   begin
     apply smap.mk (λn, pconst (E n) (F n)),
-    intro n, exact !hpconst_square ⬝vp* !ap1_pconst
+    intro n, exact !phconst_square ⬝vp* !ap1_pconst
   end
 
   definition stransport [constructor] {N : succ_str} {A : Type} {a a' : A} (p : a = a')
@@ -588,13 +588,13 @@ namespace spectrum
   definition πg_glue_homotopy_π_glue (X : spectrum) (n : ℤ) : πg_glue X n ~ π_glue X n :=
   by reflexivity
 
-  definition π_glue_square {X Y : spectrum} (f : X →ₛ Y) (n : ℤ) :
+  definition π_glue_natural {X Y : spectrum} (f : X →ₛ Y) (n : ℤ) :
     π_glue Y n ∘* π→[2] (f (2 - succ n)) ~* π→[3] (f (2 - n)) ∘* π_glue X n :=
   begin
     change π→[2] (equiv_glue_neg Y n) ∘* π→[2] (f (2 - succ n)) ~*
            π→[2] (Ω→ (f (2 - n))) ∘* π→[2] (equiv_glue_neg X n),
     refine homotopy_group_functor_psquare 2 _,
-    refine !sglue_square ⬝v* ap1_psquare !pequiv_of_eq_commute
+    refine !sglue_square ⬝v* ap1_psquare !pequiv_of_eq_natural⁻¹*
   end
 
   definition homotopy_group_spectrum_irrel_one {n m : ℤ} {k : ℕ} (E : spectrum) (p : n + 1 = m + k)
@@ -658,7 +658,7 @@ namespace spectrum
 
   definition LES_of_shomotopy_groups : chain_complex +3ℤ :=
   splice (λ(n : ℤ), LES_of_homotopy_groups (f (2 - n))) (2, 0)
-         (π_glue Y) (π_glue X) (π_glue_square f)
+         (π_glue Y) (π_glue X) (π_glue_natural f)
 
   -- This LES is definitionally what we want:
   example (n : ℤ) : LES_of_shomotopy_groups (n, 0) = πₛ[n] Y := idp
@@ -818,7 +818,8 @@ namespace spectrum
   smap.mk (λn, pppi_compose_left (λa, f a n))
     begin
       intro n,
-      exact psquare_pppi_compose_left (λa, (glue_square (f a) n)) ⬝v* !loop_pppi_pequiv_natural⁻¹ᵛ*
+      exact psquare_pppi_compose_left (λa, (glue_square (f a) n)) ⬝v*
+        (ptranspose !loop_pppi_pequiv_natural_right)⁻¹ᵛ*
     end
 
   -- unpointed spi

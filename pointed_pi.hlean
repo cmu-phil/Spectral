@@ -333,9 +333,9 @@ namespace pointed
   definition phomotopy {A : Type*} {P : A → Type} {x : P pt} (f g : ppi P x) : Type :=
   ppi (λa, f a = g a) (respect_pt f ⬝ (respect_pt g)⁻¹)
 
-  variables {A : Type*} {P Q R : A → Type*} {f g h : Π*a, P a}
-                        {B C D : A → Type} {b₀ : B pt} {c₀ : C pt} {d₀ : D pt}
-                        {k k' l m : ppi B b₀}
+  variables {A A' A'' : Type*} {P Q R : A → Type*} {P' : A' → Type*} {f g h : Π*a, P a}
+            {B C D : A → Type} {b₀ : B pt} {c₀ : C pt} {d₀ : D pt}
+            {k k' l m : ppi B b₀}
 
   definition pppi_equiv_pmap [constructor] (A B : Type*) : (Π*(a : A), B) ≃ (A →* B) :=
   by reflexivity
@@ -465,6 +465,28 @@ namespace pointed
     (f : Π*(a : A), P a) : Π*(a : A), Q a :=
   ppi_functor_right g (respect_pt (g pt)) f
 
+  definition ppi_compose_pmap [constructor] (g : Π*(a : A), P a) (f : A' →* A) :
+    Π*(a' : A'), P (f a') :=
+  ppi.mk (λa', g (f a'))
+    (eq_of_pathover_idp  (change_path !con.right_inv
+      (apd g (respect_pt f) ⬝op respect_pt g ⬝o (apd (λx, Point (P x)) (respect_pt f))⁻¹ᵒ)))
+/- alternate proof for respecting the point -/
+-- (eq_tr_of_pathover (apd g (respect_pt f)) ⬝ ap (transport _ _) (respect_pt g) ⬝
+--            apdt (λx, Point (P x)) (respect_pt f)⁻¹)
+
+  definition ppi_compose_pmap_phomotopy [constructor] (g : A →* A'') (f : A' →* A) :
+    ppi_compose_pmap g f ~* g ∘* f :=
+  begin
+    refine phomotopy.mk homotopy.rfl _,
+    refine !idp_con ⬝ _, esimp,
+    symmetry,
+    refine !eq_of_pathover_idp_constant ⬝ _,
+    refine !eq_of_pathover_change_path ⬝ !eq_of_pathover_cono ⬝ _,
+    refine (!eq_of_pathover_concato_eq ⬝ !apd_eq_ap ◾ idp) ◾
+           (!eq_of_pathover_invo ⬝ (!apd_eq_ap ⬝ !ap_constant)⁻²) ⬝ _,
+    reflexivity
+  end
+
   definition pmap_compose_ppi_ppi_const [constructor] (g : Π(a : A), ppmap (P a) (Q a)) :
     pmap_compose_ppi g (ppi_const P) ~* ppi_const Q :=
   proof phomotopy.mk (λa, respect_pt (g a)) !idp_con⁻¹ qed
@@ -472,6 +494,17 @@ namespace pointed
   definition pmap_compose_ppi_pconst [constructor] (f : Π*(a : A), P a) :
     pmap_compose_ppi (λa, pconst (P a) (Q a)) f ~* ppi_const Q :=
   phomotopy.mk homotopy.rfl !ap_constant⁻¹
+
+  definition ppi_compose_pmap_ppi_const [constructor] (f : A' →* A) :
+    ppi_compose_pmap (ppi_const P) f ~* ppi_const (P ∘ f) :=
+  phomotopy.mk homotopy.rfl
+    begin
+      exact (ap eq_of_pathover_idp (change_path_of_pathover _ _ _ !cono.right_inv))⁻¹,
+    end
+
+  definition ppi_compose_pmap_pconst [constructor] (g : Π*(a : A), P a) :
+    ppi_compose_pmap g (pconst A' A) ~* pconst A' (P pt) :=
+  phomotopy.mk (λa, respect_pt g) !idpo_concato_eq⁻¹
 
   definition pmap_compose_ppi2 [constructor] {g g' : Π(a : A), ppmap (P a) (Q a)}
     {f f' : Π*(a : A), P a} (p : Πa, g a ~* g' a) (q : f ~* f') :
@@ -536,6 +569,18 @@ namespace pointed
   definition pppi_compose_left [constructor] (g : Π(a : A), ppmap (P a) (Q a)) :
     (Π*(a : A), P a) →* Π*(a : A), Q a :=
   pmap.mk (pmap_compose_ppi g) (eq_of_phomotopy (pmap_compose_ppi_ppi_const g))
+
+  definition pppi_compose_right [constructor] (f : A' →* A) :
+    (Π*(a : A), P a) →* Π*(a' : A'), P (f a') :=
+  pmap.mk (λh, ppi_compose_pmap h f) (eq_of_phomotopy (ppi_compose_pmap_ppi_const f))
+
+  definition pppi_compose_right_phomotopy [constructor] (f : A' →* A) :
+    pppi_compose_right f ~* @ppcompose_right _ _ A'' f :=
+  begin
+    fapply phomotopy_mk_ppmap,
+    { intro g, exact ppi_compose_pmap_phomotopy g f },
+    { exact sorry }
+  end
 
   -- pppi_compose_left is a functor in the following sense
   definition pppi_compose_left_pcompose (g : Π (a : A), Q a →* R a) (f : Π (a : A), P a →* Q a)
@@ -832,13 +877,14 @@ namespace pointed
     Ω (Π*a, B a) ≃* Π*(a : A), Ω (B a) :=
   pequiv_of_equiv !ppi_eq_equiv idp
 
-  definition loop_pppi_pequiv_natural {A : Type*} {X Y : A → Type*} (f :  Π (a : A), X a →* Y a) :
-    psquare
-      (Ω→ (pppi_compose_left f))
-      (pppi_compose_left (λ a, Ω→ (f a)))
-      (loop_pppi_pequiv X)
-      (loop_pppi_pequiv Y) :=
+  definition loop_pppi_pequiv_natural_right {A : Type*} {X Y : A → Type*}
+    (f :  Π (a : A), X a →* Y a) :
+    psquare (loop_pppi_pequiv X)
+            (loop_pppi_pequiv Y)
+            (Ω→ (pppi_compose_left f))
+            (pppi_compose_left (λ a, Ω→ (f a))) :=
   begin
+    apply ptranspose,
     revert Y f, refine fiberwise_pointed_map_rec _ _, intro Y f,
     fapply phomotopy.mk,
     { exact ppi_eq_equiv_natural_gen (pmap_compose_ppi_ppi_const (λa, pmap_of_map (f a) pt))
@@ -846,7 +892,16 @@ namespace pointed
     { exact !ppi_eq_equiv_natural_gen_refl ◾ (!idp_con ⬝ !eq_of_phomotopy_refl) }
   end
 
-  definition loopn_pppi_pequiv [constructor] (n : ℕ) {A : Type*} (B : A → Type*) :
+  definition loop_pppi_pequiv_natural_left {A B : Type*} {X : A → Type*} (f : B →* A) :
+    psquare (loop_pppi_pequiv X)
+            (loop_pppi_pequiv (X ∘ f))
+            (Ω→ (pppi_compose_right f))
+            (pppi_compose_right f) :=
+  begin
+    exact sorry
+  end
+
+  definition loopn_pppi_pequiv (n : ℕ) {A : Type*} (B : A → Type*) :
     Ω[n] (Π*a, B a) ≃* Π*(a : A), Ω[n] (B a) :=
   begin
     induction n with n IH,
@@ -854,13 +909,34 @@ namespace pointed
     { refine loop_pequiv_loop IH ⬝e* loop_pppi_pequiv (λa, Ω[n] (B a)) }
   end
 
-  -- definition trivial_homotopy_group_pppi {A : Type*} {B : A → Type*} {n : ℕ}
-  --   (H : Πa, is_contr (Ω[n] (B a))) : is_contr (π[n] (Π*a, B a)) :=
-  -- begin
-  --   apply is_trunc_trunc_of_is_trunc,
-  --   apply is_trunc_equiv_closed_rev,
-  --   apply loopn_pppi_pequiv
-  -- end
+  definition loop_ppmap_pequiv [constructor] (A B : Type*) : Ω (A →** B) ≃* A →** Ω B :=
+  !loop_pppi_pequiv
+
+  definition loop_ppmap_pequiv_natural_right (A : Type*) {X Y : Type*} (f :  X →* Y) :
+    psquare (loop_ppmap_pequiv A X)
+            (loop_ppmap_pequiv A Y)
+            (Ω→ (ppcompose_left f))
+            (ppcompose_left (Ω→ f)) :=
+  begin
+    exact loop_pppi_pequiv_natural_right (λa, f)
+  end
+
+  definition loop_ppmap_pequiv_natural_left {A B : Type*} (X : Type*) (f :  A →* B) :
+    psquare (loop_ppmap_pequiv B X)
+            (loop_ppmap_pequiv A X)
+            (Ω→ (ppcompose_right f))
+            (ppcompose_right f) :=
+  begin
+    refine Ω⇒ !pppi_compose_right_phomotopy⁻¹* ⬝ph* _ ⬝hp* !pppi_compose_right_phomotopy⁻¹*,
+    exact loop_pppi_pequiv_natural_left f
+  end
+
+  definition loopn_ppmap_pequiv (n : ℕ) (A B : Type*) : Ω[n] (A →** B) ≃* A →** Ω[n] B :=
+  !loopn_pppi_pequiv
+
+  definition pfunext [constructor] {A : Type*} (B : A → Type*) :
+    (Π*(a : A), Ω (B a)) ≃* Ω (Π*a, B a) :=
+  (loop_pppi_pequiv B)⁻¹ᵉ*
 
 
 /- below is an alternate proof strategy for the naturality of loop_pppi_pequiv_natural,
@@ -901,7 +977,7 @@ open is_trunc is_conn
 namespace is_conn
   section
 
-  variables (A : Type*) (n : ℕ₋₂) [H : is_conn (n.+1) A]
+  variables (A : Type*) (n : ℕ₋₂) (H : is_conn (n.+1) A)
   include H
 
   definition is_contr_ppi_match (P : A → Type*) (H : Πa, is_trunc (n.+1) (P a))
@@ -925,7 +1001,7 @@ namespace is_conn
     clear H2 H3, revert P H4,
     induction k with k IH: intro P H4,
     { apply is_prop_of_imp_is_contr, intro f,
-      apply is_contr_ppi_match A n P H4 },
+      apply is_contr_ppi_match A n H P H4 },
     { apply is_trunc_succ_of_is_trunc_loop
         (trunc_index.succ_le_succ (trunc_index.minus_two_le k)),
       intro f,
@@ -936,8 +1012,8 @@ namespace is_conn
 
   definition is_trunc_pmap_of_is_conn (k l : ℕ₋₂) (B : Type*) (H2 : l ≤ n.+1+2+k)
     (H3 : is_trunc l B) : is_trunc k.+1 (A →* B) :=
-  @is_trunc_equiv_closed _ _ k.+1 (pppi_equiv_pmap A B)
-    (is_trunc_ppi_of_is_conn A n k l H2 (λ a, B) _)
+  is_trunc_equiv_closed k.+1 (pppi_equiv_pmap A B)
+    (is_trunc_ppi_of_is_conn A n H k l H2 (λ a, B) _)
 
   end
 

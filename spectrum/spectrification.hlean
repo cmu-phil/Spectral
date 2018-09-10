@@ -221,7 +221,7 @@ namespace spectrum
       refine !passoc ⬝* _,
       refine pwhisker_left _ ((passoc _ _ (_ ∘* _))⁻¹*) ⬝* _,
       refine pwhisker_left _ !passoc⁻¹* ⬝* _,
-      refine pwhisker_left _ (pwhisker_right _ (phomotopy_pinv_right_of_phomotopy (!loopn_succ_in_natural)⁻¹*)⁻¹*) ⬝* _,
+      refine pwhisker_left _ (pwhisker_right _ (phomotopy_pinv_right_of_phomotopy (!loopn_succ_in_natural))⁻¹*) ⬝* _,
       refine pwhisker_right _ !apn_pinv ⬝* _,
       refine (phomotopy_pinv_left_of_phomotopy _)⁻¹*,
       refine apn_psquare k _,
