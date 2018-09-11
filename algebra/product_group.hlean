@@ -72,7 +72,7 @@ namespace group
       φ (x.1 * y.1) * ψ (x.2 * y.2) = (φ x.1 * φ y.1) * (ψ x.2 * ψ y.2)
                                       : by exact ap011 mul (to_respect_mul φ x.1 y.1) (to_respect_mul ψ x.2 y.2)
                                 ... = (φ x.1 * ψ x.2) * (φ y.1 * ψ y.2)
-                                      : by exact interchange I (φ x.1) (φ y.1) (ψ x.2) (ψ y.2)) end
+                                      : by exact mul.comm4 (φ x.1) (φ y.1) (ψ x.2) (ψ y.2)) end
 
   definition product_functor [constructor] {G G' H H' : Group} (φ : G →g H) (ψ : G' →g H') :
     G ×g G' →g H ×g H' :=

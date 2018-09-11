@@ -85,7 +85,6 @@ end
 definition cohomology_isomorphism_shomotopy_group_sp_cotensor (X : Type*) (Y : spectrum) {n m : ℤ}
   (p : -m = n) : H^n[X, Y] ≃g πₛ[m] (sp_cotensor X Y) :=
 begin
-  refine !trunc_ppi_isomorphic_pmap⁻¹ᵍ ⬝g _,
   refine parametrized_cohomology_isomorphism_shomotopy_group_spi (λx, Y) p ⬝g _,
   apply shomotopy_group_isomorphism_of_pequiv, intro k,
   apply pppi_pequiv_ppmap
@@ -297,7 +296,7 @@ begin
     { exfalso, apply H, reflexivity },
     { apply is_conn_of_le, apply zero_le_of_nat n, exact is_conn_EMadd1 G n, }},
   { apply is_trunc_trunc_of_is_trunc, apply @is_contr_loop_of_is_trunc (n+1) (K G 0),
-    apply is_trunc_of_le _ (zero_le_of_nat n) }
+    apply is_trunc_of_le _ (zero_le_of_nat n) _ }
 end
 
 theorem EM_dimension (G : AbGroup) (n : ℤ) (H : n ≠ 0) :

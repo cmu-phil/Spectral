@@ -269,7 +269,7 @@ namespace pointed
     fapply phomotopy.mk,
     { intro x, reflexivity },
     { refine !idp_con ⬝ _, esimp,
-      refine whisker_right _ !ap_sigma_functor_eq_dpair ⬝ _,
+      refine whisker_right _ !ap_sigma_functor_sigma_eq ⬝ _,
       induction f₁ with f₁ f₁₀, induction f₂ with f₂ f₂₀, induction A₂ with A₂ a₂₀,
       induction A₃ with A₃ a₃₀, esimp at * ⊢, induction p₁, induction p₂, reflexivity }
   end
@@ -977,10 +977,11 @@ open is_trunc is_conn
 namespace is_conn
   section
 
+  /- todo: reorder arguments and make some implicit -/
   variables (A : Type*) (n : ℕ₋₂) (H : is_conn (n.+1) A)
   include H
 
-  definition is_contr_ppi_match (P : A → Type*) (H : Πa, is_trunc (n.+1) (P a))
+  definition is_contr_ppi_match (P : A → Type*) (H2 : Πa, is_trunc (n.+1) (P a))
     : is_contr (Π*(a : A), P a) :=
   begin
     apply is_contr.mk pt,
@@ -997,7 +998,7 @@ namespace is_conn
     (P : A → Type*) (H3 : Πa, is_trunc l (P a)) :
     is_trunc k.+1 (Π*(a : A), P a) :=
   begin
-    have H4 : Πa, is_trunc (n.+1+2+k) (P a), from λa, is_trunc_of_le (P a) H2,
+    have H4 : Πa, is_trunc (n.+1+2+k) (P a), from λa, is_trunc_of_le (P a) H2 _,
     clear H2 H3, revert P H4,
     induction k with k IH: intro P H4,
     { apply is_prop_of_imp_is_contr, intro f,
@@ -1012,10 +1013,23 @@ namespace is_conn
 
   definition is_trunc_pmap_of_is_conn (k l : ℕ₋₂) (B : Type*) (H2 : l ≤ n.+1+2+k)
     (H3 : is_trunc l B) : is_trunc k.+1 (A →* B) :=
-  is_trunc_equiv_closed k.+1 (pppi_equiv_pmap A B)
-    (is_trunc_ppi_of_is_conn A n H k l H2 (λ a, B) _)
+  is_trunc_ppi_of_is_conn A n H k l H2 (λ a, B) _
 
   end
+
+  open trunc_index algebra nat
+  definition is_trunc_ppi_of_is_conn_nat
+    (A : Type*) (n : ℕ) (H : is_conn (n.-1) A) (k l : ℕ) (H2 : l ≤ n + k)
+    (P : A → Type*) (H3 : Πa, is_trunc l (P a)) :
+    is_trunc k (Π*(a : A), P a) :=
+  begin
+    refine is_trunc_ppi_of_is_conn A (n.-2) H (k.-1) l _ P H3,
+    refine le.trans (of_nat_le_of_nat H2) (le_of_eq !sub_one_add_plus_two_sub_one⁻¹)
+  end
+
+  definition is_trunc_pmap_of_is_conn_nat (A : Type*) (n : ℕ) (H : is_conn (n.-1) A) (k l : ℕ)
+    (B : Type*) (H2 : l ≤ n + k) (H3 : is_trunc l B) : is_trunc k (A →* B) :=
+  is_trunc_ppi_of_is_conn_nat A n H k l H2 (λ a, B) _
 
   -- this is probably much easier to prove directly
   definition is_trunc_ppi (A : Type*) (n k : ℕ₋₂) (H : n ≤ k) (P : A → Type*)

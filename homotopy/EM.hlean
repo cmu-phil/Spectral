@@ -197,35 +197,35 @@ namespace EM
   definition homotopy_group_functor_EMadd1_functor' {G H : AbGroup} (φ : G →g H) (n : ℕ) :
     hsquare (ghomotopy_group_EMadd1' G n)⁻¹ᵍ (ghomotopy_group_EMadd1' H n)⁻¹ᵍ
             (π→g[n+1] (EMadd1_functor φ n)) φ :=
-  (homotopy_group_functor_EMadd1_functor φ n)⁻¹ʰᵗʸʰ
+  begin apply hhinverse, exact (homotopy_group_functor_EMadd1_functor φ n) end
 
-  definition EM1_pmap_natural {G H : Group} {X Y : Type*} (f : X →* Y) (eX : G → Ω X)
-    (eY : H → Ω Y) (rX : Πg h, eX (g * h) = eX g ⬝ eX h) (rY : Πg h, eY (g * h) = eY g ⬝ eY h)
-    [H2 : is_trunc 1 X] [is_trunc 1 Y] (φ : G →g H) (p : hsquare eX eY φ (Ω→ f)) :
-    psquare (EM1_pmap eX rX) (EM1_pmap eY rY) (EM1_functor φ) f :=
+  section infgroup
+  open infgroup
+  definition EM1_pmap_natural {G H : Group} {X Y : Type*} (f : X →* Y) (eX : G →∞g Ωg X)
+    (eY : H →∞g Ωg Y) [H2 : is_trunc 1 X] [is_trunc 1 Y] (φ : G →g H)
+    (p : hsquare eX eY φ (Ωg→ f)) : psquare (EM1_pmap eX) (EM1_pmap eY) (EM1_functor φ) f :=
   begin
     fapply phomotopy.mk,
     { intro x, induction x using EM.set_rec,
       { exact respect_pt f },
       { apply eq_pathover,
-        refine ap_compose f _ _ ⬝ph _ ⬝hp (ap_compose (EM1_pmap eY rY) _ _)⁻¹,
+        refine ap_compose f _ _ ⬝ph _ ⬝hp (ap_compose (EM1_pmap eY) _ _)⁻¹,
         refine ap02 _ !elim_pth ⬝ph _ ⬝hp ap02 _ !elim_pth⁻¹,
         refine _ ⬝hp !elim_pth⁻¹, apply transpose, exact square_of_eq_bot (p g) }},
     { exact !idp_con⁻¹ }
   end
 
-  definition EM1_pequiv'_natural {G H : Group} {X Y : Type*} (f : X →* Y) (eX : G ≃* Ω X)
-    (eY : H ≃* Ω Y) (rX : Πg h, eX (g * h) = eX g ⬝ eX h)  (rY : Πg h, eY (g * h) = eY g ⬝ eY h)
-    [H1 : is_conn 0 X] [H2 : is_trunc 1 X] [is_conn 0 Y] [is_trunc 1 Y]
+  definition EM1_pequiv'_natural {G H : Group} {X Y : Type*} (f : X →* Y) (eX : G ≃∞g Ωg X)
+    (eY : H ≃∞g Ωg Y) [H1 : is_conn 0 X] [H2 : is_trunc 1 X] [is_conn 0 Y] [is_trunc 1 Y]
     (φ : G →g H) (p : hsquare eX eY φ (Ω→ f)) :
-    psquare (EM1_pequiv' eX rX) (EM1_pequiv' eY rY) (EM1_functor φ) f :=
-  EM1_pmap_natural f eX eY rX rY φ p
+    psquare (EM1_pequiv' eX) (EM1_pequiv' eY) (EM1_functor φ) f :=
+  EM1_pmap_natural f eX eY φ p
 
   definition EM1_pequiv_natural {G H : Group} {X Y : Type*} (f : X →* Y) (eX : G ≃g π₁ X)
     (eY : H ≃g π₁ Y) [H1 : is_conn 0 X] [H2 : is_trunc 1 X] [is_conn 0 Y] [is_trunc 1 Y]
     (φ : G →g H) (p : hsquare eX eY φ (π→g[1] f)) :
     psquare (EM1_pequiv eX) (EM1_pequiv eY) (EM1_functor φ) f :=
-  EM1_pequiv'_natural f _ _ _ _ φ
+  EM1_pequiv'_natural f _ _ φ
     begin
       assert p' : ptrunc_functor 0 (Ω→ f) ∘* pequiv_of_isomorphism eX ~*
                   pequiv_of_isomorphism eY ∘* pmap_of_homomorphism φ, exact phomotopy_of_homotopy p,
@@ -238,38 +238,35 @@ namespace EM
   begin refine EM1_pequiv_natural f _ _ _ _, exact homotopy.rfl end
 
   definition EM_up_natural {G H : AbGroup} (φ : G →g H) {X Y : Type*} (f : X →* Y) {n : ℕ}
-    (eX : G →* Ω[succ (succ n)] X) (eY : H →* Ω[succ (succ n)] Y)
-    (p : hsquare eX eY φ (Ω→[succ (succ n)] f))
+    (eX : G →∞g Ωg[succ (succ n)] X) (eY : H →∞g Ωg[succ (succ n)] Y)
+    (p : hsquare eX eY φ (Ωg→[succ (succ n)] f))
     : hsquare (EM_up eX) (EM_up eY) φ (Ω→[succ n] (Ω→ f)) :=
-  begin
-    refine p ⬝htyh hsquare_of_psquare (loopn_succ_in_natural (succ n) f),
-  end
+  p ⬝htyh hsquare_of_psquare (loopn_succ_in_natural (succ n) f)
 
   definition EMadd1_pmap_natural {G H : AbGroup} {X Y : Type*} (f : X →* Y) (n : ℕ)
-    (eX : G →* Ω[succ n] X) (eY : H →* Ω[succ n] Y) (rX : Π(g h : G), eX (g * h) = eX g ⬝ eX h)
-    (rY : Π(g h : H), eY (g * h) = eY g ⬝ eY h) [HX : is_trunc (n.+1) X] [HY : is_trunc (n.+1) Y]
-    (φ : G →g H) (p : hsquare eX eY φ (Ω→[succ n] f)) :
-    psquare (EMadd1_pmap n eX rX) (EMadd1_pmap n eY rY) (EMadd1_functor φ n) f :=
+    (eX : G →∞g Ωg[succ n] X) (eY : H →∞g Ωg[succ n] Y)
+    [HX : is_trunc (n.+1) X] [HY : is_trunc (n.+1) Y]
+    (φ : G →g H) (p : hsquare eX eY φ (Ωg→[succ n] f)) :
+    psquare (EMadd1_pmap n eX) (EMadd1_pmap n eY) (EMadd1_functor φ n) f :=
   begin
-    revert X Y f eX eY rX rY HX HY p, induction n with n IH: intros,
+    revert X Y f eX eY HX HY p, induction n with n IH: intros,
     { apply EM1_pmap_natural, exact p },
     { do 2 rewrite [EMadd1_pmap_succ], refine _ ⬝* pwhisker_left _ !EMadd1_functor_succ⁻¹*,
       refine (ptrunc_elim_pcompose ((succ n).+1) _ _)⁻¹* ⬝* _ ⬝*
              (ptrunc_elim_ptrunc_functor ((succ n).+1) _ _)⁻¹*,
       apply ptrunc_elim_phomotopy,
       refine _ ⬝* !susp_elim_susp_functor⁻¹*,
-      refine _ ⬝* susp_elim_phomotopy (IH _ _ _ _ _ (is_homomorphism_EM_up eX rX) _
+      refine _ ⬝* susp_elim_phomotopy (IH _ _ _ _ _
                                            (@is_trunc_loop _ _ HX) _ (EM_up_natural φ f eX eY p)),
       apply susp_elim_natural }
   end
 
   definition EMadd1_pequiv'_natural {G H : AbGroup} {X Y : Type*} (f : X →* Y) (n : ℕ)
-    (eX : G ≃* Ω[succ n] X) (eY : H ≃* Ω[succ n] Y) (rX : Π(g h : G), eX (g * h) = eX g ⬝ eX h)
-    (rY : Π(g h : H), eY (g * h) = eY g ⬝ eY h)
+    (eX : G ≃∞g Ωg[succ n] X) (eY : H ≃∞g Ωg[succ n] Y)
     [H1 : is_conn n X] [H2 : is_trunc (n.+1) X] [is_conn n Y] [is_trunc (n.+1) Y]
-    (φ : G →g H) (p : hsquare eX eY φ (Ω→[succ n] f)) :
-     psquare (EMadd1_pequiv' n eX rX) (EMadd1_pequiv' n eY rY) (EMadd1_functor φ n) f :=
-  EMadd1_pmap_natural f n eX eY rX rY φ p
+    (φ : G →g H) (p : hsquare eX eY φ (Ωg→[succ n] f)) :
+     psquare (EMadd1_pequiv' n eX) (EMadd1_pequiv' n eY) (EMadd1_functor φ n) f :=
+  EMadd1_pmap_natural f n eX eY φ p
 
   definition EMadd1_pequiv_natural_local_instance {X : Type*} (n : ℕ) [H : is_trunc (n.+1) X] :
     is_set (Ω[succ n] X) :=
@@ -277,14 +274,17 @@ namespace EM
 
   local attribute EMadd1_pequiv_natural_local_instance [instance]
 
-  definition EMadd1_pequiv_natural {G H : AbGroup} {X Y : Type*} (f : X →* Y) (n : ℕ) (eX : G ≃g πg[n+1] X)
-    (eY : H ≃g πg[n+1] Y) [H1 : is_conn n X] [H2 : is_trunc (n.+1) X] [H3 : is_conn n Y]
+  definition EMadd1_pequiv_natural {G H : AbGroup} {X Y : Type*} (f : X →* Y) (n : ℕ)
+    (eX : G ≃g πg[n+1] X) (eY : H ≃g πg[n+1] Y)
+    [H1 : is_conn n X] [H2 : is_trunc (n.+1) X] [H3 : is_conn n Y]
     [H4 : is_trunc (n.+1) Y] (φ : G →g H) (p : hsquare eX eY φ (π→g[n+1] f)) :
     psquare (EMadd1_pequiv n eX) (EMadd1_pequiv n eY) (EMadd1_functor φ n) f :=
   EMadd1_pequiv'_natural f n
-    (pequiv_of_isomorphism eX ⬝e* ptrunc_pequiv 0 (Ω[succ n] X))
-    (pequiv_of_isomorphism eY ⬝e* ptrunc_pequiv 0 (Ω[succ n] Y))
-    _ _ φ (p ⬝htyh hsquare_of_psquare (ptrunc_pequiv_natural 0 (Ω→[succ n] f)))
+    _ --(inf_isomorphism_of_isomorphism eX ⬝∞g gtrunc_isomorphism (Ω[succ n] X))
+    _ --(inf_isomorphism_of_isomorphism eY ⬝∞g gtrunc_isomorphism (Ω[succ n] Y))
+    φ (p ⬝htyh hsquare_of_psquare (ptrunc_pequiv_natural 0 (Ω→[succ n] f)))
+
+  end infgroup
 
   definition EMadd1_pequiv_succ_natural {G H : AbGroup} {X Y : Type*} (f : X →* Y) (n : ℕ)
     (eX : G ≃g πag[n+2] X) (eY : H ≃g πag[n+2] Y) [is_conn (n.+1) X] [is_trunc (n.+2) X]
@@ -343,6 +343,24 @@ namespace EM
     { refine !loopn_succ_in ⬝e* Ω≃[n] (loop_EMadd1 G (m + n))⁻¹ᵉ* ⬝e* e }
   end
 
+  /- properties about EM -/
+
+  definition gEM (G : AbGroup) (n : ℕ) : InfGroup :=
+  InfGroup.mk (EM G n) (inf_group_equiv_closed (loop_EM G n) _)
+
+  definition gEM_functor {G H : AbGroup} (φ : G →g H) (n : ℕ) : gEM G n →∞g gEM H n :=
+  inf_homomorphism.mk (EM_functor φ n) sorry
+
+  definition EM_pmap [unfold 8] {G : AbGroup} (X : InfGroup) (n : ℕ)
+    (e : AbInfGroup_of_AbGroup G →∞g Ωg'[n] X) [H : is_trunc n X] : EM G n →* X :=
+  begin
+    cases n with n,
+    { exact pmap_of_inf_homomorphism e },
+    { have is_trunc (n.+1) X, from H, exact EMadd1_pmap n e }
+  end
+
+  -- definition gEM_gfunctor {G H : AbGroup} (n : ℕ) : (G →gg H) →∞g (gEM G n →∞g gEM H n) :=
+  -- inf_homomorphism.mk (EM_functor _ n) sorry
 
   /- The Eilenberg-MacLane space K(G,n) with the same homotopy group as X on level n.
      On paper this is written K(πₙ(X), n). The problem is that for
@@ -508,14 +526,14 @@ namespace EM
   definition homotopy_group_cfunctor : cType*[0] ⇒ Grp :=
   functor.mk
     (λX, πg[1] X)
-    (λX Y f, π→g[1] f)
+    (λX Y (f : X →* Y), π→g[1] f)
     begin intro, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_pid end
     begin intros, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_pcompose end
 
   definition ab_homotopy_group_cfunctor (n : ℕ) : cType*[n.+1] ⇒ AbGrp :=
   functor.mk
     (λX, πag[n+2] X)
-    (λX Y f, π→g[n+2] f)
+    (λX Y (f : X →* Y), by rexact π→g[n+2] f)
     begin intro, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_pid end
     begin intros, apply homomorphism_eq, exact to_homotopy !homotopy_group_functor_pcompose end
 
@@ -593,8 +611,12 @@ namespace EM
              EM1_functor_gid H end
 
   definition is_contr_EM1 {G : Group} (H : is_contr G) : is_contr (EM1 G) :=
-  is_contr_of_is_conn_of_is_trunc
-    (is_trunc_succ_succ_of_is_trunc_loop _ _ (is_trunc_equiv_closed _ !loop_EM1 _) _) !is_conn_EM1
+  begin
+    refine is_contr_of_is_conn_of_is_trunc _ !is_conn_EM1,
+    refine is_trunc_succ_succ_of_is_trunc_loop _ _ _ _,
+    refine is_trunc_equiv_closed _ !loop_EM1 _,
+    apply is_trunc_succ, exact H
+  end
 
   definition is_contr_EMadd1 (n : ℕ) {G : AbGroup} (H : is_contr G) : is_contr (EMadd1 G n) :=
   begin
@@ -642,7 +664,7 @@ namespace EM
   definition is_conn_fiber_EM1_functor {G H : Group} (φ : G →g H) :
     is_conn -1 (pfiber (EM1_functor φ)) :=
   begin
-    apply is_conn_fiber
+    apply is_conn_fiber_of_is_conn
   end
 
   definition is_trunc_fiber_EMadd1_functor {G H : AbGroup} (φ : G →g H) (n : ℕ) :
@@ -654,7 +676,7 @@ namespace EM
   definition is_conn_fiber_EMadd1_functor {G H : AbGroup} (φ : G →g H) (n : ℕ) :
     is_conn (n.-1) (pfiber (EMadd1_functor φ n)) :=
   begin
-    apply is_conn_fiber, apply is_conn_of_is_conn_succ, apply is_conn_EMadd1,
+    apply is_conn_fiber_of_is_conn, apply is_conn_of_is_conn_succ, apply is_conn_EMadd1,
     apply is_conn_EMadd1
   end
 
@@ -667,7 +689,7 @@ namespace EM
   definition is_conn_fiber_EM_functor {G H : AbGroup} (φ : G →g H) (n : ℕ) :
     is_conn (n.-2) (pfiber (EM_functor φ n)) :=
   begin
-    apply is_conn_fiber, apply is_conn_of_is_conn_succ
+    apply is_conn_fiber_of_is_conn, apply is_conn_of_is_conn_succ
   end
 
   section

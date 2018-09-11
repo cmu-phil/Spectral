@@ -71,7 +71,7 @@ namespace susp
   begin
     intro p,
     refine susp_functor_psquare p ⬝v* _,
-    exact psquare_transpose (loop_susp_counit_natural f₁₂)
+    exact ptranspose (loop_susp_counit_natural f₁₂)
   end
 
   open pushout unit prod sigma sigma.ops

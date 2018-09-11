@@ -21,7 +21,7 @@ section
 open trunc_index
 
 definition propext {p q : Prop} (h : p ↔ q) : p = q :=
-tua (equiv_of_iff_of_is_prop h)
+tua (equiv_of_iff_of_is_prop h _ _)
 
 end
 
@@ -55,8 +55,8 @@ definition or.inr := @or.intro_right
 definition or.elim {A B C : Type} [is_prop C] (h₀ : A ∨ B) (h₁ : (A → C)) (h₂ : B → C) : C :=
 begin
   apply trunc.elim_on h₀,
-  intro h₃, 
-  apply sum.elim h₃ h₁ h₂ 
+  intro h₃,
+  apply sum.elim h₃ h₁ h₂
 end
 
 end logic

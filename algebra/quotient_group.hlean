@@ -331,7 +331,7 @@ namespace group
     have htpy : Π (a : A), K a ≃ L a,
     begin
       intro a,
-      apply @equiv_of_is_prop (a ∈ K) (a ∈ L) _ _ (K_in_L a) (L_in_K a),
+      exact @equiv_of_is_prop (a ∈ K) (a ∈ L) (K_in_L a) (L_in_K a) _ _,
     end,
     exact subgroup_rel_eq' htpy,
   end
@@ -561,11 +561,12 @@ definition ab_group_kernel_quotient_to_image_codomain_triangle {A B : AbGroup} (
     fapply is_prop.elimo
   end
 
+-- set_option pp.all true
+-- print algebra._trans_of_Group_of_AbGroup_2
 definition is_surjective_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
            : is_surjective (ab_group_kernel_quotient_to_image f) :=
   begin
-    fapply is_surjective_factor (group_fun (ab_qg_map (kernel f))),
-    exact image_lift f,
+    refine is_surjective_factor (ab_qg_map (kernel f)) (image_lift f) _ _,
     apply @quotient_group_compute _ _ _ (@is_normal_subgroup_ab _ (kernel f) _),
     exact is_surjective_image_lift f
   end
@@ -573,7 +574,7 @@ definition is_surjective_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
 definition is_embedding_kernel_quotient_to_image {A B : AbGroup} (f : A →g B)
            : is_embedding (ab_group_kernel_quotient_to_image f) :=
   begin
-    fapply is_embedding_factor (ab_group_kernel_quotient_to_image f) (image_incl f) (kernel_quotient_extension f),
+    fapply is_embedding_factor (image_incl f) (kernel_quotient_extension f),
     exact ab_group_kernel_quotient_to_image_codomain_triangle f,
     exact is_embedding_kernel_quotient_extension f
   end

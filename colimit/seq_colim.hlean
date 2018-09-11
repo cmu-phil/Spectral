@@ -322,8 +322,8 @@ variable (f)
 definition is_contr_seq_colim {A : ℕ → Type} (f : seq_diagram A)
   [Πk, is_contr (A k)] : is_contr (seq_colim f) :=
 begin
-  apply @is_trunc_is_equiv_closed (A 0),
-  apply is_equiv_inclusion0, intro n, apply is_equiv_of_is_contr
+  refine is_contr_is_equiv_closed (ι' f 0) _ _,
+  apply is_equiv_inclusion0, intro n, exact is_equiv_of_is_contr _ _ _
 end
 
 definition seq_colim_equiv_of_is_equiv [constructor] {n : ℕ} (H : Πk, k ≥ n → is_equiv (@f k)) :
@@ -882,7 +882,7 @@ theorem is_trunc_fun_inclusion (k : ℕ₋₂) (H : Πn, is_trunc_fun k (@f n)) 
   is_trunc_fun k (ι' f 0) :=
 begin
   intro x,
-  apply @(is_trunc_equiv_closed_rev k (fiber_inclusion x)),
+  apply is_trunc_equiv_closed_rev k (fiber_inclusion x),
   apply is_trunc_fun_seq_colim_functor,
   intro n, apply is_trunc_fun_lrep, exact H
 end
@@ -913,11 +913,11 @@ definition lrep_seq_diagram_fin {n : ℕ} (x : fin n) :
 begin
   induction x with k H, esimp, induction H with n H p,
     reflexivity,
-  exact ap (@lift_succ2 _) p
+  exact ap (@lift_succ _) p
 end
 
 definition lrep_seq_diagram_fin_lift_succ {n : ℕ} (x : fin n) :
-  lrep_seq_diagram_fin (lift_succ2 x) = ap (@lift_succ2 _) (lrep_seq_diagram_fin x) :=
+  lrep_seq_diagram_fin (lift_succ x) = ap (@lift_succ _) (lrep_seq_diagram_fin x) :=
 begin
   induction x with k H, reflexivity
 end

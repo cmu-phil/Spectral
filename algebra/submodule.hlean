@@ -164,7 +164,7 @@ definition is_prop_submodule (S : property M) [is_submodule M S] [H : is_prop M]
 begin apply @is_trunc_sigma, exact H end
 local attribute is_prop_submodule [instance]
 definition is_contr_submodule [instance] (S : property M) [is_submodule M S] [is_contr M] : is_contr (submodule S) :=
-is_contr_of_inhabited_prop 0
+is_contr_of_inhabited_prop 0 _
 
 definition submodule_isomorphism [constructor] (S : property M) [is_submodule M S] (h : Πg, g ∈ S) :
   submodule S ≃lm M :=
@@ -244,7 +244,7 @@ local attribute is_prop_quotient_module [instance]
 
 definition is_contr_quotient_module [instance] (S : property M) [is_submodule M S] [is_contr M] :
   is_contr (quotient_module S) :=
-is_contr_of_inhabited_prop 0
+is_contr_of_inhabited_prop 0 _
 
 definition rel_of_is_contr_quotient_module (S : property M) [is_submodule M S]
   (H : is_contr (quotient_module S)) (m : M) : S m :=

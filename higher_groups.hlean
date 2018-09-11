@@ -6,7 +6,7 @@ Authors: Ulrik Buchholtz, Egbert Rijke, Floris van Doorn
 Formalization of the higher groups paper
 -/
 
-import .homotopy.EM
+import .homotopy.EM algebra.category.constructions.pullback
 open eq is_conn pointed is_trunc trunc equiv is_equiv trunc_index susp nat algebra
      prod.ops sigma sigma.ops category EM
 namespace higher_group

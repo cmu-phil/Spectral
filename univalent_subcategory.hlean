@@ -28,7 +28,7 @@ section univ_subcat
   definition is_univalent_domain_of_fully_faithful_embedding : is_univalent C :=
   begin
     intros,
-    apply homotopy_closed eq_equiv_iso_of_fully_faithful eq_equiv_iso_of_fully_faithful_homot
+    exact homotopy_closed eq_equiv_iso_of_fully_faithful eq_equiv_iso_of_fully_faithful_homot _
   end
 end univ_subcat
 
@@ -216,7 +216,7 @@ end
     (m, (i, o)) = (m', (i', o')) ≃ (m ~2 m') :=
   begin
     have is_set A, from pr1 H,
-    apply equiv_of_is_prop,
+    refine equiv_of_is_prop _ _ _ _,
     { intro p, exact apd100 (eq_pr1 p)},
     { intro p, apply prod_eq (eq_of_homotopy2 p),
       apply prod_eq: esimp [Group_props] at *; esimp,

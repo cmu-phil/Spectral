@@ -85,13 +85,15 @@ begin
   exact pfiber_postnikov_map A n
 end
 
+
+set_option formatter.hide_full_terms false
 definition pfiber_postnikov_map_pred' (A : spectrum) (n k l : ℤ) (p : n + k = l) :
   pfiber (postnikov_map_pred (A k) (maxm2 l)) ≃* EM_spectrum (πₛ[n] A) l :=
 begin
   cases l with l l,
   { refine pfiber_postnikov_map_pred (A k) l ⬝e* _,
     exact EM_type_pequiv_EM A p },
-  { apply pequiv_of_is_contr, apply is_contr_pfiber_pid,
+  { refine pequiv_of_is_contr _ _ _ _, apply is_contr_pfiber_pid,
     apply is_contr_EM_spectrum_neg }
 end
 

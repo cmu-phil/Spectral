@@ -19,7 +19,7 @@ definition smash_prespectrum_fun {X X' : Type*} {Y Y' : prespectrum} (f : X →*
 smap.mk (λn, smash_functor f (g n)) begin
   intro n,
   refine susp_to_loop_psquare _ _ _ _ _,
-  refine pvconcat (psquare_transpose (phinverse (smash_susp_natural f (g n)))) _,
+  refine pvconcat (ptranspose (phinverse (smash_susp_natural f (g n)))) _,
   refine vconcat_phomotopy _ (smash_functor_split f (g (S n))),
   refine phomotopy_vconcat (smash_functor_split f (susp_functor (g n))) _,
   refine phconcat _ _,

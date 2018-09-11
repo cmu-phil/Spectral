@@ -234,7 +234,7 @@ definition is_trunc_rlist {n : ℕ₋₂} {X : Type} (H : is_trunc (n.+2) X) :
   is_trunc (n.+2) (rlist X) :=
 begin
   apply is_trunc_sigma, { apply is_trunc_list, apply is_trunc_sum },
-  intro l, apply is_trunc_succ_of_is_prop
+  intro l, exact is_trunc_succ_of_is_prop _ _ _
 end
 
 definition is_reduced_invert (v : X ⊎ X) : is_reduced (v::l) → is_reduced l :=

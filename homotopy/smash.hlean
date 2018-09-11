@@ -472,7 +472,7 @@ namespace smash
   definition smash_pequiv [constructor] (f : A ≃* C) (g : B ≃* D) : A ∧ B ≃* C ∧ D :=
   begin
     fapply pequiv_of_pmap (f ∧→ g),
-    refine @homotopy_closed _ _ _ _ _ (smash_functor_homotopy_pushout_functor f g)⁻¹ʰᵗʸ,
+    refine homotopy_closed _ (smash_functor_homotopy_pushout_functor f g)⁻¹ʰᵗʸ _,
     apply pushout.is_equiv_functor
   end
 
@@ -1054,7 +1054,7 @@ namespace smash
   begin
     unfold [smash, cofiber, smash'], symmetry,
     fapply pushout_vcompose_equiv wedge_of_sum,
-    { symmetry, apply equiv_unit_of_is_contr, apply is_contr_pushout_wedge_of_sum },
+    { symmetry, refine equiv_unit_of_is_contr _ _, apply is_contr_pushout_wedge_of_sum },
     { intro x, reflexivity },
     { apply prod_of_wedge_of_sum }
   end

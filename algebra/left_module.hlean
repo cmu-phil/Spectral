@@ -367,7 +367,7 @@ end
   isomorphism.mk (to_lminv φ) !is_equiv_inv
 
   definition isomorphism.trans [trans] [constructor] (φ : M₁ ≃lm M₂) (ψ : M₂ ≃lm M₃) : M₁ ≃lm M₃ :=
-  isomorphism.mk (ψ ∘lm φ) !is_equiv_compose
+  isomorphism.mk (ψ ∘lm φ) (is_equiv_compose ψ φ _ _)
 
   definition isomorphism.eq_trans [trans] [constructor]
      {M₁ M₂ : LeftModule R} {M₃ : LeftModule R} (φ : M₁ = M₂) (ψ : M₂ ≃lm M₃) : M₁ ≃lm M₃ :=

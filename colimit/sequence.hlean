@@ -6,7 +6,7 @@ Authors: Floris van Doorn, Egbert Rijke
 
 import ..move_to_lib types.fin types.trunc
 
-open nat eq equiv sigma sigma.ops is_equiv is_trunc trunc prod fiber function
+open nat eq equiv sigma sigma.ops is_equiv is_trunc trunc prod fiber function is_conn
 
 namespace seq_colim
 
@@ -77,7 +77,7 @@ namespace seq_colim
   begin
     induction H with m H Hlrepf,
     { apply is_equiv_id },
-    { exact is_equiv_compose (@f _) (lrep f H) },
+    { exact is_equiv_compose (@f _) (lrep f H) _ _ },
   end
 
   local attribute is_equiv_lrep [instance]
@@ -211,7 +211,7 @@ namespace seq_colim
 
     open fin
     definition seq_diagram_fin [unfold_full] : seq_diagram fin :=
-    lift_succ2
+    lift_succ
 
     definition id0_seq [unfold_full] (a₁ a₂ : A 0) : ℕ → Type :=
     λ k, rep0 f k a₁ = rep0 f k a₂

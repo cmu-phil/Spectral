@@ -107,8 +107,7 @@ begin induction p, exact id end
 definition is_strunc_of_le {k l : ℤ} (E : spectrum) (H : k ≤ l)
   : is_strunc k E → is_strunc l E :=
 begin
-  intro T, intro n, exact is_trunc_of_le (E n)
-    (maxm2_monotone (algebra.add_le_add_right H n))
+  intro T, intro n, exact is_trunc_of_le (E n) (maxm2_monotone (algebra.add_le_add_right H n)) _
 end
 
 definition is_strunc_pequiv_closed {k : ℤ} {E F : spectrum} (H : Πn, E n ≃* F n)

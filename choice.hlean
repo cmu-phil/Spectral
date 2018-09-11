@@ -18,7 +18,7 @@ equiv.mk _ (H A)
 definition has_choice_of_succ (X : Type) (H : Πk, has_choice (k.+1) X) (n : ℕ₋₂) : has_choice n X :=
 begin
   cases n with n,
-  { intro A, apply is_equiv_of_is_contr },
+  { intro A, exact is_equiv_of_is_contr _ _ _ },
   { exact H n }
 end
 
