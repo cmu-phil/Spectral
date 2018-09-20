@@ -31,7 +31,7 @@ begin
   { apply is_conn_fun_trunc_elim,  apply is_conn_fun_tr },
   { have is_trunc (n+1) (ptrunc n.+1 A), from !is_trunc_trunc,
     have is_trunc ((n+1).+1) (ptrunc n A), by do 2 apply is_trunc_succ, apply is_trunc_trunc,
-    apply is_trunc_pfiber }
+    exact is_trunc_pfiber _ _ _ _ }
 end
 end
 

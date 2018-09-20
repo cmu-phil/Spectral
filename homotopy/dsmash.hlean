@@ -1651,7 +1651,7 @@ open is_trunc
       sigma_assoc_equiv_left _ (sigma_homotopy_constant_equiv pt (f pt))⁻¹ᵉ ⬝e
       sigma_equiv_sigma_right (λh₂,
         sigma_equiv_sigma_right (λr₂,
-          sigma_equiv_sigma_right (λh₁, !comm_equiv_nondep) ⬝e !sigma_comm_equiv) ⬝e
+          sigma_equiv_sigma_right (λh₁, !comm_equiv_constant) ⬝e !sigma_comm_equiv) ⬝e
         !sigma_comm_equiv) ⬝e
       !sigma_comm_equiv ⬝e
       sigma_equiv_sigma_right (λr,
@@ -1661,7 +1661,7 @@ open is_trunc
             sigma_equiv_sigma_left (pi_equiv_pi_right (λa, equiv_eq_closed_right _ r)) ⬝e
             sigma_equiv_sigma_right (λh₁, !eq_equiv_con_inv_eq_idp⁻¹ᵉ)) ⬝e
           !sigma_comm_equiv ⬝e
-          sigma_equiv_sigma_right (λh₁, !comm_equiv_nondep)) ⬝e
+          sigma_equiv_sigma_right (λh₁, !comm_equiv_constant)) ⬝e
         !sigma_comm_equiv) ⬝e
       !sigma_comm_equiv ⬝e sigma_equiv_sigma_right (λh₁,
         !sigma_comm_equiv ⬝e sigma_equiv_sigma_right (λh₂,
@@ -1675,63 +1675,6 @@ open is_trunc
   definition dsmash_pelim_equiv' (B : A → Type*) (C : Type*) :
     ppmap (⋀ B) C ≃ Π*a, B a →** C :=
   dsmash_pelim_equiv B C ⬝e (ppi_equiv_dbpmap B (λa, C))⁻¹ᵉ
-exit
-  definition dsmash_arrow_equiv2 [constructor] (B : A → Type*) (C : Type) :
-    (⋀ B → C) ≃ Σ(f : Πa, B a → C) (c₀ : C) (p : Πa, f a pt = c₀) (q : Πb, f pt b = c₀), p pt = q pt :=
-  begin
-    fapply equiv.MK,
-    { intro f, exact ⟨λa b, f (dsmash.mk a b), f auxr, f auxl, (λa, ap f (gluel a), λb, ap f (gluer b))⟩ },
-    { intro x, exact dsmash.elim x.1 x.2.2.1 x.2.1 x.2.2.2.1 x.2.2.2.2 },
-    { intro x, induction x with f x, induction x with c₁ x, induction x with c₀ x, induction x with p₁ p₂,
-      apply ap (dpair _), apply ap (dpair _), apply ap (dpair _), esimp,
-      exact pair_eq (eq_of_homotopy (elim_gluel _ _)) (eq_of_homotopy (elim_gluer _ _)) },
-    { intro f, apply eq_of_homotopy, intro x, induction x, reflexivity, reflexivity, reflexivity,
-      apply eq_pathover, apply hdeg_square, apply elim_gluel,
-      apply eq_pathover, apply hdeg_square, apply elim_gluer }
-  end
 
-  definition dsmash_arrow_equiv2_inv_pt [constructor]
-    (x : Σ(f : Πa, B a → C) (c₁ : C) (c₀ : C), (Πa, f a pt = c₀) × (Πb, f pt b = c₁)) :
-    to_inv (dsmash_arrow_equiv B C) x pt = x.1 pt pt :=
-  by reflexivity
-
-  open pi
-
-  definition dsmash_pmap_equiv2 (B : A → Type*) (C : Type*) :
-    (⋀ B →* C) ≃ dbppmap B (λa, C) :=
-  begin
-    refine !pmap.sigma_char ⬝e _,
-    refine sigma_equiv_sigma_left !dsmash_arrow_equiv ⬝e _,
-    refine sigma_equiv_sigma_right (λx, equiv_eq_closed_left _ (dsmash_arrow_equiv_inv_pt x)) ⬝e _,
-    refine !sigma_assoc_equiv ⬝e _,
-    refine sigma_equiv_sigma_right (λf, !sigma_assoc_equiv ⬝e
-      sigma_equiv_sigma_right (λc₁, !sigma_assoc_equiv ⬝e
-        sigma_equiv_sigma_right (λc₂, sigma_equiv_sigma_left !sigma.equiv_prod⁻¹ᵉ ⬝e
-          !sigma_assoc_equiv) ⬝e
-        sigma_assoc_equiv_left _ (sigma_homotopy_constant_equiv pt (λa, f a pt))⁻¹ᵉ ⬝e
-        sigma_equiv_sigma_right (λh₁, !sigma_comm_equiv) ⬝e !sigma_comm_equiv) ⬝e
-      sigma_assoc_equiv_left _ (sigma_homotopy_constant_equiv pt (f pt))⁻¹ᵉ ⬝e
-      sigma_equiv_sigma_right (λh₂,
-        sigma_equiv_sigma_right (λr₂,
-          sigma_equiv_sigma_right (λh₁, !comm_equiv_nondep) ⬝e !sigma_comm_equiv) ⬝e
-        !sigma_comm_equiv) ⬝e
-      !sigma_comm_equiv ⬝e
-      sigma_equiv_sigma_right (λr,
-        sigma_equiv_sigma_left (pi_equiv_pi_right (λb, equiv_eq_closed_right _ r)) ⬝e
-        sigma_equiv_sigma_right (λh₂,
-          sigma_equiv_sigma !eq_equiv_con_inv_eq_idp⁻¹ᵉ (λr₂,
-            sigma_equiv_sigma_left (pi_equiv_pi_right (λa, equiv_eq_closed_right _ r)) ⬝e
-            sigma_equiv_sigma_right (λh₁, !eq_equiv_con_inv_eq_idp⁻¹ᵉ)) ⬝e
-          !sigma_comm_equiv ⬝e
-          sigma_equiv_sigma_right (λh₁, !comm_equiv_nondep)) ⬝e
-        !sigma_comm_equiv) ⬝e
-      !sigma_comm_equiv ⬝e sigma_equiv_sigma_right (λh₁,
-        !sigma_comm_equiv ⬝e sigma_equiv_sigma_right (λh₂,
-          !sigma_sigma_eq_right))) ⬝e _,
-    refine !sigma_assoc_equiv' ⬝e _,
-    refine sigma_equiv_sigma_left (@sigma_pi_equiv_pi_sigma _ _ (λa f, f pt = pt) ⬝e
-      pi_equiv_pi_right (λa, !pmap.sigma_char⁻¹ᵉ)) ⬝e _,
-    exact !dbpmap.sigma_char⁻¹ᵉ
-  end
 
 end dsmash
