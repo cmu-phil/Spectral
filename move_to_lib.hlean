@@ -125,7 +125,7 @@ namespace sigma
   definition sigma_equiv_of_is_embedding_left_contr [constructor] {X Y : Type} {P : Y → Type}
     (f : X → Y) (Hf : is_embedding f) (HP : Πx, is_contr (P (f x))) (H : Πy, P y → fiber f y) :
     (Σy, P y) ≃ X :=
-  sigma_equiv_of_is_embedding_left f Hf _ H ⬝e !sigma_equiv_of_is_contr_right
+  sigma_equiv_of_is_embedding_left f Hf _ H ⬝e sigma_equiv_of_is_contr_right _ _
 
 end sigma open sigma
 

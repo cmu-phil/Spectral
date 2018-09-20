@@ -699,7 +699,7 @@ namespace pointed
   definition psigma_gen_assoc [constructor] {A : Type*} {B : A → Type} (C : Πa, B a → Type)
     (b₀ : B pt) (c₀ : C pt b₀) :
     psigma_gen (λa, Σb, C a b) ⟨b₀, c₀⟩ ≃* @psigma_gen (psigma_gen B b₀) (λv, C v.1 v.2) c₀ :=
-  pequiv_of_equiv !sigma_assoc_equiv idp
+  pequiv_of_equiv !sigma_assoc_equiv' idp
 
   definition psigma_gen_swap [constructor] {A : Type*} {B B' : A → Type}
     (C : Π⦃a⦄, B a → B' a → Type) (b₀ : B pt) (b₀' : B' pt) (c₀ : C b₀ b₀') :

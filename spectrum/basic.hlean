@@ -562,7 +562,7 @@ namespace spectrum
 
   definition shomotopy_group_isomorphism_of_pequiv (n : ℤ) {E F : spectrum} (f : Πn, E n ≃* F n) :
     πₛ[n] E ≃g πₛ[n] F :=
-  proof homotopy_group_isomorphism_of_pequiv 1 (f (2 - n)) qed
+  by rexact homotopy_group_isomorphism_of_pequiv 1 (f (2 - n))
 
   definition shomotopy_group_isomorphism_of_pequiv_nat (n : ℕ) {E F : spectrum}
     (f : Πn, E n ≃* F n) : πₛ[n] E ≃g πₛ[n] F :=
@@ -699,8 +699,8 @@ namespace spectrum
   definition shomotopy_groups_fun : Π(v : +3ℤ), shomotopy_groups (S v) →g shomotopy_groups v
   | (n, fin.mk 0 H) := proof πₛ→[n] f qed
   | (n, fin.mk 1 H) := proof πₛ→[n] (spoint f) qed
-  | (n, fin.mk 2 H) := proof homomorphism_LES_of_homotopy_groups_fun (f (2 - n)) (nat.succ nat.zero, 2) ∘g
-                             πg_glue Y n ∘g (by reflexivity) qed
+  | (n, fin.mk 2 H) := by rexact homomorphism_LES_of_homotopy_groups_fun (f (2 - n)) (nat.succ nat.zero, 2) ∘g
+                             πg_glue Y n
   | (n, fin.mk (k+3) H) := begin exfalso, apply lt_le_antisymm H, apply le_add_left end
 --(homomorphism_LES_of_homotopy_groups_fun (f (2 - n)) (1, 2) ∘g πg_glue Y n)
 
@@ -724,13 +724,15 @@ namespace spectrum
 
   /- homotopy group of a prespectrum -/
 
+  local attribute [reducible] agtrunc aghomotopy_group ghomotopy_group gtrunc
   definition pshomotopy_group_hom (n : ℤ) (E : prespectrum) (k : ℕ)
     : πag[k + 2] (E (-n + 2 + k)) →g πag[k + 3] (E (-n + 2 + (k + 1))) :=
   begin
+    change πg[k + 2] (E (-n + 2 + k)) →g πg[k + 3] (E (-n + 2 + (k + 1))),
     refine _ ∘g π→g[k+2] (glue E _),
     refine (ghomotopy_group_succ_in (k+1) _)⁻¹ᵍ ∘g _,
-    refine homotopy_group_isomorphism_of_pequiv (k+1)
-      (loop_pequiv_loop (pequiv_of_eq (ap E (add.assoc (-n + 2) k 1))))
+    refine homotopy_group_isomorphism_of_pequiv (k+1) _,
+    exact (loop_pequiv_loop (pequiv_of_eq (ap E (add.assoc (-n + 2) k 1))))
   end
 
   definition pshomotopy_group (n : ℤ) (E : prespectrum) : AbGroup :=

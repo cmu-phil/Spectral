@@ -1,6 +1,6 @@
 import homotopy.sphere2 ..move_to_lib
 
-open fin eq equiv group algebra sphere.ops pointed nat int trunc is_equiv function circle
+open fin eq equiv group algebra sphere.ops pointed trunc is_equiv function circle int nat
 
   protected definition nat.eq_one_of_mul_eq_one {n : ℕ} (m : ℕ) (q : n * m = 1) : n = 1 :=
   begin
@@ -83,7 +83,8 @@ namespace sphere
 --                 (pair 1 2))
 --              (tr surf))
 
-  definition πnSn_surf (n : ℕ) : πnSn (n+1) (tr surf) = 1 :> ℤ :=
+  attribute gloopn [reducible]
+  definition πnSn_surf (n : ℕ) : πnSn (n+1) (tr (@surf (n+1))) = 1 :=
   begin
     cases n with n IH,
     { refine ap (πnSn _ ∘ tr) surf_eq_loop ⬝ _, apply transport_code_loop },
@@ -91,7 +92,7 @@ namespace sphere
   end
 
   definition deg {n : ℕ} [H : is_succ n] (f : S n →* S n) : ℤ :=
-  by induction H with n; exact πnSn (n+1) (π→g[n+1] f (tr surf))
+  by induction H with n; exact πnSn (n+1) (π→g[n+1] f (tr (@surf (n+1))))
 
   definition deg_id (n : ℕ) [H : is_succ n] : deg (pid (S n)) = (1 : ℤ) :=
   by induction H with n;

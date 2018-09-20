@@ -166,7 +166,7 @@ repeat (fconstructor; assumption), assumption, intro b,
 open sigma.ops
 
 definition sigma_prod_equiv_sigma_sigma {A} {B C : A→Type} : (Σa, B a × C a) ≃ Σ p : (Σa, B a), C p.1 :=
-sigma_equiv_sigma_right (λa, !sigma.equiv_prod⁻¹ᵉ) ⬝e !sigma_assoc_equiv
+sigma_equiv_sigma_right (λa, !sigma.equiv_prod⁻¹ᵉ) ⬝e !sigma_assoc_equiv'
 
 definition ab_group_equiv_group_comm (A : Type) : ab_group A ≃ Σ (g : group A), ∀ a b : A, a * b = b * a :=
 begin
@@ -232,7 +232,7 @@ end
     ((sigma_char2 G).2 =[p] (sigma_char2 H).2) ≃
     (is_mul_hom (equiv_of_eq (proof p qed : Group.carrier G = Group.carrier H))) :=
   begin
-    refine !sigma_pathover_equiv_of_is_prop ⬝e _,
+    refine sigma_pathover_equiv_of_is_prop _ _ _ _ _ ⬝e _,
     induction G with G g, induction H with H h,
     esimp [sigma_char2] at p,
 esimp [sigma_functor] at p, esimp [Group_sigma] at *,

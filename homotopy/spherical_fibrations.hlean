@@ -20,7 +20,7 @@ namespace spherical_fibrations
   definition G_char (n : ℕ) [is_succ n] : G n ≃ (S (pred n) ≃ S (pred n)) :=
   calc
     G n ≃ Σ(p : pType.carrier (S (pred n)) = pType.carrier (S (pred n))), _ : sigma_eq_equiv
-    ... ≃ (pType.carrier (S (pred n)) = pType.carrier (S (pred n))) : sigma_equiv_of_is_contr_right
+    ... ≃ (pType.carrier (S (pred n)) = pType.carrier (S (pred n))) : sigma_equiv_of_is_contr_right _ _
     ... ≃ (S (pred n) ≃ S (pred n)) : eq_equiv_equiv
 
   definition mirror (n : ℕ) [is_succ n] : S (pred n) → G n :=

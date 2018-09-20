@@ -9,7 +9,7 @@ which are used in the definition of cohomology.
 -/
 
 import algebra.group_theory ..pointed ..pointed_pi eq2
-open pi pointed algebra group eq equiv is_trunc trunc susp
+open pi pointed algebra group eq equiv is_trunc trunc susp nat function
 namespace group
 
   /- Group of dependent functions into a loop space -/
@@ -39,12 +39,14 @@ namespace group
       { exact !con_left_inv_idp }},
   end
 
-  definition inf_group_ppi [constructor] {A : Type*} (B : A → Type*) :
-    inf_group (Π*a, Ω (B a)) :=
+  definition inf_group_ppi [constructor] {A : Type*} (B : A → Type*) : inf_group (Π*a, Ω (B a)) :=
   @inf_group_of_inf_pgroup _ (inf_pgroup_pppi B)
 
   definition gppi_loop [constructor] {A : Type*} (B : A → Type*) : InfGroup :=
   InfGroup.mk (Π*a, Ω (B a)) (inf_group_ppi B)
+
+  definition gppi_loopn [constructor] (n : ℕ) [H : is_succ n] {A : Type*} (B : A → Type*) : InfGroup :=
+  InfGroup.mk (Π*a, Ω[n] (B a)) (by induction H with n; exact inf_group_ppi (Ω[n] ∘ B))
 
   definition Group_trunc_ppi [reducible] [constructor] {A : Type*} (B : A → Type*) : Group :=
   gtrunc (gppi_loop B)
@@ -98,9 +100,7 @@ namespace group
     clear f g, esimp at *, exact ppi_mul_loop.lemma2 (f' pt) (g' pt) f_pt g_pt
   end
 
-  variable (k)
-
-  definition gloop_ppi_isomorphism :
+  definition gloop_ppi_isomorphism_gen (k : ppi B x₀) :
     Ωg (pointed.Mk k) ≃∞g gppi_loop (λ a, pointed.Mk (ppi.to_fun k a)) :=
   begin
     apply inf_isomorphism_of_equiv (ppi_loop_equiv k),
@@ -109,13 +109,24 @@ namespace group
     exact ppi_mul_loop (phomotopy_of_eq f) (phomotopy_of_eq g)
   end
 
-  definition trunc_ppi_loop_isomorphism_lemma :
-    gtrunc (gloop (pointed.Mk k)) ≃g gtrunc (gppi_loop (λa, pointed.Mk (k a))) :=
-  gtrunc_isomorphism_gtrunc (gloop_ppi_isomorphism k)
+  definition gloop_ppi_isomorphism (B : A → Type*) : Ωg (Π*a, B a) ≃∞g gppi_loop B :=
+  proof gloop_ppi_isomorphism_gen (ppi_const B) qed
 
-  definition trunc_ppi_loop_isomorphism {A : Type*} (B : A → Type*) :
+  definition gloopn_ppi_isomorphism (n : ℕ) [H : is_succ n] (B : A → Type*) :
+    Ωg[n] (Π*a, B a) ≃∞g gppi_loopn n B :=
+  begin
+    induction H with n, induction n with n IH,
+    { exact gloop_ppi_isomorphism B },
+    { exact Ωg≃ (pequiv_of_inf_isomorphism IH) ⬝∞g gloop_ppi_isomorphism (Ω[succ n] ∘ B) }
+  end
+
+  definition trunc_ppi_loop_isomorphism_gen (k : ppi B x₀) :
+    gtrunc (gloop (pointed.Mk k)) ≃g gtrunc (gppi_loop (λa, pointed.Mk (k a))) :=
+  gtrunc_isomorphism_gtrunc (gloop_ppi_isomorphism_gen k)
+
+  definition trunc_ppi_loop_isomorphism (B : A → Type*) :
     gtrunc (gloop (Π*(a : A), B a)) ≃g gtrunc (gppi_loop B) :=
-  proof trunc_ppi_loop_isomorphism_lemma (ppi_const B) qed
+  proof trunc_ppi_loop_isomorphism_gen (ppi_const B) qed
 
 
   /- We first define the group structure on A →* Ω B (except for truncatedness).
@@ -169,10 +180,10 @@ namespace group
     loop_susp_intro (pmap_mul f g) ~* pmap_mul (loop_susp_intro f) (loop_susp_intro g) :=
   pwhisker_right _ !ap1_pmap_mul ⬝* !pmap_mul_pcompose
 
-  definition InfGroup_pmap [reducible] [constructor] (A B : Type*) : InfGroup :=
+  definition gpmap_loop [reducible] [constructor] (A B : Type*) : InfGroup :=
   InfGroup.mk (A →* Ω B) !inf_group_ppi
 
-  definition InfGroup_pmap' [reducible] [constructor] (A : Type*) {B C : Type*} (e : Ω C ≃* B) :
+  definition gpmap_loop' [reducible] [constructor] (A : Type*) {B C : Type*} (e : Ω C ≃* B) :
     InfGroup :=
   InfGroup.mk (A →* B)
     (@inf_group_of_inf_pgroup _ (inf_pgroup_pequiv_closed (ppmap_pequiv_ppmap_right e)

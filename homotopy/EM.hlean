@@ -346,7 +346,13 @@ namespace EM
   /- properties about EM -/
 
   definition gEM (G : AbGroup) (n : ℕ) : InfGroup :=
-  InfGroup.mk (EM G n) (inf_group_equiv_closed (loop_EM G n) _)
+  InfGroup_equiv_closed (Ωg (EMadd1 G n)) (loop_EM G n)
+
+  definition gloop_EM1 [constructor] (G : Group) : Ωg (EM1 G) ≃∞g InfGroup_of_Group G :=
+  inf_isomorphism_of_equiv (EM.base_eq_base_equiv G) groupoid_quotient.encode_con
+
+  definition gEM0_isomorphism (G : AbGroup) : gEM G 0 ≃∞g InfGroup_of_Group G :=
+  !InfGroup_equiv_closed_isomorphism⁻¹ᵍ⁸ ⬝∞g gloop_EM1 G
 
   definition gEM_functor {G H : AbGroup} (φ : G →g H) (n : ℕ) : gEM G n →∞g gEM H n :=
   inf_homomorphism.mk (EM_functor φ n) sorry
@@ -358,6 +364,14 @@ namespace EM
     { exact pmap_of_inf_homomorphism e },
     { have is_trunc (n.+1) X, from H, exact EMadd1_pmap n e }
   end
+
+  definition EM_homomorphism_gloop [unfold 8] {G : AbGroup} (X : Type*) (n : ℕ)
+    (e : AbInfGroup_of_AbGroup G →∞g Ωg[succ n] X) [H : is_trunc n X] : gEM G n →∞g Ωg X :=
+  Ωg→ (EMadd1_pmap n e) ∘∞g !InfGroup_equiv_closed_isomorphism⁻¹ᵍ⁸
+
+  -- definition EM_homomorphism [unfold 8] {G : AbGroup} {X : Type*} (Y : Type*) (e : Ω Y ≃* X) (n : ℕ)
+  --   (e : AbInfGroup_of_AbGroup G →∞g Ωg[succ n] X) [H : is_trunc n X] : gEM G n →∞g X :=
+  -- _
 
   -- definition gEM_gfunctor {G H : AbGroup} (n : ℕ) : (G →gg H) →∞g (gEM G n →∞g gEM H n) :=
   -- inf_homomorphism.mk (EM_functor _ n) sorry

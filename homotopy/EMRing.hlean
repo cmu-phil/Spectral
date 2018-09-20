@@ -38,7 +38,7 @@ begin
   --     EM0EMadd1product φ m
 end
 
-definition EMproduct {A B C : AbGroup} (φ : A →g B →gg C) (n m : ℕ) :
+definition EMproduct1 {A B C : AbGroup} (φ : A →g B →gg C) (n m : ℕ) :
   EM A n →* EM B m →** EM C (m + n) :=
 begin
   cases n with n,
@@ -51,16 +51,28 @@ begin
     { exact ppcompose_left (ptransport (EMadd1 C) !succ_add⁻¹) ∘* EMadd1product φ n m }}
 end
 
-definition EMproduct' {A B C : AbGroup} (φ : A →g B →gg C) (n m : ℕ) :
+definition EMproduct2 {A B C : AbGroup} (φ : A →g B →gg C) (n m : ℕ) :
   EM A n →* EM B m →** EM C (m + n) :=
 begin
-  assert H1 : is_trunc n (InfGroup_pmap' (EM B m) (loop_EM C (m + n))),
+  assert H1 : is_trunc n (gpmap_loop' (EM B m) (loop_EM C (m + n))),
   { exact is_trunc_pmap_of_is_conn_nat _ m !is_conn_EM _ _ _ !le.refl !is_trunc_EM },
-  apply EM_pmap (InfGroup_pmap' (EM B m) (loop_EM C (m + n))) n,
+  apply EM_pmap (gpmap_loop' (EM B m) (loop_EM C (m + n))) n,
   exact sorry
   -- exact _ /- (loopn_ppmap_pequiv _ _ _)⁻¹ᵉ* -/ ∘∞g _ /-ppcompose_left !loopn_EMadd1_add⁻¹ᵉ*-/ ∘∞g
   --      _ ∘∞g inf_homomorphism_of_homomorphism φ
 
+end
+
+definition EMproduct3' {A B C : AbGroup} (φ : A →g B →gg C) (n m : ℕ) :
+  gEM A n →∞g gpmap_loop' (EM B m) (loop_EM C (m + n)) :=
+begin
+  assert H1 : is_trunc n (gpmap_loop' (EM B m) (loop_EM C (m + n))),
+  { exact is_trunc_pmap_of_is_conn_nat _ m !is_conn_EM _ _ _ !le.refl !is_trunc_EM },
+--   refine EM_homomorphism _ _ _,
+-- --(gmap_loop' (EM B m) (loop_EM C (m + n))) n,
+--   exact _ /- (loopn_ppmap_pequiv _ _ _)⁻¹ᵉ* -/ ∘∞g _ /-ppcompose_left !loopn_EMadd1_add⁻¹ᵉ*-/ ∘∞g
+--        _ ∘∞g inf_homomorphism_of_homomorphism φ
+  exact sorry
 end
 
 

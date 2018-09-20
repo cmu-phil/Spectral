@@ -1,9 +1,9 @@
 -- Authors: Floris van Doorn
 
-import homotopy.smash types.pointed2 .pushout homotopy.red_susp ..pointed
+import homotopy.smash types.pointed2 .pushout ..pointed
 
 open bool pointed eq equiv is_equiv sum bool prod unit circle cofiber prod.ops wedge is_trunc
-     function red_susp unit
+     function unit
 
   /- To prove: Σ(X × Y) ≃ ΣX ∨ ΣY ∨ Σ(X ∧ Y) (notation means suspension, wedge, smash) -/
 
