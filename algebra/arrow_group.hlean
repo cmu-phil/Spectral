@@ -38,6 +38,7 @@ namespace group
       { intro a, exact con.left_inv (f a) },
       { exact !con_left_inv_idp }},
   end
+  -- inf_pgroup_pequiv_closed (loop_pppi_pequiv B) _
 
   definition inf_group_ppi [constructor] {A : Type*} (B : A → Type*) : inf_group (Π*a, Ω (B a)) :=
   @inf_group_of_inf_pgroup _ (inf_pgroup_pppi B)
@@ -128,6 +129,10 @@ namespace group
     gtrunc (gloop (Π*(a : A), B a)) ≃g gtrunc (gppi_loop B) :=
   proof trunc_ppi_loop_isomorphism_gen (ppi_const B) qed
 
+  definition gppi_loop_homomorphism_right [constructor] {A : Type*} {B B' : A → Type*}
+    (g : Πa, B a →* B' a) : gppi_loop B →∞g gppi_loop B' :=
+  gloop_ppi_isomorphism B' ∘∞g Ωg→ (pppi_compose_left g) ∘∞g (gloop_ppi_isomorphism B)⁻¹ᵍ⁸
+
 
   /- We first define the group structure on A →* Ω B (except for truncatedness).
      Instead of Ω B, we could also choose any infinity group. However, we need various 2-coherences,
@@ -183,11 +188,29 @@ namespace group
   definition gpmap_loop [reducible] [constructor] (A B : Type*) : InfGroup :=
   InfGroup.mk (A →* Ω B) !inf_group_ppi
 
+  definition gpmap_loopn [constructor] (n : ℕ) [H : is_succ n] (A B : Type*) : InfGroup :=
+  InfGroup.mk (A →** Ω[n] B) (by induction H with n; exact inf_group_ppi (λa, Ω[n] B))
+
+  definition gloop_pmap_isomorphism (A B : Type*) : Ωg (A →** B) ≃∞g gpmap_loop A B :=
+  gloop_ppi_isomorphism _
+
+  definition gloopn_pmap_isomorphism (n : ℕ) [H : is_succ n] (A B : Type*) :
+    Ωg[n] (A →** B) ≃∞g gpmap_loopn n A B :=
+  begin
+    induction H with n, induction n with n IH,
+    { exact gloop_pmap_isomorphism A B },
+    { rexact Ωg≃ (pequiv_of_inf_isomorphism IH) ⬝∞g gloop_pmap_isomorphism A (Ω[succ n] B) }
+  end
+
   definition gpmap_loop' [reducible] [constructor] (A : Type*) {B C : Type*} (e : Ω C ≃* B) :
     InfGroup :=
   InfGroup.mk (A →* B)
     (@inf_group_of_inf_pgroup _ (inf_pgroup_pequiv_closed (ppmap_pequiv_ppmap_right e)
       !inf_pgroup_pppi))
+
+  definition gpmap_loop_homomorphism_right [constructor] (A : Type*) {B B' : Type*}
+    (g : B →* B') : gpmap_loop A B →∞g gpmap_loop A B' :=
+  gppi_loop_homomorphism_right (λa, g)
 
   definition Group_trunc_pmap [reducible] [constructor] (A B : Type*) : Group :=
   Group.mk (trunc 0 (A →* Ω B)) (@group_trunc _ !inf_group_ppi)

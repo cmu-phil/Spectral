@@ -938,6 +938,15 @@ namespace pointed
     (Π*(a : A), Ω (B a)) ≃* Ω (Π*a, B a) :=
   (loop_pppi_pequiv B)⁻¹ᵉ*
 
+definition deloopable_pppi [instance] [constructor] {A : Type*} (B : A → Type*) [Πa, deloopable (B a)] :
+  deloopable (Π*a, B a) :=
+deloopable.mk (Π*a, deloop (B a))
+              (loop_pppi_pequiv (λa, deloop (B a)) ⬝e* ppi_pequiv_right (λa, deloop_pequiv (B a)))
+
+definition deloopable_ppmap [instance] [constructor] (A B : Type*) [deloopable B] :
+  deloopable (A →** B) :=
+deloopable_pppi (λa, B)
+
 
 /- below is an alternate proof strategy for the naturality of loop_pppi_pequiv_natural,
   where we define loop_pppi_pequiv as composite of pointed equivalences, and proved the

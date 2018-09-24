@@ -156,7 +156,7 @@ namespace EM
     (ptrunc_pequiv (n+1+1) (EMadd1 G (n+1)))⁻¹ᵉ* :=
   by reflexivity
 
-  definition ap1_EMadd1_natural {G H : AbGroup} (φ : G →g H) (n : ℕ) :
+  definition loop_EMadd1_natural {G H : AbGroup} (φ : G →g H) (n : ℕ) :
     psquare (loop_EMadd1 G n) (loop_EMadd1 H n)
             (EMadd1_functor φ n) (Ω→ (EMadd1_functor φ (succ n))) :=
   begin
@@ -181,7 +181,7 @@ namespace EM
     { refine pwhisker_left _ !loopn_EMadd1_pequiv_EM1_succ ⬝* _,
       refine _ ⬝* pwhisker_right _ !loopn_EMadd1_pequiv_EM1_succ⁻¹*,
       refine _ ⬝h* !loopn_succ_in_inv_natural,
-      exact IH ⬝h* (apn_psquare n !ap1_EMadd1_natural) }
+      exact IH ⬝h* (apn_psquare n !loop_EMadd1_natural) }
   end
 
   definition homotopy_group_functor_EMadd1_functor {G H : AbGroup} (φ : G →g H) (n : ℕ) :
@@ -301,15 +301,18 @@ namespace EM
     proof λa, idp qed
 
   definition EMadd1_pmap_equiv (n : ℕ) (X Y : Type*) [is_conn (n+1) X] [is_trunc (n+1+1) X]
-    [is_conn (n+1) Y] [is_trunc (n+1+1) Y] : (X →* Y) ≃ πag[n+2] X →g πag[n+2] Y :=
+    [H4 : is_trunc (n+1+1) Y] : (X →* Y) ≃ πag[n+2] X →g πag[n+2] Y :=
   begin
+    have H4' : is_trunc ((n+1).+1) Y, from H4,
+   have is_set (Ωg[succ (n+1)] Y), from is_set_loopn (n+1+1) Y,
     fapply equiv.MK,
     { exact π→g[n+2] },
-    { exact λφ, (EMadd1_pequiv_type Y n ∘* EMadd1_functor φ (n+1)) ∘* (EMadd1_pequiv_type X n)⁻¹ᵉ* },
+    { intro φ, refine (_ ∘* EMadd1_functor φ (n+1)) ∘* (EMadd1_pequiv_type X n)⁻¹ᵉ*,
+      exact EMadd1_pmap (n+1) (gtrunc_isomorphism (Ωg[succ (n+1)] Y)) },
     { intro φ, apply homomorphism_eq,
       refine homotopy_group_functor_pcompose (n+2) _ _ ⬝hty _, exact sorry }, -- easy but tedious
     { intro f, apply eq_of_phomotopy, refine (phomotopy_pinv_right_of_phomotopy _)⁻¹*,
-      apply EMadd1_pequiv_type_natural }
+      exact sorry /-apply EMadd1_pequiv_type_natural-/ }
   end
 
   definition EM1_functor_trivial_homomorphism [constructor] (G H : Group) :
@@ -343,19 +346,39 @@ namespace EM
     { refine !loopn_succ_in ⬝e* Ω≃[n] (loop_EMadd1 G (m + n))⁻¹ᵉ* ⬝e* e }
   end
 
+  definition loopn_EMadd1_add_of_eq (G : AbGroup) {n m k : ℕ} (p : m + n = k) : Ω[n] (EMadd1 G k) ≃* EMadd1 G m :=
+  by induction p; exact loopn_EMadd1_add G n m
+
+  definition EM1_phomotopy {G : Group} {X : Type*} [is_trunc 1 X] {f g : EM1 G →* X} (h : Ω→ f ~ Ω→ g) :
+    f ~* g :=
+  begin
+    fapply phomotopy.mk,
+    { intro x, induction x using EM.set_rec with a,
+      { exact respect_pt f ⬝ (respect_pt g)⁻¹ },
+      { apply eq_pathover, apply move_top_of_right, apply move_bot_of_right,
+        apply move_top_of_left', apply move_bot_of_left, apply hdeg_square, exact h (pth a) }},
+    { apply inv_con_cancel_right }
+  end
+
   /- properties about EM -/
 
+  definition deloopable_EM [instance] [constructor] (G : AbGroup) (n : ℕ) : deloopable (EM G n) :=
+  deloopable.mk (EMadd1 G n) (loop_EM G n)
+
   definition gEM (G : AbGroup) (n : ℕ) : InfGroup :=
-  InfGroup_equiv_closed (Ωg (EMadd1 G n)) (loop_EM G n)
+  InfGroup_of_deloopable (EM G n)
 
   definition gloop_EM1 [constructor] (G : Group) : Ωg (EM1 G) ≃∞g InfGroup_of_Group G :=
   inf_isomorphism_of_equiv (EM.base_eq_base_equiv G) groupoid_quotient.encode_con
 
+  definition gloop_EMadd1 [constructor] (G : AbGroup) (n : ℕ) : Ωg (EMadd1 G n) ≃∞g gEM G n :=
+  deloop_isomorphism (EM G n)
+
   definition gEM0_isomorphism (G : AbGroup) : gEM G 0 ≃∞g InfGroup_of_Group G :=
-  !InfGroup_equiv_closed_isomorphism⁻¹ᵍ⁸ ⬝∞g gloop_EM1 G
+  (gloop_EMadd1 G 0)⁻¹ᵍ⁸ ⬝∞g gloop_EM1 G
 
   definition gEM_functor {G H : AbGroup} (φ : G →g H) (n : ℕ) : gEM G n →∞g gEM H n :=
-  inf_homomorphism.mk (EM_functor φ n) sorry
+  gloop_EMadd1 H n ∘∞g Ωg→ (EMadd1_functor φ n) ∘∞g (gloop_EMadd1 G n)⁻¹ᵍ⁸
 
   definition EM_pmap [unfold 8] {G : AbGroup} (X : InfGroup) (n : ℕ)
     (e : AbInfGroup_of_AbGroup G →∞g Ωg'[n] X) [H : is_trunc n X] : EM G n →* X :=
@@ -366,8 +389,34 @@ namespace EM
   end
 
   definition EM_homomorphism_gloop [unfold 8] {G : AbGroup} (X : Type*) (n : ℕ)
-    (e : AbInfGroup_of_AbGroup G →∞g Ωg[succ n] X) [H : is_trunc n X] : gEM G n →∞g Ωg X :=
+    (e : AbInfGroup_of_AbGroup G →∞g Ωg[succ n] X) [H : is_trunc (n+1) X] : gEM G n →∞g Ωg X :=
   Ωg→ (EMadd1_pmap n e) ∘∞g !InfGroup_equiv_closed_isomorphism⁻¹ᵍ⁸
+
+  definition gloopn_succ_in' (n : ℕ) (A : Type*) : Ωg[succ n] A ≃∞g Ωg'[n] (Ωg A) :=
+  inf_isomorphism_of_equiv (loopn_succ_in n A)
+                           (by cases n with n; apply is_mul_hom_id; exact loopn_succ_in_con)
+
+  definition EM_homomorphism_deloopable [unfold 8] {G : AbGroup} (X : Type*) (H : deloopable X) (n : ℕ)
+    (e : AbInfGroup_of_AbGroup G →∞g Ωg'[n] (InfGroup_of_deloopable X)) (H : is_trunc (n+1) (deloop X)) :
+    gEM G n →∞g InfGroup_of_deloopable X :=
+  deloop_isomorphism X ∘∞g
+  EM_homomorphism_gloop (deloop X) n
+    ((gloopn_succ_in' n (deloop X))⁻¹ᵍ⁸ ∘∞g Ωg'→[n] (deloop_isomorphism X)⁻¹ᵍ⁸ ∘∞g e)
+
+  definition is_mul_hom_EM_functor [constructor] (G H : AbGroup) (n : ℕ) :
+    is_mul_hom (λ(φ : G →gg H), EM_functor φ n) :=
+  begin
+    intro φ ψ,
+    apply eq_of_phomotopy,
+    exact sorry
+    -- exact sorry, exact sorry, exact sorry
+--    refine idpath (φ 0 * ψ 0) ⬝ _,
+  end
+
+  /- an enriched homomorphism -/
+  definition EM_ehomomorphism [constructor] (G H : AbGroup) (n : ℕ) :
+    InfGroup_of_Group (G →gg H) →∞g InfGroup_of_deloopable (EM G n →** EM H n) :=
+  inf_homomorphism.mk (λφ, EM_functor φ n) (is_mul_hom_EM_functor G H n)
 
   -- definition EM_homomorphism [unfold 8] {G : AbGroup} {X : Type*} (Y : Type*) (e : Ω Y ≃* X) (n : ℕ)
   --   (e : AbInfGroup_of_AbGroup G →∞g Ωg[succ n] X) [H : is_trunc n X] : gEM G n →∞g X :=

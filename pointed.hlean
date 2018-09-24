@@ -611,5 +611,29 @@ begin
   fapply phomotopy.mk, exact homotopy.rfl, refine whisker_left idp (ap_id p)⁻¹
 end
 
+structure deloopable.{u} [class] (A : pType.{u}) : Type.{u+1} :=
+  (deloop : pType.{u})
+  (deloop_pequiv : Ω deloop ≃* A)
+
+abbreviation deloop [unfold 2] := deloopable.deloop
+abbreviation deloop_pequiv [unfold 2] := deloopable.deloop_pequiv
+
+definition deloopable_loop [instance] [constructor] (A : Type*) : deloopable (Ω A) :=
+deloopable.mk A pequiv.rfl
+
+definition deloopable_loopn [instance] [priority 500] (n : ℕ) [H : is_succ n] (A : Type*) :
+  deloopable (Ω[n] A) :=
+by induction H with n; exact deloopable.mk (Ω[n] A) pequiv.rfl
+
+definition inf_group_of_deloopable (A : Type*) [deloopable A] : inf_group A :=
+inf_group_equiv_closed (deloop_pequiv A) _
+
+definition InfGroup_of_deloopable (A : Type*) [deloopable A] : InfGroup :=
+InfGroup.mk A (inf_group_of_deloopable A)
+
+definition deloop_isomorphism [constructor] (A : Type*) [deloopable A] :
+  Ωg (deloop A) ≃∞g InfGroup_of_deloopable A :=
+InfGroup_equiv_closed_isomorphism (Ωg (deloop A)) (deloop_pequiv A)
+
 
 end pointed
