@@ -403,20 +403,27 @@ namespace EM
   EM_homomorphism_gloop (deloop X) n
     ((gloopn_succ_in' n (deloop X))⁻¹ᵍ⁸ ∘∞g Ωg'→[n] (deloop_isomorphism X)⁻¹ᵍ⁸ ∘∞g e)
 
-  definition is_mul_hom_EM_functor [constructor] (G H : AbGroup) (n : ℕ) :
-    is_mul_hom (λ(φ : G →gg H), EM_functor φ n) :=
-  begin
-    intro φ ψ,
-    apply eq_of_phomotopy,
-    exact sorry
-    -- exact sorry, exact sorry, exact sorry
---    refine idpath (φ 0 * ψ 0) ⬝ _,
-  end
+--   definition is_mul_hom_EM_functor [constructor] (G H : AbGroup) (n : ℕ) :
+--     is_mul_hom (λ(φ : G →gg H), EM_functor φ n) :=
+--   begin
+--     intro φ ψ,
+--     apply eq_of_phomotopy,
+--     exact sorry
+--     -- exact sorry, exact sorry, exact sorry
+-- --    refine idpath (φ 0 * ψ 0) ⬝ _,
+--   end
 
   /- an enriched homomorphism -/
   definition EM_ehomomorphism [constructor] (G H : AbGroup) (n : ℕ) :
     InfGroup_of_Group (G →gg H) →∞g InfGroup_of_deloopable (EM G n →** EM H n) :=
-  inf_homomorphism.mk (λφ, EM_functor φ n) (is_mul_hom_EM_functor G H n)
+  inf_homomorphism.mk (λφ, EM_functor φ n)
+    begin
+      intro φ ψ,
+      apply eq_of_phomotopy,
+      exact sorry
+      -- exact sorry, exact sorry, exact sorry
+  --    refine idpath (φ 0 * ψ 0) ⬝ _,
+    end
 
   -- definition EM_homomorphism [unfold 8] {G : AbGroup} {X : Type*} (Y : Type*) (e : Ω Y ≃* X) (n : ℕ)
   --   (e : AbInfGroup_of_AbGroup G →∞g Ωg[succ n] X) [H : is_trunc n X] : gEM G n →∞g X :=

@@ -62,7 +62,7 @@ namespace temp
   transport (is_contr ∘ E∞)
     begin
       induction m with m q, reflexivity, refine ap (deg (exact_couple.i X)) q ⬝ _,
-      exact prod_eq idp (neg_add m 1)⁻¹
+      exact prod_eq idp (neg_add m (1 : ℤ))⁻¹ᵖ
     end
     (fEinfd n m p)
 
@@ -103,20 +103,20 @@ namespace temp
       unreduced_ordinary_cohomology_isomorphism_right _ uH0_circle _,
   end
 
-  definition Ex1 (n : ℕ) : AddGroup_of_AddAbGroup (E (-(n+1),- 1)) ≃g uH^n[K agℤ 2] :=
+  definition Ex1 (n : ℕ) : AddGroup_of_AddAbGroup (E (-(n+(1 : ℤ)),- (1 : ℤ))) ≃g uH^n[K agℤ 2] :=
   begin
-    refine group_isomorphism_of_lm_isomorphism_int (converges_to.e fserre (-(n+1),- 1)) ⬝g _,
+    refine group_isomorphism_of_lm_isomorphism_int (converges_to.e fserre (-(n+(1 : ℤ)),- (1 : ℤ))) ⬝g _,
     refine cohomology_change_int _ _ (ap neg _ ⬝ !neg_neg) ⬝g
       unreduced_ordinary_cohomology_isomorphism_right _ !uH1_circle _,
-    exact ap (λx, x - - 1) !neg_add ⬝ !add_sub_cancel
+    exact ap (λx, x - - (1 : ℤ)) !neg_add ⬝ !add_sub_cancel
   end
 
   definition uH0 : uH^0[K agℤ 2] ≃g gℤ :=
   (Ex0 0)⁻¹ᵍ ⬝g group_isomorphism_of_lm_isomorphism_int fE00
 
-  definition fE10 : is_contr (E (- 1,0)) :=
+  definition fE10 : is_contr (E (- (1 : ℤ),0)) :=
   begin
-    refine @(is_trunc_equiv_closed _ _) (fEinf (- 1) 0 dec_star),
+    refine @(is_trunc_equiv_closed _ _) (fEinf (- (1 : ℤ)) 0 dec_star),
     apply equiv_of_isomorphism,
     refine Einf_isomorphism fserre 0 _ _,
     intro r H, exact sorry, exact sorry --apply is_contr_fD2, change (- 1) - (- 1) >[ℤ] (- 0) - (r + 1),
