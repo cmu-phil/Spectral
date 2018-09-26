@@ -22,7 +22,7 @@ namespace temp
   λx, pt
 
   definition fserre :
-    (λn s, uoH^-(n-s)[K agℤ 2, H^-s[circle₊]]) ⟹ᵍ (λn, H^-n[unit₊]) :=
+    (λp q, uoH^p[K agℤ 2, H^q[circle₊]]) ⟹ᵍ (λn, H^-n[unit₊]) :=
   proof
   converges_to_g_isomorphism
     (serre_convergence_map_of_is_conn pt f (EM_spectrum agℤ) 0
@@ -36,7 +36,7 @@ namespace temp
     end
     begin intro n, reflexivity end
   qed
-
+exit -- this file needs to be updated after reindexing of spectral sequences
   section
   local notation `X`   := converges_to.X fserre
   local notation `E∞`  := convergence_theorem.Einf (converges_to.HH fserre)
