@@ -58,8 +58,17 @@ namespace group
   definition ab_product [constructor] (G G' : AbGroup) : AbGroup :=
   AbGroup.mk _ (ab_group_prod G G')
 
+  definition add_product [constructor] (G G' : AddGroup) : AddGroup :=
+  group.product G G'
+
+  definition add_ab_product [constructor] (G G' : AddAbGroup) : AddAbGroup :=
+  group.ab_product G G'
+
   infix ` ×g `:60 := group.product
   infix ` ×ag `:60 := group.ab_product
+  infix ` ×a `:60 := group.add_product
+  infix ` ×aa `:60 := group.add_ab_product
+
 
   definition product_inl [constructor] (G H : Group) : G →g G ×g H :=
     homomorphism.mk (λx, (x, one)) (λx y, prod_eq !refl !one_mul⁻¹)

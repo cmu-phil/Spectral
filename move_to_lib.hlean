@@ -7,6 +7,10 @@ open eq nat int susp pointed sigma is_equiv equiv fiber algebra trunc pi group
 
 universe variable u
 
+  definition AddAbGroup.struct2 [instance] (G : AddAbGroup) :
+    add_ab_group (algebra._trans_of_Group_of_AbGroup_2 G) :=
+  AddAbGroup.struct G
+
 namespace eq
 
   definition transport_lemma {A : Type} {C : A → Type} {g₁ : A → A}

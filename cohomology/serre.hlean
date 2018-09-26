@@ -296,7 +296,6 @@ section serre
     begin intro n, apply unreduced_cohomology_isomorphism, exact !sigma_fiber_equiv⁻¹ᵉ end
   qed
 
-
 end serre
 
 

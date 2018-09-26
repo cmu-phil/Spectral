@@ -592,17 +592,8 @@ namespace left_module
 
   open int group prod convergence_theorem prod.ops
 
-  definition Z2 [constructor] : AddAbGroup := agℤ ×ag agℤ
+  definition Z2 [constructor] : AddAbGroup := agℤ ×aa agℤ
 
-  -- set_option pp.coercions true
-  -- set_option pp.binder_types true
-
-  -- todo: move
-  definition AddAbGroup.struct2 [instance] (G : AddAbGroup) :
-    add_ab_group (algebra._trans_of_Group_of_AbGroup_2 G) :=
-  AddAbGroup.struct G
-
-  /- TODO: redefine/generalize converges_to so that it supports the usual indexing on ℤ × ℤ -/
   structure converges_to.{u v w} {R : Ring} (E' : agℤ → agℤ → LeftModule.{u v} R)
                                  (Dinf : agℤ → LeftModule.{u w} R) : Type.{max u (v+1) (w+1)} :=
     (X : exact_couple.{u 0 w v} R Z2)
@@ -613,16 +604,6 @@ namespace left_module
     (f : Π(n : agℤ), exact_couple.D X (deg (k X) (s₁ n, s₂ n)) ≃lm Dinf n)
     (deg_d1 : ℕ → agℤ) (deg_d2 : ℕ → agℤ)
     (deg_d_eq0 : Π(r : ℕ), deg (d (page X r)) 0 = (deg_d1 r, deg_d2 r))
-
-  structure converging_spectral_sequence.{u v w} {R : Ring} (E' : agℤ → agℤ → LeftModule.{u v} R)
-                                 (Dinf : agℤ → LeftModule.{u w} R) : Type.{max u (v+1) (w+1)} :=
-    (E : ℕ → graded_module.{u 0 v} R Z2)
-    (d : Π(n : ℕ), E n →gm E n)
-    (α : Π(n : ℕ) (x : Z2), E (n+1) x ≃lm graded_homology (d n) (d n) x)
-    (e : Π(n : ℕ) (x : Z2), E 0 x ≃lm E' x.1 x.2)
-    (s₀ : Z2 → ℕ)
-    (f : Π{n : ℕ} {x : Z2} (h : s₀ x ≤ n), E (s₀ x) x ≃lm E n x)
-    (HDinf : Π(n : agℤ), is_built_from (Dinf n) (λ(k : ℕ), (λx, E (s₀ x) x) (k, n - k)))
 
   infix ` ⟹ `:25 := converges_to
 
@@ -756,6 +737,25 @@ namespace left_module
     (e' : Πn s, E' n s ≃g E'' n s) (f' : Πn, Dinf n ≃g Dinf' n) : E'' ⟹ᵍ Dinf' :=
   converges_to_isomorphism c (λn s, lm_iso_int.mk (e' n s)) (λn, lm_iso_int.mk (f' n))
 
+
+  structure converging_spectral_sequence.{u v w} {R : Ring} (E' : agℤ → agℤ → LeftModule.{u v} R)
+                                 (Dinf : agℤ → LeftModule.{u w} R) : Type.{max u (v+1) (w+1)} :=
+    (E : ℕ → graded_module.{u 0 v} R Z2)
+    (d : Π(n : ℕ), E n →gm E n)
+    (α : Π(n : ℕ) (x : Z2), E (n+1) x ≃lm graded_homology (d n) (d n) x)
+    (e : Π(n : ℕ) (x : Z2), E 0 x ≃lm E' x.1 x.2)
+    (s₀ : Z2 → ℕ)
+    (f : Π{n : ℕ} {x : Z2} (h : s₀ x ≤ n), E (s₀ x) x ≃lm E n x)
+    (lb : ℤ → ℤ)
+    (HDinf : Π(n : agℤ), is_built_from (Dinf n) (λ(k : ℕ), (λx, E (s₀ x) x) (k + lb n, n - (k + lb n))))
+
+  /-
+  todo:
+  - rename "converges_to" to converging_exact_couple
+  - double-check the definition of converging_spectral_sequence
+  - construct converging spectral sequence from a converging exact couple (with the additional hypothesis that the degree of i is (1, -1) or something)
+  - redefine `⟹` to be a converging spectral sequence
+  -/
 
 end left_module
 open left_module
