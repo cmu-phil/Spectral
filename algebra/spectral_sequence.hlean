@@ -747,13 +747,14 @@ namespace left_module
     (s₀ : Z2 → ℕ)
     (f : Π{n : ℕ} {x : Z2} (h : s₀ x ≤ n), E (s₀ x) x ≃lm E n x)
     (lb : ℤ → ℤ)
-    (HDinf : Π(n : agℤ), is_built_from (Dinf n) (λ(k : ℕ), (λx, E (s₀ x) x) (k + lb n, n - (k + lb n))))
+    (HDinf : Π(n : agℤ), is_built_from (Dinf n) (λ(k : ℕ), (λx, E (s₀ x) x) (n - (k + lb n), k + lb n)))
 
   /-
   todo:
   - rename "converges_to" to converging_exact_couple
   - double-check the definition of converging_spectral_sequence
-  - construct converging spectral sequence from a converging exact couple (with the additional hypothesis that the degree of i is (1, -1) or something)
+  - construct converging spectral sequence from a converging exact couple,
+    - This requires the additional hypothesis that the degree of i is (-1, 1), which is true by reflexivity for the spectral sequences we construct
   - redefine `⟹` to be a converging spectral sequence
   -/
 

@@ -298,5 +298,4 @@ section serre
 
 end serre
 
-
 end spectrum
