@@ -382,11 +382,11 @@ namespace left_module
   have H : deg (j (page r)) ~ iterate_equiv (deg (i X))⁻¹ᵉ r ⬝e deg (j X), from deg_j r,
   λx, to_inv_homotopy_inv H x ⬝ iterate_inv (deg (i X))⁻¹ᵉ r ((deg (j X))⁻¹ x)
 
-  definition deg_d (r : ℕ) :
+  definition deg_dr (r : ℕ) :
     deg (d (page r)) ~ deg (j X) ∘ iterate (deg (i X))⁻¹ r ∘ deg (k X) :=
   compose2 (deg_j r) (deg_k r)
 
-  definition deg_d_inv (r : ℕ) :
+  definition deg_dr_inv (r : ℕ) :
     (deg (d (page r)))⁻¹ ~ (deg (k X))⁻¹ ∘ iterate (deg (i X)) r ∘ (deg (j X))⁻¹ :=
   compose2 (to_inv_homotopy_inv (deg_k r)) (deg_j_inv r)
 
@@ -437,9 +437,9 @@ namespace left_module
   begin
     change homology (d (page r) x) (d (page r) ← x) ≃lm E (page r) x,
     apply homology_isomorphism: apply is_contr_E,
-    exact Eub (hhinverse (deg_iterate_ik_commute r) _ ⬝ (deg_d_inv r x)⁻¹)
+    exact Eub (hhinverse (deg_iterate_ik_commute r) _ ⬝ (deg_dr_inv r x)⁻¹)
               (le.trans !le_max_right H),
-    exact Elb (deg_iterate_ij_commute r _ ⬝ (deg_d r x)⁻¹)
+    exact Elb (deg_iterate_ij_commute r _ ⬝ (deg_dr r x)⁻¹)
               (le.trans !le_max_left H)
   end
 
@@ -575,12 +575,12 @@ namespace left_module
 
   end
 
-  definition deg_d_reindex {R : Ring} {I J : AddAbGroup}
+  definition deg_dr_reindex {R : Ring} {I J : AddAbGroup}
     (e : AddGroup_of_AddAbGroup J ≃g AddGroup_of_AddAbGroup I) (X : exact_couple R I)
     (r : ℕ) : deg (d (page (exact_couple_reindex e X) r)) ~
     e⁻¹ᵍ ∘ deg (d (page X r)) ∘ e :=
   begin
-    intro x, refine !deg_d ⬝ _ ⬝ ap e⁻¹ᵍ !deg_d⁻¹,
+    intro x, refine !deg_dr ⬝ _ ⬝ ap e⁻¹ᵍ !deg_dr⁻¹,
     apply ap (e⁻¹ᵍ ∘ deg (j X)),
     note z := @iterate_hsquare _ _ (deg (i (exact_couple_reindex e X)))⁻¹ᵉ (deg (i X))⁻¹ᵉ e
       (λx, proof to_right_inv (group.equiv_of_isomorphism e) _ qed)⁻¹ʰᵗʸʰ r,
@@ -598,17 +598,36 @@ namespace left_module
                                  (Dinf : agℤ → LeftModule.{u w} R) : Type.{max u (v+1) (w+1)} :=
     (X : exact_couple.{u 0 w v} R Z2)
     (HH : is_bounded X)
-    (s₁ : agℤ → agℤ) (s₂ : agℤ → agℤ)
-    (HB : Π(n : agℤ), is_bounded.B' HH (deg (k X) (s₁ n, s₂ n)) = 0)
+    (st : agℤ → Z2)
+    (HB : Π(n : agℤ), is_bounded.B' HH (deg (k X) (st n)) = 0)
     (e : Π(x : Z2), exact_couple.E X x ≃lm E' x.1 x.2)
-    (f : Π(n : agℤ), exact_couple.D X (deg (k X) (s₁ n, s₂ n)) ≃lm Dinf n)
-    (deg_d1 : ℕ → agℤ) (deg_d2 : ℕ → agℤ)
-    (deg_d_eq0 : Π(r : ℕ), deg (d (page X r)) 0 = (deg_d1 r, deg_d2 r))
+    (f : Π(n : agℤ), exact_couple.D X (deg (k X) (st n)) ≃lm Dinf n)
+    (deg_d : ℕ → Z2)
+    (deg_d_eq0 : Π(r : ℕ), deg (d (page X r)) 0 = deg_d r)
 
-  infix ` ⟹ `:25 := convergent_exact_couple
+  structure convergent_spectral_sequence.{u v w} {R : Ring} (E' : agℤ → agℤ → LeftModule.{u v} R)
+                                 (Dinf : agℤ → LeftModule.{u w} R) : Type.{max u (v+1) (w+1)} :=
+    (E : ℕ → graded_module.{u 0 v} R Z2)
+    (d : Π(r : ℕ), E r →gm E r)
+    (deg_d : ℕ → Z2)
+    (deg_d_eq0 : Π(r : ℕ), deg (d r) 0 = deg_d r)
+    (α : Π(r : ℕ) (x : Z2), E (r+1) x ≃lm graded_homology (d r) (d r) x)
+    (e : Π(x : Z2), E 0 x ≃lm E' x.1 x.2)
+    (s₀ : Z2 → ℕ)
+    (f : Π{r : ℕ} {x : Z2} (h : s₀ x ≤ r), E (s₀ x) x ≃lm E r x)
+    (lb : ℤ → ℤ)
+    (HDinf : Π(n : agℤ), is_built_from (Dinf n)
+                                       (λ(k : ℕ), (λx, E (s₀ x) x) (n - (k + lb n), k + lb n)))
+
+  infix ` ⟹ `:25 := convergent_exact_couple -- todo: maybe this should define convergent_spectral_sequence
 
   definition convergent_exact_couple_g [reducible] (E' : agℤ → agℤ → AbGroup) (Dinf : agℤ → AbGroup) : Type :=
   (λn s, LeftModule_int_of_AbGroup (E' n s)) ⟹ (λn, LeftModule_int_of_AbGroup (Dinf n))
+
+  definition convergent_spectral_sequence_g [reducible] (E' : agℤ → agℤ → AbGroup) (Dinf : agℤ → AbGroup) :
+    Type :=
+  convergent_spectral_sequence (λn s, LeftModule_int_of_AbGroup (E' n s))
+                               (λn, LeftModule_int_of_AbGroup (Dinf n))
 
   infix ` ⟹ᵍ `:25 := convergent_exact_couple_g
 
@@ -618,76 +637,52 @@ namespace left_module
   local abbreviation X := X c
   local abbreviation i := i X
   local abbreviation HH := HH c
-  local abbreviation s₁ := s₁ c
-  local abbreviation s₂ := s₂ c
-  local abbreviation Dinfdiag (n : agℤ) (k : ℕ) := Dinfdiag HH (s₁ n, s₂ n) k
-  local abbreviation Einfdiag (n : agℤ) (k : ℕ) := Einfdiag HH (s₁ n, s₂ n) k
+  local abbreviation st := st c
+  local abbreviation Dinfdiag (n : agℤ) (k : ℕ) := Dinfdiag HH (st n) k
+  local abbreviation Einfdiag (n : agℤ) (k : ℕ) := Einfdiag HH (st n) k
 
-  definition deg_d_eq (r : ℕ) (n s : agℤ) :
-    (deg (d (page X r))) (n, s) = (n + deg_d1 c r, s + deg_d2 c r) :=
+  definition deg_d_eq (r : ℕ) (ns : Z2) : (deg (d (page X r))) ns = ns + deg_d c r :=
   !deg_eq ⬝ ap (λx, _ + x) (deg_d_eq0 c r)
 
-  definition deg_d_inv_eq (r : ℕ) (n s : agℤ) :
-    (deg (d (page X r)))⁻¹ᵉ (n, s) = (n - deg_d1 c r, s - deg_d2 c r) :=
-  inv_eq_of_eq (!deg_d_eq ⬝ prod_eq !sub_add_cancel !sub_add_cancel)⁻¹
+  definition deg_d_inv_eq (r : ℕ) (ns : Z2) :
+    (deg (d (page X r)))⁻¹ᵉ ns = ns - deg_d c r :=
+  inv_eq_of_eq (!deg_d_eq ⬝ proof !neg_add_cancel_right qed)⁻¹
 
   definition convergent_exact_couple_isomorphism {E'' : agℤ → agℤ → LeftModule R} {Dinf' : graded_module R agℤ}
     (e' : Πn s, E' n s ≃lm E'' n s) (f' : Πn, Dinf n ≃lm Dinf' n) : E'' ⟹ Dinf' :=
-  convergent_exact_couple.mk X HH s₁ s₂ (HB c)
+  convergent_exact_couple.mk X HH st (HB c)
     begin intro x, induction x with n s, exact e c (n, s) ⬝lm e' n s end
-    (λn, f c n ⬝lm f' n)
-    (deg_d1 c) (deg_d2 c) (λr, deg_d_eq0 c r)
+    (λn, f c n ⬝lm f' n) (deg_d c) (deg_d_eq0 c)
 
   include c
   definition convergent_exact_couple_reindex (i : agℤ ×ag agℤ ≃g agℤ ×ag agℤ) :
     (λp q, E' (i (p, q)).1 (i (p, q)).2) ⟹ Dinf :=
   begin
     fapply convergent_exact_couple.mk (exact_couple_reindex i X) (is_bounded_reindex i HH),
-    { exact λn, (i⁻¹ᵍ (s₁ n, s₂ n)).1 },
-    { exact λn, (i⁻¹ᵍ (s₁ n, s₂ n)).2 },
+    { exact λn, i⁻¹ᵍ (st n) },
     { intro n, refine ap (B' HH) _ ⬝ HB c n,
       refine to_right_inv (group.equiv_of_isomorphism i) _ ⬝ _,
-      apply ap (deg (k X)), exact ap i !prod.eta ⬝ to_right_inv (group.equiv_of_isomorphism i) _ },
+      apply ap (deg (k X)), exact to_right_inv (group.equiv_of_isomorphism i) _ },
     { intro x, induction x with p q, exact e c (i (p, q)) },
     { intro n, refine _ ⬝lm f c n, refine isomorphism_of_eq (ap (D X) _),
       refine to_right_inv (group.equiv_of_isomorphism i) _ ⬝ _,
-      apply ap (deg (k X)), exact ap i !prod.eta ⬝ to_right_inv (group.equiv_of_isomorphism i) _ },
-    { exact λn, (i⁻¹ᵍ (deg_d1 c n, deg_d2 c n)).1 },
-    { exact λn, (i⁻¹ᵍ (deg_d1 c n, deg_d2 c n)).2 },
-    { intro r, esimp, refine !deg_d_reindex ⬝ ap i⁻¹ᵍ (ap (deg (d _)) (group.to_respect_zero i) ⬝
-        deg_d_eq0 c r) ⬝ !prod.eta⁻¹ }
+      apply ap (deg (k X)), exact to_right_inv (group.equiv_of_isomorphism i) _ },
+    { exact λn, i⁻¹ᵍ (deg_d c n) },
+    { intro r, esimp, refine !deg_dr_reindex ⬝ ap i⁻¹ᵍ (ap (deg (d _)) (group.to_respect_zero i) ⬝
+        deg_d_eq0 c r) }
   end
 
-  definition convergent_exact_couple_negate_inf : E' ⟹ (λn, Dinf (-n)) :=
-  convergent_exact_couple.mk X HH (s₁ ∘ neg) (s₂ ∘ neg) (λn, HB c (-n)) (e c) (λn, f c (-n))
-                             (deg_d1 c) (deg_d2 c) (deg_d_eq0 c)
+  definition convergent_exact_couple_negate_abutment : E' ⟹ (λn, Dinf (-n)) :=
+  convergent_exact_couple.mk X HH (st ∘ neg) (λn, HB c (-n)) (e c) (λn, f c (-n))
+                             (deg_d c) (deg_d_eq0 c)
   omit c
 
-/-  definition convergent_exact_couple_reindex {E'' : agℤ → agℤ → LeftModule R} {Dinf' : graded_module R agℤ}
-    (i : agℤ ×g agℤ ≃ agℤ × agℤ) (e' : Πp q, E' p q ≃lm E'' (i (p, q)).1 (i (p, q)).2)
-    (i2 : agℤ ≃ agℤ) (f' : Πn, Dinf n ≃lm Dinf' (i2 n)) :
-    (λp q, E'' p q) ⟹ λn, Dinf' n :=
-  convergent_exact_couple.mk (exact_couple_reindex i X) (is_bounded_reindex i HH) s₁ s₂
-    sorry --(λn, ap (B' HH) (to_right_inv i _ ⬝ begin end) ⬝ HB c n)
-    sorry --begin intro x, induction x with p q, exact e c (p, q) ⬝lm e' p q end
-    sorry-/
-
-/-  definition convergent_exact_couple_reindex_neg {E'' : agℤ → agℤ → LeftModule R} {Dinf' : graded_module R agℤ}
-    (e' : Πp q, E' p q ≃lm E'' (-p) (-q))
-    (f' : Πn, Dinf n ≃lm Dinf' (-n)) :
-    (λp q, E'' p q) ⟹ λn, Dinf' n :=
-  convergent_exact_couple.mk (exact_couple_reindex (equiv_neg ×≃ equiv_neg) X) (is_bounded_reindex _ HH)
-    (λn, -s₂ (-n))
-    (λn, ap (B' HH) (begin esimp, end) ⬝ HB c n)
-    sorry --begin intro x, induction x with p q, exact e c (p, q) ⬝lm e' p q end
-    sorry-/
-
   definition is_built_from_of_convergent_exact_couple (n : ℤ) : is_built_from (Dinf n) (Einfdiag n) :=
-  is_built_from_isomorphism_left (f c n) (is_built_from_infpage HH (s₁ n, s₂ n) (HB c n))
+  is_built_from_isomorphism_left (f c n) (is_built_from_infpage HH (st n) (HB c n))
 
   /- TODO: reprove this using is_built_of -/
   theorem is_contr_convergent_exact_couple_precise (n : agℤ)
-  (H : Π(n : agℤ) (l : ℕ), is_contr (E' ((deg i)^[l] (s₁ n, s₂ n)).1 ((deg i)^[l] (s₁ n, s₂ n)).2)) :
+  (H : Π(n : agℤ) (l : ℕ), is_contr (E' ((deg i)^[l] (st n)).1 ((deg i)^[l] (st n)).2)) :
     is_contr (Dinf n) :=
   begin
     assert H2 : Π(l : ℕ), is_contr (Einfdiag n l),
@@ -695,70 +690,69 @@ namespace left_module
       refine is_trunc_equiv_closed_rev -2 (equiv_of_isomorphism (e c _)) (H n l) },
     assert H3 : is_contr (Dinfdiag n 0),
     { fapply nat.rec_down (λk, is_contr (Dinfdiag n k)),
-      { exact is_bounded.B HH (deg (k X) (s₁ n, s₂ n)) },
+      { exact is_bounded.B HH (deg (k X) (st n)) },
       { apply Dinfdiag_stable, reflexivity },
       { intro l H,
-        exact is_contr_middle_of_short_exact_mod (short_exact_mod_infpage HH (s₁ n, s₂ n) l)
+        exact is_contr_middle_of_short_exact_mod (short_exact_mod_infpage HH (st n) l)
                 (H2 l) H }},
     refine is_trunc_equiv_closed _ _ H3,
-    exact equiv_of_isomorphism (Dinfdiag0 HH (s₁ n, s₂ n) (HB c n) ⬝lm f c n)
+    exact equiv_of_isomorphism (Dinfdiag0 HH (st n) (HB c n) ⬝lm f c n)
   end
 
   theorem is_contr_convergent_exact_couple (n : agℤ) (H : Π(n s : agℤ), is_contr (E' n s)) : is_contr (Dinf n) :=
   is_contr_convergent_exact_couple_precise n (λn s, !H)
 
   definition E_isomorphism {r₁ r₂ : ℕ} {n s : agℤ} (H : r₁ ≤ r₂)
-    (H1 : Π⦃r⦄, r₁ ≤ r → r < r₂ → is_contr (E X (n - deg_d1 c r, s - deg_d2 c r)))
-    (H2 : Π⦃r⦄, r₁ ≤ r → r < r₂ → is_contr (E X (n + deg_d1 c r, s + deg_d2 c r))) :
+    (H1 : Π⦃r⦄, r₁ ≤ r → r < r₂ → is_contr (E X ((n, s) - deg_d c r)))
+    (H2 : Π⦃r⦄, r₁ ≤ r → r < r₂ → is_contr (E X ((n, s) + deg_d c r))) :
     E (page X r₂) (n, s) ≃lm E (page X r₁) (n, s) :=
-  E_isomorphism' X H (λr Hr₁ Hr₂, transport (is_contr ∘ E X) (deg_d_inv_eq r n s)⁻¹ᵖ (H1 Hr₁ Hr₂))
-                    (λr Hr₁ Hr₂, transport (is_contr ∘ E X) (deg_d_eq r n s)⁻¹ᵖ (H2 Hr₁ Hr₂))
+  E_isomorphism' X H
+    (λr Hr₁ Hr₂, transport (is_contr ∘ E X) (deg_d_inv_eq r (n, s))⁻¹ᵖ (H1 Hr₁ Hr₂))
+    (λr Hr₁ Hr₂, transport (is_contr ∘ E X) (deg_d_eq r (n, s))⁻¹ᵖ (H2 Hr₁ Hr₂))
 
-  definition E_isomorphism0 {r : ℕ} {n s : agℤ}
-    (H1 : Πr, is_contr (E X (n - deg_d1 c r, s - deg_d2 c r)))
-    (H2 : Πr, is_contr (E X (n + deg_d1 c r, s + deg_d2 c r))) :
-    E (page X r) (n, s) ≃lm E' n s :=
+  definition E_isomorphism0 {r : ℕ} {n s : agℤ} (H1 : Πr, is_contr (E X ((n, s) - deg_d c r)))
+    (H2 : Πr, is_contr (E X ((n, s) + deg_d c r))) : E (page X r) (n, s) ≃lm E' n s :=
   E_isomorphism (zero_le r) _ _ ⬝lm e c (n, s)
 
   definition Einf_isomorphism (r₁ : ℕ) {n s : agℤ}
-    (H1 : Π⦃r⦄, r₁ ≤ r → is_contr (E X (n - deg_d1 c r, s - deg_d2 c r)))
-    (H2 : Π⦃r⦄, r₁ ≤ r → is_contr (E X (n + deg_d1 c r, s + deg_d2 c r))) :
+    (H1 : Π⦃r⦄, r₁ ≤ r → is_contr (E X ((n,s) - deg_d c r)))
+    (H2 : Π⦃r⦄, r₁ ≤ r → is_contr (E X ((n,s) + deg_d c r))) :
     Einf HH (n, s) ≃lm E (page X r₁) (n, s) :=
-  Einf_isomorphism' HH r₁ (λr Hr₁, transport (is_contr ∘ E X) (deg_d_inv_eq r n s)⁻¹ᵖ (H1 Hr₁))
-                         (λr Hr₁, transport (is_contr ∘ E X) (deg_d_eq r n s)⁻¹ᵖ (H2 Hr₁))
+  Einf_isomorphism' HH r₁ (λr Hr₁, transport (is_contr ∘ E X) (deg_d_inv_eq r (n, s))⁻¹ᵖ (H1 Hr₁))
+                         (λr Hr₁, transport (is_contr ∘ E X) (deg_d_eq r (n, s))⁻¹ᵖ (H2 Hr₁))
 
   definition Einf_isomorphism0 {n s : agℤ}
-    (H1 : Π⦃r⦄, is_contr (E X (n - deg_d1 c r, s - deg_d2 c r)))
-    (H2 : Π⦃r⦄, is_contr (E X (n + deg_d1 c r, s + deg_d2 c r))) :
+    (H1 : Π⦃r⦄, is_contr (E X ((n,s) - deg_d c r)))
+    (H2 : Π⦃r⦄, is_contr (E X ((n,s) + deg_d c r))) :
     Einf HH (n, s) ≃lm E' n s :=
   E_isomorphism0 _ _
 
+  definition convergent_spectral_sequence_of_exact_couple
+    (st_eq : Πn, (st n).1 + (st n).2 = n) (deg_i_eq : deg i 0 = (-(1 : ℤ), (1 : ℤ))) :
+    convergent_spectral_sequence E' Dinf :=
+  convergent_spectral_sequence.mk (λr, E (page X r)) (λr, d (page X r)) (deg_d c) (deg_d_eq0 c)
+    (λr ns, by reflexivity) (e c) (B3 HH) (λr ns Hr, Einfstable HH Hr idp)
+    (λn, (st n).2)
+    begin
+      intro n,
+      refine is_built_from_isomorphism (f c n) _ (is_built_from_infpage HH (st n) (HB c n)),
+      intro p, apply isomorphism_of_eq, apply ap (λx, E (page X (B3 HH x)) x),
+      induction p with p IH,
+      { exact !prod.eta⁻¹ ⬝ prod_eq (eq_sub_of_add_eq (ap (add _) !zero_add ⬝ st_eq n)) (zero_add (st n).2)⁻¹ },
+      { assert H1 : Π(a : ℤ), n - (p + a) - (1 : ℤ) = n - (succ p + a),
+        exact λa, !sub_add_eq_sub_sub⁻¹ ⬝ ap (sub n) (add_comm_middle p a (1 : ℤ) ⬝ proof idp qed),
+        assert H2 : Π(a : ℤ), p + a + 1 = succ p + a,
+        exact λa, add_comm_middle p a 1,
+        refine ap (deg i) IH ⬝ !deg_eq ⬝ ap (add _) deg_i_eq ⬝ prod_eq !H1 !H2 }
+    end
   end
 
-  variables {E' : agℤ → agℤ → AbGroup} {Dinf : agℤ → AbGroup} (c : E' ⟹ᵍ Dinf)
-  definition convergent_exact_couple_g_isomorphism {E'' : agℤ → agℤ → AbGroup} {Dinf' : agℤ → AbGroup}
+  variables {E' : agℤ → agℤ → AbGroup} {Dinf : agℤ → AbGroup}
+  definition convergent_exact_couple_g_isomorphism {E'' : agℤ → agℤ → AbGroup}
+    {Dinf' : agℤ → AbGroup} (c : E' ⟹ᵍ Dinf)
     (e' : Πn s, E' n s ≃g E'' n s) (f' : Πn, Dinf n ≃g Dinf' n) : E'' ⟹ᵍ Dinf' :=
   convergent_exact_couple_isomorphism c (λn s, lm_iso_int.mk (e' n s)) (λn, lm_iso_int.mk (f' n))
 
-
-  structure convergent_spectral_sequence.{u v w} {R : Ring} (E' : agℤ → agℤ → LeftModule.{u v} R)
-                                 (Dinf : agℤ → LeftModule.{u w} R) : Type.{max u (v+1) (w+1)} :=
-    (E : ℕ → graded_module.{u 0 v} R Z2)
-    (d : Π(n : ℕ), E n →gm E n)
-    (α : Π(n : ℕ) (x : Z2), E (n+1) x ≃lm graded_homology (d n) (d n) x)
-    (e : Π(n : ℕ) (x : Z2), E 0 x ≃lm E' x.1 x.2)
-    (s₀ : Z2 → ℕ)
-    (f : Π{n : ℕ} {x : Z2} (h : s₀ x ≤ n), E (s₀ x) x ≃lm E n x)
-    (lb : ℤ → ℤ)
-    (HDinf : Π(n : agℤ), is_built_from (Dinf n) (λ(k : ℕ), (λx, E (s₀ x) x) (n - (k + lb n), k + lb n)))
-
-  /-
-  todo:
-  - double-check the definition of converging_spectral_sequence
-  - construct converging spectral sequence from a converging exact couple,
-    - This requires the additional hypothesis that the degree of i is (-1, 1), which is true by reflexivity for the spectral sequences we construct
-  - redefine `⟹` to be a converging spectral sequence
-  -/
 
 end left_module
 open left_module
@@ -966,14 +960,12 @@ namespace spectrum
     fapply convergent_exact_couple.mk,
     { exact exact_couple_sequence },
     { exact is_bounded_sequence },
-    { exact id },
-    { exact ub },
+    { exact λn, (n, ub n) },
     { intro n, change max0 (ub n - ub n) = 0, exact ap max0 (sub_self (ub n)) },
     { intro ns, reflexivity },
     { intro n, reflexivity },
-    { intro r, exact - (1 : ℤ) },
-    { intro r, exact r + (1 : ℤ) },
-    { intro r, refine !convergence_theorem.deg_d ⬝ _,
+    { intro r, exact (-(1 : ℤ), r + (1 : ℤ)) },
+    { intro r, refine !convergence_theorem.deg_dr ⬝ _,
       refine ap (deg j_sequence) !iterate_deg_i_inv ⬝ _,
       exact prod_eq idp !zero_add }
   end

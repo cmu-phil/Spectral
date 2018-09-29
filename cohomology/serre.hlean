@@ -178,7 +178,8 @@ section atiyah_hirzebruch
 
   definition atiyah_hirzebruch_convergence2 :
     (λn s, opH^-(n-s)[(x : X), πₛ[s] (Y x)]) ⟹ᵍ (λn, pH^n[(x : X), Y x]) :=
-  convergent_exact_couple_g_isomorphism (convergent_exact_couple_negate_inf atiyah_hirzebruch_convergence1)
+  convergent_exact_couple_g_isomorphism
+    (convergent_exact_couple_negate_abutment atiyah_hirzebruch_convergence1)
     begin
       intro n s,
       refine _ ⬝g (parametrized_cohomology_isomorphism_shomotopy_group_spi _ idp)⁻¹ᵍ,
@@ -221,6 +222,14 @@ section atiyah_hirzebruch
     refine !neg_neg_sub_neg ⬝ !add_neg_cancel_right
   end
 
+  definition atiyah_hirzebruch_spectral_sequence :
+    convergent_spectral_sequence_g (λp q, opH^p[(x : X), πₛ[-q] (Y x)]) (λn, pH^n[(x : X), Y x]) :=
+  begin
+    apply convergent_spectral_sequence_of_exact_couple atiyah_hirzebruch_convergence,
+    { intro n, exact add.comm (s₀ - -n) (-s₀) ⬝ !neg_add_cancel_left ⬝ !neg_neg },
+    { reflexivity }
+  end
+
 end atiyah_hirzebruch
 
 section unreduced_atiyah_hirzebruch
@@ -239,6 +248,16 @@ convergent_exact_couple_g_isomorphism
   begin
     intro n, reflexivity
   end
+
+  definition unreduced_atiyah_hirzebruch_spectral_sequence {X : Type} (Y : X → spectrum) (s₀ : ℤ)
+    (H : Πx, is_strunc s₀ (Y x)) :
+    convergent_spectral_sequence_g (λp q, uopH^p[(x : X), πₛ[-q] (Y x)]) (λn, upH^n[(x : X), Y x]) :=
+  begin
+    apply convergent_spectral_sequence_of_exact_couple (unreduced_atiyah_hirzebruch_convergence Y s₀ H),
+    { intro n, exact add.comm (s₀ - -n) (-s₀) ⬝ !neg_add_cancel_left ⬝ !neg_neg },
+    { reflexivity }
+  end
+
 end unreduced_atiyah_hirzebruch
 
 section serre
@@ -269,6 +288,14 @@ section serre
     end
   qed
 
+  definition serre_spectral_sequence :
+    convergent_spectral_sequence_g (λp q, uopH^p[(b : B), uH^q[F b, Y]]) (λn, uH^n[Σ(b : B), F b, Y]) :=
+  begin
+    apply convergent_spectral_sequence_of_exact_couple (serre_convergence F Y s₀ H),
+    { intro n, exact add.comm (s₀ - -n) (-s₀) ⬝ !neg_add_cancel_left ⬝ !neg_neg },
+    { reflexivity }
+  end
+
   definition serre_convergence_map :
     (λp q, uopH^p[(b : B), uH^q[fiber f b, Y]]) ⟹ᵍ (λn, uH^n[X, Y]) :=
   proof
@@ -277,6 +304,14 @@ section serre
     begin intro p q, reflexivity end
     begin intro n, apply unreduced_cohomology_isomorphism, exact !sigma_fiber_equiv⁻¹ᵉ end
   qed
+
+  definition serre_spectral_sequence_map :
+    convergent_spectral_sequence_g (λp q, uopH^p[(b : B), uH^q[fiber f b, Y]]) (λn, uH^n[X, Y]) :=
+  begin
+    apply convergent_spectral_sequence_of_exact_couple (serre_convergence_map f Y s₀ H),
+    { intro n, exact add.comm (s₀ - -n) (-s₀) ⬝ !neg_add_cancel_left ⬝ !neg_neg },
+    { reflexivity }
+  end
 
   definition serre_convergence_of_is_conn (H2 : is_conn 1 B) :
     (λp q, uoH^p[B, uH^q[F b₀, Y]]) ⟹ᵍ (λn, uH^n[Σ(b : B), F b, Y]) :=
@@ -287,6 +322,14 @@ section serre
     begin intro n, reflexivity end
   qed
 
+  definition serre_spectral_sequence_of_is_conn (H2 : is_conn 1 B) :
+    convergent_spectral_sequence_g (λp q, uoH^p[B, uH^q[F b₀, Y]]) (λn, uH^n[Σ(b : B), F b, Y]) :=
+  begin
+    apply convergent_spectral_sequence_of_exact_couple (serre_convergence_of_is_conn b₀ F Y s₀ H H2),
+    { intro n, exact add.comm (s₀ - -n) (-s₀) ⬝ !neg_add_cancel_left ⬝ !neg_neg },
+    { reflexivity }
+  end
+
   definition serre_convergence_map_of_is_conn (H2 : is_conn 1 B) :
     (λp q, uoH^p[B, uH^q[fiber f b₀, Y]]) ⟹ᵍ (λn, uH^n[X, Y]) :=
   proof
@@ -295,6 +338,14 @@ section serre
     begin intro p q, reflexivity end
     begin intro n, apply unreduced_cohomology_isomorphism, exact !sigma_fiber_equiv⁻¹ᵉ end
   qed
+
+  definition serre_spectral_sequence_map_of_is_conn (H2 : is_conn 1 B) :
+    convergent_spectral_sequence_g (λp q, uoH^p[B, uH^q[fiber f b₀, Y]]) (λn, uH^n[X, Y]) :=
+  begin
+    apply convergent_spectral_sequence_of_exact_couple (serre_convergence_map_of_is_conn b₀ f Y s₀ H H2),
+    { intro n, exact add.comm (s₀ - -n) (-s₀) ⬝ !neg_add_cancel_left ⬝ !neg_neg },
+    { reflexivity }
+  end
 
 end serre
 
