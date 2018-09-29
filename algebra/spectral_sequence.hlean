@@ -594,7 +594,7 @@ namespace left_module
 
   definition Z2 [constructor] : AddAbGroup := agℤ ×aa agℤ
 
-  structure converges_to.{u v w} {R : Ring} (E' : agℤ → agℤ → LeftModule.{u v} R)
+  structure convergent_exact_couple.{u v w} {R : Ring} (E' : agℤ → agℤ → LeftModule.{u v} R)
                                  (Dinf : agℤ → LeftModule.{u w} R) : Type.{max u (v+1) (w+1)} :=
     (X : exact_couple.{u 0 w v} R Z2)
     (HH : is_bounded X)
@@ -605,15 +605,15 @@ namespace left_module
     (deg_d1 : ℕ → agℤ) (deg_d2 : ℕ → agℤ)
     (deg_d_eq0 : Π(r : ℕ), deg (d (page X r)) 0 = (deg_d1 r, deg_d2 r))
 
-  infix ` ⟹ `:25 := converges_to
+  infix ` ⟹ `:25 := convergent_exact_couple
 
-  definition converges_to_g [reducible] (E' : agℤ → agℤ → AbGroup) (Dinf : agℤ → AbGroup) : Type :=
+  definition convergent_exact_couple_g [reducible] (E' : agℤ → agℤ → AbGroup) (Dinf : agℤ → AbGroup) : Type :=
   (λn s, LeftModule_int_of_AbGroup (E' n s)) ⟹ (λn, LeftModule_int_of_AbGroup (Dinf n))
 
-  infix ` ⟹ᵍ `:25 := converges_to_g
+  infix ` ⟹ᵍ `:25 := convergent_exact_couple_g
 
   section
-  open converges_to
+  open convergent_exact_couple
   parameters {R : Ring} {E' : agℤ → agℤ → LeftModule R} {Dinf : agℤ → LeftModule R} (c : E' ⟹ Dinf)
   local abbreviation X := X c
   local abbreviation i := i X
@@ -631,19 +631,18 @@ namespace left_module
     (deg (d (page X r)))⁻¹ᵉ (n, s) = (n - deg_d1 c r, s - deg_d2 c r) :=
   inv_eq_of_eq (!deg_d_eq ⬝ prod_eq !sub_add_cancel !sub_add_cancel)⁻¹
 
-  definition converges_to_isomorphism {E'' : agℤ → agℤ → LeftModule R} {Dinf' : graded_module R agℤ}
+  definition convergent_exact_couple_isomorphism {E'' : agℤ → agℤ → LeftModule R} {Dinf' : graded_module R agℤ}
     (e' : Πn s, E' n s ≃lm E'' n s) (f' : Πn, Dinf n ≃lm Dinf' n) : E'' ⟹ Dinf' :=
-  converges_to.mk X HH s₁ s₂ (HB c)
+  convergent_exact_couple.mk X HH s₁ s₂ (HB c)
     begin intro x, induction x with n s, exact e c (n, s) ⬝lm e' n s end
     (λn, f c n ⬝lm f' n)
     (deg_d1 c) (deg_d2 c) (λr, deg_d_eq0 c r)
 
-
   include c
-  definition converges_to_reindex (i : agℤ ×ag agℤ ≃g agℤ ×ag agℤ) :
-    (λp q, E' (i (p, q)).1 (i (p, q)).2) ⟹ (λn, Dinf n) :=
+  definition convergent_exact_couple_reindex (i : agℤ ×ag agℤ ≃g agℤ ×ag agℤ) :
+    (λp q, E' (i (p, q)).1 (i (p, q)).2) ⟹ Dinf :=
   begin
-    fapply converges_to.mk (exact_couple_reindex i X) (is_bounded_reindex i HH),
+    fapply convergent_exact_couple.mk (exact_couple_reindex i X) (is_bounded_reindex i HH),
     { exact λn, (i⁻¹ᵍ (s₁ n, s₂ n)).1 },
     { exact λn, (i⁻¹ᵍ (s₁ n, s₂ n)).2 },
     { intro n, refine ap (B' HH) _ ⬝ HB c n,
@@ -658,32 +657,36 @@ namespace left_module
     { intro r, esimp, refine !deg_d_reindex ⬝ ap i⁻¹ᵍ (ap (deg (d _)) (group.to_respect_zero i) ⬝
         deg_d_eq0 c r) ⬝ !prod.eta⁻¹ }
   end
+
+  definition convergent_exact_couple_negate_inf : E' ⟹ (λn, Dinf (-n)) :=
+  convergent_exact_couple.mk X HH (s₁ ∘ neg) (s₂ ∘ neg) (λn, HB c (-n)) (e c) (λn, f c (-n))
+                             (deg_d1 c) (deg_d2 c) (deg_d_eq0 c)
   omit c
 
-/-  definition converges_to_reindex {E'' : agℤ → agℤ → LeftModule R} {Dinf' : graded_module R agℤ}
+/-  definition convergent_exact_couple_reindex {E'' : agℤ → agℤ → LeftModule R} {Dinf' : graded_module R agℤ}
     (i : agℤ ×g agℤ ≃ agℤ × agℤ) (e' : Πp q, E' p q ≃lm E'' (i (p, q)).1 (i (p, q)).2)
     (i2 : agℤ ≃ agℤ) (f' : Πn, Dinf n ≃lm Dinf' (i2 n)) :
     (λp q, E'' p q) ⟹ λn, Dinf' n :=
-  converges_to.mk (exact_couple_reindex i X) (is_bounded_reindex i HH) s₁ s₂
+  convergent_exact_couple.mk (exact_couple_reindex i X) (is_bounded_reindex i HH) s₁ s₂
     sorry --(λn, ap (B' HH) (to_right_inv i _ ⬝ begin end) ⬝ HB c n)
     sorry --begin intro x, induction x with p q, exact e c (p, q) ⬝lm e' p q end
     sorry-/
 
-/-  definition converges_to_reindex_neg {E'' : agℤ → agℤ → LeftModule R} {Dinf' : graded_module R agℤ}
+/-  definition convergent_exact_couple_reindex_neg {E'' : agℤ → agℤ → LeftModule R} {Dinf' : graded_module R agℤ}
     (e' : Πp q, E' p q ≃lm E'' (-p) (-q))
     (f' : Πn, Dinf n ≃lm Dinf' (-n)) :
     (λp q, E'' p q) ⟹ λn, Dinf' n :=
-  converges_to.mk (exact_couple_reindex (equiv_neg ×≃ equiv_neg) X) (is_bounded_reindex _ HH)
+  convergent_exact_couple.mk (exact_couple_reindex (equiv_neg ×≃ equiv_neg) X) (is_bounded_reindex _ HH)
     (λn, -s₂ (-n))
     (λn, ap (B' HH) (begin esimp, end) ⬝ HB c n)
     sorry --begin intro x, induction x with p q, exact e c (p, q) ⬝lm e' p q end
     sorry-/
 
-  definition is_built_from_of_converges_to (n : ℤ) : is_built_from (Dinf n) (Einfdiag n) :=
+  definition is_built_from_of_convergent_exact_couple (n : ℤ) : is_built_from (Dinf n) (Einfdiag n) :=
   is_built_from_isomorphism_left (f c n) (is_built_from_infpage HH (s₁ n, s₂ n) (HB c n))
 
   /- TODO: reprove this using is_built_of -/
-  theorem is_contr_converges_to_precise (n : agℤ)
+  theorem is_contr_convergent_exact_couple_precise (n : agℤ)
   (H : Π(n : agℤ) (l : ℕ), is_contr (E' ((deg i)^[l] (s₁ n, s₂ n)).1 ((deg i)^[l] (s₁ n, s₂ n)).2)) :
     is_contr (Dinf n) :=
   begin
@@ -701,8 +704,8 @@ namespace left_module
     exact equiv_of_isomorphism (Dinfdiag0 HH (s₁ n, s₂ n) (HB c n) ⬝lm f c n)
   end
 
-  theorem is_contr_converges_to (n : agℤ) (H : Π(n s : agℤ), is_contr (E' n s)) : is_contr (Dinf n) :=
-  is_contr_converges_to_precise n (λn s, !H)
+  theorem is_contr_convergent_exact_couple (n : agℤ) (H : Π(n s : agℤ), is_contr (E' n s)) : is_contr (Dinf n) :=
+  is_contr_convergent_exact_couple_precise n (λn s, !H)
 
   definition E_isomorphism {r₁ r₂ : ℕ} {n s : agℤ} (H : r₁ ≤ r₂)
     (H1 : Π⦃r⦄, r₁ ≤ r → r < r₂ → is_contr (E X (n - deg_d1 c r, s - deg_d2 c r)))
@@ -733,12 +736,12 @@ namespace left_module
   end
 
   variables {E' : agℤ → agℤ → AbGroup} {Dinf : agℤ → AbGroup} (c : E' ⟹ᵍ Dinf)
-  definition converges_to_g_isomorphism {E'' : agℤ → agℤ → AbGroup} {Dinf' : agℤ → AbGroup}
+  definition convergent_exact_couple_g_isomorphism {E'' : agℤ → agℤ → AbGroup} {Dinf' : agℤ → AbGroup}
     (e' : Πn s, E' n s ≃g E'' n s) (f' : Πn, Dinf n ≃g Dinf' n) : E'' ⟹ᵍ Dinf' :=
-  converges_to_isomorphism c (λn s, lm_iso_int.mk (e' n s)) (λn, lm_iso_int.mk (f' n))
+  convergent_exact_couple_isomorphism c (λn s, lm_iso_int.mk (e' n s)) (λn, lm_iso_int.mk (f' n))
 
 
-  structure converging_spectral_sequence.{u v w} {R : Ring} (E' : agℤ → agℤ → LeftModule.{u v} R)
+  structure convergent_spectral_sequence.{u v w} {R : Ring} (E' : agℤ → agℤ → LeftModule.{u v} R)
                                  (Dinf : agℤ → LeftModule.{u w} R) : Type.{max u (v+1) (w+1)} :=
     (E : ℕ → graded_module.{u 0 v} R Z2)
     (d : Π(n : ℕ), E n →gm E n)
@@ -751,7 +754,6 @@ namespace left_module
 
   /-
   todo:
-  - rename "converges_to" to converging_exact_couple
   - double-check the definition of converging_spectral_sequence
   - construct converging spectral sequence from a converging exact couple,
     - This requires the additional hypothesis that the degree of i is (-1, 1), which is true by reflexivity for the spectral sequences we construct
@@ -959,9 +961,9 @@ namespace spectrum
     --   refine !add.assoc ⬝ ap (add s) !add.comm ⬝ !add.assoc⁻¹,
     -- end
 
-  definition converges_to_sequence : (λn s, πₛ[n] (sfiber (f s))) ⟹ᵍ (λn, πₛ[n] (A (ub n))) :=
+  definition convergent_exact_couple_sequence : (λn s, πₛ[n] (sfiber (f s))) ⟹ᵍ (λn, πₛ[n] (A (ub n))) :=
   begin
-    fapply converges_to.mk,
+    fapply convergent_exact_couple.mk,
     { exact exact_couple_sequence },
     { exact is_bounded_sequence },
     { exact id },

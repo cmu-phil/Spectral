@@ -174,11 +174,11 @@ section atiyah_hirzebruch
   definition atiyah_hirzebruch_convergence1 :
     (λn s, πₛ[n] (sfiber (spi_compose_left (λx, postnikov_smap (Y x) s)))) ⟹ᵍ
     (λn, πₛ[n] (spi X (λx, strunc s₀ (Y x)))) :=
-  converges_to_sequence _ (λn, s₀) (λn, n - 1) atiyah_hirzebruch_lb atiyah_hirzebruch_ub
+  convergent_exact_couple_sequence _ (λn, s₀) (λn, n - 1) atiyah_hirzebruch_lb atiyah_hirzebruch_ub
 
   definition atiyah_hirzebruch_convergence2 :
-    (λn s, opH^-(n-s)[(x : X), πₛ[s] (Y x)]) ⟹ᵍ (λn, pH^-n[(x : X), Y x]) :=
-  converges_to_g_isomorphism atiyah_hirzebruch_convergence1
+    (λn s, opH^-(n-s)[(x : X), πₛ[s] (Y x)]) ⟹ᵍ (λn, pH^n[(x : X), Y x]) :=
+  convergent_exact_couple_g_isomorphism (convergent_exact_couple_negate_inf atiyah_hirzebruch_convergence1)
     begin
       intro n s,
       refine _ ⬝g (parametrized_cohomology_isomorphism_shomotopy_group_spi _ idp)⁻¹ᵍ,
@@ -189,7 +189,7 @@ section atiyah_hirzebruch
     end
     begin
       intro n,
-      refine _ ⬝g (parametrized_cohomology_isomorphism_shomotopy_group_spi _ idp)⁻¹ᵍ,
+      refine _ ⬝g (parametrized_cohomology_isomorphism_shomotopy_group_spi _ !neg_neg)⁻¹ᵍ,
       apply shomotopy_group_isomorphism_of_pequiv, intro k,
       exact ppi_pequiv_right (λx, ptrunc_pequiv (maxm2 (s₀ + k)) (Y x k)),
     end
@@ -211,10 +211,10 @@ section atiyah_hirzebruch
   end
 
   definition atiyah_hirzebruch_convergence :
-    (λp q, opH^p[(x : X), πₛ[-q] (Y x)]) ⟹ᵍ (λn, pH^-n[(x : X), Y x]) :=
+    (λp q, opH^p[(x : X), πₛ[-q] (Y x)]) ⟹ᵍ (λn, pH^n[(x : X), Y x]) :=
   begin
-    note z := converges_to_reindex atiyah_hirzebruch_convergence2 atiyah_hirzebruch_base_change,
-    refine converges_to_g_isomorphism z _ (λn, by reflexivity),
+    note z := convergent_exact_couple_reindex atiyah_hirzebruch_convergence2 atiyah_hirzebruch_base_change,
+    refine convergent_exact_couple_g_isomorphism z _ (by intro n; reflexivity),
     intro p q,
     apply parametrized_cohomology_change_int,
     esimp,
@@ -227,8 +227,8 @@ section unreduced_atiyah_hirzebruch
 
 definition unreduced_atiyah_hirzebruch_convergence {X : Type} (Y : X → spectrum) (s₀ : ℤ)
   (H : Πx, is_strunc s₀ (Y x)) :
-  (λp q, uopH^p[(x : X), πₛ[-q] (Y x)]) ⟹ᵍ (λn, upH^-n[(x : X), Y x]) :=
-converges_to_g_isomorphism
+  (λp q, uopH^p[(x : X), πₛ[-q] (Y x)]) ⟹ᵍ (λn, upH^n[(x : X), Y x]) :=
+convergent_exact_couple_g_isomorphism
   (@atiyah_hirzebruch_convergence X₊ (add_point_spectrum Y) s₀ (is_strunc_add_point_spectrum H))
   begin
     intro p q, refine _ ⬝g !uopH_isomorphism_opH⁻¹ᵍ,
@@ -248,9 +248,9 @@ section serre
 
   include H
   definition serre_convergence :
-    (λp q, uopH^p[(b : B), uH^q[F b, Y]]) ⟹ᵍ (λn, uH^-n[Σ(b : B), F b, Y]) :=
+    (λp q, uopH^p[(b : B), uH^q[F b, Y]]) ⟹ᵍ (λn, uH^n[Σ(b : B), F b, Y]) :=
   proof
-  converges_to_g_isomorphism
+  convergent_exact_couple_g_isomorphism
     (unreduced_atiyah_hirzebruch_convergence
       (λx, sp_ucotensor (F x) Y) s₀
       (λx, is_strunc_sp_ucotensor s₀ (F x) H))
@@ -262,35 +262,35 @@ section serre
     end
     begin
      intro n,
-     refine unreduced_parametrized_cohomology_isomorphism_shomotopy_group_supi _ idp ⬝g _,
-     refine _ ⬝g (unreduced_cohomology_isomorphism_shomotopy_group_sp_ucotensor _ _ idp)⁻¹ᵍ,
+     refine unreduced_parametrized_cohomology_isomorphism_shomotopy_group_supi _ !neg_neg ⬝g _,
+     refine _ ⬝g (unreduced_cohomology_isomorphism_shomotopy_group_sp_ucotensor _ _ !neg_neg)⁻¹ᵍ,
      apply shomotopy_group_isomorphism_of_pequiv, intro k,
      exact (sigma_pumap F (Y k))⁻¹ᵉ*
     end
   qed
 
   definition serre_convergence_map :
-    (λp q, uopH^p[(b : B), uH^q[fiber f b, Y]]) ⟹ᵍ (λn, uH^-n[X, Y]) :=
+    (λp q, uopH^p[(b : B), uH^q[fiber f b, Y]]) ⟹ᵍ (λn, uH^n[X, Y]) :=
   proof
-  converges_to_g_isomorphism
+  convergent_exact_couple_g_isomorphism
     (serre_convergence (fiber f) Y s₀ H)
     begin intro p q, reflexivity end
     begin intro n, apply unreduced_cohomology_isomorphism, exact !sigma_fiber_equiv⁻¹ᵉ end
   qed
 
   definition serre_convergence_of_is_conn (H2 : is_conn 1 B) :
-    (λp q, uoH^p[B, uH^q[F b₀, Y]]) ⟹ᵍ (λn, uH^-n[Σ(b : B), F b, Y]) :=
+    (λp q, uoH^p[B, uH^q[F b₀, Y]]) ⟹ᵍ (λn, uH^n[Σ(b : B), F b, Y]) :=
   proof
-  converges_to_g_isomorphism
+  convergent_exact_couple_g_isomorphism
     (serre_convergence F Y s₀ H)
     begin intro p q, exact @uopH_isomorphism_uoH_of_is_conn (pointed.MK B b₀) _ _ H2  end
     begin intro n, reflexivity end
   qed
 
   definition serre_convergence_map_of_is_conn (H2 : is_conn 1 B) :
-    (λp q, uoH^p[B, uH^q[fiber f b₀, Y]]) ⟹ᵍ (λn, uH^-n[X, Y]) :=
+    (λp q, uoH^p[B, uH^q[fiber f b₀, Y]]) ⟹ᵍ (λn, uH^n[X, Y]) :=
   proof
-  converges_to_g_isomorphism
+  convergent_exact_couple_g_isomorphism
     (serre_convergence_of_is_conn b₀ (fiber f) Y s₀ H H2)
     begin intro p q, reflexivity end
     begin intro n, apply unreduced_cohomology_isomorphism, exact !sigma_fiber_equiv⁻¹ᵉ end
