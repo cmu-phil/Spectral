@@ -126,6 +126,8 @@ pfiber_postnikov_map_pred' A n k _ idp ⬝e*
 pequiv_ap (EM_spectrum (πₛ[n] A)) (add.comm n k)
 qed
 
+open exact_couple
+
 section atiyah_hirzebruch
   parameters {X : Type*} (Y : X → spectrum) (s₀ : ℤ) (H : Πx, is_strunc s₀ (Y x))
   include H
@@ -249,14 +251,14 @@ convergent_exact_couple_g_isomorphism
     intro n, reflexivity
   end
 
-  definition unreduced_atiyah_hirzebruch_spectral_sequence {X : Type} (Y : X → spectrum) (s₀ : ℤ)
-    (H : Πx, is_strunc s₀ (Y x)) :
-    convergent_spectral_sequence_g (λp q, uopH^p[(x : X), πₛ[-q] (Y x)]) (λn, upH^n[(x : X), Y x]) :=
-  begin
-    apply convergent_spectral_sequence_of_exact_couple (unreduced_atiyah_hirzebruch_convergence Y s₀ H),
-    { intro n, exact add.comm (s₀ - -n) (-s₀) ⬝ !neg_add_cancel_left ⬝ !neg_neg },
-    { reflexivity }
-  end
+definition unreduced_atiyah_hirzebruch_spectral_sequence {X : Type} (Y : X → spectrum) (s₀ : ℤ)
+  (H : Πx, is_strunc s₀ (Y x)) :
+  convergent_spectral_sequence_g (λp q, uopH^p[(x : X), πₛ[-q] (Y x)]) (λn, upH^n[(x : X), Y x]) :=
+begin
+  apply convergent_spectral_sequence_of_exact_couple (unreduced_atiyah_hirzebruch_convergence Y s₀ H),
+  { intro n, exact add.comm (s₀ - -n) (-s₀) ⬝ !neg_add_cancel_left ⬝ !neg_neg },
+  { reflexivity }
+end
 
 end unreduced_atiyah_hirzebruch
 

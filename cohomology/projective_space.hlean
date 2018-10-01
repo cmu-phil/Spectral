@@ -5,7 +5,7 @@ Author: Floris van Doorn-/
 import .serre
 
 open eq spectrum EM EM.ops int pointed cohomology left_module algebra group fiber is_equiv equiv
-     prod is_trunc function
+     prod is_trunc function exact_couple
 
 namespace temp
 
@@ -22,9 +22,9 @@ namespace temp
   λx, pt
 
   definition fserre :
-    (λp q, uoH^p[K agℤ 2, H^q[circle₊]]) ⟹ᵍ (λn, H^-n[unit₊]) :=
+    (λp q, uoH^p[K agℤ 2, H^q[circle₊]]) ⟹ᵍ (λn, H^n[unit₊]) :=
   proof
-  converges_to_g_isomorphism
+  convergent_exact_couple_g_isomorphism
     (serre_convergence_map_of_is_conn pt f (EM_spectrum agℤ) 0
       (is_strunc_EM_spectrum agℤ) (is_conn_EM agℤ 2))
     begin

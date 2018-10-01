@@ -473,6 +473,63 @@ end
 
 end
 
+  /- we say that an left module D is built from the sequence E if
+     D is a "twisted sum" of the E, and E has only finitely many nontrivial values -/
+  open nat
+  structure is_built_from.{u v w} {R : Ring} (D : LeftModule.{u v} R)
+      (E : ℕ → LeftModule.{u w} R) : Type.{max u (v+1) w} :=
+    (part : ℕ → LeftModule.{u v} R)
+    (ses : Πn, short_exact_mod (E n) (part n) (part (n+1)))
+    (e0 : part 0 ≃lm D)
+    (n₀ : ℕ)
+    (HD' : Π(s : ℕ), n₀ ≤ s → is_contr (part s))
+
+  open is_built_from
+  universe variables u v w
+  variables {R : Ring.{u}} {D D' : LeftModule.{u v} R} {E E' : ℕ → LeftModule.{u w} R}
+
+  definition is_built_from_shift (H : is_built_from D E) :
+    is_built_from (part H 1) (λn, E (n+1)) :=
+  is_built_from.mk (λn, part H (n+1)) (λn, ses H (n+1)) isomorphism.rfl (pred (n₀ H))
+    (λs Hle, HD' H _ (le_succ_of_pred_le Hle))
+
+  definition isomorphism_of_is_contr_part (H : is_built_from D E) (n : ℕ) (HE : is_contr (E n)) :
+    part H n ≃lm part H (n+1) :=
+  isomorphism_of_is_contr_left (ses H n) HE
+
+  definition is_contr_submodules (H : is_built_from D E) (HD : is_contr D) (n : ℕ) :
+    is_contr (part H n) :=
+  begin
+    induction n with n IH,
+    { exact is_trunc_equiv_closed_rev -2 (equiv_of_isomorphism (e0 H)) _ },
+    { exact is_contr_right_of_short_exact_mod (ses H n) IH }
+  end
+
+  definition is_contr_quotients (H : is_built_from D E) (HD : is_contr D) (n : ℕ) :
+    is_contr (E n) :=
+  begin
+    apply is_contr_left_of_short_exact_mod (ses H n),
+    exact is_contr_submodules H HD n
+  end
+
+  definition is_contr_total (H : is_built_from D E) (HE : Πn, is_contr (E n)) : is_contr D :=
+  have is_contr (part H 0), from
+  nat.rec_down (λn, is_contr (part H n)) _ (HD' H _ !le.refl)
+    (λn H2, is_contr_middle_of_short_exact_mod (ses H n) (HE n) H2),
+  is_contr_equiv_closed (equiv_of_isomorphism (e0 H)) _
+
+  definition is_built_from_isomorphism (e : D ≃lm D') (f : Πn, E n ≃lm E' n)
+    (H : is_built_from D E) : is_built_from D' E' :=
+  ⦃is_built_from, H, e0 := e0 H ⬝lm e,
+    ses := λn, short_exact_mod_isomorphism (f n)⁻¹ˡᵐ isomorphism.rfl isomorphism.rfl (ses H n)⦄
+
+  definition is_built_from_isomorphism_left (e : D ≃lm D') (H : is_built_from D E) :
+    is_built_from D' E :=
+  ⦃is_built_from, H, e0 := e0 H ⬝lm e⦄
+
+  definition isomorphism_zero_of_is_built_from (H : is_built_from D E) (p : n₀ H = 1) : E 0 ≃lm D :=
+  isomorphism_of_is_contr_right (ses H 0) (HD' H 1 (le_of_eq p)) ⬝lm e0 H
+
 section int
 open int
 definition left_module_int_of_ab_group [constructor] (A : Type) [add_ab_group A] : left_module rℤ A :=

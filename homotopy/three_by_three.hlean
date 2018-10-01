@@ -28,7 +28,7 @@ namespace pushout
 
   open three_by_three_span
   variable (E : three_by_three_span)
-check (pushout.functor (f₂₁ E) (f₀₁ E) (f₄₁ E) (s₁₁ E) (s₃₁ E))
+-- check (pushout.functor (f₂₁ E) (f₀₁ E) (f₄₁ E) (s₁₁ E) (s₃₁ E))
   definition pushout2hv (E : three_by_three_span) : Type :=
   pushout (pushout.functor (f₂₁ E) (f₀₁ E) (f₄₁ E) (s₁₁ E) (s₃₁ E))
           (pushout.functor (f₂₃ E) (f₀₃ E) (f₄₃ E) (s₁₃ E) (s₃₃ E))

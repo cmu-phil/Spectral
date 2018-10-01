@@ -160,11 +160,11 @@ begin
   apply h (of_mem_property_of Sm)
 end
 
-definition is_prop_submodule (S : property M) [is_submodule M S] [H : is_prop M] : is_prop (submodule S) :=
-begin apply @is_trunc_sigma, exact H end
-local attribute is_prop_submodule [instance]
-definition is_contr_submodule [instance] (S : property M) [is_submodule M S] [is_contr M] : is_contr (submodule S) :=
-is_contr_of_inhabited_prop 0 _
+definition is_contr_submodule (S : property M) [is_submodule M S] (H : is_contr M) :
+  is_contr (submodule S) :=
+have is_prop M, from _,
+have is_prop (submodule S), from @is_trunc_sigma _ _ _ this _,
+is_contr_of_inhabited_prop 0 this
 
 definition submodule_isomorphism [constructor] (S : property M) [is_submodule M S] (h : Πg, g ∈ S) :
   submodule S ≃lm M :=
@@ -240,11 +240,12 @@ lm_homomorphism_of_group_homomorphism
 
 definition is_prop_quotient_module (S : property M) [is_submodule M S] [H : is_prop M] : is_prop (quotient_module S) :=
 begin apply @set_quotient.is_trunc_set_quotient, exact H end
-local attribute is_prop_quotient_module [instance]
 
-definition is_contr_quotient_module [instance] (S : property M) [is_submodule M S] [is_contr M] :
-  is_contr (quotient_module S) :=
-is_contr_of_inhabited_prop 0 _
+definition is_contr_quotient_module [instance] (S : property M) [is_submodule M S]
+  (H : is_contr M) : is_contr (quotient_module S) :=
+have is_prop M, from _,
+have is_prop (quotient_module S), from @set_quotient.is_trunc_set_quotient _ _ _ this,
+is_contr_of_inhabited_prop 0 this
 
 definition rel_of_is_contr_quotient_module (S : property M) [is_submodule M S]
   (H : is_contr (quotient_module S)) (m : M) : S m :=
@@ -331,11 +332,11 @@ end
 --   reflexivity
 -- end
 
-definition is_contr_image_module [instance] (φ : M₁ →lm M₂) [is_contr M₂] :
+definition is_contr_image_module [instance] (φ : M₁ →lm M₂) (H : is_contr M₂) :
   is_contr (image_module φ) :=
-!is_contr_submodule
+is_contr_submodule _ _
 
-definition is_contr_image_module_of_is_contr_dom (φ : M₁ →lm M₂) [is_contrM₁ : is_contr M₁] :
+definition is_contr_image_module_of_is_contr_dom (φ : M₁ →lm M₂) (H : is_contr M₁) :
   is_contr (image_module φ) :=
 is_contr.mk 0
   begin
@@ -343,7 +344,7 @@ is_contr.mk 0
     apply @total_image.rec,
     exact this,
     intro m,
-    have h : is_contr (LeftModule.carrier M₁), from is_contrM₁,
+    have h : is_contr (LeftModule.carrier M₁), from H,
     induction (eq_of_is_contr 0 m), apply subtype_eq,
     exact (to_respect_zero φ)⁻¹
   end
@@ -369,19 +370,21 @@ is_submodule.mk
        begin apply @is_subgroup.mul_mem, apply is_subgroup_kernel, exact hg₁, exact hg₂ end)
   (has_scalar_kernel φ)
 
-definition kernel_full (φ : M₁ →lm M₂) [is_contr M₂] (m : M₁) : m ∈ lm_kernel φ :=
+definition kernel_full (φ : M₁ →lm M₂) (H : is_contr M₂) (m : M₁) : m ∈ lm_kernel φ :=
 !is_prop.elim
 
 definition kernel_module [reducible] (φ : M₁ →lm M₂) : LeftModule R := submodule (lm_kernel φ)
 
-definition is_contr_kernel_module [instance] (φ : M₁ →lm M₂) [is_contr M₁] :
+definition is_contr_kernel_module [instance] (φ : M₁ →lm M₂) (H : is_contr M₁) :
   is_contr (kernel_module φ) :=
-!is_contr_submodule
+is_contr_submodule _ _
 
-definition kernel_module_isomorphism [constructor] (φ : M₁ →lm M₂) [is_contr M₂] : kernel_module φ ≃lm M₁ :=
-submodule_isomorphism _ (kernel_full φ)
+definition kernel_module_isomorphism [constructor] (φ : M₁ →lm M₂) (H : is_contr M₂) :
+  kernel_module φ ≃lm M₁ :=
+submodule_isomorphism _ (kernel_full φ _)
 
-definition homology_quotient_property (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂) : property (kernel_module ψ) :=
+definition homology_quotient_property (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂) :
+  property (kernel_module ψ) :=
 property_submodule (lm_kernel ψ) (image (homomorphism_fn φ))
 
 definition is_submodule_homology_property [instance] (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂) :
@@ -417,14 +420,14 @@ quotient_elim (θ ∘lm submodule_incl _)
     exact ap θ p⁻¹ ⬝ H v -- m'
   end
 
-definition is_contr_homology [instance] (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂) [is_contr M₂] :
+definition is_contr_homology [instance] (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂) (H : is_contr M₂) :
   is_contr (homology ψ φ) :=
-begin apply @is_contr_quotient_module end
+is_contr_quotient_module _ (is_contr_kernel_module _ _)
 
 definition homology_isomorphism [constructor] (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂)
-  [is_contr M₁] [is_contr M₃] : homology ψ φ ≃lm M₂ :=
+  (H₁ : is_contr M₁) (H₃ : is_contr M₃) : homology ψ φ ≃lm M₂ :=
 (quotient_module_isomorphism (homology_quotient_property ψ φ)
-  (eq_zero_of_mem_property_submodule_trivial (image_trivial _))) ⬝lm (kernel_module_isomorphism ψ)
+  (eq_zero_of_mem_property_submodule_trivial (image_trivial _))) ⬝lm (kernel_module_isomorphism ψ _)
 
 definition ker_in_im_of_is_contr_homology (ψ : M₂ →lm M₃) {φ : M₁ →lm M₂}
   (H₁ : is_contr (homology ψ φ)) {m : M₂} (p : ψ m = 0) : image φ m :=

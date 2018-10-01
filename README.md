@@ -3,7 +3,7 @@
 Formalization project of the CMU HoTT group to formalize the Serre spectral sequence.
 
 *Update July 16*: The construction of the Serre spectral sequence has been completed. The result is `serre_convergence` in `cohomology.serre`.
-The main algebra part is in `algebra.spectral_sequence`.
+The main algebra part is in `algebra.exact_couple`.
 
 This repository also contains the contents of the MRC group on formalizing homology in Lean.
 
