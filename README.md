@@ -1,11 +1,16 @@
 # Spectral Sequences in Homotopy Type Theory
 
-Formalization project of the CMU HoTT group to formalize the Serre spectral sequence.
+Formalization project of the CMU HoTT group to formalize the Serre spectral sequence in Lean 2.
 
-*Update July 16*: The construction of the Serre spectral sequence has been completed. The result is `serre_convergence` in `cohomology.serre`.
+*Update July 16, 2017*: The construction of the Serre spectral sequence has been completed. The result is `serre_convergence` in `cohomology.serre`.
 The main algebra part is in `algebra.exact_couple`.
 
-This repository also contains the contents of the MRC group on formalizing homology in Lean.
+This repository also contains: 
+* a formalization of colimits which is in progress by Floris van Doorn, Egbert Rijke and Kristina Sojakova.
+* a formalization and notes (in progress) about the smash product by Floris van Doorn and Stefano Piceghello.
+* a formalization of *The real projective spaces in homotopy type theory*, Ulrik Buchholtz and Egbert Rijke, LICS 2017.
+* a formalization of *Higher Groups in Homotopy Type Theory*, Ulrik Buchholtz, Floris van Doorn, Egbert Rijke, LICS 2018.
+* the contents of the MRC 2017 group on formalizing homology in Lean.
 
 #### Participants
 Jeremy Avigad, Steve Awodey, Ulrik Buchholtz, Floris van Doorn, Clive Newstead, Egbert Rijke, Mike Shulman.
@@ -66,8 +71,9 @@ These projects are done
   + colimits need to be spectrified
 - long exact sequence from cofiber sequences of spectra
   + indexed on ℤ, need to splice together LES's
-- Cup product on cohomology groups
 - Parametrized and unreduced homology
+- Cup product on cohomology groups
+- Show that the spectral sequence respect the cup product structure of cohomology
 - Steenrod squares
 - ...
 
@@ -105,9 +111,9 @@ These projects are done
 - exact couple of a tower of spectra
   + need to splice together LES's
 
-## Contributing
+## Usage and Contributing
+- To compile this repository you will need a working version of Lean 2. Installation instructions for Lean 2 can be found [here](https://github.com/leanprover/lean2).
 - We will try to make sure that this repository compiles with the newest version of Lean 2.
-- Installation instructions for Lean 2 can be found [here](https://github.com/leanprover/lean2).
 - Some notes on the Emacs mode can be found [here](https://github.com/leanprover/lean2/blob/master/src/emacs/README.md) (for example if some unicode characters don't show up, or increase the spacing between lines by a lot).
+- We try to separate the repository into the folders `algebra`, `homotopy`, `homology`, `cohomology`, `spectrum` and `colimit`. Homotopy theotic properties of types which do not explicitly mention homotopy, homology or cohomology groups (such as `A ∧ B ≃* B ∧ A`) are part of `homotopy`.
 - If you contribute, please use rebase instead of merge (e.g. `git pull -r`).
-- We try to separate the repository into the folders `algebra`, `homotopy`, `homology`, `cohomology` and `colimit`. Homotopy theotic properties of types which do not explicitly mention homotopy, homology or cohomology groups (such as `A ∧ B ≃* B ∧ A`) are part of `homotopy`.
