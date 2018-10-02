@@ -81,7 +81,7 @@ We define the pointed equivalences:
   with underlying map defined with $\twist(f) \defeq \lam{b}\lam{a}f(a)(b)$.
 \end{defn}
 
-\begin{lem}
+\begin{lem}\label{lem:composition-pointed}
   Given maps $f:A'\pmap A$ and $g:B\pmap B'$. Then there are maps
   $(f\pmap C):(A\pmap C)\pmap(A'\pmap C)$ and $(C\pmap g):(C\pmap B)\pmap(C\pmap B')$ given by
   precomposition with $f$, resp. postcomposition with $g$. The map $\lam{g}C\pmap g$ preserves the basepoint, giving rise to a map $$(C\pmap ({-})):(B\pmap B')\pmap(C\pmap B)\pmap(C\pmap B').$$
@@ -98,34 +98,34 @@ We define the pointed equivalences:
 \section{Naturality and a version of the Yoneda lemma}
 
 \begin{defn}\label{def:naturality}
-	Let $F$, $G$ be functors of pointed types, i.e. pointed maps with a functorial action (e.g. if $f : A \to B$, then we can define $F(f) : F(A) \to F(B)$, respecting identity and composition). 
-	Let $\theta : F \Rightarrow G$ be a natural transformation from $F$ to $G$, i.e. a pointed map $F(X) \to G(X)$ for all pointed types $X$. For every $f : A \to B$, there is a diagram:
-	\begin{center}
-	\begin{tikzcd}
-		F(A)
-			\arrow[r, "F(f)"]
-			\arrow[d, swap, "\theta_A"]
-		& F(B)
-			\arrow[d, "\theta_B"]
-		\\
-		G(A)
-			\arrow[r, swap, "G(f)"]
-		& G(B)
-	\end{tikzcd}
-	\end{center}
+	A (1-coherent) \emph{functor} $F$ between pointed types is a function $F_0:\type^*\to\type^*$ with an action of morphisms $F_1 : (A \to^* B) \to (FA \to^* FB)$ such that $F_1(g \o f)\sim F_1g \o F_1 f$ and $F_1\idfunc[A]\sim\idfunc[F_0A]$. We will write both $F_0$ and $F_1$ as $F$. A functor $F$ is \emph{pointed} if $F\unit$ is contractible. In this case $F0_{A,B}\sim 0_{FA,FB}$.
+	Let $F$, $G$ be functors of pointed types. Suppose that we have a transformation $\theta_X : F(X) \to G(X)$ for all pointed types $X$. 
+	% \begin{center}
+	% \begin{tikzcd}
+	% 	F(A)
+	% 		\arrow[r, "F(f)"]
+	% 		\arrow[d, swap, "\theta_A"]
+	% 	& F(B)
+	% 		\arrow[d, "\theta_B"]
+	% 	\\
+	% 	G(A)
+	% 		\arrow[r, swap, "G(f)"]
+	% 	& G(B)
+	% \end{tikzcd}
+	% \end{center}
 	We define the following notions of naturality for $\theta$:
 	\begin{itemize}
-		\item \textbf{(strong) naturality} will refer to a pointed homotopy
+		\item \textbf{naturality} will refer to a pointed homotopy
 		\[p_\theta(f) : G(f) \o \theta_A \sim \theta_B \o F(f)\]
 		for every $f : A \to B$ and \textbf{weak naturality} to the underlying (non-pointed) homotopy;
-		\item \textbf{pointed (strong) naturality} will refer to the same pointed homotopy, with the additional condition that $p_\theta(0) = (p_\theta)_0$, where
+		\item \textbf{pointed naturality} will refer to the same pointed homotopy, with the additional condition that $p_\theta(0) = (p_\theta)_0$, where
 		\[(p_\theta)_0 : G(0) \o \theta_A \sim 0 \o \theta_A \sim 0 \sim \theta_B \o 0 \sim \theta_B \o F(0)\]
 		is the canonical proof of the pointed homotopy $G(0) \o \theta_A \sim \theta_B \o F(0)$, whereas \textbf{pointed weak naturality} will refer to the corresponding non-pointed condition.
 	\end{itemize}
 \end{defn}
 
 \begin{rmk}
-	The relation between the four notions of naturality is as expected: strong implies weak, and pointed implies simple. Weak naturality is generally ill-behaved: for example, weak naturality of $\theta$ does not imply weak naturality of $\theta \to X$ or $X \to \theta$, whereas the implication holds for strong naturality.
+	The relation between the four notions of naturality is as expected: naturality implies weak naturality, and pointed implies simple. Weak naturality is generally ill-behaved: for example, weak naturality of $\theta$ does not imply weak naturality of $\theta \to X$ or $X \to \theta$, whereas the implication holds for naturality.
 \end{rmk}
 
 \begin{rmk}
@@ -133,7 +133,7 @@ We define the pointed equivalences:
 \end{rmk}
 
 \begin{lem}[Yoneda]\label{lem:yoneda}
-	Let $A$, $B$ be pointed types, and assume, for all pointed types $X$, a pointed equivalence $\phi_X : (B \to X) \simeq (A \to X)$, natural in $X$, i.e. for all $f : X \to X'$ there is a homotopy \[ p_\phi(f) : (A \to f) \o \phi_X \sim \phi_X' \o (B \to f) \]
+	Let $A$, $B$ be pointed types, and assume, for all pointed types $X$, a pointed equivalence $\phi_X : (B \to X) \simeq (A \to X)$, natural in $X$, i.e. for all $f : X \to X'$ there is a pointed homotopy \[ p_\phi(f) : (A \to f) \o \phi_X \sim \phi_{X'} \o (B \to f) \]
 %	 making the following diagram commute for all $f : X \to X'$:
 %	\begin{center}
 %	\begin{tikzcd}
@@ -151,11 +151,11 @@ We define the pointed equivalences:
 	Then there exists a pointed equivalence $\psi_\phi : A \simeq B$.
 \end{lem}
 \begin{proof}
-	We define $\psi_\phi \defeq \phi_B(\idfunc[B]) : A \to B$ and $\psi_\phi\sy \defeq \phi_A\sy(\idfunc[A])$. The given naturality square for $X \defeq B$ and $g \defeq \psi_\phi\sy$ yields $\psi_\phi\sy \o \phi_B (\idfunc[B]) \judgeq \psi_\phi\sy \o \psi_\phi \sim \phi_A (\psi_\phi\sy \o \idfunc[B]) \judgeq \phi_A (\phi_A\sy (\idfunc[A])) \sim \idfunc[A]$, and similarly for the inverse composition.
+	We define $\psi_\phi \defeq \phi_B(\idfunc[B]) : A \to B$ and $\psi_\phi\sy \defeq \phi_A\sy(\idfunc[A]):B\to A$. The given naturality square for $f \defeq \psi_\phi\sy$ yields $\psi_\phi\sy \o \phi_B (\idfunc[B]) \judgeq \psi_\phi\sy \o \psi_\phi \sim \phi_A (\psi_\phi\sy \o \idfunc[B]) \judgeq \phi_A (\phi_A\sy (\idfunc[A])) \sim \idfunc[A]$, and similarly for the inverse composition.
 \end{proof}
 
 \begin{lem}\label{lem:yoneda-pointed}
-	Assume $A$, $B$, $\phi_X$ and $p$ as in \autoref{lem:yoneda}, and assume moreover that $\phi_X$ is pointed natural. Then there is a pointed homotopy $(\psi_\phi \to X) \sim \phi_X$.
+	Assume $A$, $B$, $\phi_X$ and $p$ as in \autoref{lem:yoneda}, and assume moreover that $\phi$ is pointed natural. Then there is a pointed homotopy $(\psi_\phi \to X) \sim \phi_X$.
 \end{lem}
 
 \begin{proof}
@@ -178,7 +178,7 @@ We define the pointed equivalences:
 	\end{tikzcd}
 	\end{center}
 	where the top-left expression is definitionally equal to $0 \o \phi_X(\idfunc)$, the horizontal path comes from the underlying homotopy and $(\phi_X)_0$ is the canonical path from $\phi_X(0)$ to $0$. Since $\phi_X$ is pointed natural, we have that
-	$p_{\phi_X}(0)(\idfunc) = (p_{\phi_X})_0(\idfunc)$, which, in this case, is:
+	$p_{\phi_X}(0)(\idfunc) = (p_{\phi_X})_0(\idfunc)$, which, in this case, is the concatenation:
 	\begin{align*}
 	0\o \phi_X(\idfunc)
 	&= 0 &&\text{(by $\zeroh_{q_X(\idfunc)}$)}\\
@@ -625,11 +625,11 @@ square, which follows from the left pentagon in \autoref{lem:smash-coh}.
 0
 \end{tikzcd}
 \end{center}
-To show that this naturality is pointed, we need to show that if $g=0$ then this homotopy is the same as the concatenation of the following pointed homotopies:
-$$q:({-})\smsh C \circ (A \to 0)\sim ({-})\smsh C \circ 0 \sim 0 \sim 0 \circ ({-})\smsh C\sim 0\smsh B \circ ({-})\smsh C.$$
+To show that this naturality is pointed, we need to show that if $g=0$ then this homotopy is the same as the concatenation $q_0$ of the following pointed homotopies:
+$$({-})\smsh C \circ (A \to 0)\sim ({-})\smsh C \circ 0 \sim 0 \sim 0 \circ ({-})\smsh C\sim 0\smsh B \circ ({-})\smsh C.$$
 To show that the underlying homotopies are the same, we need to show that $i(0,f,\idfunc[C],\idfunc[C])$ is equal to the following concatenation of pointed homotopies
-$$q(f):(0\circ f)\smsh C\sim 0\smsh C \sim 0 \sim 0 \circ f\smsh C\sim 0\smsh B \circ f\smsh C,$$
-which is the right pentagons in \autoref{lem:smash-coh}. 
+$$q_0(f):(0\circ f)\smsh C\sim 0\smsh C \sim 0 \sim 0 \circ f\smsh C\sim 0\smsh B \circ f\smsh C,$$
+which is the right pentagon in \autoref{lem:smash-coh}. 
 To show that these pointed homotopies respect the basepoint in the same way, we need to show that (TODO)
 ``$R\mathrel\square(0\smsh C \circ t)\cdot q_0=L$ where $L$ and $R$ are the left and right pentagons applied to $0$ and $\square$ is whiskering.''
 
@@ -664,7 +664,7 @@ are filled by (corollaries of) \autoref{lem:smash-general}.
   $\epsilon_{B,C}\equiv\epsilon : (B\pmap C)\smsh B \pmap C$ dinatural in $B$ and pointed natural in $C$.
   These maps satisfy the unit-counit laws:
   $$(A\to\epsilon_{A,B})\o \eta_{A\to B,A}\sim \idfunc[A\to B]\qquad
-  \epsilon_{B,B\smsh C}\o \eta_{A,B}\smsh B\sim\idfunc[A\smsh B].$$
+  \epsilon_{B,A\smsh B}\o \eta_{A,B}\smsh B\sim\idfunc[A\smsh B].$$
 \end{lem}
 Note: $\eta$ is also dinatural in $B$, but we don't need this.
 \begin{proof}
@@ -702,7 +702,7 @@ Note: $\eta$ is also dinatural in $B$, but we don't need this.
   then we need to show that $f(b_0)=c_0$, which is true by $f_0$. If $x$ varies over $\gluer_b$ we
   need to show that $0(b)=c_0$ which is true by reflexivity. Now $\epsilon_0\defeq 1:\epsilon(0_{B,C},b_0)=c_0$ shows that $\epsilon$ is pointed.
 
-  Now we need to show that the counit is natural in $B$ and pointed natural in $C$.
+  Now we need to show that the counit is dinatural in $B$ and pointed natural in $C$. (TODO)
 
   Finally, we need to show the unit-counit laws. For the underlying homotopy of the first one, let
   $f:A\to B$. We need to show that $p_f:\epsilon\o\eta f\sim f$. We define $p_f(a)=1:\epsilon(f,a)=f(a)$. To show that $p_f$ is a pointed homotopy, we need to show that
@@ -874,7 +874,7 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 \end{proof}
 
 \begin{thm}[Associativity pentagon]\label{thm:smash-associativity-pentagon}
-	For $A$, $B$, $C$ and $D$ pointed types, there is a homotopy
+	For $A$, $B$, $C$ and $D$ pointed types, there is a pointed homotopy
 	\[\alpha \o \alpha \sim (A \smsh \alpha) \o \alpha \o (\alpha \smsh D)\]
 	corresponding to the commutativity of the following diagram:
 	\begin{center}
@@ -1013,7 +1013,7 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 \end{proof}
 
 \begin{thm}[Unitors triangle]\label{thm:smash-unitors-triangle}
-	For $A$ and $B$ pointed types, there is a homotopy
+	For $A$ and $B$ pointed types, there is a pointed homotopy
 	\[(A \smsh \lambda) \o \alpha \sim (\rho \smsh B)\]
 	corresponding to the commutativity of the following diagram:
 	\begin{center}
@@ -1045,7 +1045,7 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 \end{proof}
 
 \begin{thm}[Braiding-unitors triangle]\label{thm:smash-braiding-unitors}
-	For a pointed type $A$, there is a homotopy
+	For a pointed type $A$, there is a pointed homotopy
 	\[\lambda \o \gamma \sim \rho\]
 	corresponding to the commutativity of the following diagram:
 	\begin{center}
@@ -1121,12 +1121,12 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 		& (A \to B \to C \to X)
 	\end{tikzcd}
 	\end{center}
-	where the squares on the right are instances of naturality of $\twist$, while the commutativity of the pentagon on the left follows easily from the definition of $\twist$.
+	where the square on the top right is by \autoref{lem:composition-pointed}, the square on the bottom right is naturality of $\twist$. The commutativity of the pentagon on the left is TODO (it is a diagram of a 1-coherent symmetric closed category).
 \end{proof}
 
 
 \begin{thm}[Associativity-braiding hexagon]\label{thm:smash-associativity-braiding}
-	For pointed types $A$, $B$ and $C$, there is a homotopy
+	For pointed types $A$, $B$ and $C$, there is a pointed homotopy
 	\[\alpha \o \gamma \o \alpha \sim (B \smsh \gamma) \o \alpha \o (\gamma \smsh C)\]
 	corresponding to the commutativity of the following diagram:
 	\begin{center}
@@ -1178,7 +1178,7 @@ Using \autoref{lem:yoneda} (Yoneda) we can prove associativity, left- and right 
 \end{proof}
 
 \begin{thm}[Double braiding]\label{thm:smash-double-braiding}
-	For $A$ and $B$ pointed types, there is a homotopy
+	For $A$ and $B$ pointed types, there is a pointed homotopy
 	\[\gamma \o \gamma \sim \idfunc\]
 	corresponding to the commutativity of the following diagram:
 	\begin{center}
@@ -1232,6 +1232,15 @@ If $F$ is a pointed 2-coherent functor (or more precisely a 1-coherent functor w
 Now we can also show \autoref{thm:smash-functor-right} more generally, but we will only formulate that for functors between pointed types. If $F:\type^*\to\type^*$ is a 2-coherent pointed functor, then it induces a map
 $(A\to B)\to(FA\to FB)$ which is natural in $A$ and $B$. Moreover, if $F$ is 3-coherent then this is a pointed natural transformation in $B$.
 
+\section{References}
+\begin{itemize}
+\item (TODO)
+\item An algebraic theory of tricategories, Nick Gurski
+\item Closed Categories, Samuel Eilenberg and G. Max Kelly (Chapter 2, Theorem 5.3, 1-categorical account of getting a monoidal category from a enriched adjunction in a closed category)
+\item Permutative categories, multicategories, and algebraic K-theory, A D Elmendorf and M A Mandell (Lemma 4.20 gives a 1-categorical account that if C is a symmetric monoidal closed bicomplete 1-category, then the category of pointed objects is a symmetric monoidal closed bicomplete 1-category).
+\item On embedding closed categories, B.J. Day and M.L. Laplaza (definition of symmetric closed category).
+\item Maybe: Handbook of Categorical Algebra 2  Categories and Structures, F Borceux. (Bjorn used it to look things up about symmetric monoidal closed categories)
+\end{itemize}
 \end{document}
 
 
