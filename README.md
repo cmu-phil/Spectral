@@ -112,8 +112,9 @@ These projects are done
   + need to splice together LES's
 
 ## Usage and Contributing
-- To compile this repository you will need a working version of Lean 2. Installation instructions for Lean 2 can be found [here](https://github.com/leanprover/lean2).
-- We will try to make sure that this repository compiles with the newest version of Lean 2.
-- Some notes on the Emacs mode can be found [here](https://github.com/leanprover/lean2/blob/master/src/emacs/README.md) (for example if some unicode characters don't show up, or increase the spacing between lines by a lot).
+- To compile this repository you can run `linja` (or `path/to/lean2/bin/linja`) in the main directory.
+  + You will need a working version of Lean 2. Installation instructions for Lean 2 can be found [here](https://github.com/leanprover/lean2).
+  + We will try to make sure that this repository compiles with the newest version of Lean 2.
+- The preferred editor for Lean 2 is Emacs. Notes on the Emacs mode can be found [here](https://github.com/leanprover/lean2/blob/master/src/emacs/README.md) (for example if some unicode characters don't show up, or increase the spacing between lines by a lot).
 - We try to separate the repository into the folders `algebra`, `homotopy`, `homology`, `cohomology`, `spectrum` and `colimit`. Homotopy theotic properties of types which do not explicitly mention homotopy, homology or cohomology groups (such as `A ∧ B ≃* B ∧ A`) are part of `homotopy`.
 - If you contribute, please use rebase instead of merge (e.g. `git pull -r`).
