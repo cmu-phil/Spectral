@@ -232,6 +232,22 @@ section atiyah_hirzebruch
     { reflexivity }
   end
 
+/-
+  to unfold a field of atiyah_hirzebruch_spectral_sequence:
+    esimp [atiyah_hirzebruch_spectral_sequence, convergent_spectral_sequence_of_exact_couple,
+      atiyah_hirzebruch_convergence, convergent_exact_couple_g_isomorphism,
+      convergent_exact_couple_isomorphism, convergent_exact_couple_reindex,
+      atiyah_hirzebruch_convergence2, convergent_exact_couple_negate_abutment,
+      atiyah_hirzebruch_convergence1, convergent_exact_couple_sequence],
+
+-/
+  definition AHSS_deg_d (r : ℕ) :
+    convergent_spectral_sequence.deg_d atiyah_hirzebruch_spectral_sequence r =
+    (r + 2, -(r + 1)) :=
+  begin
+    reflexivity
+  end
+
 end atiyah_hirzebruch
 
 section unreduced_atiyah_hirzebruch

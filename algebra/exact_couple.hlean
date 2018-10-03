@@ -5,7 +5,7 @@
 
 -- Author: Floris van Doorn
 
-import .graded ..spectrum.basic .product_group
+import .graded ..spectrum.basic .product_group .ring
 
 open algebra is_trunc left_module is_equiv equiv eq function nat sigma set_quotient group
      left_module
@@ -535,7 +535,8 @@ namespace exact_couple
 
   open int group prod convergence_theorem prod.ops
 
-  definition Z2 [constructor] : AddAbGroup := agℤ ×aa agℤ
+  local attribute [coercion] AddAbGroup_of_Ring
+  definition Z2 [constructor] : AddAbGroup := rℤ ×aa rℤ
 
   structure convergent_exact_couple.{u v w} {R : Ring} (E' : agℤ → agℤ → LeftModule.{u v} R)
                                  (Dinf : agℤ → LeftModule.{u w} R) : Type.{max u (v+1) (w+1)} :=
@@ -722,7 +723,7 @@ namespace spectrum
 
   definition i_sequence : D_sequence →gm D_sequence :=
   begin
-    fapply graded_hom.mk, exact (prod_equiv_prod erfl (add_right_action (- (1 : ℤ)))),
+    fapply graded_hom.mk, exact (prod_equiv_prod erfl (add_right_action (- 1))),
     { intro i, exact pair_eq !add_zero⁻¹ idp },
     intro v,
     apply lm_hom_int.mk, esimp,
@@ -730,7 +731,7 @@ namespace spectrum
   end
 
   definition deg_j_seq_inv [constructor] : I ≃ I :=
-  prod_equiv_prod (add_right_action (1 : ℤ)) (add_right_action (- (1 : ℤ)))
+  prod_equiv_prod (add_right_action 1) (add_right_action (- 1))
 
   definition fn_j_sequence [unfold 3] (x : I) :
     D_sequence (deg_j_seq_inv x) →lm E_sequence x :=
@@ -759,7 +760,7 @@ namespace spectrum
     intro y, induction x with n s, induction y with m t,
     refine equiv_rect !pair_eq_pair_equiv⁻¹ᵉ _ _,
     intro pq, esimp at pq, induction pq with p q,
-    revert t q, refine eq.rec_equiv (add_right_action (-(1 : ℤ))) _,
+    revert t q, refine eq.rec_equiv (add_right_action (- 1)) _,
     induction p using eq.rec_symm,
     apply is_exact_homotopy homotopy.rfl,
     { symmetry, exact graded_hom_mk_out_destruct deg_j_seq_inv⁻¹ᵉ (λi, idp) fn_j_sequence },
@@ -789,7 +790,7 @@ namespace spectrum
 
   open int
   parameters (ub : ℤ → ℤ) (lb : ℤ → ℤ)
-    (Aub : Π(s n : ℤ), s ≥ ub n + (1 : ℤ) → is_equiv (πₛ→[n] (f s)))
+    (Aub : Π(s n : ℤ), s ≥ ub n + 1 → is_equiv (πₛ→[n] (f s)))
     (Alb : Π(s n : ℤ), s ≤ lb n → is_contr (πₛ[n] (A s)))
 
   definition B : I → ℕ
@@ -799,7 +800,7 @@ namespace spectrum
   | (n, s) := max0 (ub n - s)
 
   definition B'' : I → ℕ
-  | (n, s) := max0 (max (ub n + (1 : ℤ) - s) (ub (n+(1 : ℤ)) + (1 : ℤ) - s))
+  | (n, s) := max0 (max (ub n + 1 - s) (ub (n+1) + 1 - s))
 
   lemma iterate_deg_i (n s : ℤ) (m : ℕ) : (deg i_sequence)^[m] (n, s) = (n, s - m) :=
   begin
@@ -862,7 +863,7 @@ namespace spectrum
     { intro n, change max0 (ub n - ub n) = 0, exact ap max0 (sub_self (ub n)) },
     { intro ns, reflexivity },
     { intro n, reflexivity },
-    { intro r, exact (-(1 : ℤ), r + (1 : ℤ)) },
+    { intro r, exact (- 1, r + 1) },
     { intro r, refine !convergence_theorem.deg_dr ⬝ _,
       refine ap (deg j_sequence) !iterate_deg_i_inv ⬝ _,
       exact prod_eq idp !zero_add }

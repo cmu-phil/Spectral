@@ -8,10 +8,10 @@ namespace EM
 
 
 definition EM1product_adj {R : Ring} :
-  EM1 (AbGroup_of_Ring R) →* ppmap (EM1 (AbGroup_of_Ring R)) (EMadd1 (AbGroup_of_Ring R) 1) :=
+  EM1 (AddGroup_of_Ring R) →* ppmap (EM1 (AddGroup_of_Ring R)) (EMadd1 (AddAbGroup_of_Ring R) 1) :=
 begin
-  have is_trunc 1 (ppmap (EM1 (AbGroup_of_Ring R)) (EMadd1 (AbGroup_of_Ring R) 1)),
-    from is_trunc_pmap_of_is_conn _ _ _ _ _ _ (le.refl 2) !is_trunc_EMadd1,
+  have is_trunc 1 (ppmap (EM1 (AddGroup_of_Ring R)) (EMadd1 (AddAbGroup_of_Ring R) 1)),
+    from is_trunc_pmap_of_is_conn _ _ !is_conn_EM1 _ _ _ (le.refl 2) !is_trunc_EMadd1,
   apply EM1_pmap, fapply inf_homomorphism.mk,
   { intro r, refine pfunext _ _, exact !loop_EM2⁻¹ᵉ* ∘* EM1_functor (ring_right_action r), },
   { intro r r', exact sorry }

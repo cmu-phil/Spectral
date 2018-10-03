@@ -36,7 +36,7 @@ convergent_spectral_sequence (λn s, LeftModule_int_of_AbGroup (E' n s))
 
   definition convergent_spectral_sequence_of_exact_couple {R : Ring} {E' : agℤ → agℤ → LeftModule R}
     {Dinf : agℤ → LeftModule R} (c : convergent_exact_couple E' Dinf)
-    (st_eq : Πn, (st c n).1 + (st c n).2 = n) (deg_i_eq : deg (i (X c)) 0 = (-(1 : ℤ), (1 : ℤ))) :
+    (st_eq : Πn, (st c n).1 + (st c n).2 = n) (deg_i_eq : deg (i (X c)) 0 = (- 1, 1)) :
     convergent_spectral_sequence E' Dinf :=
   convergent_spectral_sequence.mk (λr, E (page (X c) r)) (λr, d (page (X c) r))
     (deg_d c) (deg_d_eq0 c)
@@ -49,8 +49,8 @@ convergent_spectral_sequence (λn s, LeftModule_int_of_AbGroup (E' n s))
       induction p with p IH,
       { exact !prod.eta⁻¹ ⬝ prod_eq (eq_sub_of_add_eq (ap (add _) !zero_add ⬝ st_eq n))
                                     (zero_add (st c n).2)⁻¹ },
-      { assert H1 : Π(a : ℤ), n - (p + a) - (1 : ℤ) = n - (succ p + a),
-        exact λa, !sub_add_eq_sub_sub⁻¹ ⬝ ap (sub n) (add_comm_middle p a (1 : ℤ) ⬝ proof idp qed),
+      { assert H1 : Π(a : ℤ), n - (p + a) - 1 = n - (succ p + a),
+        exact λa, !sub_add_eq_sub_sub⁻¹ ⬝ ap (sub n) (add_comm_middle p a 1 ⬝ proof idp qed),
         assert H2 : Π(a : ℤ), p + a + 1 = succ p + a,
         exact λa, add_comm_middle p a 1,
         refine ap (deg (i (X c))) IH ⬝ !deg_eq ⬝ ap (add _) deg_i_eq ⬝ prod_eq !H1 !H2 }

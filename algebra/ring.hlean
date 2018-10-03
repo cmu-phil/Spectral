@@ -5,14 +5,22 @@ import algebra.ring .direct_sum ..heq ..move_to_lib
 open algebra group eq is_trunc sigma
 
 namespace algebra
-definition AbGroup_of_Ring [constructor] (R : Ring) : AbGroup :=
-AbGroup.mk R (add_ab_group_of_ring R)
+definition AddAbGroup_of_Ring [constructor] (R : Ring) : AddAbGroup :=
+AddAbGroup.mk R (add_ab_group_of_ring R)
 
-definition ring_AbGroup_of_Ring [instance] (R : Ring) : ring (AbGroup_of_Ring R) :=
+definition AddGroup_of_Ring [constructor] (R : Ring) : AddGroup :=
+AddGroup.mk R (add_group_of_add_ab_group R)
+
+definition ring_AddAbGroup_of_Ring [instance] (R : Ring) : ring (AddAbGroup_of_Ring R) :=
 Ring.struct R
 
+/- we give the following instance very high priority, otherwise type class inference would sometimes find the additive structure of R as the group structure. -/
+definition monoid_AddAbGroup_of_Ring [instance] [priority 3000] [constructor] (R : Ring) :
+  monoid (Group_of_AbGroup (AddAbGroup_of_Ring R)) :=
+@monoid_of_ring _ (Ring.struct R)
+
 definition ring_right_action [constructor] {R : Ring} (r : R) :
-  AbGroup_of_Ring R →g AbGroup_of_Ring R :=
+  AddAbGroup_of_Ring R →a AddAbGroup_of_Ring R :=
 homomorphism.mk (λs, s * r) (λs s', !right_distrib)
 
 definition ring_of_ab_group [constructor] (G : Type) [ab_group G] (m : G → G → G) (o : G)
