@@ -9,7 +9,7 @@ Constructions with groups
 import algebra.group_theory hit.set_quotient types.list types.sum .subgroup .quotient_group
 
 open eq algebra is_trunc set_quotient relation sigma prod prod.ops sum list trunc function
-     equiv
+     equiv is_equiv
 namespace group
 
   variables {G G' : Group} {g g' h h' k : G}
@@ -97,5 +97,27 @@ namespace group
 
   definition product_group_mul_eq {G H : Group} (g h : G ×g H) : g * h = product_mul g h :=
   idp
+
+  definition product_pr1 [constructor] (G H : Group) : G ×g H →g G :=
+  homomorphism.mk (λx, x.1) (λx y, idp)
+
+  definition product_pr2 [constructor] (G H : Group) : G ×g H →g H :=
+  homomorphism.mk (λx, x.2) (λx y, idp)
+
+  definition product_trivial_right [constructor] (G H : Group) (HH : is_contr H) : G ×g H ≃g G :=
+  begin
+    apply isomorphism.mk (product_pr1 G H),
+    apply adjointify _ (product_inl G H),
+    { intro g, reflexivity },
+    { intro gh, exact prod_eq idp !is_prop.elim }
+  end
+
+  definition product_trivial_left [constructor] (G H : Group) (HH : is_contr G) : G ×g H ≃g H :=
+  begin
+    apply isomorphism.mk (product_pr2 G H),
+    apply adjointify _ (product_inr G H),
+    { intro g, reflexivity },
+    { intro gh, exact prod_eq !is_prop.elim idp }
+  end
 
 end group

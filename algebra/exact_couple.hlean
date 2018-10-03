@@ -538,33 +538,33 @@ namespace exact_couple
   local attribute [coercion] AddAbGroup_of_Ring
   definition Z2 [constructor] : AddAbGroup := rℤ ×aa rℤ
 
-  structure convergent_exact_couple.{u v w} {R : Ring} (E' : agℤ → agℤ → LeftModule.{u v} R)
-                                 (Dinf : agℤ → LeftModule.{u w} R) : Type.{max u (v+1) (w+1)} :=
+  structure convergent_exact_couple.{u v w} {R : Ring} (E' : ℤ → ℤ → LeftModule.{u v} R)
+                                 (Dinf : ℤ → LeftModule.{u w} R) : Type.{max u (v+1) (w+1)} :=
     (X : exact_couple.{u 0 w v} R Z2)
     (HH : is_bounded X)
-    (st : agℤ → Z2)
-    (HB : Π(n : agℤ), is_bounded.B' HH (deg (k X) (st n)) = 0)
+    (st : ℤ → Z2)
+    (HB : Π(n : ℤ), is_bounded.B' HH (deg (k X) (st n)) = 0)
     (e : Π(x : Z2), exact_couple.E X x ≃lm E' x.1 x.2)
-    (f : Π(n : agℤ), exact_couple.D X (deg (k X) (st n)) ≃lm Dinf n)
+    (f : Π(n : ℤ), exact_couple.D X (deg (k X) (st n)) ≃lm Dinf n)
     (deg_d : ℕ → Z2)
     (deg_d_eq0 : Π(r : ℕ), deg (d (page X r)) 0 = deg_d r)
 
   infix ` ⟹ `:25 := convergent_exact_couple -- todo: maybe this should define convergent_spectral_sequence
 
-  definition convergent_exact_couple_g [reducible] (E' : agℤ → agℤ → AbGroup) (Dinf : agℤ → AbGroup) : Type :=
+  definition convergent_exact_couple_g [reducible] (E' : ℤ → ℤ → AbGroup) (Dinf : ℤ → AbGroup) : Type :=
   (λn s, LeftModule_int_of_AbGroup (E' n s)) ⟹ (λn, LeftModule_int_of_AbGroup (Dinf n))
 
   infix ` ⟹ᵍ `:25 := convergent_exact_couple_g
 
   section exact_couple
   open convergent_exact_couple
-  parameters {R : Ring} {E' : agℤ → agℤ → LeftModule R} {Dinf : agℤ → LeftModule R} (c : E' ⟹ Dinf)
+  parameters {R : Ring} {E' : ℤ → ℤ → LeftModule R} {Dinf : ℤ → LeftModule R} (c : E' ⟹ Dinf)
   local abbreviation X := X c
   local abbreviation i := i X
   local abbreviation HH := HH c
   local abbreviation st := st c
-  local abbreviation Dinfdiag (n : agℤ) (k : ℕ) := Dinfdiag HH (st n) k
-  local abbreviation Einfdiag (n : agℤ) (k : ℕ) := Einfdiag HH (st n) k
+  local abbreviation Dinfdiag (n : ℤ) (k : ℕ) := Dinfdiag HH (st n) k
+  local abbreviation Einfdiag (n : ℤ) (k : ℕ) := Einfdiag HH (st n) k
 
   definition deg_d_eq (r : ℕ) (ns : Z2) : (deg (d (page X r))) ns = ns + deg_d c r :=
   !deg_eq ⬝ ap (λx, _ + x) (deg_d_eq0 c r)
@@ -573,7 +573,7 @@ namespace exact_couple
     (deg (d (page X r)))⁻¹ᵉ ns = ns - deg_d c r :=
   inv_eq_of_eq (!deg_d_eq ⬝ proof !neg_add_cancel_right qed)⁻¹
 
-  definition convergent_exact_couple_isomorphism {E'' : agℤ → agℤ → LeftModule R} {Dinf' : graded_module R agℤ}
+  definition convergent_exact_couple_isomorphism {E'' : ℤ → ℤ → LeftModule R} {Dinf' : graded_module R ℤ}
     (e' : Πn s, E' n s ≃lm E'' n s) (f' : Πn, Dinf n ≃lm Dinf' n) : E'' ⟹ Dinf' :=
   convergent_exact_couple.mk X HH st (HB c)
     begin intro x, induction x with n s, exact e c (n, s) ⬝lm e' n s end
@@ -606,8 +606,8 @@ namespace exact_couple
     is_built_from (Dinf n) (Einfdiag n) :=
   is_built_from_isomorphism_left (f c n) (is_built_from_infpage HH (st n) (HB c n))
 
-  theorem is_contr_convergent_exact_couple_precise (n : agℤ)
-  (H : Π(n : agℤ) (l : ℕ), is_contr (E' ((deg i)^[l] (st n)).1 ((deg i)^[l] (st n)).2)) :
+  theorem is_contr_convergent_exact_couple_precise (n : ℤ)
+  (H : Π(n : ℤ) (l : ℕ), is_contr (E' ((deg i)^[l] (st n)).1 ((deg i)^[l] (st n)).2)) :
     is_contr (Dinf n) :=
   begin
     assert H2 : Π(l : ℕ), is_contr (Einfdiag n l),
@@ -616,11 +616,11 @@ namespace exact_couple
     exact is_contr_total (is_built_from_of_convergent_exact_couple n) H2
   end
 
-  theorem is_contr_convergent_exact_couple (n : agℤ) (H : Π(n s : agℤ), is_contr (E' n s)) :
+  theorem is_contr_convergent_exact_couple (n : ℤ) (H : Π(n s : ℤ), is_contr (E' n s)) :
     is_contr (Dinf n) :=
   is_contr_convergent_exact_couple_precise n (λn s, !H)
 
-  -- definition E_isomorphism {r₁ r₂ : ℕ} {n s : agℤ} (H : r₁ ≤ r₂)
+  -- definition E_isomorphism {r₁ r₂ : ℕ} {n s : ℤ} (H : r₁ ≤ r₂)
   --   (H1 : Π⦃r⦄, r₁ ≤ r → r < r₂ → is_contr (E X ((n, s) - deg_d c r)))
   --   (H2 : Π⦃r⦄, r₁ ≤ r → r < r₂ → is_contr (E X ((n, s) + deg_d c r))) :
   --   E (page X r₂) (n, s) ≃lm E (page X r₁) (n, s) :=
@@ -628,18 +628,18 @@ namespace exact_couple
   --   (λr Hr₁ Hr₂, transport (is_contr ∘ E X) (deg_d_inv_eq r (n, s))⁻¹ᵖ (H1 Hr₁ Hr₂))
   --   (λr Hr₁ Hr₂, transport (is_contr ∘ E X) (deg_d_eq r (n, s))⁻¹ᵖ (H2 Hr₁ Hr₂))
 
-  -- definition E_isomorphism0 {r : ℕ} {n s : agℤ} (H1 : Πr, is_contr (E X ((n, s) - deg_d c r)))
+  -- definition E_isomorphism0 {r : ℕ} {n s : ℤ} (H1 : Πr, is_contr (E X ((n, s) - deg_d c r)))
   --   (H2 : Πr, is_contr (E X ((n, s) + deg_d c r))) : E (page X r) (n, s) ≃lm E' n s :=
   -- E_isomorphism (zero_le r) _ _ ⬝lm e c (n, s)
 
-  -- definition Einf_isomorphism (r₁ : ℕ) {n s : agℤ}
+  -- definition Einf_isomorphism (r₁ : ℕ) {n s : ℤ}
   --   (H1 : Π⦃r⦄, r₁ ≤ r → is_contr (E X ((n,s) - deg_d c r)))
   --   (H2 : Π⦃r⦄, r₁ ≤ r → is_contr (E X ((n,s) + deg_d c r))) :
   --   Einf HH (n, s) ≃lm E (page X r₁) (n, s) :=
   -- Einf_isomorphism' HH r₁ (λr Hr₁, transport (is_contr ∘ E X) (deg_d_inv_eq r (n, s))⁻¹ᵖ (H1 Hr₁))
   --                        (λr Hr₁, transport (is_contr ∘ E X) (deg_d_eq r (n, s))⁻¹ᵖ (H2 Hr₁))
 
-  -- definition Einf_isomorphism0 {n s : agℤ}
+  -- definition Einf_isomorphism0 {n s : ℤ}
   --   (H1 : Π⦃r⦄, is_contr (E X ((n,s) - deg_d c r)))
   --   (H2 : Π⦃r⦄, is_contr (E X ((n,s) + deg_d c r))) :
   --   Einf HH (n, s) ≃lm E' n s :=
@@ -647,9 +647,9 @@ namespace exact_couple
 
   end exact_couple
 
-  variables {E' : agℤ → agℤ → AbGroup} {Dinf : agℤ → AbGroup}
-  definition convergent_exact_couple_g_isomorphism {E'' : agℤ → agℤ → AbGroup}
-    {Dinf' : agℤ → AbGroup} (c : E' ⟹ᵍ Dinf)
+  variables {E' : ℤ → ℤ → AbGroup} {Dinf : ℤ → AbGroup}
+  definition convergent_exact_couple_g_isomorphism {E'' : ℤ → ℤ → AbGroup}
+    {Dinf' : ℤ → AbGroup} (c : E' ⟹ᵍ Dinf)
     (e' : Πn s, E' n s ≃g E'' n s) (f' : Πn, Dinf n ≃g Dinf' n) : E'' ⟹ᵍ Dinf' :=
   convergent_exact_couple_isomorphism c (λn s, lm_iso_int.mk (e' n s)) (λn, lm_iso_int.mk (f' n))
 

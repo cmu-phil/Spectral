@@ -8,7 +8,7 @@ on trunc 0 (A →* Ω B) and the dependent version trunc 0 (ppi _ _),
 which are used in the definition of cohomology.
 -/
 
-import algebra.group_theory ..pointed ..pointed_pi eq2
+import algebra.group_theory ..pointed ..pointed_pi eq2 .product_group
 open pi pointed algebra group eq equiv is_trunc trunc susp nat function
 namespace group
 
@@ -316,5 +316,43 @@ namespace group
     { intro g a, exact f a g },
     { intro g h, apply eq_of_homotopy, intro a, exact respect_mul (f a) g h }
   end
+
+  definition Group_pi_eval [constructor] {A : Type} (P : A → Group) (a : A)
+    : (Πᵍ a, P a) →g P a :=
+  begin
+    fconstructor,
+    { intro h, exact h a },
+    { intro g h, reflexivity }
+  end
+
+  definition Group_pi_functor [constructor] {A B : Type} {P : A → Group} {Q : B → Group}
+    (f : B → A) (g : Πb, P (f b) →g Q b) : (Πᵍ a, P a) →g Πᵍ b, Q b :=
+  Group_pi_intro (λb, g b ∘g Group_pi_eval P (f b))
+
+  definition Group_pi_functor_compose [constructor] {A B C : Type} {P : A → Group} {Q : B → Group}
+    {R : C → Group} (f : B → A) (f' : C → B) (g' : Πc, Q (f' c) →g R c) (g : Πb, P (f b) →g Q b) :
+    Group_pi_functor (f ∘ f') (λc, g' c ∘g g (f' c)) ~
+    Group_pi_functor f' g' ∘ Group_pi_functor f g :=
+  begin
+    intro h, reflexivity
+  end
+
+  open bool prod is_equiv
+  definition Group_pi_isomorphism_Group_pi [constructor] {A B : Type}
+    {P : A → Group} {Q : B → Group} (f : B ≃ A) (g : Πb, P (f b) ≃g Q b) :
+    (Πᵍ a, P a) ≃g Πᵍ b, Q b :=
+  isomorphism.mk (Group_pi_functor f g) (is_equiv_pi_functor f g)
+
+  definition product_isomorphism_Group_pi [constructor] (G H : Group) :
+    G ×g H ≃g Group_pi (bool.rec G H) :=
+  begin
+    fconstructor,
+    { exact Group_pi_intro (bool.rec (product_pr1 G H) (product_pr2 G H)) },
+    { apply adjointify _ (λh, (h ff, h tt)),
+      { intro h, apply eq_of_homotopy, intro b, induction b: reflexivity },
+      { intro gh, induction gh, reflexivity }}
+  end
+
+
 
 end group

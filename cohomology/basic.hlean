@@ -6,7 +6,8 @@ Authors: Floris van Doorn, Ulrik Buchholtz
 Reduced cohomology of spectra and cohomology theories
 -/
 
-import ..spectrum.basic ..algebra.arrow_group ..homotopy.fwedge ..choice ..homotopy.pushout ..algebra.product_group
+import ..spectrum.basic ..algebra.arrow_group ..algebra.product_group ..choice
+       ..homotopy.fwedge ..homotopy.pushout ..homotopy.EM ..homotopy.wedge
 
 open eq spectrum int trunc pointed EM group algebra circle sphere nat EM.ops equiv susp is_trunc
      function fwedge cofiber bool lift sigma is_equiv choice pushout algebra unit pi is_conn
@@ -103,6 +104,8 @@ definition cohomology_functor [constructor] {X X' : Type*} (f : X' →* X) (Y : 
   (n : ℤ) : cohomology X Y n →g cohomology X' Y n :=
 Group_trunc_pmap_homomorphism f
 
+notation `H^→` n `[`:0 f:0 `, ` Y:0 `]`:0   := cohomology_functor f Y n
+
 definition cohomology_functor_pid (X : Type*) (Y : spectrum) (n : ℤ) (f : H^n[X, Y]) :
   cohomology_functor (pid X) Y n f = f :=
 !Group_trunc_pmap_pid
@@ -116,6 +119,8 @@ definition cohomology_functor_phomotopy {X X' : Type*} {f g : X' →* X} (p : f 
   (Y : spectrum) (n : ℤ) : cohomology_functor f Y n ~ cohomology_functor g Y n :=
 Group_trunc_pmap_phomotopy p
 
+notation `H^~` n `[`:0 h:0 `, ` Y:0 `]`:0   := cohomology_functor_phomotopy h Y n
+
 definition cohomology_functor_phomotopy_refl {X X' : Type*} (f : X' →* X) (Y : spectrum) (n : ℤ)
   (x : H^n[X, Y]) : cohomology_functor_phomotopy (phomotopy.refl f) Y n x = idp :=
 Group_trunc_pmap_phomotopy_refl f x
@@ -128,8 +133,10 @@ definition cohomology_isomorphism {X X' : Type*} (f : X' ≃* X) (Y : spectrum) 
   H^n[X, Y] ≃g H^n[X', Y] :=
 Group_trunc_pmap_isomorphism f
 
+notation `H^≃` n `[`:0 e:0 `, ` Y:0 `]`:0   := cohomology_isomorphism e Y n
+
 definition cohomology_isomorphism_refl (X : Type*) (Y : spectrum) (n : ℤ) (x : H^n[X,Y]) :
-  cohomology_isomorphism (pequiv.refl X) Y n x = x :=
+  H^≃n[pequiv.refl X, Y] x = x :=
 !Group_trunc_pmap_isomorphism_refl
 
 definition cohomology_isomorphism_right (X : Type*) {Y Y' : spectrum} (e : Πn, Y n ≃* Y' n)
@@ -284,9 +291,13 @@ definition spectrum_additive {I : Type} (H : has_choice 0 I) (X : I → Type*) (
   (n : ℤ) : is_equiv (additive_hom X Y n) :=
 is_equiv_of_equiv_of_homotopy (additive_equiv H X Y n) begin intro f, induction f, reflexivity end
 
+definition cohomology_fwedge.{u} {I : Type.{u}} (H : has_choice 0 I) (X : I → Type*) (Y : spectrum)
+  (n : ℤ) : H^n[⋁X, Y] ≃g Πᵍ i, H^n[X i, Y] :=
+isomorphism.mk (additive_hom X Y n) (spectrum_additive H X Y n)
+
 /- dimension axiom for ordinary cohomology -/
 open is_conn trunc_index
-theorem EM_dimension' (G : AbGroup) (n : ℤ) (H : n ≠ 0) :
+theorem ordinary_cohomology_dimension (G : AbGroup) (n : ℤ) (H : n ≠ 0) :
   is_contr (oH^n[pbool, G]) :=
 begin
   apply is_conn_equiv_closed 0 !pmap_pbool_equiv⁻¹ᵉ,
@@ -299,19 +310,104 @@ begin
     apply is_trunc_of_le _ (zero_le_of_nat n) _ }
 end
 
-theorem EM_dimension (G : AbGroup) (n : ℤ) (H : n ≠ 0) :
-  is_contr (ordinary_cohomology (plift pbool) G n) :=
+theorem ordinary_cohomology_dimension_plift (G : AbGroup) (n : ℤ) (H : n ≠ 0) :
+  is_contr (oH^n[plift pbool, G]) :=
 is_trunc_equiv_closed_rev -2
   (equiv_of_isomorphism (cohomology_isomorphism (pequiv_plift pbool) _ _))
-  (EM_dimension' G n H)
+  (ordinary_cohomology_dimension G n H)
 
-open group algebra
-theorem ordinary_cohomology_pbool (G : AbGroup) : oH^0[pbool, G] ≃g G :=
-sorry
---isomorphism_of_equiv (trunc_equiv_trunc 0 (ppmap_pbool_pequiv _ ⬝e _)  ⬝e !trunc_equiv) sorry
+definition cohomology_iterate_susp (X : Type*) (Y : spectrum) (n : ℤ) (k : ℕ) :
+  H^n+k[iterate_susp k X, Y] ≃g H^n[X, Y] :=
+begin
+  induction k with k IH,
+  { exact cohomology_change_int X Y !add_zero },
+  { exact cohomology_change_int _ _ !add.assoc⁻¹ ⬝g cohomology_susp _ _ _ ⬝g IH }
+end
 
-theorem is_contr_cohomology_of_is_contr_spectrum (n : ℤ) (X : Type*) (Y : spectrum) (H : is_contr (Y n)) :
-  is_contr (H^n[X, Y]) :=
+definition ordinary_cohomology_pbool (G : AbGroup) : oH^0[pbool, G] ≃g G :=
+begin
+  refine cohomology_isomorphism_shomotopy_group_sp_cotensor _ _ !neg_neg ⬝g _,
+  change πg[2] (pbool →** EM G 2) ≃g G,
+  refine homotopy_group_isomorphism_of_pequiv 1 !ppmap_pbool_pequiv ⬝g ghomotopy_group_EM G 1
+end
+
+definition ordinary_cohomology_sphere (G : AbGroup) (n : ℕ) : oH^n[sphere n, G] ≃g G :=
+begin
+  refine cohomology_isomorphism_shomotopy_group_sp_cotensor _ _ !neg_neg ⬝g _,
+  change πg[2] (sphere n →** EM_spectrum G (2 - -n)) ≃g G,
+  refine homotopy_group_isomorphism_of_pequiv 1 _ ⬝g ghomotopy_group_EMadd1 G 1,
+  have p : 2 - (-n) = succ (1 + n),
+  from !sub_eq_add_neg ⬝ ap (add 2) !neg_neg ⬝ ap of_nat !succ_add,
+  refine !sphere_pmap_pequiv ⬝e* Ω≃[n] (pequiv_ap (EM_spectrum G) p) ⬝e* loopn_EMadd1_add G n 1,
+end
+
+definition ordinary_cohomology_sphere_of_neq (G : AbGroup) {n : ℤ} {k : ℕ} (p : n ≠ k) :
+  is_contr (oH^n[sphere k, G]) :=
+begin
+  refine is_contr_equiv_closed_rev _
+    (ordinary_cohomology_dimension G (n-k) (λh, p (eq_of_sub_eq_zero h))),
+  apply equiv_of_isomorphism,
+  exact cohomology_change_int _ _ !neg_add_cancel_right⁻¹ ⬝g
+        cohomology_iterate_susp pbool (EM_spectrum G) (n - k) k
+end
+
+definition cohomology_punit (Y : spectrum) (n : ℤ) :
+  is_contr (H^n[punit, Y]) :=
+@is_trunc_trunc_of_is_trunc _ _ _ !is_contr_punit_pmap
+
+definition cohomology_wedge (X X' : Type*) (Y : spectrum) (n : ℤ) :
+  H^n[wedge X X', Y] ≃g H^n[X, Y] ×ag H^n[X', Y] :=
+H^≃n[(wedge_pequiv_fwedge X X')⁻¹ᵉ*, Y] ⬝g
+cohomology_fwedge (has_choice_pbool 0) _ _ _ ⬝g
+Group_pi_isomorphism_Group_pi erfl begin intro b, induction b: reflexivity end ⬝g
+(product_isomorphism_Group_pi H^n[X, Y] H^n[X', Y])⁻¹ᵍ ⬝g
+proof !isomorphism.refl qed
+
+definition cohomology_isomorphism_of_equiv {X X' : Type*} (e : X ≃ X') (Y : spectrum) (n : ℤ) :
+  H^n[X', Y] ≃g H^n[X, Y] :=
+!cohomology_susp⁻¹ᵍ ⬝g H^≃n+1[susp_pequiv_of_equiv e, Y] ⬝g !cohomology_susp
+
+definition unreduced_cohomology_split (X : Type*) (Y : spectrum) (n : ℤ) :
+  uH^n[X, Y] ≃g H^n[X, Y] ×ag H^n[pbool, Y] :=
+cohomology_isomorphism_of_equiv (wedge.wedge_pbool_equiv_add_point X) Y n ⬝g
+cohomology_wedge X pbool Y n
+
+definition unreduced_ordinary_cohomology_nonzero (X : Type*) (G : AbGroup) (n : ℤ) (H : n ≠ 0) :
+  uoH^n[X, G] ≃g oH^n[X, G] :=
+unreduced_cohomology_split X (EM_spectrum G) n ⬝g
+product_trivial_right _ _ (ordinary_cohomology_dimension _ _ H)
+
+definition unreduced_ordinary_cohomology_zero (X : Type*) (G : AbGroup) :
+  uoH^0[X, G] ≃g oH^0[X, G] ×ag G :=
+unreduced_cohomology_split X (EM_spectrum G) 0 ⬝g
+(!isomorphism.refl ×≃g ordinary_cohomology_pbool G)
+
+definition unreduced_ordinary_cohomology_pbool (G : AbGroup) : uoH^0[pbool, G] ≃g G ×ag G :=
+unreduced_ordinary_cohomology_zero pbool G ⬝g (ordinary_cohomology_pbool G ×≃g !isomorphism.refl)
+
+definition unreduced_ordinary_cohomology_pbool_nonzero (G : AbGroup) (n : ℤ) (H : n ≠ 0) :
+  is_contr (uoH^n[pbool, G]) :=
+is_contr_equiv_closed_rev (equiv_of_isomorphism (unreduced_ordinary_cohomology_nonzero pbool G n H))
+                          (ordinary_cohomology_dimension G n H)
+
+definition unreduced_ordinary_cohomology_sphere_zero (G : AbGroup) (n : ℕ) (H : n ≠ 0) :
+  uoH^0[sphere n, G] ≃g G :=
+unreduced_ordinary_cohomology_zero (sphere n) G ⬝g
+product_trivial_left _ _ (ordinary_cohomology_sphere_of_neq _ (λh, H h⁻¹))
+
+definition unreduced_ordinary_cohomology_sphere (G : AbGroup) (n : ℕ) (H : n ≠ 0) :
+  uoH^n[sphere n, G] ≃g G :=
+unreduced_ordinary_cohomology_nonzero (sphere n) G n H ⬝g
+ordinary_cohomology_sphere G n
+
+definition unreduced_ordinary_cohomology_sphere_of_neq (G : AbGroup) {n : ℤ} {k : ℕ} (p : n ≠ k)
+  (q : n ≠ 0) : is_contr (uoH^n[sphere k, G]) :=
+is_contr_equiv_closed_rev
+  (equiv_of_isomorphism (unreduced_ordinary_cohomology_nonzero (sphere k) G n q))
+  (ordinary_cohomology_sphere_of_neq G p)
+
+theorem is_contr_cohomology_of_is_contr_spectrum (n : ℤ) (X : Type*) (Y : spectrum)
+  (H : is_contr (Y n)) : is_contr (H^n[X, Y]) :=
 begin
   apply is_trunc_trunc_of_is_trunc,
   apply is_trunc_pmap,
@@ -338,6 +434,8 @@ begin
   cases n with n n, contradiction,
   apply is_contr_EM_spectrum_neg
 end
+
+
 
 /- cohomology theory -/
 
@@ -441,6 +539,6 @@ cohomology_theory.mk
 -- print equiv_lift
 -- print has_choice_equiv_closed
 definition ordinary_cohomology_theory_EM [constructor] (G : AbGroup) : ordinary_cohomology_theory :=
-⦃ordinary_cohomology_theory, cohomology_theory_spectrum (EM_spectrum G), Hdimension := EM_dimension G ⦄
+⦃ordinary_cohomology_theory, cohomology_theory_spectrum (EM_spectrum G), Hdimension := ordinary_cohomology_dimension_plift G ⦄
 
 end cohomology

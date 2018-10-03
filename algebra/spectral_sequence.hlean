@@ -11,8 +11,8 @@ open algebra is_trunc left_module is_equiv equiv eq function nat sigma set_quoti
      left_module group int prod prod.ops
 open exact_couple (Z2)
 
-structure convergent_spectral_sequence.{u v w} {R : Ring} (E' : agℤ → agℤ → LeftModule.{u v} R)
-                               (Dinf : agℤ → LeftModule.{u w} R) : Type.{max u (v+1) (w+1)} :=
+structure convergent_spectral_sequence.{u v w} {R : Ring} (E' : ℤ → ℤ → LeftModule.{u v} R)
+                               (Dinf : ℤ → LeftModule.{u w} R) : Type.{max u (v+1) (w+1)} :=
   (E : ℕ → graded_module.{u 0 v} R Z2)
   (d : Π(r : ℕ), E r →gm E r)
   (deg_d : ℕ → Z2)
@@ -22,11 +22,11 @@ structure convergent_spectral_sequence.{u v w} {R : Ring} (E' : agℤ → agℤ 
   (s₀ : Z2 → ℕ)
   (f : Π{r : ℕ} {x : Z2} (h : s₀ x ≤ r), E (s₀ x) x ≃lm E r x)
   (lb : ℤ → ℤ)
-  (HDinf : Π(n : agℤ), is_built_from (Dinf n)
+  (HDinf : Π(n : ℤ), is_built_from (Dinf n)
                                      (λ(k : ℕ), (λx, E (s₀ x) x) (n - (k + lb n), k + lb n)))
 
-definition convergent_spectral_sequence_g [reducible] (E' : agℤ → agℤ → AbGroup)
-  (Dinf : agℤ → AbGroup) : Type :=
+definition convergent_spectral_sequence_g [reducible] (E' : ℤ → ℤ → AbGroup)
+  (Dinf : ℤ → AbGroup) : Type :=
 convergent_spectral_sequence (λn s, LeftModule_int_of_AbGroup (E' n s))
                              (λn, LeftModule_int_of_AbGroup (Dinf n))
 
@@ -34,8 +34,8 @@ convergent_spectral_sequence (λn s, LeftModule_int_of_AbGroup (E' n s))
   open exact_couple exact_couple.exact_couple exact_couple.convergent_exact_couple
        exact_couple.convergence_theorem exact_couple.derived_couple
 
-  definition convergent_spectral_sequence_of_exact_couple {R : Ring} {E' : agℤ → agℤ → LeftModule R}
-    {Dinf : agℤ → LeftModule R} (c : convergent_exact_couple E' Dinf)
+  definition convergent_spectral_sequence_of_exact_couple {R : Ring} {E' : ℤ → ℤ → LeftModule R}
+    {Dinf : ℤ → LeftModule R} (c : convergent_exact_couple E' Dinf)
     (st_eq : Πn, (st c n).1 + (st c n).2 = n) (deg_i_eq : deg (i (X c)) 0 = (- 1, 1)) :
     convergent_spectral_sequence E' Dinf :=
   convergent_spectral_sequence.mk (λr, E (page (X c) r)) (λr, d (page (X c) r))
@@ -60,7 +60,7 @@ convergent_spectral_sequence (λn s, LeftModule_int_of_AbGroup (E' n s))
 namespace spectral_sequence
   open convergent_spectral_sequence
 
-  variables {R : Ring} {E' : agℤ → agℤ → LeftModule R} {Dinf : agℤ → LeftModule R}
+  variables {R : Ring} {E' : ℤ → ℤ → LeftModule R} {Dinf : ℤ → LeftModule R}
     (c : convergent_spectral_sequence E' Dinf)
 
     -- (E : ℕ → graded_module.{u 0 v} R Z2)
@@ -72,7 +72,7 @@ namespace spectral_sequence
     -- (s₀ : Z2 → ℕ)
     -- (f : Π{r : ℕ} {x : Z2} (h : s₀ x ≤ r), E (s₀ x) x ≃lm E r x)
     -- (lb : ℤ → ℤ)
-    -- (HDinf : Π(n : agℤ), is_built_from (Dinf n)
+    -- (HDinf : Π(n : ℤ), is_built_from (Dinf n)
     --                                    (λ(k : ℕ), (λx, E (s₀ x) x) (n - (k + lb n), k + lb n)))
 
   definition Einf (x : Z2) : LeftModule R := E c (s₀ c x) x
@@ -115,7 +115,7 @@ namespace spectral_sequence
     exact H3 H (le.refl _)
   end
 
-  definition E_isomorphism0 {r : ℕ} {n s : agℤ}
+  definition E_isomorphism0 {r : ℕ} {n s : ℤ}
     (H1 : Πr', r' < r → is_contr (E' (n - (deg_d c r').1) (s - (deg_d c r').2)))
     (H2 : Πr', r' < r → is_contr (E' (n + (deg_d c r').1) (s + (deg_d c r').2))) :
     E c r (n, s) ≃lm E' n s :=
@@ -133,7 +133,7 @@ namespace spectral_sequence
     exact f c Hr
   end
 
-  definition Einf_isomorphism0 {n s : agℤ}
+  definition Einf_isomorphism0 {n s : ℤ}
     (H1 : Πr, is_contr (E' (n - (deg_d c r).1) (s - (deg_d c r).2)))
     (H2 : Πr, is_contr (E' (n + (deg_d c r).1) (s + (deg_d c r).2))) :
     Einf c (n, s) ≃lm E' n s :=

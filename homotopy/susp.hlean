@@ -5,6 +5,11 @@ open susp eq pointed function is_equiv lift equiv is_trunc nat
 namespace susp
   variables {X X' Y Y' Z : Type*}
 
+  definition susp_functor_of_fn [constructor] (f : X → Y) : susp X →* susp Y :=
+  pmap.mk (susp_functor' f) idp
+  definition susp_pequiv_of_equiv [constructor] (f : X ≃ Y) : susp X ≃* susp Y :=
+  pequiv_of_equiv (susp.equiv f) idp
+
   definition iterate_susp_iterate_susp_rev (n m : ℕ) (A : Type*) :
     iterate_susp n (iterate_susp m A) ≃* iterate_susp (m + n) A :=
   begin
