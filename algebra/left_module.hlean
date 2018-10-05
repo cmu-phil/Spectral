@@ -280,7 +280,8 @@ section
     induction φ₁ with φ₁ q₁, induction φ₂ with φ₂ q₂, esimp at p, induction p,
     exact ap (homomorphism.mk φ₁) !is_prop.elim
   end
-end
+
+  end
 
   section
 
@@ -403,6 +404,11 @@ end
     (h : Π(r : R) g, φ (r • g) = r • φ g) : M₁ ≃lm M₂ :=
   isomorphism.mk (lm_homomorphism_of_group_homomorphism φ h) (group.isomorphism.is_equiv_to_hom φ)
 
+  definition trivial_homomorphism [constructor] (M₁ M₂ : LeftModule R) : M₁ →lm M₂ :=
+  lm_homomorphism_of_group_homomorphism (group.trivial_add_homomorphism M₁ M₂)
+    (λs m, (smul_zero s)⁻¹)
+
+
   section
   local attribute pSet_of_LeftModule [coercion]
   definition is_exact_mod (f : M₁ →lm M₂) (f' : M₂ →lm M₃) : Type :=
@@ -493,31 +499,6 @@ end
   is_built_from.mk (λn, part H (n+1)) (λn, ses H (n+1)) isomorphism.rfl (pred (n₀ H))
     (λs Hle, HD' H _ (le_succ_of_pred_le Hle))
 
-  definition isomorphism_of_is_contr_part (H : is_built_from D E) (n : ℕ) (HE : is_contr (E n)) :
-    part H n ≃lm part H (n+1) :=
-  isomorphism_of_is_contr_left (ses H n) HE
-
-  definition is_contr_submodules (H : is_built_from D E) (HD : is_contr D) (n : ℕ) :
-    is_contr (part H n) :=
-  begin
-    induction n with n IH,
-    { exact is_trunc_equiv_closed_rev -2 (equiv_of_isomorphism (e0 H)) _ },
-    { exact is_contr_right_of_short_exact_mod (ses H n) IH }
-  end
-
-  definition is_contr_quotients (H : is_built_from D E) (HD : is_contr D) (n : ℕ) :
-    is_contr (E n) :=
-  begin
-    apply is_contr_left_of_short_exact_mod (ses H n),
-    exact is_contr_submodules H HD n
-  end
-
-  definition is_contr_total (H : is_built_from D E) (HE : Πn, is_contr (E n)) : is_contr D :=
-  have is_contr (part H 0), from
-  nat.rec_down (λn, is_contr (part H n)) _ (HD' H _ !le.refl)
-    (λn H2, is_contr_middle_of_short_exact_mod (ses H n) (HE n) H2),
-  is_contr_equiv_closed (equiv_of_isomorphism (e0 H)) _
-
   definition is_built_from_isomorphism (e : D ≃lm D') (f : Πn, E n ≃lm E' n)
     (H : is_built_from D E) : is_built_from D' E' :=
   ⦃is_built_from, H, e0 := e0 H ⬝lm e,
@@ -527,8 +508,85 @@ end
     is_built_from D' E :=
   ⦃is_built_from, H, e0 := e0 H ⬝lm e⦄
 
+  definition isomorphism_of_is_contr_submodule (H : is_built_from D E) (n : ℕ)
+    (HE : is_contr (E n)) : part H n ≃lm part H (n+1) :=
+  isomorphism_of_is_contr_left (ses H n) HE
+
+  definition isomorphism_of_is_contr_submodules_range (H : is_built_from D E) {n k : ℕ}
+  (Hnk : n ≤ k) (HE : Πl, n ≤ l → l < k → is_contr (E l)) : part H n ≃lm part H k :=
+  begin
+    induction Hnk with k Hnk IH,
+    { reflexivity },
+    { refine IH (λl Hnl Hlk, HE l Hnl (lt.step Hlk)) ⬝lm
+             isomorphism_of_is_contr_submodule H k (HE k Hnk !self_lt_succ), }
+  end
+
+  definition is_contr_quotients_of_is_contr_total (H : is_built_from D E) (HD : is_contr D) (n : ℕ) :
+    is_contr (part H n) :=
+  begin
+    induction n with n IH,
+    { exact is_trunc_equiv_closed_rev -2 (equiv_of_isomorphism (e0 H)) _ },
+    { exact is_contr_right_of_short_exact_mod (ses H n) IH }
+  end
+
+  definition is_contr_quotients_of_is_contr_submodules (H : is_built_from D E) {n : ℕ}
+    (HE : Πk, n ≤ k → is_contr (E k)) : is_contr (part H n) :=
+  begin
+    refine is_contr_equiv_closed_rev _ (HD' H (max n (n₀ H)) !le_max_right),
+    apply equiv_of_isomorphism,
+    apply isomorphism_of_is_contr_submodules_range H !le_max_left,
+    intros l Hnl Hl', exact HE l Hnl
+  end
+  /- alternate direct proof -/
+  -- nat.rec_down (λk, is_contr (part H (n + k))) _ (HD' H _ !nat.le_add_left)
+  --   (λk H2, is_contr_middle_of_short_exact_mod (ses H (n + k)) (HE (n + k) !nat.le_add_right)
+  --     proof H2 qed)
+
+  definition isomorphism_of_is_contr_submodules (H : is_built_from D E) {n : ℕ}
+    (HE : Πk, n < k → is_contr (E k)) : E n ≃lm part H n :=
+  isomorphism_of_is_contr_right (ses H n) (is_contr_quotients_of_is_contr_submodules H HE)
+
+  -- definition is_contr_quotients_of_is_contr_submodules1 (H : is_built_from D E) (n : ℕ)
+  --   (HE : Πk, n ≤ k → is_contr (E k)) : is_contr (part H n) :=
+  -- nat.rec_down (λk, is_contr (part H (n + k))) _ (HD' H _ !nat.le_add_left)
+  --   (λk H2, is_contr_middle_of_short_exact_mod (ses H (n + k)) (HE (n + k) !nat.le_add_right)
+  --     proof H2 qed)
+
   definition isomorphism_zero_of_is_built_from (H : is_built_from D E) (p : n₀ H = 1) : E 0 ≃lm D :=
   isomorphism_of_is_contr_right (ses H 0) (HD' H 1 (le_of_eq p)) ⬝lm e0 H
+
+  definition isomorphism_total_of_is_contr_submodules (H : is_built_from D E) {n : ℕ}
+    (HE : Πk, k < n → is_contr (E k)) : D ≃lm part H n :=
+  (e0 H)⁻¹ˡᵐ ⬝lm isomorphism_of_is_contr_submodules_range H !zero_le (λk H0k Hkn, HE k Hkn)
+
+  definition isomorphism_of_is_contr_submodules_but_one (H : is_built_from D E) {n : ℕ}
+    (HE : Πk, k ≠ n → is_contr (E k)) : D ≃lm E n :=
+  (e0 H)⁻¹ˡᵐ ⬝lm
+  isomorphism_of_is_contr_submodules_range H !zero_le (λk H0k Hkn, HE k (ne_of_lt Hkn)) ⬝lm
+  (isomorphism_of_is_contr_submodules H (λk Hk, HE k (ne.symm (ne_of_lt Hk))))⁻¹ˡᵐ
+
+  definition short_exact_mod_of_is_contr_submodules (H : is_built_from D E) {n m : ℕ} (Hnm : n < m)
+    (HE : Πk, k ≠ n → k ≠ m → is_contr (E k)) : short_exact_mod (E n) D (E m) :=
+  begin
+    refine short_exact_mod_isomorphism isomorphism.rfl _ _ (ses H n),
+    { exact isomorphism_total_of_is_contr_submodules H (λk Hk, HE k (ne_of_lt Hk)
+              (ne_of_lt (lt.trans Hk Hnm))) },
+    { exact isomorphism_of_is_contr_submodules H
+              (λk Hk, HE k (ne.symm (ne_of_lt (lt.trans Hnm Hk))) (ne.symm (ne_of_lt Hk))) ⬝lm
+            (isomorphism_of_is_contr_submodules_range H Hnm
+              (λk Hnk Hkm, HE k (ne.symm (ne_of_lt Hnk)) (ne_of_lt Hkm)))⁻¹ˡᵐ }
+  end
+
+  definition is_contr_submodules (H : is_built_from D E) (HD : is_contr D) (n : ℕ) :
+    is_contr (E n) :=
+  begin
+    apply is_contr_left_of_short_exact_mod (ses H n),
+    exact is_contr_quotients_of_is_contr_total H HD n
+  end
+
+  definition is_contr_total (H : is_built_from D E) (HE : Πn, is_contr (E n)) : is_contr D :=
+  have is_contr (part H 0), from is_contr_quotients_of_is_contr_submodules H (λn H, HE n),
+  is_contr_equiv_closed (equiv_of_isomorphism (e0 H)) _
 
 section int
 open int
