@@ -244,9 +244,23 @@ section atiyah_hirzebruch
   definition AHSS_deg_d (r : ℕ) :
     convergent_spectral_sequence.deg_d atiyah_hirzebruch_spectral_sequence r =
     (r + 2, -(r + 1)) :=
-  begin
-    reflexivity
-  end
+  by reflexivity
+
+  definition AHSS_lb (n : ℤ) :
+    convergent_spectral_sequence.lb atiyah_hirzebruch_spectral_sequence n = -s₀ :=
+  by reflexivity
+
+  -- open nat
+  -- definition AHSS_ub (n : ℤ) :
+  --   is_built_from.n₀ (convergent_spectral_sequence.HDinf atiyah_hirzebruch_spectral_sequence n) =
+  --   max0 (s₀ + n) + 1 :=
+  -- begin
+  --   -- refine refl (max (max0 (- - - -s₀ - (-(- -s₀ - -(s₀ - -n + -s₀) + - - -s₀) - 1)))
+  --   --   (max0 (max (s₀ + 1 - - - - -s₀) (s₀ + 1 - - - - -s₀)))) ⬝ _,
+
+  --   -- exact ap011 max (ap max0 (ap011 add (!neg_neg ⬝ !neg_neg) _)) _ ⬝ _,
+  --   exact sorry
+  -- end
 
 end atiyah_hirzebruch
 

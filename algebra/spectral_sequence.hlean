@@ -24,6 +24,7 @@ structure convergent_spectral_sequence.{u v w} {R : Ring} (E' : ℤ → ℤ → 
   (lb : ℤ → ℤ)
   (HDinf : Π(n : ℤ), is_built_from (Dinf n)
                                      (λ(k : ℕ), (λx, E (s₀ x) x) (n - (k + lb n), k + lb n)))
+/- todo: the current definition doesn't say that E (s₀ x) x is contractible for x.1 + x.2 = n and x.2 < lb n -/
 
 definition convergent_spectral_sequence_g [reducible] (E' : ℤ → ℤ → AbGroup)
   (Dinf : ℤ → AbGroup) : Type :=
@@ -138,6 +139,37 @@ namespace spectral_sequence
     (H2 : Πr, is_contr (E' (n + (deg_d c r).1) (s + (deg_d c r).2))) :
     Einf c (n, s) ≃lm E' n s :=
   E_isomorphism0 c (λr Hr, H1 r) (λr Hr, H2 r)
+
+  /- we call a spectral sequence normal if it is a first-quadrant spectral sequence and the degree of d is what we expect -/
+  include c
+  structure is_normal : Type :=
+    (normal1 : Π{n} s, n < 0 → is_contr (E' n s))
+    (normal2 : Πn {s}, s < 0 → is_contr (E' n s))
+    (normal3 : Π(r : ℕ), deg_d c r = (r+2, -(r+1)))
+  open is_normal
+  variable {c}
+  variable (d : is_normal c)
+  include d
+  definition stable_range {n s : ℤ} {r : ℕ} (H1 : n < r + 2) (H2 : s < r + 1) :
+    Einf c (n, s) ≃lm E c r (n, s) :=
+  begin
+    fapply Einf_isomorphism,
+    { intro r' Hr', apply is_contr_E, apply normal1 d,
+      refine lt_of_le_of_lt (le_of_eq (ap (λx, n - x.1) (normal3 d r'))) _,
+      apply sub_lt_left_of_lt_add,
+      refine lt_of_lt_of_le H1 (le.trans _ (le_of_eq !add_zero⁻¹)),
+      exact add_le_add_right (of_nat_le_of_nat_of_le Hr') 2 },
+    { intro r' Hr', apply is_contr_E, apply normal2 d,
+      refine lt_of_le_of_lt (le_of_eq (ap (λx, s + x.2) (normal3 d r'))) _,
+      change s - (r' + 1) < 0,
+      apply sub_lt_left_of_lt_add,
+      refine lt_of_lt_of_le H2 (le.trans _ (le_of_eq !add_zero⁻¹)),
+      exact add_le_add_right (of_nat_le_of_nat_of_le Hr') 1 },
+  end
+  /- some properties which use the degree of the spectral sequence we construct. For the AHSS and SSS the hypothesis is by reflexivity -/
+
+
+--  definition foo
 
 
 end spectral_sequence
