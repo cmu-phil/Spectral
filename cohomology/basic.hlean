@@ -133,7 +133,7 @@ definition cohomology_isomorphism {X X' : Type*} (f : X' ≃* X) (Y : spectrum) 
   H^n[X, Y] ≃g H^n[X', Y] :=
 Group_trunc_pmap_isomorphism f
 
-notation `H^≃` n `[`:0 e:0 `, ` Y:0 `]`:0   := cohomology_isomorphism e Y n
+notation `H^≃` n `[`:0 e:0 `, ` Y:0 `]`:0 := cohomology_isomorphism e Y n
 
 definition cohomology_isomorphism_refl (X : Type*) (Y : spectrum) (n : ℤ) (x : H^n[X,Y]) :
   H^≃n[pequiv.refl X, Y] x = x :=
@@ -149,6 +149,8 @@ definition unreduced_cohomology_isomorphism {X X' : Type} (f : X' ≃ X) (Y : sp
   uH^n[X, Y] ≃g uH^n[X', Y] :=
 cohomology_isomorphism (add_point_pequiv f) Y n
 
+notation `uH^≃` n `[`:0 e:0 `, ` Y:0 `]`:0 := unreduced_cohomology_isomorphism e Y n
+
 definition unreduced_cohomology_isomorphism_right (X : Type) {Y Y' : spectrum} (e : Πn, Y n ≃* Y' n)
   (n : ℤ) : uH^n[X, Y] ≃g uH^n[X, Y'] :=
 cohomology_isomorphism_right X₊ e n
@@ -156,6 +158,8 @@ cohomology_isomorphism_right X₊ e n
 definition unreduced_ordinary_cohomology_isomorphism {X X' : Type} (f : X' ≃ X) (G : AbGroup)
   (n : ℤ) : uoH^n[X, G] ≃g uoH^n[X', G] :=
 unreduced_cohomology_isomorphism f (EM_spectrum G) n
+
+notation `uoH^≃` n `[`:0 e:0 `, ` Y:0 `]`:0 := unreduced_ordinary_cohomology_isomorphism e Y n
 
 definition unreduced_ordinary_cohomology_isomorphism_right (X : Type) {G G' : AbGroup}
   (e : G ≃g G') (n : ℤ) : uoH^n[X, G] ≃g uoH^n[X, G'] :=
@@ -355,10 +359,10 @@ definition cohomology_punit (Y : spectrum) (n : ℤ) :
   is_contr (H^n[punit, Y]) :=
 @is_trunc_trunc_of_is_trunc _ _ _ !is_contr_punit_pmap
 
-definition cohomology_wedge (X X' : Type*) (Y : spectrum) (n : ℤ) :
+definition cohomology_wedge.{u} (X X' : Type*) (Y : spectrum.{u}) (n : ℤ) :
   H^n[wedge X X', Y] ≃g H^n[X, Y] ×ag H^n[X', Y] :=
 H^≃n[(wedge_pequiv_fwedge X X')⁻¹ᵉ*, Y] ⬝g
-cohomology_fwedge (has_choice_pbool 0) _ _ _ ⬝g
+cohomology_fwedge (has_choice_bool 0) _ _ _ ⬝g
 Group_pi_isomorphism_Group_pi erfl begin intro b, induction b: reflexivity end ⬝g
 (product_isomorphism_Group_pi H^n[X, Y] H^n[X', Y])⁻¹ᵍ ⬝g
 proof !isomorphism.refl qed
@@ -405,6 +409,10 @@ definition unreduced_ordinary_cohomology_sphere_of_neq (G : AbGroup) {n : ℤ} {
 is_contr_equiv_closed_rev
   (equiv_of_isomorphism (unreduced_ordinary_cohomology_nonzero (sphere k) G n q))
   (ordinary_cohomology_sphere_of_neq G p)
+
+definition unreduced_ordinary_cohomology_sphere_of_neq_nat (G : AbGroup) {n k : ℕ} (p : n ≠ k)
+  (q : n ≠ 0) : is_contr (uoH^n[sphere k, G]) :=
+unreduced_ordinary_cohomology_sphere_of_neq G (λh, p (of_nat.inj h)) (λh, q (of_nat.inj h))
 
 theorem is_contr_cohomology_of_is_contr_spectrum (n : ℤ) (X : Type*) (Y : spectrum)
   (H : is_contr (Y n)) : is_contr (H^n[X, Y]) :=
@@ -454,7 +462,7 @@ structure cohomology_theory.{u} : Type.{u+1} :=
   (Hsusp_natural : Π(n : ℤ) {X Y : Type*} (f : X →* Y),
     Hsusp n X ∘ Hh (succ n) (susp_functor f) ~ Hh n f ∘ Hsusp n Y)
   (Hexact : Π(n : ℤ) {X Y : Type*} (f : X →* Y), is_exact_g (Hh n (pcod f)) (Hh n f))
-  (Hadditive : Π(n : ℤ) {I : Type.{u}} (X : I → Type*), has_choice 0 I →
+  (Hadditive : Π(n : ℤ) {I : Type.{u}} (X : I → Type*), has_choice.{u u} 0 I →
     is_equiv (Group_pi_intro (λi, Hh n (pinl i)) : HH n (⋁ X) → Πᵍ i, HH n (X i)))
 
 structure ordinary_cohomology_theory.{u} extends cohomology_theory.{u} : Type.{u+1} :=

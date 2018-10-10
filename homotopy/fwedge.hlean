@@ -246,14 +246,10 @@ sorry
     { reflexivity }
   end
 
-
-
-
   open trunc
-  definition trunc_fwedge_pmap_equiv.{u} {n : ℕ₋₂} {I : Type.{u}} (H : has_choice n I)
-    (F : I → pType.{u}) (X : pType.{u}) : trunc n (⋁F →* X) ≃ Πi, trunc n (F i →* X) :=
+  definition trunc_fwedge_pmap_equiv.{u v w} {n : ℕ₋₂} {I : Type.{u}} (H : has_choice n I)
+    (F : I → pType.{v}) (X : pType.{w}) : trunc n (⋁F →* X) ≃ Πi, trunc n (F i →* X) :=
   trunc_equiv_trunc n (fwedge_pmap_equiv F X) ⬝e choice_equiv (λi, F i →* X)
-
 
   definition fwedge_functor [constructor] {I : Type} {F F' : I → Type*} (f : Π i, F i →* F' i)
     : ⋁ F →* ⋁ F' := fwedge_pmap (λ i, pinl i ∘* f i)
