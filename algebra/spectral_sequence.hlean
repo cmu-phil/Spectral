@@ -140,7 +140,16 @@ namespace spectral_sequence
     Einf c (n, s) ≃lm E' n s :=
   E_isomorphism0 c (λr Hr, H1 r) (λr Hr, H2 r)
 
-  /- we call a spectral sequence normal if it is a first-quadrant spectral sequence and the degree of d is what we expect -/
+  definition convergence_0 (n : ℤ) (H : Πm, lb c m = 0) :
+    is_built_from (Dinf n) (λ(k : ℕ), Einf c (n - k, k)) :=
+  is_built_from_isomorphism isomorphism.rfl
+    (λk, left_module.isomorphism_of_eq (ap (Einf c)
+      (prod_eq (ap (sub n) (ap (add _) !H ⬝ add_zero _)) (ap (add _) !H ⬝ add_zero _))))
+    (HDinf c n)
+
+  /- we call a spectral sequence normal if it is a first-quadrant spectral sequence and
+    the degree of d on page r (for r ≥ 2) is (r, -(r-1)).
+    The indexing is different, because we start counting pages at 2. -/
   include c
   structure is_normal : Type :=
     (normal1 : Π{n} s, n < 0 → is_contr (E' n s))
@@ -166,10 +175,7 @@ namespace spectral_sequence
       refine lt_of_lt_of_le H2 (le.trans _ (le_of_eq !add_zero⁻¹)),
       exact add_le_add_right (of_nat_le_of_nat_of_le Hr') 1 },
   end
-  /- some properties which use the degree of the spectral sequence we construct. For the AHSS and SSS the hypothesis is by reflexivity -/
-
-
---  definition foo
+  omit d
 
 
 end spectral_sequence

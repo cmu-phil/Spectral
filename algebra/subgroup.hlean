@@ -79,7 +79,7 @@ namespace group
 
   variables {G₁ G₂ : Group}
 
-  -- TODO: maybe define this in more generality for pointed propertys?
+  -- TODO: maybe define this in more generality for pointed sets?
   definition kernel [constructor] (φ : G₁ →g G₂) : property G₁ := { g | trunctype.mk (φ g = 1) _}
 
   theorem mul_mem_kernel (φ : G₁ →g G₂) (g h : G₁) (H₁ : g ∈ kernel φ) (H₂ : h ∈ kernel φ) : g * h ∈ kernel φ :=
@@ -554,6 +554,17 @@ end
   begin
     intro r, induction r, reflexivity
   end
+
+  definition is_equiv_incl_of_subgroup {G : Group} (H : property G) [is_subgroup G H]
+    (h : Πg, g ∈ H) : is_equiv (incl_of_subgroup H) :=
+  have is_surjective (incl_of_subgroup H),
+  begin intro g, exact image.mk ⟨g, h g⟩ idp end,
+  have is_embedding (incl_of_subgroup H), from is_embedding_incl_of_subgroup H,
+  function.is_equiv_of_is_surjective_of_is_embedding (incl_of_subgroup H)
+
+  definition subgroup_isomorphism [constructor] {G : Group} (H : property G) [is_subgroup G H]
+    (h : Πg, g ∈ H) : subgroup H ≃g G :=
+  isomorphism.mk _ (is_equiv_incl_of_subgroup H h)
 
 end group
 

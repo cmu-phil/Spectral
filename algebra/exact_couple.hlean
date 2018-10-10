@@ -671,8 +671,8 @@ namespace pointed
   definition homotopy_group_conn_nat_functor (n : ℕ) {A B : Type*[1]} (f : A →* B) :
     homotopy_group_conn_nat n A →g homotopy_group_conn_nat n B :=
   begin
-    cases n with n, { apply trivial_homomorphism },
-    cases n with n, { apply trivial_homomorphism },
+    cases n with n, { apply group.trivial_homomorphism },
+    cases n with n, { apply group.trivial_homomorphism },
     exact π→g[n+2] f
   end
 

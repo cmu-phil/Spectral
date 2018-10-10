@@ -157,6 +157,10 @@ end sigma open sigma
 
 namespace group
 
+  definition group_homomorphism_of_add_group_homomorphism [constructor] {G₁ G₂ : AddGroup}
+    (φ : G₁ →a G₂) : G₁ →g G₂ :=
+  φ
+
 
 --  definition is_equiv_isomorphism
 

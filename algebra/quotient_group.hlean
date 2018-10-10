@@ -150,13 +150,18 @@ namespace group
   definition ab_qg_map {G : AbGroup} (N : property G) [is_subgroup G N] : G →g quotient_ab_group N :=
   @qg_map _ N (is_normal_subgroup_ab _)
 
- definition is_surjective_ab_qg_map {A : AbGroup} (N : property A) [is_subgroup A N] : is_surjective (ab_qg_map N) :=
+  definition is_surjective_qg_map {A : Group} (N : property A) [is_normal_subgroup A N] :
+    is_surjective (qg_map N) :=
   begin
     intro x, induction x,
     fapply image.mk,
     exact a, reflexivity,
     apply is_prop.elimo
   end
+
+  definition is_surjective_ab_qg_map {A : AbGroup} (N : property A) [is_subgroup A N] :
+    is_surjective (ab_qg_map N) :=
+  @is_surjective_qg_map _ _ _
 
   namespace quotient
     notation `⟦`:max a `⟧`:0 := qg_map _ a
@@ -165,25 +170,20 @@ namespace group
   open quotient
   variables {N N'}
 
-  definition qg_map_eq_one (g : G) (H : N g) : qg_map N g = 1 :=
+  definition qg_map_eq_one {A : Group} {K : property A} [is_normal_subgroup A K] (g : A)
+      (H : g ∈ K) : qg_map K g = 1 :=
   begin
-    apply eq_of_rel,
-      have e : (g * 1⁻¹ = g),
-      from calc
+    apply set_quotient.eq_of_rel,
+    have e : g * 1⁻¹ = g,
+    from calc
       g * 1⁻¹ = g * 1 : one_inv
         ...   = g : mul_one,
-    unfold quotient_rel, rewrite e, exact H
+    exact transport (λx, K x) e⁻¹ H
   end
 
-  definition ab_qg_map_eq_one {K : property A} [is_subgroup A K] (g :A) (H : K g) : ab_qg_map K g = 1 :=
-  begin
-    apply eq_of_rel,
-      have e : (g * 1⁻¹ = g),
-      from calc
-      g * 1⁻¹ = g * 1 : one_inv
-        ...   = g : mul_one,
-    unfold quotient_rel, xrewrite e, exact H
-  end
+  definition ab_qg_map_eq_one {A : AbGroup} {K : property A} [is_subgroup A K] (g : A) (H : g ∈ K) :
+    ab_qg_map K g = 1 :=
+  @qg_map_eq_one _ _ _ g H
 
    --- there should be a smarter way to do this!! Please have a look, Floris.
   definition rel_of_qg_map_eq_one (g : G) (H : qg_map N g = 1) : g ∈ N :=
@@ -454,16 +454,14 @@ namespace group
 
 definition kernel_quotient_extension {A B : AbGroup} (f : A →g B) : quotient_ab_group (kernel f) →g B :=
   begin
-    unfold quotient_ab_group,
-    fapply @quotient_group_elim A B _ (@is_normal_subgroup_ab _ (kernel f) _) f,
+    apply quotient_ab_group_elim f,
     intro a, intro p, exact p
   end
 
 definition kernel_quotient_extension_triangle {A B : AbGroup} (f : A →g B) :
   kernel_quotient_extension f ∘ ab_qg_map (kernel f) ~ f :=
   begin
-    intro a,
-    apply @quotient_group_compute _ _ _ (@is_normal_subgroup_ab _ (kernel f) _)
+    intro a, reflexivity
   end
 
 definition is_embedding_kernel_quotient_extension {A B : AbGroup} (f : A →g B) :
@@ -474,7 +472,7 @@ definition is_embedding_kernel_quotient_extension {A B : AbGroup} (f : A →g B)
     note H := is_surjective_ab_qg_map (kernel f) x,
     induction H, induction p,
     intro q,
-    apply @qg_map_eq_one _ _ (@is_normal_subgroup_ab _ (kernel f) _),
+    apply ab_qg_map_eq_one,
     refine _ ⬝ q,
     symmetry,
     rexact kernel_quotient_extension_triangle f a
@@ -698,6 +696,27 @@ namespace group
     exact ap set_quotient.class_of (p g)
   end
 
+  definition quotient_group_isomorphism_quotient_group [constructor] (φ : G ≃g H)
+    (h : Πg, g ∈ R ↔ φ g ∈ S) : quotient_group R ≃g quotient_group S :=
+  begin
+    refine isomorphism.MK (quotient_group_functor φ (λg, iff.mp (h g)))
+      (quotient_group_functor φ⁻¹ᵍ (λg gS, iff.mpr (h _) (transport S (right_inv φ g)⁻¹ gS))) _ _,
+    { refine quotient_group_functor_compose _ _ _ _ ⬝hty
+             quotient_group_functor_homotopy _ _ proof right_inv φ qed ⬝hty
+             quotient_group_functor_gid },
+    { refine quotient_group_functor_compose _ _ _ _ ⬝hty
+             quotient_group_functor_homotopy _ _ proof left_inv φ qed ⬝hty
+             quotient_group_functor_gid }
+  end
+
+  definition is_equiv_qg_map {G : Group} (H : property G) [is_normal_subgroup G H]
+    (H₂ : Π⦃g⦄, g ∈ H → g = 1) : is_equiv (qg_map H) :=
+  set_quotient.is_equiv_class_of _ (λg h r, eq_of_mul_inv_eq_one (H₂ r))
+
+  definition quotient_group_isomorphism [constructor] {G : Group} (H : property G)
+    [is_normal_subgroup G H] (h : Πg, g ∈ H → g = 1) : quotient_group H ≃g G :=
+  (isomorphism.mk _ (is_equiv_qg_map H h))⁻¹ᵍ
+
 end group
 
 namespace group
@@ -734,5 +753,17 @@ namespace group
     (hφ : Πg, g ∈ R → φ g ∈ S) (p : φ ~ ψ) :
     quotient_ab_group_functor φ hφ ~ quotient_ab_group_functor ψ hψ :=
   @quotient_group_functor_homotopy G H R _ S _ ψ φ hψ hφ p
+
+  definition is_equiv_ab_qg_map {G : AbGroup} (H : property G) [is_subgroup G H]
+    (h : Π⦃g⦄, g ∈ H → g = 1) : is_equiv (ab_qg_map H) :=
+  proof @is_equiv_qg_map G H (is_normal_subgroup_ab _) h qed
+
+  definition ab_quotient_group_isomorphism [constructor] {G : AbGroup} (H : property G)
+    [is_subgroup G H] (h : Πg, H g → g = 1) : quotient_ab_group H ≃g G :=
+  (isomorphism.mk _ (is_equiv_ab_qg_map H h))⁻¹ᵍ
+
+  definition quotient_ab_group_isomorphism_quotient_ab_group [constructor] (φ : G ≃g H)
+    (h : Πg, g ∈ R ↔ φ g ∈ S) : quotient_ab_group R ≃g quotient_ab_group S :=
+  @quotient_group_isomorphism_quotient_group _ _ _ _ _ _ φ h
 
 end group

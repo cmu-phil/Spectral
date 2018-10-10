@@ -183,6 +183,10 @@ definition left_module_AddAbGroup_of_LeftModule [instance] {R : Ring} (M : LeftM
   left_module R (AddAbGroup_of_LeftModule M) :=
 LeftModule.struct M
 
+definition left_module_AddAbGroup_of_LeftModule2 [instance] {R : Ring} (M : LeftModule R) :
+  left_module R (Group_of_AbGroup (AddAbGroup_of_LeftModule M)) :=
+LeftModule.struct M
+
 definition left_module_of_ab_group {G : Type} [gG : add_ab_group G] {R : Type} [ring R]
   (smul : R → G → G)
   (h1 : Π (r : R) (x y : G), smul r (x + y) = (smul r x + smul r y))
@@ -423,6 +427,15 @@ section
     (g : B →lm C)
     (h : @is_short_exact A B C f g)
 
+  structure five_exact_mod (A B C D E : LeftModule R) :=
+    (f₁ : A →lm B)
+    (f₂ : B →lm C)
+    (f₃ : C →lm D)
+    (f₄ : D →lm E)
+    (h₁ : @is_exact A B C f₁ f₂)
+    (h₂ : @is_exact B C D f₂ f₃)
+    (h₃ : @is_exact C D E f₃ f₄)
+
   local abbreviation g_of_lm := @group_homomorphism_of_lm_homomorphism
   definition short_exact_mod_of_is_exact {X A B C Y : LeftModule R}
     (k : X →lm A) (f : A →lm B) (g : B →lm C) (l : C →lm Y)
@@ -609,5 +622,6 @@ definition group_isomorphism_of_lm_isomorphism_int [constructor] {A B : AbGroup}
 group_isomorphism_of_lm_isomorphism φ
 
 end int
+
 
 end left_module

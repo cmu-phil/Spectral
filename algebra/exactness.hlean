@@ -243,37 +243,6 @@ definition is_contr_left_of_is_short_exact {A B : Type} {C : Type*} {f : A → B
   (H : is_short_exact f g) (HB : is_contr B) (a₀ : A) : is_contr A :=
 is_contr_of_is_embedding f (is_short_exact.is_emb H) _ a₀
 
-/- TODO: move and remove other versions -/
-
-  definition is_surjective_qg_map {A : Group} (N : property A) [is_normal_subgroup A N] :
-    is_surjective (qg_map N) :=
-  begin
-    intro x, induction x,
-    fapply image.mk,
-    exact a, reflexivity,
-    apply is_prop.elimo
-  end
-
-  definition is_surjective_ab_qg_map {A : AbGroup} (N : property A) [is_normal_subgroup A N] :
-    is_surjective (ab_qg_map N) :=
-  is_surjective_ab_qg_map _
-
-  definition qg_map_eq_one {A : Group} {K : property A} [is_normal_subgroup A K] (g : A)
-      (H : g ∈ K) :
-    qg_map K g = 1 :=
-  begin
-    apply set_quotient.eq_of_rel,
-    have e : g * 1⁻¹ = g,
-    from calc
-      g * 1⁻¹ = g * 1 : one_inv
-        ...   = g : mul_one,
-    exact transport (λx, K x) e⁻¹ H
-  end
-
-  definition ab_qg_map_eq_one {A : AbGroup} {K : property A} [is_subgroup A K] (g : A)
-      (H : g ∈ K) :
-    ab_qg_map K g = 1 :=
-  ab_qg_map_eq_one g H
 
 definition is_short_exact_normal_subgroup {G : Group} (S : property G) [is_normal_subgroup G S] :
   is_short_exact (incl_of_subgroup S) (qg_map S) :=
@@ -286,5 +255,6 @@ begin
     reflexivity },
   { exact is_surjective_qg_map S },
 end
+
 
 end algebra
