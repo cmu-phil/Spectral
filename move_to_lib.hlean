@@ -69,6 +69,28 @@ end nat
 
 namespace pointed
 
+  open option sum
+  definition option_equiv_sum (A : Type) : option A ≃ A ⊎ unit :=
+  begin
+    fapply equiv.MK,
+    { intro z, induction z with a,
+      { exact inr star },
+      { exact inl a } },
+    { intro z, induction z with a b,
+      { exact some a },
+      { exact none } },
+    { intro z, induction z with a b,
+      { reflexivity },
+      { induction b, reflexivity } },
+    { intro z, induction z with a, all_goals reflexivity }
+  end
+
+  theorem is_trunc_add_point [instance] (n : ℕ₋₂) (A : Type) [HA : is_trunc (n.+2) A]
+    : is_trunc (n.+2) A₊ :=
+  begin
+    apply is_trunc_equiv_closed_rev _ (option_equiv_sum A),
+    apply is_trunc_sum
+  end
 
 end pointed open pointed
 

@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2015 Floris van Doorn. All rights reserved.
+Copyright (c) 2015-2018 Floris van Doorn. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Floris van Doorn, Egbert Rijke
+Authors: Floris van Doorn, Egbert Rijke, Ulrik Buchholtz
 
 Constructions with groups
 -/
@@ -9,7 +9,7 @@ Constructions with groups
 import algebra.group_theory hit.set_quotient types.list types.sum ..move_to_lib
 
 open eq algebra is_trunc set_quotient relation sigma sigma.ops prod sum list trunc function equiv
-     prod.ops decidable is_equiv
+     prod.ops decidable is_equiv pointed
 
 universe variable u
 
@@ -17,14 +17,16 @@ namespace group
 
   variables {G G' : Group} {g g' h h' k : G} {A B : AbGroup}
 
-  /- Free Group of a set -/
-  variables (X : Type) [is_set X] {l l' : list (X ⊎ X)}
+  /- Free Group of a pointed set -/
+  variables (X : Type*) [is_set X] {l l' : list (X ⊎ X)}
   namespace free_group
 
   inductive free_group_rel : list (X ⊎ X) → list (X ⊎ X) → Type :=
   | rrefl   : Πl, free_group_rel l l
   | cancel1 : Πx, free_group_rel [inl x, inr x] []
   | cancel2 : Πx, free_group_rel [inr x, inl x] []
+  | cancelpt1 : free_group_rel [inl pt] []
+  | cancelpt2 : free_group_rel [inr pt] []
   | resp_append : Π{l₁ l₂ l₃ l₄}, free_group_rel l₁ l₂ → free_group_rel l₃ l₄ →
                              free_group_rel (l₁ ++ l₃) (l₂ ++ l₄)
   | rtrans : Π{l₁ l₂ l₃}, free_group_rel l₁ l₂ → free_group_rel l₂ l₃ →
@@ -48,6 +50,8 @@ namespace group
     { reflexivity},
     { repeat esimp [map], exact cancel2 x},
     { repeat esimp [map], exact cancel1 x},
+    { exact cancelpt2 X },
+    { exact cancelpt1 X },
     { rewrite [+map_append], exact resp_append IH₁ IH₂},
     { exact rtrans IH₁ IH₂}
   end
@@ -58,6 +62,8 @@ namespace group
     { reflexivity},
     { repeat esimp [map], exact cancel2 x},
     { repeat esimp [map], exact cancel1 x},
+    { exact cancelpt1 X },
+    { exact cancelpt2 X },
     { rewrite [+reverse_append], exact resp_append IH₂ IH₁},
     { exact rtrans IH₁ IH₂}
   end
@@ -127,15 +133,17 @@ namespace group
   class_of [inl x]
 
   definition fgh_helper [unfold 6] (f : X → G) (g : G) (x : X ⊎ X) : G :=
-  g * sum.rec (λx, f x) (λx, (f x)⁻¹) x
+  g * sum.rec (λz, f z) (λz, (f z)⁻¹) x
 
-  theorem fgh_helper_respect_rel (f : X → G) (r : free_group_rel X l l')
+  theorem fgh_helper_respect_rel (f : X →* G) (r : free_group_rel X l l')
     : Π(g : G), foldl (fgh_helper f) g l = foldl (fgh_helper f) g l' :=
   begin
     induction r with l x x l₁ l₂ l₃ l₄ r₁ r₂ IH₁ IH₂ l₁ l₂ l₃ r₁ r₂ IH₁ IH₂: intro g,
     { reflexivity},
     { unfold [foldl], apply mul_inv_cancel_right},
     { unfold [foldl], apply inv_mul_cancel_right},
+    { unfold [foldl], rewrite (respect_pt f), apply mul_one },
+    { unfold [foldl], rewrite [respect_pt f, one_inv], apply mul_one },
     { rewrite [+foldl_append, IH₁, IH₂]},
     { exact !IH₁ ⬝ !IH₂}
   end
@@ -149,7 +157,7 @@ namespace group
       rewrite [-mul.assoc, ↑fgh_helper, one_mul]}
   end
 
-  definition free_group_hom [constructor] (f : X → G) : free_group X →g G :=
+  definition free_group_hom [constructor] (f : X →* G) : free_group X →g G :=
   begin
     fapply homomorphism.mk,
     { intro g, refine set_quotient.elim _ _ g,
@@ -173,16 +181,23 @@ namespace group
         (respect_inv ψ (class_of [inl x]))⁻¹ }
   end
 
-  definition fn_of_free_group_hom [unfold_full] (φ : free_group X →g G) : X → G :=
-  φ ∘ free_group_inclusion
+  definition fn_of_free_group_hom [unfold_full] (φ : free_group X →g G) : X →* G :=
+  ppi.mk (φ ∘ free_group_inclusion)
+  begin
+    refine (_ ⬝ respect_one φ),
+    apply ap φ, apply eq_of_rel, apply tr,
+    exact (free_group_rel.cancelpt1 X)
+  end
 
   variables (X G)
-  definition free_group_hom_equiv_fn : (free_group X →g G) ≃ (X → G) :=
+  definition free_group_hom_equiv_fn : (free_group X →g G) ≃ (X →* G) :=
   begin
     fapply equiv.MK,
     { exact fn_of_free_group_hom},
     { exact free_group_hom},
-    { intro f, apply eq_of_homotopy, intro x, esimp, unfold [foldl], apply one_mul},
+    { intro f, apply eq_of_phomotopy, fapply phomotopy.mk,
+      { intro x, esimp, unfold [foldl], apply one_mul },
+      { apply is_prop.elim } },
     { intro φ, apply homomorphism_eq, apply free_group_hom_eq, intro x, apply one_mul }
   end
 
@@ -629,16 +644,20 @@ namespace group
 
   variable (X)
 
-  definition free_group_of_dfree_group [constructor] : dfree_group X →g free_group X :=
-  dfree_group_hom free_group_inclusion
+  open option
 
-  definition dfree_group_of_free_group [constructor] : free_group X →g dfree_group X :=
-  free_group_hom dfree_group_inclusion
+  definition free_group_of_dfree_group [constructor] : dfree_group X →g free_group X₊ :=
+  dfree_group_hom (free_group_inclusion ∘ some)
 
-  definition dfree_group_isomorphism : dfree_group X ≃g free_group X :=
+  definition dfree_group_of_free_group [constructor] : free_group X₊ →g dfree_group X :=
+  free_group_hom (ppi.mk (option.rec 1 dfree_group_inclusion) idp)
+
+  definition dfree_group_isomorphism : dfree_group X ≃g free_group X₊ :=
   begin
     apply isomorphism.MK (free_group_of_dfree_group X) (dfree_group_of_free_group X),
-    { apply free_group_hom_eq, intro x, reflexivity },
+    { apply free_group_hom_eq, intro x, induction x with x,
+      { symmetry, apply eq_of_rel, apply tr, exact free_group.free_group_rel.cancelpt1 X₊ },
+      { reflexivity } },
     { apply dfree_group_hom_eq, intro x, reflexivity }
   end
 
