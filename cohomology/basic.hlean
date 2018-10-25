@@ -10,10 +10,10 @@ import ..spectrum.basic ..algebra.arrow_group ..algebra.product_group ..choice
        ..homotopy.fwedge ..homotopy.pushout ..homotopy.EM ..homotopy.wedge
 
 open eq spectrum int trunc pointed EM group algebra circle sphere nat EM.ops equiv susp is_trunc
-     function fwedge cofiber bool lift sigma is_equiv choice pushout algebra unit pi is_conn
+     function fwedge cofiber bool lift sigma is_equiv choice pushout algebra unit pi is_conn wedge
 
 namespace cohomology
-
+universe variables u u' v w
 /- The cohomology of X with coefficients in Y is
    trunc 0 (A →* Ω[2] (Y (n+2)))
    In the file arrow_group (in algebra) we construct the group structure on this type.
@@ -287,15 +287,15 @@ definition additive_hom [constructor] {I : Type} (X : I → Type*) (Y : spectrum
   H^n[⋁X, Y] →g Πᵍ i, H^n[X i, Y] :=
 Group_pi_intro (λi, cohomology_functor (pinl i) Y n)
 
-definition additive_equiv.{u} {I : Type.{u}} (H : has_choice 0 I) (X : I → Type*) (Y : spectrum)
-  (n : ℤ) : H^n[⋁X, Y] ≃ Πᵍ i, H^n[X i, Y] :=
+definition additive_equiv {I : Type.{u}} (H : has_choice.{u (max v w)} 0 I) (X : I → pType.{v})
+  (Y : spectrum.{w}) (n : ℤ) : H^n[⋁X, Y] ≃ Πᵍ i, H^n[X i, Y] :=
 trunc_fwedge_pmap_equiv H X (Ω[2] (Y (n+2)))
 
 definition spectrum_additive {I : Type} (H : has_choice 0 I) (X : I → Type*) (Y : spectrum)
   (n : ℤ) : is_equiv (additive_hom X Y n) :=
 is_equiv_of_equiv_of_homotopy (additive_equiv H X Y n) begin intro f, induction f, reflexivity end
 
-definition cohomology_fwedge.{u} {I : Type.{u}} (H : has_choice 0 I) (X : I → Type*) (Y : spectrum)
+definition cohomology_fwedge {I : Type.{u}} (H : has_choice 0 I) (X : I → Type*) (Y : spectrum)
   (n : ℤ) : H^n[⋁X, Y] ≃g Πᵍ i, H^n[X i, Y] :=
 isomorphism.mk (additive_hom X Y n) (spectrum_additive H X Y n)
 
@@ -359,24 +359,25 @@ definition cohomology_punit (Y : spectrum) (n : ℤ) :
   is_contr (H^n[punit, Y]) :=
 @is_trunc_trunc_of_is_trunc _ _ _ !is_contr_punit_pmap
 
-definition cohomology_wedge.{u} (X X' : Type*) (Y : spectrum.{u}) (n : ℤ) :
+definition cohomology_wedge (X : pType.{u}) (X' : pType.{u'}) (Y : spectrum.{v}) (n : ℤ) :
   H^n[wedge X X', Y] ≃g H^n[X, Y] ×ag H^n[X', Y] :=
-H^≃n[(wedge_pequiv_fwedge X X')⁻¹ᵉ*, Y] ⬝g
-cohomology_fwedge (has_choice_bool 0) _ _ _ ⬝g
+H^≃n[(wedge_pequiv !pequiv_plift !pequiv_plift ⬝e*
+      wedge_pequiv_fwedge (plift.{u u'} X) (plift.{u' u} X'))⁻¹ᵉ*, Y] ⬝g
+cohomology_fwedge (has_choice_bool _) _ Y n ⬝g
 Group_pi_isomorphism_Group_pi erfl begin intro b, induction b: reflexivity end ⬝g
-(product_isomorphism_Group_pi H^n[X, Y] H^n[X', Y])⁻¹ᵍ ⬝g
-proof !isomorphism.refl qed
+(product_isomorphism_Group_pi H^n[plift.{u u'} X, Y] H^n[plift.{u' u} X', Y])⁻¹ᵍ ⬝g
+proof H^≃n[!pequiv_plift, Y] ×≃g H^≃n[!pequiv_plift, Y] qed
 
 definition cohomology_isomorphism_of_equiv {X X' : Type*} (e : X ≃ X') (Y : spectrum) (n : ℤ) :
   H^n[X', Y] ≃g H^n[X, Y] :=
 !cohomology_susp⁻¹ᵍ ⬝g H^≃n+1[susp_pequiv_of_equiv e, Y] ⬝g !cohomology_susp
 
-definition unreduced_cohomology_split (X : Type*) (Y : spectrum) (n : ℤ) :
+definition unreduced_cohomology_split (X : pType.{u}) (Y : spectrum.{v}) (n : ℤ) :
   uH^n[X, Y] ≃g H^n[X, Y] ×ag H^n[pbool, Y] :=
-cohomology_isomorphism_of_equiv (wedge.wedge_pbool_equiv_add_point X) Y n ⬝g
+cohomology_isomorphism_of_equiv (wedge_pbool_equiv_add_point X) Y n ⬝g
 cohomology_wedge X pbool Y n
 
-definition unreduced_ordinary_cohomology_nonzero (X : Type*) (G : AbGroup) (n : ℤ) (H : n ≠ 0) :
+definition unreduced_ordinary_cohomology_nonzero (X : pType.{u}) (G : AbGroup.{v}) (n : ℤ) (H : n ≠ 0) :
   uoH^n[X, G] ≃g oH^n[X, G] :=
 unreduced_cohomology_split X (EM_spectrum G) n ⬝g
 product_trivial_right _ _ (ordinary_cohomology_dimension _ _ H)
@@ -386,7 +387,7 @@ definition unreduced_ordinary_cohomology_zero (X : Type*) (G : AbGroup) :
 unreduced_cohomology_split X (EM_spectrum G) 0 ⬝g
 (!isomorphism.refl ×≃g ordinary_cohomology_pbool G)
 
-definition unreduced_ordinary_cohomology_pbool (G : AbGroup) : uoH^0[pbool, G] ≃g G ×ag G :=
+definition unreduced_ordinary_cohomology_pbool (G : AbGroup.{v}) : uoH^0[pbool, G] ≃g G ×ag G :=
 unreduced_ordinary_cohomology_zero pbool G ⬝g (ordinary_cohomology_pbool G ×≃g !isomorphism.refl)
 
 definition unreduced_ordinary_cohomology_pbool_nonzero (G : AbGroup) (n : ℤ) (H : n ≠ 0) :
@@ -447,7 +448,7 @@ end
 
 /- cohomology theory -/
 
-structure cohomology_theory.{u} : Type.{u+1} :=
+structure cohomology_theory : Type :=
   (HH : ℤ → pType.{u} → AbGroup.{u})
   (Hiso : Π(n : ℤ) {X Y : Type*} (f : X ≃* Y), HH n Y ≃g HH n X)
   (Hiso_refl : Π(n : ℤ) (X : Type*) (x : HH n X), Hiso n pequiv.rfl x = x)
@@ -465,7 +466,7 @@ structure cohomology_theory.{u} : Type.{u+1} :=
   (Hadditive : Π(n : ℤ) {I : Type.{u}} (X : I → Type*), has_choice.{u u} 0 I →
     is_equiv (Group_pi_intro (λi, Hh n (pinl i)) : HH n (⋁ X) → Πᵍ i, HH n (X i)))
 
-structure ordinary_cohomology_theory.{u} extends cohomology_theory.{u} : Type.{u+1} :=
+structure ordinary_cohomology_theory extends cohomology_theory.{u} : Type :=
  (Hdimension : Π(n : ℤ), n ≠ 0 → is_contr (HH n (plift pbool)))
 
 attribute cohomology_theory.HH [coercion]
@@ -494,7 +495,7 @@ definition Hadditive_equiv (H : cohomology_theory) (n : ℤ) {I : Type} (X : I �
   : H n (⋁ X) ≃g Πᵍ i, H n (X i) :=
 isomorphism.mk _ (Hadditive H n X H2)
 
-definition Hlift_empty.{u} (H : cohomology_theory.{u}) (n : ℤ) :
+definition Hlift_empty (H : cohomology_theory.{u}) (n : ℤ) :
   is_contr (H n (plift punit)) :=
 let P : lift empty → Type* := lift.rec empty.elim in
 let x := Hadditive H n P _ in
@@ -524,7 +525,7 @@ end
 --   refine Hadditive_equiv H n _ _ ⬝g _
 -- end
 
-definition cohomology_theory_spectrum.{u} [constructor] (Y : spectrum.{u}) : cohomology_theory.{u} :=
+definition cohomology_theory_spectrum [constructor] (Y : spectrum.{u}) : cohomology_theory.{u} :=
 cohomology_theory.mk
   (λn A, H^n[A, Y])
   (λn A B f, cohomology_isomorphism f Y n)
@@ -539,13 +540,6 @@ cohomology_theory.mk
   (λn A B f, cohomology_exact f Y n)
   (λn I A H, spectrum_additive H A Y n)
 
--- set_option pp.universes true
--- set_option pp.abbreviations false
--- print cohomology_theory_spectrum
--- print EM_spectrum
--- print has_choice_lift
--- print equiv_lift
--- print has_choice_equiv_closed
 definition ordinary_cohomology_theory_EM [constructor] (G : AbGroup) : ordinary_cohomology_theory :=
 ⦃ordinary_cohomology_theory, cohomology_theory_spectrum (EM_spectrum G), Hdimension := ordinary_cohomology_dimension_plift G ⦄
 

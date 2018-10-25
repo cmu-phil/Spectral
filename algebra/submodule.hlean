@@ -7,7 +7,7 @@ open algebra eq group sigma sigma.ops is_trunc function trunc equiv is_equiv pro
 
 namespace left_module
 /- submodules -/
-variables {R : Ring} {M M₁ M₂ M₃ : LeftModule R} {m m₁ m₂ : M}
+variables {R : Ring} {M M₁ M₁' M₂ M₂' M₃ M₃' : LeftModule R} {m m₁ m₂ : M}
 
 structure is_submodule [class] (M : LeftModule R) (S : property M) : Type :=
   (zero_mem : 0 ∈ S)
@@ -45,7 +45,7 @@ ab_subgroup_functor (smul_homomorphism M r) (λg, smul_mem S r)
 definition submodule_smul_right_distrib (r s : R) (n : submodule' S) :
   submodule_smul S (r + s) n = submodule_smul S r n + submodule_smul S s n :=
 begin
-  refine subgroup_functor_homotopy _ _ _ n ⬝ !subgroup_functor_mul⁻¹,
+  refine subgroup_functor_homotopy _ _ _ n ⬝ !subgroup_functor_mul⁻¹ᵖ,
   intro m, exact to_smul_right_distrib r s m
 end
 
@@ -134,6 +134,13 @@ is_contr_of_inhabited_prop 0 this
 definition submodule_isomorphism [constructor] (S : property M) [is_submodule M S] (h : Πg, g ∈ S) :
   submodule S ≃lm M :=
 isomorphism.mk (submodule_incl S) (is_equiv_incl_of_subgroup S h)
+
+definition submodule_isomorphism_submodule [constructor] {S : property M₁} [is_submodule M₁ S]
+  {K : property M₂} [is_submodule M₂ K]
+  (φ : M₁ ≃lm M₂) (h : Π (m : M₁), m ∈ S ↔ φ m ∈ K) : submodule S ≃lm submodule K :=
+lm_isomorphism_of_group_isomorphism
+  (subgroup_isomorphism_subgroup (group_isomorphism_of_lm_isomorphism φ) h)
+  (by rexact to_respect_smul (submodule_functor φ (λg, iff.mp (h g))))
 
 /- quotient modules -/
 
@@ -289,7 +296,7 @@ begin
   refine total_image.rec _, intro m, exact image.mk m (subtype_eq idp)
 end
 
-variables {ψ : M₂ →lm M₃} {φ : M₁ →lm M₂} {θ : M₁ →lm M₃}
+variables {ψ : M₂ →lm M₃} {φ : M₁ →lm M₂} {θ : M₁ →lm M₃} {ψ' : M₂' →lm M₃'} {φ' : M₁' →lm M₂'}
 
 definition image_elim [constructor] (θ : M₁ →lm M₃) (h : Π⦃g⦄, φ g = 0 → θ g = 0) :
   image_module φ →lm M₃ :=
@@ -412,6 +419,29 @@ definition homology_isomorphism [constructor] (ψ : M₂ →lm M₃) (φ : M₁ 
 (quotient_module_isomorphism (homology_quotient_property ψ φ)
   (eq_zero_of_mem_property_submodule_trivial (image_trivial _))) ⬝lm (kernel_module_isomorphism ψ _)
 
+definition homology_functor [constructor] (α₁ : M₁ →lm M₁') (α₂ : M₂ →lm M₂') (α₃ : M₃ →lm M₃')
+  (p : hsquare ψ ψ' α₂ α₃) (q : hsquare φ φ' α₁ α₂) : homology ψ φ →lm homology ψ' φ' :=
+begin
+  fapply quotient_module_functor,
+  { apply submodule_functor α₂, intro m pm, refine (p m)⁻¹ ⬝ ap α₃ pm ⬝ to_respect_zero α₃ },
+  { intro m pm, induction pm with m' pm',
+    refine image.mk (α₁ m') ((q m')⁻¹ ⬝ _), exact ap α₂ pm' }
+end
+
+definition homology_isomorphism_homology [constructor] (α₁ : M₁ ≃lm M₁') (α₂ : M₂ ≃lm M₂') (α₃ : M₃ ≃lm M₃')
+  (p : hsquare ψ ψ' α₂ α₃) (q : hsquare φ φ' α₁ α₂) : homology ψ φ ≃lm homology ψ' φ' :=
+begin
+  fapply quotient_module_isomorphism_quotient_module,
+  { fapply submodule_isomorphism_submodule α₂, intro m,
+    exact iff.intro (λpm, (p m)⁻¹ ⬝ ap α₃ pm ⬝ to_respect_zero α₃)
+            (λpm, inj (equiv_of_isomorphism α₃) (p m ⬝ pm ⬝ (to_respect_zero α₃)⁻¹)) },
+  { intro m, apply iff.intro,
+    { intro pm, induction pm with m' pm', refine image.mk (α₁ m') ((q m')⁻¹ ⬝ _), exact ap α₂ pm' },
+    { intro pm, induction pm with m' pm', refine image.mk (α₁⁻¹ˡᵐ m') _,
+      refine (hvinverse' (equiv_of_isomorphism α₁) (equiv_of_isomorphism α₂) q m')⁻¹ ⬝ _,
+      exact ap α₂⁻¹ˡᵐ pm' ⬝ to_left_inv (equiv_of_isomorphism α₂) m.1 }}
+end
+
 definition ker_in_im_of_is_contr_homology (ψ : M₂ →lm M₃) {φ : M₁ →lm M₂}
   (H₁ : is_contr (homology ψ φ)) {m : M₂} (p : ψ m = 0) : image φ m :=
 rel_of_is_contr_quotient_module _ H₁ ⟨m, p⟩
@@ -441,10 +471,10 @@ is_surjective_of_is_contr_homology_of_constant ψ H₁ (λm, @eq_of_is_contr _ H
 definition cokernel_module (φ : M₁ →lm M₂) : LeftModule R :=
 quotient_module (image φ)
 
-definition cokernel_module_isomorphism_homology (φ : M₁ →lm M₂) :
-  homology (trivial_homomorphism M₂ (trivial_LeftModule R)) φ ≃lm cokernel_module φ :=
+definition cokernel_module_isomorphism_homology (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂) (H : Πm, ψ m = 0) :
+  homology ψ φ ≃lm cokernel_module φ :=
 quotient_module_isomorphism_quotient_module
-  (submodule_isomorphism _ (λm, idp))
+  (submodule_isomorphism _ H)
   begin intro m, reflexivity end
 
 open chain_complex fin nat

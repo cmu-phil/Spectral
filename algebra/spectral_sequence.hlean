@@ -157,25 +157,29 @@ namespace spectral_sequence
     (normal3 : Π(r : ℕ), deg_d c r = (r+2, -(r+1)))
   open is_normal
   variable {c}
-  variable (d : is_normal c)
-  include d
+  variable (nc : is_normal c)
+  include nc
   definition stable_range {n s : ℤ} {r : ℕ} (H1 : n < r + 2) (H2 : s < r + 1) :
     Einf c (n, s) ≃lm E c r (n, s) :=
   begin
     fapply Einf_isomorphism,
-    { intro r' Hr', apply is_contr_E, apply normal1 d,
-      refine lt_of_le_of_lt (le_of_eq (ap (λx, n - x.1) (normal3 d r'))) _,
+    { intro r' Hr', apply is_contr_E, apply normal1 nc,
+      refine lt_of_le_of_lt (le_of_eq (ap (λx, n - x.1) (normal3 nc r'))) _,
       apply sub_lt_left_of_lt_add,
       refine lt_of_lt_of_le H1 (le.trans _ (le_of_eq !add_zero⁻¹)),
       exact add_le_add_right (of_nat_le_of_nat_of_le Hr') 2 },
-    { intro r' Hr', apply is_contr_E, apply normal2 d,
-      refine lt_of_le_of_lt (le_of_eq (ap (λx, s + x.2) (normal3 d r'))) _,
+    { intro r' Hr', apply is_contr_E, apply normal2 nc,
+      refine lt_of_le_of_lt (le_of_eq (ap (λx, s + x.2) (normal3 nc r'))) _,
       change s - (r' + 1) < 0,
       apply sub_lt_left_of_lt_add,
       refine lt_of_lt_of_le H2 (le.trans _ (le_of_eq !add_zero⁻¹)),
       exact add_le_add_right (of_nat_le_of_nat_of_le Hr') 1 },
   end
-  omit d
+
+  definition deg_d_normal_eq (r : ℕ) (x : Z2) : deg (d c r) x = x + (r+2, -(r+1)) :=
+  deg_d_eq c r x ⬝ ap (add x) (is_normal.normal3 nc r)
+
+  omit nc
 
 
 end spectral_sequence

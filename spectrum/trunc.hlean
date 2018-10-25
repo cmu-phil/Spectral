@@ -119,6 +119,14 @@ begin
   intro k, apply is_trunc_lift, apply is_trunc_unit
 end
 
+definition is_contr_of_is_strunc (n : ℤ) {m : ℤ} (E : spectrum) (H : is_strunc n E)
+  (Hmn : m < -n) : is_contr (E m) :=
+begin
+  refine transport (λn, is_trunc n (E m)) _ (H m),
+  apply maxm2_eq_minus_two,
+  exact lt_of_lt_of_le (add_lt_add_left Hmn n) (le_of_eq !add.right_inv)
+end
+
 open option
 definition is_strunc_add_point_spectrum {X : Type} {Y : X → spectrum} {s₀ : ℤ}
   (H : Πx, is_strunc s₀ (Y x)) : Π(x : X₊), is_strunc s₀ (add_point_spectrum Y x)

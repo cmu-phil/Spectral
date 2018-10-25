@@ -12,6 +12,22 @@ universe variable u
   AddAbGroup.struct G
 
 namespace eq
+  /- move to init.equiv -/
+
+  variables {A₀₀ A₂₀ A₀₂ A₂₂ : Type}
+            {f₁₀ : A₀₀ → A₂₀}
+            {f₀₁ : A₀₀ → A₀₂} {f₂₁ : A₂₀ → A₂₂}
+            {f₁₂ : A₀₂ → A₂₂}
+
+  definition hhinverse' (f₁₀ : A₀₀ ≃ A₂₀) (f₁₂ : A₀₂ ≃ A₂₂) (p : hsquare f₁₀ f₁₂ f₀₁ f₂₁) :
+    hsquare f₁₀⁻¹ᵉ f₁₂⁻¹ᵉ f₂₁ f₀₁ :=
+  p⁻¹ʰᵗʸʰ
+
+  definition hvinverse' (f₀₁ : A₀₀ ≃ A₀₂) (f₂₁ : A₂₀ ≃ A₂₂) (p : hsquare f₁₀ f₁₂ f₀₁ f₂₁) :
+    hsquare f₁₂ f₁₀ f₀₁⁻¹ᵉ f₂₁⁻¹ᵉ :=
+  p⁻¹ʰᵗʸᵛ
+
+
 
   definition transport_lemma {A : Type} {C : A → Type} {g₁ : A → A}
     {x y : A} (p : x = y) (f : Π⦃x⦄, C x → C (g₁ x)) (z : C x) :
@@ -27,6 +43,15 @@ namespace eq
             {a' a₂' a₃' : A'} {b b₂ : B}
 
 end eq open eq
+
+namespace int
+
+  definition maxm2_eq_minus_two {n : ℤ} (H : n < 0) : maxm2 n = -2 :=
+  begin
+    induction exists_eq_neg_succ_of_nat H with n p, cases p, reflexivity
+  end
+
+end int
 
 namespace nat
 

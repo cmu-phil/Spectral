@@ -17,9 +17,8 @@ variables {R : Ring} {I : AddGroup} {M M₁ M₂ M₃ : graded_module R I}
 /-
   morphisms between graded modules.
   The definition is unconventional in two ways:
-  (1) The degree is determined by an endofunction instead of a element of I (and in this case we
-    don't need to assume that I is a group). The "standard" degree i corresponds to the endofunction
-    which is addition with i on the right. However, this is more flexible. For example, the
+  (1) The degree is determined by an endofunction instead of a element of I, which is equal to adding
+    i on the right. This is more flexible. For example, the
     composition of two graded module homomorphisms φ₂ and φ₁ with degrees i₂ and i₁ has type
     M₁ i → M₂ ((i + i₁) + i₂).
     However, a homomorphism with degree i₁ + i₂ must have type
@@ -32,7 +31,6 @@ variables {R : Ring} {I : AddGroup} {M M₁ M₂ M₃ : graded_module R I}
     but as a function taking a path as argument. Specifically, for every path
     deg f i = j
     we get a function M₁ i → M₂ j.
-  (3) Note: we do assume that I is a set. This is not strictly necessary, but it simplifies things
 -/
 
 definition graded_hom_of_deg (d : I ≃ I) (M₁ M₂ : graded_module R I) : Type :=
@@ -158,11 +156,21 @@ begin
   refine cast_fn_cast_square fn _ _ !con.left_inv m
 end
 
+definition graded_hom_square (f : M₁ →gm M₂) {i₁ i₂ j₁ j₂ : I} (p : deg f i₁ = j₁) (q : deg f i₂ = j₂)
+  (r : i₁ = i₂) (s : j₁ = j₂) :
+  hsquare (f ↘ p) (f ↘ q) (homomorphism_of_eq (ap M₁ r)) (homomorphism_of_eq (ap M₂ s)) :=
+begin
+  induction p, induction q, induction r,
+  have rfl = s, from !is_set.elim, induction this,
+  exact homotopy.rfl
+end
+
 variable (I) -- for some reason Lean needs to know what I is when applying this lemma
 definition graded_hom_eq_zero {f : M₁ →gm M₂} {i j k : I} {q : deg f i = j} {p : deg f i = k}
   (m : M₁ i) (r : f ↘ q m = 0) : f ↘ p m = 0 :=
 have f ↘ p m = transport M₂ (q⁻¹ ⬝ p) (f ↘ q m), begin induction p, induction q, reflexivity end,
 this ⬝ ap (transport M₂ (q⁻¹ ⬝ p)) r ⬝ tr_eq_of_pathover (apd (λi, 0) (q⁻¹ ⬝ p))
+
 variable {I}
 
 definition graded_hom_change_image {f : M₁ →gm M₂} {i j k : I} {m : M₂ k} (p : deg f i = k)
@@ -656,6 +664,14 @@ definition graded_homology_intro [constructor] (g : M₂ →gm M₃) (f : M₁ �
 definition graded_homology_elim {g : M₂ →gm M₃} {f : M₁ →gm M₂} (h : M₂ →gm M)
   (H : compose_constant h f) : graded_homology g f →gm M :=
 graded_hom.mk (deg h) (deg_eq h) (λi, homology_elim (h i) (H _ _))
+
+definition graded_homology_isomorphism (g : M₂ →gm M₃) (f : M₁ →gm M₂) (x : I) :
+  graded_homology g f (deg f x) ≃lm homology (g (deg f x)) (f x) :=
+begin
+  refine homology_isomorphism_homology (isomorphism_of_eq (ap M₁ (left_inv (deg f) x)))
+    isomorphism.rfl isomorphism.rfl homotopy.rfl _,
+  exact graded_hom_square f (to_right_inv (deg f) (deg f x)) idp (to_left_inv (deg f) x) idp
+end
 
 definition image_of_graded_homology_intro_eq_zero {g : M₂ →gm M₃} {f : M₁ →gm M₂}
   ⦃i j : I⦄ (p : deg f i = j) (m : graded_kernel g j) (H : graded_homology_intro g f j m = 0) :

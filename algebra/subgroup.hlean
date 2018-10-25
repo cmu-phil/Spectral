@@ -7,7 +7,7 @@ Basic concepts of group theory
 -/
 import algebra.group_theory ..move_to_lib ..property
 
-open eq algebra is_trunc sigma sigma.ops prod trunc property
+open eq algebra is_trunc sigma sigma.ops prod trunc property is_equiv equiv
 
 namespace group
 
@@ -456,12 +456,8 @@ end
   open function
 
   definition subgroup_functor_fun [unfold 7] (φ : G →g H) (h : Πg, g ∈ R → φ g ∈ S)
-      (x : subgroup R) :
-    subgroup S :=
-  begin
-    induction x with g hg,
-    exact ⟨φ g, h g hg⟩
-  end
+      (x : subgroup R) : subgroup S :=
+  ⟨φ x.1, h x.1 x.2⟩
 
   definition subgroup_functor [constructor] (φ : G →g H)
     (h : Πg, g ∈ R → φ g ∈ S) : subgroup R →g subgroup S :=
@@ -508,6 +504,19 @@ end
   begin
     intro g, induction g with g hg,
     exact subtype_eq (p g)
+  end
+
+  definition subgroup_isomorphism_subgroup [constructor] (φ : G ≃g H) (hφ : Πg, g ∈ R ↔ φ g ∈ S) :
+    subgroup R ≃g subgroup S :=
+  begin
+    apply isomorphism.mk (subgroup_functor φ (λg, iff.mp (hφ g))),
+    refine adjointify _ (subgroup_functor φ⁻¹ᵍ (λg gS, iff.mpr (hφ _) (transport S (right_inv φ g)⁻¹ gS))) _ _,
+    { refine subgroup_functor_compose _ _ _ _ ⬝hty
+             subgroup_functor_homotopy _ _ proof right_inv φ qed ⬝hty
+             subgroup_functor_gid },
+    { refine subgroup_functor_compose _ _ _ _ ⬝hty
+             subgroup_functor_homotopy _ _ proof left_inv φ qed ⬝hty
+             subgroup_functor_gid }
   end
 
   definition subgroup_of_subgroup_incl {R S : property G} [is_subgroup G R] [is_subgroup G S]

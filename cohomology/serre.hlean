@@ -371,13 +371,34 @@ section serre
     begin intro n, apply unreduced_cohomology_isomorphism, exact !sigma_fiber_equiv⁻¹ᵉ end
   qed
 
-  definition serre_spectral_sequence_map_of_is_conn (H2 : is_conn 1 B) :
+  definition serre_spectral_sequence_map_of_is_conn' (H2 : is_conn 1 B) :
     convergent_spectral_sequence_g (λp q, uoH^p[B, uH^q[fiber f b₀, Y]]) (λn, uH^n[X, Y]) :=
   begin
     apply convergent_spectral_sequence_of_exact_couple (serre_convergence_map_of_is_conn b₀ f Y s₀ H H2),
     { intro n, exact add.comm (s₀ - -n) (-s₀) ⬝ !neg_add_cancel_left ⬝ !neg_neg },
     { reflexivity }
   end
+
+  definition serre_spectral_sequence_map_of_is_conn (H2 : is_conn 1 B) :
+    convergent_spectral_sequence_g (λp q, uoH^p[B, uH^q[fiber f b₀, Y]]) (λn, uH^n[X, Y]) :=
+  ⦃convergent_spectral_sequence,
+    deg_d := λ(r : ℕ), (r + 2, -(r + 1)),
+    lb    := λx, -s₀,
+    serre_spectral_sequence_map_of_is_conn' b₀ f Y s₀ H H2⦄
+
+  omit H
+  definition is_normal_serre_spectral_sequence_map_of_is_conn (H' : is_strunc 0 Y)
+    (H2 : is_conn 1 B) :
+    spectral_sequence.is_normal (serre_spectral_sequence_map_of_is_conn b₀ f Y 0 H' H2) :=
+  begin
+    apply spectral_sequence.is_normal.mk,
+    { intro p q Hp, exact is_contr_ordinary_cohomology_of_neg _ _ Hp },
+    { intro p q Hp, apply is_contr_ordinary_cohomology,
+      apply is_contr_cohomology_of_is_contr_spectrum,
+      exact is_contr_of_is_strunc _ _ H' Hp },
+    { intro r, reflexivity },
+  end
+
 
 end serre
 
