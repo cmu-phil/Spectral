@@ -8,7 +8,30 @@ import algebra.group_theory hit.set_quotient types.list homotopy.vankampen
        homotopy.susp .pushout ..algebra.free_group
 
 open eq pointed equiv is_equiv is_trunc set_quotient sum list susp trunc algebra
-     group pi pushout is_conn fiber unit function category paths
+     group pi pushout is_conn fiber unit function paths
+
+-- TODO: move to lib
+namespace category
+  open iso
+
+  definition Groupoid_opposite [constructor] (C : Groupoid) : Groupoid :=
+  groupoid.MK (Opposite C) (λ x y f, @is_iso.mk _ (Opposite C) x y f
+      (@is_iso.inverse _ C y x f ((@groupoid.all_iso _ C y x f)))
+      (@is_iso.right_inverse _ C y x f ((@groupoid.all_iso _ C y x f)))
+      (@is_iso.left_inverse _ C y x f ((@groupoid.all_iso _ C y x f))))
+
+  definition hom_Group (C : Groupoid) (x : C) : Group :=
+  Group.mk (hom x x) (hom_group x)
+
+  definition fundamental_hom_group (A : Type*) : hom_Group (Groupoid_opposite (Π₁ A)) (Point A) ≃g π₁ A :=
+  begin
+    fapply isomorphism_of_equiv,
+    { reflexivity },
+    { intros p q, reflexivity }
+  end
+
+  -- [H : is_conn 0 A] : Groupoid_opposite (Π₁ A) ≃c Groupoid_of_Group (π₁ A)
+end category open category
 
 -- special purpose lemmas
 definition tr_trunc_eq (A : Type) (a : A) {x y : A} (p : x = y) (q : x = a)
@@ -27,24 +50,9 @@ namespace susp
   local abbreviation N : C := inl star
   local abbreviation S : C := inr star
 
---  local notation `N` := a
-
-  -- hom group of fundamental groupoid is fundamental group
-  -- the fundamental group of the suspension is the free group on A
-  -- could go via van Kampen, but would have to compose with opposite, which is not so well developed
+  -- this goes via Groupoid_opposite (Π₁ (⅀ A)) ≃c Groupoid_of_Group (free_group A)
   -- definition fundamental_group_of_susp : π₁(⅀ A) ≃g free_group A :=
   -- sorry
-
-  /-
-  van Kampen instead?
-  
-     game plan:
-1. lift to 1-connected cover
-2. apply flattening lemma
-3. provide equivalences F A ≃ ∥N = N∥ ≃ ∥S = N∥
-4. move to is_contr
-5. induction induction induction!
-  -/
 
   definition pglueNS (a : A) : hom N S :=
   class_of [ bpushout_prehom_index.DE (@id A) F F a ]
@@ -57,10 +65,6 @@ namespace susp
 
   definition g : A × trunc 0 (@susp.north A = @susp.north A) → trunc 0 (@susp.south A = @susp.north A) :=
   prod.rec (λ a p, tconcat (tr (merid a)⁻¹) p)
-
-  --set_option pp.notation false
-  --set_option pp.implicit true
-
 
   definition foo : (Σ(z : susp A), trunc 0 (z = susp.north)) ≃ pushout prod.pr2 g :=
   begin
@@ -90,8 +94,6 @@ namespace susp
       apply encode_decode_singleton }
   end
 
-  definition is_contr_susp_fiber_tr : is_contr (Σ(z : susp A), trunc 0 (z = susp.north)) := sorry
-
   definition pfiber_susp_equiv_sigma : pfiber (ptr 1 (⅀ A)) ≃ (Σ(z : susp A), trunc 0 (z = susp.north)) := 
   begin
     apply equiv.trans !fiber.sigma_char,
@@ -99,14 +101,13 @@ namespace susp
     intro z, apply tr_eq_tr_equiv
   end
 
-  definition is_trunc_susp_of_is_set : is_trunc 1 (susp A) :=
+  definition is_trunc_susp_of_is_set : is_contr (Σ(z : susp A), trunc 0 (z = susp.north)) → is_trunc 1 (susp A) :=
   begin
+    intro K,
     apply is_trunc_of_is_equiv_tr,
     apply is_equiv_of_is_contr_fun,
     fapply @is_conn.elim -1 (ptrunc 1 (⅀ A)),
-    change is_contr (pfiber (ptr 1 (⅀ A))),
-    apply is_contr_equiv_closed_rev pfiber_susp_equiv_sigma,
-    apply is_contr_susp_fiber_tr
+    exact is_contr_equiv_closed_rev pfiber_susp_equiv_sigma K
   end
 
   end
