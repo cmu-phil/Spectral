@@ -9,22 +9,24 @@ Constructions with groups
 import algebra.group_theory hit.set_quotient types.list types.sum .free_group
 
 open eq algebra is_trunc set_quotient relation sigma sigma.ops prod sum list trunc function equiv trunc_index
-     group
+     group pointed
 
 namespace group
 
   variables {G G' : Group} {g g' h h' k : G} {A B : AbGroup}
 
-  variables (X : Type) {Y : Type} [is_set X] [is_set Y] {l l' : list (X ⊎ X)}
+  variables (X : Type*) {Y : Type*} [is_set X] [is_set Y] {l l' : list (X ⊎ X)}
 
-  /- Free Abelian Group of a set -/
+  /- Free Abelian Group on a pointed set -/
   namespace free_ab_group
 
   inductive fcg_rel : list (X ⊎ X) → list (X ⊎ X) → Type :=
-  | rrefl   : Πl, fcg_rel l l
-  | cancel1 : Πx, fcg_rel [inl x, inr x] []
-  | cancel2 : Πx, fcg_rel [inr x, inl x] []
-  | rflip   : Πx y, fcg_rel [x, y] [y, x]
+  | rrefl     : Πl, fcg_rel l l
+  | cancel1   : Πx, fcg_rel [inl x, inr x] []
+  | cancel2   : Πx, fcg_rel [inr x, inl x] []
+  | cancelpt1 : fcg_rel [inl pt] []
+  | cancelpt2 : fcg_rel [inr pt] []
+  | rflip     : Πx y, fcg_rel [x, y] [y, x]
   | resp_append : Π{l₁ l₂ l₃ l₄}, fcg_rel l₁ l₂ → fcg_rel l₃ l₄ →
                              fcg_rel (l₁ ++ l₃) (l₂ ++ l₄)
   | rtrans : Π{l₁ l₂ l₃}, fcg_rel l₁ l₂ → fcg_rel l₂ l₃ →
@@ -49,6 +51,8 @@ namespace group
     { reflexivity},
     { repeat esimp [map], exact cancel2 x},
     { repeat esimp [map], exact cancel1 x},
+    { exact cancelpt2 X },
+    { exact cancelpt1 X },
     { repeat esimp [map], apply fcg_rel.rflip},
     { rewrite [+map_append], exact resp_append IH₁ IH₂},
     { exact rtrans IH₁ IH₂}
@@ -60,6 +64,8 @@ namespace group
     { reflexivity},
     { repeat esimp [map], exact cancel2 x},
     { repeat esimp [map], exact cancel1 x},
+    { exact cancelpt1 X },
+    { exact cancelpt2 X },
     { repeat esimp [map], apply fcg_rel.rflip},
     { rewrite [+reverse_append], exact resp_append IH₂ IH₁},
     { exact rtrans IH₁ IH₂}
@@ -146,22 +152,24 @@ namespace group
 
   /- The universal property of the free commutative group -/
   variables {X A}
-  definition free_ab_group_inclusion [constructor] (x : X) : free_ab_group X :=
-  class_of [inl x]
+  definition free_ab_group_inclusion [constructor] : X →* free_ab_group X :=
+  ppi.mk (λ x, class_of [inl x]) (eq_of_rel (tr (fcg_rel.cancelpt1 X)))
 
-  theorem fgh_helper_respect_fcg_rel (f : X → A) (r : fcg_rel X l l')
+  theorem fgh_helper_respect_fcg_rel (f : X →* A) (r : fcg_rel X l l')
     : Π(g : A), foldl (fgh_helper f) g l = foldl (fgh_helper f) g l' :=
   begin
     induction r with l x x x y l₁ l₂ l₃ l₄ r₁ r₂ IH₁ IH₂ l₁ l₂ l₃ r₁ r₂ IH₁ IH₂: intro g,
     { reflexivity},
     { unfold [foldl], apply mul_inv_cancel_right},
     { unfold [foldl], apply inv_mul_cancel_right},
+    { unfold [foldl], rewrite (respect_pt f), apply mul_one },
+    { unfold [foldl], rewrite [respect_pt f, one_inv], apply mul_one },
     { unfold [foldl, fgh_helper], apply mul.right_comm},
     { rewrite [+foldl_append, IH₁, IH₂]},
     { exact !IH₁ ⬝ !IH₂}
   end
 
-  definition free_ab_group_elim [constructor] (f : X → A) : free_ab_group X →g A :=
+  definition free_ab_group_elim [constructor] (f : X →* A) : free_ab_group X →g A :=
   begin
     fapply homomorphism.mk,
     { intro g, refine set_quotient.elim _ _ g,
@@ -172,10 +180,15 @@ namespace group
       esimp, refine !foldl_append ⬝ _, esimp, apply fgh_helper_mul}
   end
 
-  definition fn_of_free_ab_group_elim [unfold_full] (φ : free_ab_group X →g A) : X → A :=
-  φ ∘ free_ab_group_inclusion
+  definition fn_of_free_ab_group_elim [unfold_full] (φ : free_ab_group X →g A) : X →* A :=
+  ppi.mk (φ ∘ free_ab_group_inclusion)
+  begin
+    refine (_ ⬝ @respect_one _ _ _ _ φ (homomorphism.p φ)),
+    apply ap φ, apply eq_of_rel, apply tr,
+    exact (fcg_rel.cancelpt1 X)
+  end
 
-  definition free_ab_group_elim_unique [constructor] (f : X → A) (k : free_ab_group X →g A)
+  definition free_ab_group_elim_unique [constructor] (f : X →* A) (k : free_ab_group X →g A)
     (H : k ∘ free_ab_group_inclusion ~ f) : k ~ free_ab_group_elim f :=
   begin
     refine set_quotient.rec_prop _, intro l, esimp,
@@ -188,18 +201,20 @@ namespace group
   end
 
   variables (X A)
-  definition free_ab_group_elim_equiv_fn [constructor] : (free_ab_group X →g A) ≃ (X → A) :=
+  definition free_ab_group_elim_equiv_fn [constructor] : (free_ab_group X →g A) ≃ (X →* A) :=
   begin
     fapply equiv.MK,
     { exact fn_of_free_ab_group_elim},
     { exact free_ab_group_elim},
-    { intro f, apply eq_of_homotopy, intro x, esimp, unfold [foldl], apply one_mul},
+    { intro f, apply eq_of_phomotopy, fapply phomotopy.mk,
+      { intro x, esimp, unfold [foldl], apply one_mul },
+      { apply is_prop.elim } },
     { intro k, symmetry, apply homomorphism_eq, apply free_ab_group_elim_unique,
       reflexivity }
   end
 
-  definition free_ab_group_functor (f : X → Y) : free_ab_group X →g free_ab_group Y :=
-  free_ab_group_elim (free_ab_group_inclusion ∘ f)
+  definition free_ab_group_functor (f : X →* Y) : free_ab_group X →g free_ab_group Y :=
+  free_ab_group_elim (free_ab_group_inclusion ∘* f)
 
 -- set_option pp.all true
 --   definition free_ab_group.rec {P : free_ab_group X → Type} [H : Πg, is_prop (P g)]

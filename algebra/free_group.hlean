@@ -129,8 +129,8 @@ namespace group
 
   /- The universal property of the free group -/
   variables {X G}
-  definition free_group_inclusion [constructor] (x : X) : free_group X :=
-  class_of [inl x]
+  definition free_group_inclusion [constructor] : X →* free_group X :=
+  ppi.mk (λ x, class_of [inl x]) (eq_of_rel (tr (free_group_rel.cancelpt1 X)))
 
   definition fgh_helper [unfold 6] (f : X → G) (g : G) (x : X ⊎ X) : G :=
   g * sum.rec (λz, f z) (λz, (f z)⁻¹) x

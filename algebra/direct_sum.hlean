@@ -17,8 +17,11 @@ namespace group
     parameters {I : Type} [is_set I] (Y : I → AbGroup)
     variables {A' : AbGroup} {Y' : I → AbGroup}
 
-    definition dirsum_carrier : AbGroup := free_ab_group (Σi, Y i)
-    local abbreviation ι [constructor] := @free_ab_group_inclusion
+    open option pointed
+
+    definition dirsum_carrier : AbGroup := free_ab_group (Σi, Y i)₊
+
+    local abbreviation ι [constructor] := (@free_ab_group_inclusion (Σi, Y i)₊ _ ∘ some)
     inductive dirsum_rel : dirsum_carrier → Type :=
     | rmk : Πi y₁ y₂, dirsum_rel (ι ⟨i, y₁⟩ * ι ⟨i, y₂⟩ *  (ι ⟨i, y₁ * y₂⟩)⁻¹)
 
@@ -38,19 +41,24 @@ namespace group
       refine @set_quotient.rec_prop _ _ _ H _,
       refine @set_quotient.rec_prop _ _ _ (λx, !H) _,
       esimp, intro l, induction l with s l ih,
-        exact h₂,
-      induction s with v v,
-        induction v with i y,
-        exact h₃ _ _ (h₁ i y) ih,
-      induction v with i y,
-      refine h₃ (gqg_map _ _ (class_of [inr ⟨i, y⟩])) _ _ ih,
-      refine transport P _ (h₁ i y⁻¹),
-      refine _ ⬝ !one_mul,
-      refine _ ⬝ ap (λx, mul x _) (to_respect_zero (dirsum_incl i)),
-      apply gqg_eq_of_rel',
-      apply tr, esimp,
-      refine transport dirsum_rel _ (dirsum_rel.rmk i y⁻¹ y),
-      rewrite [mul.left_inv, mul.assoc],
+      { exact h₂ },
+      { induction s with z z,
+        { induction z with v,
+          { refine transport P _ ih, apply ap class_of, symmetry,
+            exact eq_of_rel (tr (free_ab_group.fcg_rel.resp_append !free_ab_group.fcg_rel.cancelpt1 (free_ab_group.fcg_rel.rrefl l))) },
+          { induction v with i y, exact h₃ _ _ (h₁ i y) ih } },
+        { induction z with v,
+          { refine transport P _ ih, apply ap class_of, symmetry,
+            exact eq_of_rel (tr (free_ab_group.fcg_rel.resp_append !free_ab_group.fcg_rel.cancelpt2 (free_ab_group.fcg_rel.rrefl l))) },
+          { induction v with i y,
+            refine h₃ (gqg_map _ _ (class_of [inr (some ⟨i, y⟩)])) _ _ ih,
+            refine transport P _ (h₁ i y⁻¹),
+            refine _ ⬝ !one_mul,
+            refine _ ⬝ ap (λx, mul x _) (to_respect_zero (dirsum_incl i)),
+            apply gqg_eq_of_rel',
+            apply tr, esimp,
+            refine transport dirsum_rel _ (dirsum_rel.rmk i y⁻¹ y),
+            rewrite [mul.left_inv, mul.assoc]} } }
     end
 
     definition dirsum_homotopy {φ ψ : dirsum →g A'}
@@ -63,15 +71,16 @@ namespace group
     end
 
     definition dirsum_elim_resp_quotient (f : Πi, Y i →g A') (g : dirsum_carrier)
-      (r : ∥dirsum_rel g∥) : free_ab_group_elim (λv, f v.1 v.2) g = 1 :=
+      (r : ∥dirsum_rel g∥) : free_ab_group_elim ((pmap_equiv_left (Σi, Y i) A')⁻¹ (λv, f v.1 v.2)) g = 1 :=
     begin
       induction r with r, induction r,
-      rewrite [to_respect_mul, to_respect_inv, to_respect_mul, ▸*, ↑foldl, *one_mul,
-        to_respect_mul], apply mul.right_inv
+      rewrite [to_respect_mul, to_respect_inv, to_respect_mul, ▸*, ↑foldl, *one_mul],
+      rewrite [↑pmap_equiv_left], esimp,
+      rewrite [-to_respect_mul], apply mul.right_inv
     end
 
     definition dirsum_elim [constructor] (f : Πi, Y i →g A') : dirsum →g A' :=
-    gqg_elim _ (free_ab_group_elim (λv, f v.1 v.2)) (dirsum_elim_resp_quotient f)
+    gqg_elim _ (free_ab_group_elim ((pmap_equiv_left (Σi, Y i) A')⁻¹ (λv, f v.1 v.2))) (dirsum_elim_resp_quotient f)
 
     definition dirsum_elim_compute (f : Πi, Y i →g A') (i : I) (y : Y i) :
       dirsum_elim f (dirsum_incl i y) = f i y :=
@@ -84,7 +93,10 @@ namespace group
     begin
       apply gqg_elim_unique,
       apply free_ab_group_elim_unique,
-      intro x, induction x with i y, exact H i y
+      intro x, induction x with z,
+      { esimp, refine _ ⬝ to_respect_zero k, apply ap k, apply ap class_of,
+        exact eq_of_rel (tr !free_ab_group.fcg_rel.cancelpt1) },
+      { induction z with i y, exact H i y }
     end
 
   end
