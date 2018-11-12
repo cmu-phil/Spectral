@@ -673,6 +673,13 @@ begin
   exact graded_hom_square f (to_right_inv (deg f) (deg f x)) idp (to_left_inv (deg f) x) idp
 end
 
+definition graded_homology_isomorphism_kernel_module
+  (g : M₂ →gm M₃) (f : M₁ →gm M₂) (x : I)
+  (H : Πm, image (f ← x) m → m = 0) : graded_homology g f x ≃lm graded_kernel g x :=
+begin
+  apply quotient_module_isomorphism, intro m h, apply subtype_eq, apply H, exact h
+end
+
 definition image_of_graded_homology_intro_eq_zero {g : M₂ →gm M₃} {f : M₁ →gm M₂}
   ⦃i j : I⦄ (p : deg f i = j) (m : graded_kernel g j) (H : graded_homology_intro g f j m = 0) :
   image (f ↘ p) m.1 :=

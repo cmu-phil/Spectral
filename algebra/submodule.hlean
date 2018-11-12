@@ -468,10 +468,16 @@ definition is_surjective_of_is_contr_homology_of_is_contr (ψ : M₂ →lm M₃)
   (H₁ : is_contr (homology ψ φ)) (H₂ : is_contr M₃) : is_surjective φ :=
 is_surjective_of_is_contr_homology_of_constant ψ H₁ (λm, @eq_of_is_contr _ H₂ _ _)
 
+definition homology_isomorphism_kernel_module (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂)
+  (H : Πm, image φ m → m = 0) : homology ψ φ ≃lm kernel_module ψ :=
+begin
+  apply quotient_module_isomorphism, intro m h, apply subtype_eq, apply H, exact h
+end
+
 definition cokernel_module (φ : M₁ →lm M₂) : LeftModule R :=
 quotient_module (image φ)
 
-definition cokernel_module_isomorphism_homology (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂) (H : Πm, ψ m = 0) :
+definition homology_isomorphism_cokernel_module (ψ : M₂ →lm M₃) (φ : M₁ →lm M₂) (H : Πm, ψ m = 0) :
   homology ψ φ ≃lm cokernel_module φ :=
 quotient_module_isomorphism_quotient_module
   (submodule_isomorphism _ H)

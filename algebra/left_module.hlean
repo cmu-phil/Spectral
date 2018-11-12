@@ -312,6 +312,13 @@ section
   definition lm_constant [constructor] (M₁ M₂ : LeftModule R) : M₁ →lm M₂ :=
   homomorphism.mk (const M₁ 0) !is_module_hom_constant
 
+  definition trivial_image_of_is_contr {R} {M₁ M₂ : LeftModule R} {φ : M₁ →lm M₂} (H : is_contr M₁)
+    ⦃m : M₂⦄ (hm : image φ m) : m = 0 :=
+  begin
+    induction hm with m' p, induction p,
+    exact ap φ (@eq_of_is_contr _ H _ _) ⬝ to_respect_zero φ
+  end
+
   structure isomorphism (M₁ M₂ : LeftModule R) :=
     (to_hom : M₁ →lm M₂)
     (is_equiv_to_hom : is_equiv to_hom)
