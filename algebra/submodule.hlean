@@ -1,10 +1,10 @@
 /- submodules and quotient modules -/
 
 -- Authors: Floris van Doorn, Jeremy Avigad
-import .left_module .quotient_group
+import .left_module .quotient_group .module_chain_complex
 
 open algebra eq group sigma sigma.ops is_trunc function trunc equiv is_equiv property
-
+universe variable u
 namespace left_module
 /- submodules -/
 variables {R : Ring} {M M₁ M₁' M₂ M₂' M₃ M₃' : LeftModule R} {m m₁ m₂ : M}
@@ -484,19 +484,17 @@ quotient_module_isomorphism_quotient_module
   begin intro m, reflexivity end
 
 open chain_complex fin nat
-definition LES_of_SESs.{u} {N : succ_str} (A B C : N → LeftModule.{_ u} R) (φ : Πn, A n →lm B n)
+definition LES_of_SESs {N : succ_str} (A B C : N → LeftModule.{_ u} R) (φ : Πn, A n →lm B n)
   (ses : Πn : N, short_exact_mod (cokernel_module (φ (succ_str.S n))) (C n) (kernel_module (φ n))) :
-  chain_complex.{_ u} (stratified N 2) :=
+  module_chain_complex.{_ _ u} R (stratified N 2) :=
 begin
-  fapply chain_complex.mk,
-  { intro x, apply @pSet_of_LeftModule R,
-    induction x with n k, induction k with k H, do 3 (cases k with k; rotate 1),
+  fapply module_chain_complex.mk,
+  { intro x, induction x with n k, induction k with k H, do 3 (cases k with k; rotate 1),
     { /-k≥3-/ exfalso, apply lt_le_antisymm H, apply le_add_left},
     { /-k=0-/ exact B n },
     { /-k=1-/ exact A n },
     { /-k=2-/ exact C n }},
-  { intro x, apply @pmap_of_homomorphism R,
-    induction x with n k, induction k with k H, do 3 (cases k with k; rotate 1),
+  { intro x, induction x with n k, induction k with k H, do 3 (cases k with k; rotate 1),
     { /-k≥3-/ exfalso, apply lt_le_antisymm H, apply le_add_left},
     { /-k=0-/ exact φ n },
     { /-k=1-/ exact submodule_incl _ ∘lm short_exact_mod.g (ses n) },
@@ -504,14 +502,32 @@ begin
   { intros x m, induction x with n k, induction k with k H, do 3 (cases k with k; rotate 1),
     { exfalso, apply lt_le_antisymm H, apply le_add_left},
     { exact (short_exact_mod.g (ses n) m).2 },
-    { exact ap pr1 (is_short_exact.im_in_ker (short_exact_mod.h (ses n)) (quotient_map _ m)) },
-    { exact ap (short_exact_mod.f (ses n)) (quotient_map_eq_zero _ _ (image.mk m idp)) ⬝
-            to_respect_zero (short_exact_mod.f (ses n)) }}
+    { note h := is_short_exact.im_in_ker (short_exact_mod.h (ses n)) (quotient_map _ m),
+      exact ap pr1 h },
+    { refine _ ⬝ to_respect_zero (short_exact_mod.f (ses n)),
+      rexact ap (short_exact_mod.f (ses n)) (quotient_map_eq_zero _ _ (image.mk m idp)) }}
 end
 
-definition is_exact_LES_of_SESs.{u} {N : succ_str} (A B C : N → LeftModule.{_ u} R) (φ : Πn, A n →lm B n)
+open prod
+definition LES_of_SESs_zero {N : succ_str} {A B C : N → LeftModule.{_ u} R} (φ : Πn, A n →lm B n)
+  (ses : Πn : N, short_exact_mod (cokernel_module (φ (succ_str.S n))) (C n) (kernel_module (φ n)))
+  (n : N) : LES_of_SESs A B C φ ses (n, 0) ≃lm B n :=
+by reflexivity
+
+definition LES_of_SESs_one {N : succ_str} {A B C : N → LeftModule.{_ u} R} (φ : Πn, A n →lm B n)
+  (ses : Πn : N, short_exact_mod (cokernel_module (φ (succ_str.S n))) (C n) (kernel_module (φ n)))
+  (n : N) : LES_of_SESs A B C φ ses (n, 1) ≃lm A n :=
+by reflexivity
+
+definition LES_of_SESs_two {N : succ_str} {A B C : N → LeftModule.{_ u} R} (φ : Πn, A n →lm B n)
+  (ses : Πn : N, short_exact_mod (cokernel_module (φ (succ_str.S n))) (C n) (kernel_module (φ n)))
+  (n : N) : LES_of_SESs A B C φ ses (n, 2) ≃lm C n :=
+by reflexivity
+
+definition is_exact_LES_of_SESs {N : succ_str} {A B C : N → LeftModule.{_ u} R}
+  (φ : Πn, A n →lm B n)
   (ses : Πn : N, short_exact_mod (cokernel_module (φ (succ_str.S n))) (C n) (kernel_module (φ n))) :
-  is_exact (LES_of_SESs A B C φ ses) :=
+  is_exact_m (LES_of_SESs A B C φ ses) :=
 begin
   intros x m p, induction x with n k, induction k with k H, do 3 (cases k with k; rotate 1),
   { exfalso, apply lt_le_antisymm H, apply le_add_left},

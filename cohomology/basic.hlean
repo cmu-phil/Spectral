@@ -395,14 +395,14 @@ definition unreduced_ordinary_cohomology_pbool_nonzero (G : AbGroup) (n : ℤ) (
 is_contr_equiv_closed_rev (equiv_of_isomorphism (unreduced_ordinary_cohomology_nonzero pbool G n H))
                           (ordinary_cohomology_dimension G n H)
 
-definition unreduced_ordinary_cohomology_sphere_zero (G : AbGroup) (n : ℕ) (H : n ≠ 0) :
+definition unreduced_ordinary_cohomology_sphere_zero (G : AbGroup.{u}) (n : ℕ) (H : n ≠ 0) :
   uoH^0[sphere n, G] ≃g G :=
 unreduced_ordinary_cohomology_zero (sphere n) G ⬝g
-product_trivial_left _ _ (ordinary_cohomology_sphere_of_neq _ (λh, H h⁻¹))
+product_trivial_left _ _ (ordinary_cohomology_sphere_of_neq _ (λh, H (of_nat.inj h⁻¹)))
 
 definition unreduced_ordinary_cohomology_sphere (G : AbGroup) (n : ℕ) (H : n ≠ 0) :
   uoH^n[sphere n, G] ≃g G :=
-unreduced_ordinary_cohomology_nonzero (sphere n) G n H ⬝g
+unreduced_ordinary_cohomology_nonzero (sphere n) G n (λh, H (of_nat.inj h)) ⬝g
 ordinary_cohomology_sphere G n
 
 definition unreduced_ordinary_cohomology_sphere_of_neq (G : AbGroup) {n : ℤ} {k : ℕ} (p : n ≠ k)
@@ -414,6 +414,11 @@ is_contr_equiv_closed_rev
 definition unreduced_ordinary_cohomology_sphere_of_neq_nat (G : AbGroup) {n k : ℕ} (p : n ≠ k)
   (q : n ≠ 0) : is_contr (uoH^n[sphere k, G]) :=
 unreduced_ordinary_cohomology_sphere_of_neq G (λh, p (of_nat.inj h)) (λh, q (of_nat.inj h))
+
+definition unreduced_ordinary_cohomology_sphere_of_gt (G : AbGroup) {n k : ℕ} (p : n > k) :
+  is_contr (uoH^n[sphere k, G]) :=
+unreduced_ordinary_cohomology_sphere_of_neq_nat
+  G (ne_of_gt p) (ne_of_gt (lt_of_le_of_lt (zero_le k) p))
 
 theorem is_contr_cohomology_of_is_contr_spectrum (n : ℤ) (X : Type*) (Y : spectrum)
   (H : is_contr (Y n)) : is_contr (H^n[X, Y]) :=

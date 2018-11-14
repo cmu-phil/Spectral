@@ -14,18 +14,18 @@ structure module_chain_complex (R : Ring) (N : succ_str) : Type :=
 (is_chain_complex :
   Π (n : N) (x : mod (S (S n))), hom n (hom (S n) x) = 0)
 
-namespace module_chain_complex
+namespace left_module
   variables {R : Ring} {N : succ_str}
 
-  definition mcc_mod [unfold 2] [coercion] (C : module_chain_complex R N) (n : N) :
+  definition mcc_mod [unfold 3] [coercion] (C : module_chain_complex R N) (n : N) :
     LeftModule R :=
   module_chain_complex.mod C n
 
-  definition mcc_carr [unfold 2] [coercion] (C : module_chain_complex R N) (n : N) :
+  definition mcc_carr [unfold 3] [coercion] (C : module_chain_complex R N) (n : N) :
     Type :=
   C n
 
-  definition mcc_pcarr [unfold 2] [coercion] (C : module_chain_complex R N) (n : N) :
+  definition mcc_pcarr [unfold 3] [coercion] (C : module_chain_complex R N) (n : N) :
     Set* :=
   mcc_mod C n
 
@@ -46,7 +46,11 @@ namespace module_chain_complex
   -- maybe we don't even need this?
   definition is_exact_at_m (C : module_chain_complex R N) (n : N) : Type :=
   is_exact_at C n
-end module_chain_complex
+
+  definition is_exact_m (C : module_chain_complex R N) : Type :=
+  ∀n, is_exact_at_m C n
+
+end left_module
 
 namespace left_module
   variable  {R : Ring}

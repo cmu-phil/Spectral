@@ -159,6 +159,10 @@ namespace spectral_sequence
   variable {c}
   variable (nc : is_normal c)
   include nc
+
+  definition deg_d_normal_pr1 (r : ℕ) : (deg_d c r).1 = r+2    := ap pr1 (normal3 nc r)
+  definition deg_d_normal_pr2 (r : ℕ) : (deg_d c r).2 = -(r+1) := ap pr2 (normal3 nc r)
+
   definition stable_range {n s : ℤ} {r : ℕ} (H1 : n < r + 2) (H2 : s < r + 1) :
     Einf c (n, s) ≃lm E c r (n, s) :=
   begin
