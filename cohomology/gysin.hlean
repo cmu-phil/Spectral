@@ -9,16 +9,24 @@ open eq pointed is_trunc is_conn is_equiv equiv sphere fiber chain_complex left_
 namespace cohomology
 universe variable u
 /-
-  We have maps:
+  Given a pointed map E →* B with as fiber the sphere S^{n+1} and an abelian group A.
+  The only nontrivial differentials in the spectral sequence of this map are the following
+  differentials on page n:
   d_m = d_(m-1,n+1)^n : E_(m-1,n+1)^n → E_(m+n+1,0)^n
   Note that ker d_m = E_(m-1,n+1)^∞ and coker d_m = E_(m+n+1,0)^∞.
-  We have short exact sequences
-  coker d_{m-1} → D_{m+n}^∞  → ker d_m
+  Each diagonal on the ∞-page has at most two nontrivial groups, which means that
+  coker d_{m-1} and ker d_m are the only two nontrivial groups building up D_{m+n}^∞,
   where D^∞ is the abutment of the spectral sequence.
-  This comes from the spectral sequence, using the fact that coker d_{m-1} and ker d_m are the only
-  two nontrivial groups building up D_{m+n}^∞ (in the filtration of D_{m+n}^∞).
+  This gives the short exact sequences:
+  coker d_{m-1} → D_{m+n}^∞  → ker d_m
   We can splice these SESs together to get a LES
   ... E_(m+n,0)^n → D_{m+n}^∞ → E_(m-1,n+1)^n → E_(m+n+1,0)^n → D_{m+n+1}^∞ ...
+  Now we have
+  E_(p,q)^n = E_(p,q)^0 = H^p(B; H^q(S^{n+1}; A)) = H^p(B; A) if q = n+1 or q = 0
+  and
+  D_{n}^∞ = H^n(E; A)
+  This gives the Gysin sequence
+  ... H^{m+n}(B; A) → H^{m+n}(E; A) → H^{m-1}(B; A) → H^{m+n+1}(B; A) → H^{m+n+1}(E; A) ...
 -/
 
 
@@ -111,11 +119,6 @@ left_module.LES_of_SESs _ _ _ (λm, convergent_spectral_sequence.d c n (m - 1, n
         refine ap (λx, x + _) !add.right_inv ⬝ !zero_add }}
   end
 
--- set_option pp.universes true
--- print unreduced_ordinary_cohomology_sphere_zero
--- print unreduced_ordinary_cohomology_zero
--- print ordinary_cohomology_sphere_of_neq
--- set_option formatter.hide_full_terms false
 definition gysin_sequence'_zero {E B : Type*} {n : ℕ} (HB : is_conn 1 B) (f : E →* B)
   (e : pfiber f ≃* sphere (n+1)) (A : AbGroup) (m : ℤ) :
   gysin_sequence' HB f e A (m, 0) ≃lm LeftModule_int_of_AbGroup (uoH^m+n+1[B, A]) :=
@@ -170,6 +173,7 @@ begin
   { refine uoH^≃n+1[e⁻¹ᵉ*, A] ⬝g unreduced_ordinary_cohomology_sphere _ _ (succ_ne_zero n) }
 end
 
+-- todo: maybe rewrite n+m to m+n (or above rewrite m+n+1 to n+m+1 or n+(m+1))?
 definition gysin_sequence'_two {E B : Type*} {n : ℕ} (HB : is_conn 1 B) (f : E →* B)
   (e : pfiber f ≃* sphere (n+1)) (A : AbGroup) (m : ℤ) :
   gysin_sequence' HB f e A (m, 2) ≃lm LeftModule_int_of_AbGroup (uoH^n+m[E, A]) :=
