@@ -258,5 +258,6 @@ end
   --   @pseq_colim (λn, B (g n)) (λn, ptransport B (pg n) ∘* h (g n)) :=
   -- sorry
 
+print axioms pseq_colim_loop
 
 end seq_colim

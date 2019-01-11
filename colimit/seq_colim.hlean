@@ -28,12 +28,6 @@ begin
   { exact glue f (lrep f H a) ⬝ p }
 end
 
--- probably not needed
--- definition rep0_back_glue [is_equiseq f] (k : ℕ) (a : A k) : ι f (rep0_back f k a) = ι f a :=
--- begin
---   exact sorry
--- end
-
 definition colim_back [unfold 4] [H : is_equiseq f] : seq_colim f → A 0 :=
 begin
   intro x,
@@ -204,20 +198,6 @@ begin
   { exact glue f a}
 end
 
--- definition kshift_up' (k : ℕ) (x : seq_colim f) : seq_colim (kshift_diag' f k) :=
--- begin
---   induction x,
---   { apply ι' _ n, exact rep f k a},
---   { exact sorry}
--- end
-
--- definition kshift_down' (k : ℕ) (x : seq_colim (kshift_diag' f k)) : seq_colim f :=
--- begin
---   induction x,
---   { exact ι f a},
---   { esimp, exact sorry}
--- end
-
 end
 
 definition shift_equiv [constructor] : seq_colim f ≃ seq_colim (shift_diag f) :=
@@ -239,51 +219,6 @@ equiv.MK (shift_up f)
                       elim_glue],
              apply square_of_eq, apply whisker_right, exact !elim_glue⁻¹ }
          end end
-
--- definition kshift_equiv [constructor] (k : ℕ)
---   : seq_colim A ≃ @seq_colim (λn, A (k + n)) (kshift_diag A k) :=
--- equiv.MK (kshift_up k)
---          (kshift_down k)
---          abstract begin
---            intro a, exact sorry,
---            -- induction a,
---            -- { esimp, exact glue a},
---            -- { apply eq_pathover,
---            --   rewrite [▸*, ap_id, ap_compose shift_up shift_down, ↑shift_down,
---            --            @elim_glue (λk, A (succ k)) _, ↑shift_up],
---            --   apply square_of_eq, apply whisker_right, exact !elim_glue⁻¹}
---          end end
---          abstract begin
---            intro a, exact sorry
---            -- induction a,
---            -- { exact glue a},
---            -- { apply eq_pathover,
---            --   rewrite [▸*, ap_id, ap_compose shift_down shift_up, ↑shift_up,
---            --            @elim_glue A _, ↑shift_down],
---            --   apply square_of_eq, apply whisker_right, exact !elim_glue⁻¹}
---          end end
-
--- definition kshift_equiv' [constructor] (k : ℕ) : seq_colim f ≃ seq_colim (kshift_diag' f k) :=
--- equiv.MK (kshift_up' f k)
---          (kshift_down' f k)
---          abstract begin
---            intro a, exact sorry,
---            -- induction a,
---            -- { esimp, exact glue a},
---            -- { apply eq_pathover,
---            --   rewrite [▸*, ap_id, ap_compose shift_up shift_down, ↑shift_down,
---            --            @elim_glue (λk, A (succ k)) _, ↑shift_up],
---            --   apply square_of_eq, apply whisker_right, exact !elim_glue⁻¹}
---          end end
---          abstract begin
---            intro a, exact sorry
---            -- induction a,
---            -- { exact glue a},
---            -- { apply eq_pathover,
---            --   rewrite [▸*, ap_id, ap_compose shift_down shift_up, ↑shift_up,
---            --            @elim_glue A _, ↑shift_down],
---            --   apply square_of_eq, apply whisker_right, exact !elim_glue⁻¹}
---          end end
 
 /- todo: define functions back and forth explicitly -/
 
@@ -372,20 +307,6 @@ omit g
 definition ιo [constructor] (p : P a) : seq_colim_over g (ι f a) :=
 ι' _ 0 p
 
--- Warning: the order of addition has changed in rep_rep
--- definition rep_equiv_rep_rep (l : ℕ)
---   : @seq_colim (λk, P (rep (k + l) a)) (kshift_diag' _ _) ≃
---   @seq_colim (λk, P (rep k (rep l a))) (seq_diagram_of_over P (rep l a)) :=
--- seq_colim_equiv (λk, rep_rep_equiv P a k l) abstract (λk p,
---   begin
---     esimp,
---     rewrite [+cast_apd011],
---     refine _ ⬝ (fn_tro_eq_tro_fn (rep_f k a)⁻¹ᵒ g p)⁻¹ᵖ,
---     rewrite [↑rep_f,↓rep_f k a],
---     refine !pathover_ap_invo_tro ⬝ _,
---     rewrite [apo_invo,apo_tro]
---   end) end
-
 variable {P}
 theorem seq_colim_over_glue /- r -/ (x : seq_colim_over g (ι f (f a)))
   : transport (seq_colim_over g) (glue f a) x = shift_down _ (over_f_equiv g a x) :=
@@ -400,7 +321,6 @@ pathover_of_tr_eq !seq_colim_over_glue
 
 -- we can define a function from the colimit of total spaces to the total space of the colimit.
 
-/- TO DO: define glue' in the same way as glue' -/
 definition glue' (p : P a) : ⟨ι f (f a), ιo g (g p)⟩ = ⟨ι f a, ιo g p⟩ :=
 sigma_eq (glue f a) (glue_over g (g p) ⬝op glue (seq_diagram_of_over g a) p)
 
@@ -435,7 +355,7 @@ end
 -- we now want to show that this function is an equivalence.
 
 /-
-  Kristina's proof of the induction principle of colim-sigma for sigma-colim.
+  Proof of the induction principle of colim-sigma for sigma-colim.
   It's a double induction, so we have 4 cases: point-point, point-path, path-point and path-path.
   The main idea of the proof is that for the path-path case you need to fill a square, but we can
   define the point-path case as a filler for this square.
@@ -653,7 +573,6 @@ begin
   apply eq_pathover, apply colim_sigma_of_sigma_colim_path2
 end
 
-/- TODO: prove and merge these theorems -/
 definition colim_sigma_of_sigma_colim_glue' [unfold 5] (p : P a)
   : ap (colim_sigma_of_sigma_colim g) (glue' g p) = glue (seq_diagram_sigma g) ⟨a, p⟩ :=
 begin
@@ -953,5 +872,16 @@ begin
     apply equiv_of_is_equiseq, intro n, apply H },
   { intro p, induction p, apply seq_colim_eq_equiv0'_inv_refl }
 end
+
+-- print axioms sigma_seq_colim_over_equiv
+-- print axioms seq_colim_eq_equiv
+-- print axioms fiber_seq_colim_functor
+-- print axioms is_trunc_seq_colim
+-- print axioms trunc_seq_colim_equiv
+-- print axioms is_conn_seq_colim
+-- print axioms is_trunc_fun_seq_colim_functor
+-- print axioms is_conn_fun_seq_colim_functor
+-- print axioms is_trunc_fun_inclusion
+-- print axioms is_conn_fun_inclusion
 
 end seq_colim

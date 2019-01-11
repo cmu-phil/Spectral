@@ -86,9 +86,6 @@ namespace seq_colim
 
   section generalized_lrep
 
-  -- definition lrep_pathover_lrep0 [reducible] (k : ℕ) (a : A 0) : lrep f k a =[nat.zero_add k] lrep0 f k a :=
-  -- begin induction k with k p, constructor, exact pathover_ap A succ (apo f p) end
-
   /- lreplace le_of_succ_le with this -/
 
   definition lrep_f {n m : ℕ} (H : succ n ≤ m) (a : A n) :
@@ -107,18 +104,6 @@ namespace seq_colim
     { exact ap (@f k) p }
   end
 
-  -- -- this should be a squareover
-  -- definition lrep_lrep_succ (k l : ℕ) (a : A n) :
-  --   lrep_lrep f k (succ l) a = change_path (idontwanttoprovethis n l k)
-  --   (lrep_f f k (lrep f l a) ⬝o
-  --    lrep_lrep f (succ k) l a ⬝o
-  --    pathover_ap _ (λz, n + z) (apd (λz, lrep f z a) (succ_add l k)⁻¹ᵖ)) :=
-  -- begin
-  --   induction k with k IH,
-  --   { constructor},
-  --   { exact sorry}
-  -- end
-
   definition f_lrep {n m : ℕ} (H : n ≤ m) (a : A n) : f (lrep f H a) = lrep f (le.step H) a := idp
 
   definition rep (m : ℕ) (a : A n) : A (n + m) :=
@@ -129,12 +114,6 @@ namespace seq_colim
 
   definition rep_pathover_rep0 {n : ℕ} (a : A 0) : rep f n a =[nat.zero_add n] rep0 f n a :=
   !lrep_irrel_pathover
-
-  -- definition old_rep (m : ℕ) (a : A n) : A (n + m) :=
-  -- by induction m with m y; exact a; exact f y
-
-  -- definition rep_eq_old_rep (m : ℕ) (a : A n) : rep f m a = old_rep f m a :=
-  -- by induction m with m p; reflexivity; exact ap (@f _) p
 
   definition rep_f (k : ℕ) (a : A n) :
     pathover A (rep f k (f a)) (succ_add n k) (rep f (succ k) a) :=
@@ -268,7 +247,6 @@ namespace seq_colim
   end over
 
   omit f
-  -- do we need to generalize this to the case where the bottom sequence consists of equivalences?
   definition seq_diagram_pi {X : Type} {A : X → ℕ → Type} (g : Π⦃x n⦄, A x n → A x (succ n)) :
     seq_diagram (λn, Πx, A x n) :=
   λn f x, g (f x)
