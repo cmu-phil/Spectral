@@ -100,7 +100,7 @@ These projects are done
 
 
 #### Done
-- Most things in the HoTT Book up to Section 8.9 (see [this file](https://github.com/leanprover/lean/blob/master/hott/book.md))
+- Most things in the HoTT Book up to Section 8.9 (see [this file](https://github.com/leanprover/lean2/blob/master/hott/book.md))
 - pointed types, maps, homotopies and equivalences
 - [Eilenberg-MacLane spaces](http://ncatlab.org/nlab/show/Eilenberg-Mac+Lane+space) and EM-spectrum
 - fiber sequence
